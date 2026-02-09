@@ -1,0 +1,15 @@
+# Build outputs
+bin/
+obj/
+
+# IDE files
+.vs/
+*.user
+*.suo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Repomix output (large generated file)
+repomix-output.xml

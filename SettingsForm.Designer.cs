@@ -9,6 +9,7 @@ namespace KeeFetch
         private System.Windows.Forms.CheckBox chkSkipExistingIcons;
         private System.Windows.Forms.CheckBox chkAutoSave;
         private System.Windows.Forms.CheckBox chkAllowSelfSigned;
+        private System.Windows.Forms.CheckBox chkUseThirdPartyFallbacks;
         private System.Windows.Forms.NumericUpDown numMaxIconSize;
         private System.Windows.Forms.NumericUpDown numTimeout;
         private System.Windows.Forms.TextBox txtIconPrefix;
@@ -39,6 +40,7 @@ namespace KeeFetch
             this.chkSkipExistingIcons = new System.Windows.Forms.CheckBox();
             this.chkAutoSave = new System.Windows.Forms.CheckBox();
             this.chkAllowSelfSigned = new System.Windows.Forms.CheckBox();
+            this.chkUseThirdPartyFallbacks = new System.Windows.Forms.CheckBox();
             this.numMaxIconSize = new System.Windows.Forms.NumericUpDown();
             this.numTimeout = new System.Windows.Forms.NumericUpDown();
             this.txtIconPrefix = new System.Windows.Forms.TextBox();
@@ -147,11 +149,12 @@ namespace KeeFetch
             //
             this.grpNetwork.Text = "Network Options";
             this.grpNetwork.Location = new System.Drawing.Point(12, 268);
-            this.grpNetwork.Size = new System.Drawing.Size(410, 100);
+            this.grpNetwork.Size = new System.Drawing.Size(410, 130);
             this.grpNetwork.Controls.Add(this.chkAllowSelfSigned);
             this.grpNetwork.Controls.Add(this.lblTimeout);
             this.grpNetwork.Controls.Add(this.numTimeout);
             this.grpNetwork.Controls.Add(this.lblTimeoutUnit);
+            this.grpNetwork.Controls.Add(this.chkUseThirdPartyFallbacks);
             //
             // chkAllowSelfSigned
             //
@@ -182,10 +185,17 @@ namespace KeeFetch
             this.lblTimeoutUnit.Size = new System.Drawing.Size(60, 20);
             this.lblTimeoutUnit.AutoSize = true;
             //
+            // chkUseThirdPartyFallbacks
+            //
+            this.chkUseThirdPartyFallbacks.Text = "Use third-party favicon services (Google, DuckDuckGo, etc.)";
+            this.chkUseThirdPartyFallbacks.Location = new System.Drawing.Point(15, 88);
+            this.chkUseThirdPartyFallbacks.Size = new System.Drawing.Size(380, 22);
+            this.chkUseThirdPartyFallbacks.AutoSize = true;
+            //
             // btnOK
             //
             this.btnOK.Text = "OK";
-            this.btnOK.Location = new System.Drawing.Point(266, 380);
+            this.btnOK.Location = new System.Drawing.Point(266, 410);
             this.btnOK.Size = new System.Drawing.Size(75, 28);
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
@@ -193,7 +203,7 @@ namespace KeeFetch
             // btnCancel
             //
             this.btnCancel.Text = "Cancel";
-            this.btnCancel.Location = new System.Drawing.Point(347, 380);
+            this.btnCancel.Location = new System.Drawing.Point(347, 410);
             this.btnCancel.Size = new System.Drawing.Size(75, 28);
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
@@ -201,7 +211,7 @@ namespace KeeFetch
             // SettingsForm
             //
             this.Text = "KeeFetch Settings";
-            this.ClientSize = new System.Drawing.Size(434, 420);
+            this.ClientSize = new System.Drawing.Size(434, 450);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;

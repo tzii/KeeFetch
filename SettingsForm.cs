@@ -21,6 +21,7 @@ namespace KeeFetch
             chkSkipExistingIcons.Checked = config.SkipExistingIcons;
             chkAutoSave.Checked = config.AutoSave;
             chkAllowSelfSigned.Checked = config.AllowSelfSignedCerts;
+            chkUseThirdPartyFallbacks.Checked = config.UseThirdPartyFallbacks;
             numMaxIconSize.Value = config.MaxIconSize;
             numTimeout.Value = config.Timeout;
             txtIconPrefix.Text = config.IconNamePrefix;
@@ -33,6 +34,7 @@ namespace KeeFetch
             config.SkipExistingIcons = chkSkipExistingIcons.Checked;
             config.AutoSave = chkAutoSave.Checked;
             config.AllowSelfSignedCerts = chkAllowSelfSigned.Checked;
+            config.UseThirdPartyFallbacks = chkUseThirdPartyFallbacks.Checked;
             config.MaxIconSize = (int)numMaxIconSize.Value;
             config.Timeout = (int)numTimeout.Value;
             config.IconNamePrefix = txtIconPrefix.Text;

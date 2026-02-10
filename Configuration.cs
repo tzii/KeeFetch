@@ -13,6 +13,7 @@ namespace KeeFetch
         private bool? skipExistingIcons;
         private bool? autoSave;
         private bool? allowSelfSignedCerts;
+        private bool? useThirdPartyFallbacks;
         private int? maxIconSize;
         private int? timeout;
         private string iconNamePrefix;
@@ -94,6 +95,21 @@ namespace KeeFetch
             {
                 allowSelfSignedCerts = value;
                 config.SetBool(Prefix + "AllowSelfSignedCerts", value);
+            }
+        }
+
+        public bool UseThirdPartyFallbacks
+        {
+            get
+            {
+                if (!useThirdPartyFallbacks.HasValue)
+                    useThirdPartyFallbacks = config.GetBool(Prefix + "UseThirdPartyFallbacks", true);
+                return useThirdPartyFallbacks.Value;
+            }
+            set
+            {
+                useThirdPartyFallbacks = value;
+                config.SetBool(Prefix + "UseThirdPartyFallbacks", value);
             }
         }
 

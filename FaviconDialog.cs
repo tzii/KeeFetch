@@ -123,7 +123,7 @@ namespace KeeFetch
                 ServicePointManager.ServerCertificateValidationCallback;
 
             if (config.AllowSelfSignedCerts)
-                FaviconDownloader.SetupSelfSignedCerts(true);
+                FaviconDownloader.SetupSelfSignedCerts(true, originalCallback);
 
             try
             {
@@ -216,16 +216,15 @@ namespace KeeFetch
                                 int currentNotFound = Interlocked.CompareExchange(ref notFoundCount, 0, 0);
                                 int currentErrors = Interlocked.CompareExchange(ref errorCount, 0, 0);
 
-                                try { logger.SetProgress(progressValue); } catch { }
-                                try
+                                InvokeOnUI(() =>
                                 {
+                                    logger.SetProgress(progressValue);
                                     logger.SetText(string.Format(
                                         "Processed {0}/{1} ({2}%) — OK: {3}, Skipped: {4}, Not found: {5}, Errors: {6}",
                                         currentProcessed, totalCount, pct,
                                         currentSuccess, currentSkipped, currentNotFound, currentErrors),
                                         LogStatusType.Info);
-                                }
-                                catch { }
+                                });
 
                                 // Check if disposed before signaling
                                 if (!IsDisposed())
@@ -250,19 +249,18 @@ namespace KeeFetch
                         }
 
                         // Update UI so user sees the dialog is alive
-                        try
+                        int cp = Interlocked.CompareExchange(ref processedCount, 0, 0);
+                        int cs = Interlocked.CompareExchange(ref successCount, 0, 0);
+                        int csk = Interlocked.CompareExchange(ref skippedCount, 0, 0);
+                        int cnf = Interlocked.CompareExchange(ref notFoundCount, 0, 0);
+                        int ce = Interlocked.CompareExchange(ref errorCount, 0, 0);
+                        InvokeOnUI(() =>
                         {
-                            int cp = Interlocked.CompareExchange(ref processedCount, 0, 0);
-                            int cs = Interlocked.CompareExchange(ref successCount, 0, 0);
-                            int csk = Interlocked.CompareExchange(ref skippedCount, 0, 0);
-                            int cnf = Interlocked.CompareExchange(ref notFoundCount, 0, 0);
-                            int ce = Interlocked.CompareExchange(ref errorCount, 0, 0);
                             logger.SetText(string.Format(
                                 "Waiting... Processed {0}/{1} — OK: {2}, Skipped: {3}, Not found: {4}, Errors: {5}",
                                 cp, totalCount, cs, csk, cnf, ce),
                                 LogStatusType.Info);
-                        }
-                        catch { }
+                        });
 
                         if (totalWaitedMs >= maxTotalWaitMs)
                         {
@@ -283,7 +281,7 @@ namespace KeeFetch
             finally
             {
                 if (config.AllowSelfSignedCerts)
-                    ServicePointManager.ServerCertificateValidationCallback = originalCallback;
+                    FaviconDownloader.SetupSelfSignedCerts(false, originalCallback);
             }
         }
 
@@ -326,45 +324,64 @@ namespace KeeFetch
                 return;
             }
 
-            lock (db)
+            byte[] iconHash = Util.HashData(result.IconData);
+            byte[] iconData = result.IconData;
+            string iconHost = result.Host;
+
+            InvokeOnUI(() =>
             {
-                byte[] hash = Util.HashData(result.IconData);
-                PwUuid iconUuid = new PwUuid(hash);
-
-                bool iconExists = db.CustomIcons.Any(ci => ci.Uuid.Equals(iconUuid));
-                if (!iconExists)
+                lock (db)
                 {
-                    PwCustomIcon newIcon = new PwCustomIcon(iconUuid, result.IconData);
+                    PwUuid iconUuid = new PwUuid(iconHash);
 
-                    string iconName = config.IconNamePrefix;
-                    if (!string.IsNullOrEmpty(iconName) && !string.IsNullOrEmpty(result.Host))
-                        iconName += result.Host;
-                    else if (!string.IsNullOrEmpty(result.Host))
-                        iconName = result.Host;
-
-                    if (!string.IsNullOrEmpty(iconName))
+                    bool iconExists = db.CustomIcons.Any(ci => ci.Uuid.Equals(iconUuid));
+                    if (!iconExists)
                     {
-                        try
+                        PwCustomIcon newIcon = new PwCustomIcon(iconUuid, iconData);
+
+                        string iconName = config.IconNamePrefix;
+                        if (!string.IsNullOrEmpty(iconName) && !string.IsNullOrEmpty(iconHost))
+                            iconName += iconHost;
+                        else if (!string.IsNullOrEmpty(iconHost))
+                            iconName = iconHost;
+
+                        if (!string.IsNullOrEmpty(iconName))
                         {
-                            var nameProperty = newIcon.GetType().GetProperty("Name");
-                            if (nameProperty != null)
-                                nameProperty.SetValue(newIcon, iconName);
+                            try
+                            {
+                                var nameProperty = newIcon.GetType().GetProperty("Name");
+                                if (nameProperty != null)
+                                    nameProperty.SetValue(newIcon, iconName);
+                            }
+                            catch { }
                         }
-                        catch { }
+
+                        db.CustomIcons.Add(newIcon);
                     }
 
-                    db.CustomIcons.Add(newIcon);
+                    if (!entry.CustomIconUuid.Equals(iconUuid))
+                    {
+                        entry.CustomIconUuid = iconUuid;
+                        entry.Touch(true, false);
+                        dbModified = true;
+                    }
                 }
-
-                if (!entry.CustomIconUuid.Equals(iconUuid))
-                {
-                    entry.CustomIconUuid = iconUuid;
-                    entry.Touch(true, false);
-                    dbModified = true;
-                }
-            }
+            });
 
             Interlocked.Increment(ref successCount);
+        }
+
+        private void InvokeOnUI(Action action)
+        {
+            try
+            {
+                var mainForm = host.MainWindow;
+                if (mainForm != null && mainForm.InvokeRequired)
+                    mainForm.BeginInvoke(action);
+                else
+                    action();
+            }
+            catch { }
         }
 
         private void ShowCompletionMessage()

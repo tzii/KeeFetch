@@ -163,8 +163,18 @@ namespace KeeFetch
             if (!IsAndroidUrl(url))
                 return null;
 
-            string package = url.Substring("androidapp://".Length).Trim('/');
-            return string.IsNullOrEmpty(package) ? null : package;
+            try
+            {
+                string withoutScheme = url.Substring("androidapp://".Length).TrimStart('/');
+                int slashIndex = withoutScheme.IndexOf('/');
+                string package = slashIndex >= 0 ? withoutScheme.Substring(0, slashIndex) : withoutScheme;
+                package = package.Trim();
+                return string.IsNullOrEmpty(package) ? null : package;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public static string MapToWebDomain(string url)
@@ -199,9 +209,22 @@ namespace KeeFetch
 
                 string html;
                 using (var response = (HttpWebResponse)request.GetResponse())
-                using (var reader = new StreamReader(response.GetResponseStream()))
+                using (var stream = response.GetResponseStream())
+                using (var ms = new MemoryStream())
                 {
-                    html = reader.ReadToEnd();
+                    if (stream == null) return null;
+                    byte[] buffer = new byte[8192];
+                    int read;
+                    long total = 0;
+                    const long MaxHtmlBytes = 10 * 1024 * 1024;
+                    while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        ms.Write(buffer, 0, read);
+                        total += read;
+                        if (total > MaxHtmlBytes)
+                            return null;
+                    }
+                    html = System.Text.Encoding.UTF8.GetString(ms.ToArray());
                 }
 
                 var imgPattern = new Regex(

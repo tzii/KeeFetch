@@ -51,17 +51,29 @@ namespace KeeFetch
             catch { }
         }
 
-        public static void SetupSelfSignedCerts(bool allow)
+        public static RemoteCertificateValidationCallback SetupSelfSignedCerts(
+            bool allow, RemoteCertificateValidationCallback originalCallback)
         {
-            if (allow)
+            if (!allow)
             {
-                ServicePointManager.ServerCertificateValidationCallback =
-                    (object sender, X509Certificate cert, X509Chain chain, SslPolicyErrors errors) => true;
+                ServicePointManager.ServerCertificateValidationCallback = originalCallback;
+                return originalCallback;
             }
-            else
-            {
-                ServicePointManager.ServerCertificateValidationCallback = null;
-            }
+
+            ServicePointManager.ServerCertificateValidationCallback =
+                (object sender, X509Certificate cert, X509Chain chain, SslPolicyErrors errors) =>
+                {
+                    if (errors == SslPolicyErrors.None)
+                        return true;
+                    if ((errors & SslPolicyErrors.RemoteCertificateChainErrors) != 0 &&
+                        (errors & SslPolicyErrors.RemoteCertificateNameMismatch) == 0)
+                        return true;
+                    if (originalCallback != null)
+                        return originalCallback(sender, cert, chain, errors);
+                    return false;
+                };
+
+            return ServicePointManager.ServerCertificateValidationCallback;
         }
 
         public FaviconResult Download(string url)
@@ -117,6 +129,18 @@ namespace KeeFetch
             }
 
             // Fallback attempts with reduced timeout and cumulative limit
+            if (!config.UseThirdPartyFallbacks)
+            {
+                result.Status = FaviconStatus.NotFound;
+                return result;
+            }
+
+            if (Util.IsPrivateHost(host))
+            {
+                result.Status = FaviconStatus.NotFound;
+                return result;
+            }
+
             foreach (var provider in FallbackProviders)
             {
                 // Check cumulative timeout
@@ -198,29 +222,32 @@ namespace KeeFetch
                 }
 
                 // Try fallback providers with reduced timeout
-                foreach (var provider in FallbackProviders)
+                if (config.UseThirdPartyFallbacks && !Util.IsPrivateHost(domain))
                 {
-                    if (IsTimeUp()) break;
-
-                    int timeout = GetEffectiveTimeout(false);
-                    if (timeout < 1000) break;
-
-                    try
+                    foreach (var provider in FallbackProviders)
                     {
-                        byte[] iconData = provider.GetIcon(domain, maxSize, timeout, proxy);
-                        if (iconData != null)
+                        if (IsTimeUp()) break;
+
+                        int timeout = GetEffectiveTimeout(false);
+                        if (timeout < 1000) break;
+
+                        try
                         {
-                            byte[] resized = Util.ResizeImage(iconData, maxSize, maxSize);
-                            if (resized != null)
+                            byte[] iconData = provider.GetIcon(domain, maxSize, timeout, proxy);
+                            if (iconData != null)
                             {
-                                result.IconData = resized;
-                                result.Status = FaviconStatus.Success;
-                                result.Provider = provider.Name;
-                                return result;
+                                byte[] resized = Util.ResizeImage(iconData, maxSize, maxSize);
+                                if (resized != null)
+                                {
+                                    result.IconData = resized;
+                                    result.Status = FaviconStatus.Success;
+                                    result.Provider = provider.Name;
+                                    return result;
+                                }
                             }
                         }
+                        catch { }
                     }
-                    catch { }
                 }
             }
 
@@ -256,7 +283,9 @@ namespace KeeFetch
                 {
                     string guessedDomain = AndroidAppMapper.TryGuessFromPackage(packageName);
                     if (!string.IsNullOrEmpty(guessedDomain) &&
-                        !guessedDomain.Equals(domain, StringComparison.OrdinalIgnoreCase))
+                        !guessedDomain.Equals(domain, StringComparison.OrdinalIgnoreCase) &&
+                        config.UseThirdPartyFallbacks &&
+                        !Util.IsPrivateHost(guessedDomain))
                     {
                         foreach (var provider in FallbackProviders)
                         {

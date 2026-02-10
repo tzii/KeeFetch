@@ -53,7 +53,20 @@ namespace KeeFetch.IconProviders
                 ? htmlResponseUri.GetLeftPart(UriPartial.Authority)
                 : baseUrl;
 
-            string html = Encoding.UTF8.GetString(htmlData);
+            Encoding encoding = Encoding.UTF8;
+            string htmlStr = encoding.GetString(htmlData);
+            var charsetMatch = Regex.Match(htmlStr.Substring(0, Math.Min(htmlStr.Length, 4096)),
+                @"charset\s*=\s*[""']?([^""'\s;>]+)", RegexOptions.IgnoreCase);
+            if (charsetMatch.Success)
+            {
+                try
+                {
+                    encoding = Encoding.GetEncoding(charsetMatch.Groups[1].Value.Trim());
+                    htmlStr = encoding.GetString(htmlData);
+                }
+                catch { }
+            }
+            string html = htmlStr;
             var candidates = ParseIconLinks(html, resolvedBase);
 
             candidates = candidates
@@ -105,7 +118,17 @@ namespace KeeFetch.IconProviders
             var baseMatch = Regex.Match(head, @"<base[^>]+href\s*=\s*[""']([^""']+)[""']",
                 RegexOptions.IgnoreCase);
             if (baseMatch.Success)
-                resolvedBase = baseMatch.Groups[1].Value.TrimEnd('/');
+            {
+                string candidate = baseMatch.Groups[1].Value.TrimEnd('/');
+                try
+                {
+                    var baseUri = new Uri(baseUrl);
+                    var candidateUri = new Uri(candidate);
+                    if (candidateUri.Host.Equals(baseUri.Host, StringComparison.OrdinalIgnoreCase))
+                        resolvedBase = candidate;
+                }
+                catch { }
+            }
 
             var linkPattern = new Regex(
                 @"<link\b[^>]*\brel\s*=\s*[""']?(?:shortcut\s+)?icon[""']?[^>]*>",
@@ -233,6 +256,13 @@ namespace KeeFetch.IconProviders
                 using (var response = (HttpWebResponse)request.GetResponse())
                 {
                     responseUri = response.ResponseUri;
+
+                    if (responseUri != null)
+                    {
+                        string responseHost = responseUri.Host;
+                        if (Util.IsPrivateHost(responseHost))
+                            return null;
+                    }
 
                     using (var stream = response.GetResponseStream())
                     using (var ms = new MemoryStream())

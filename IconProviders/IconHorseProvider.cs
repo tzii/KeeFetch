@@ -10,6 +10,9 @@ namespace KeeFetch.IconProviders
 
         public byte[] GetIcon(string host, int size, int timeoutMs, IWebProxy proxy)
         {
+            if (Util.IsPrivateHost(host))
+                return null;
+
             string url = string.Format(
                 "https://icon.horse/icon/{0}",
                 Uri.EscapeDataString(host));
@@ -28,7 +31,16 @@ namespace KeeFetch.IconProviders
                 using (var ms = new MemoryStream())
                 {
                     if (stream == null) return null;
-                    stream.CopyTo(ms);
+                    byte[] buffer = new byte[8192];
+                    int read;
+                    long total = 0;
+                    while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        ms.Write(buffer, 0, read);
+                        total += read;
+                        if (total > 512 * 1024)
+                            return null;
+                    }
                     byte[] data = ms.ToArray();
                     return Util.IsValidImage(data) ? data : null;
                 }

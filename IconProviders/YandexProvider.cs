@@ -1,14 +1,15 @@
 using System;
-using System.IO;
 using System.Net;
+using System.Threading;
 
 namespace KeeFetch.IconProviders
 {
-    internal sealed class YandexProvider : IIconProvider
+    internal sealed class YandexProvider : IconProviderBase
     {
-        public string Name => "Yandex";
+        public override string Name => "Yandex";
 
-        public byte[] GetIcon(string host, int size, int timeoutMs, IWebProxy proxy)
+        public override byte[] GetIcon(string host, int size, int timeoutMs, IWebProxy proxy,
+            CancellationToken token = default(CancellationToken))
         {
             if (Util.IsPrivateHost(host))
                 return null;
@@ -21,35 +22,7 @@ namespace KeeFetch.IconProviders
                 "https://favicon.yandex.net/favicon/{0}?size={1}",
                 Uri.EscapeDataString(host), resolvedSize);
 
-            try
-            {
-                var request = (HttpWebRequest)WebRequest.Create(url);
-                request.Timeout = timeoutMs;
-                request.ReadWriteTimeout = timeoutMs * 2;
-                request.AllowAutoRedirect = true;
-                request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
-                if (proxy != null) request.Proxy = proxy;
-
-                using (var response = (HttpWebResponse)request.GetResponse())
-                using (var stream = response.GetResponseStream())
-                using (var ms = new MemoryStream())
-                {
-                    if (stream == null) return null;
-                    byte[] buffer = new byte[8192];
-                    int read;
-                    long total = 0;
-                    while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
-                    {
-                        ms.Write(buffer, 0, read);
-                        total += read;
-                        if (total > 512 * 1024)
-                            return null;
-                    }
-                    byte[] data = ms.ToArray();
-                    return Util.IsValidImage(data) ? data : null;
-                }
-            }
-            catch { return null; }
+            return DownloadBytes(url, timeoutMs, proxy, token);
         }
     }
 }

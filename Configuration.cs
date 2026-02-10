@@ -3,6 +3,9 @@ using KeePass.App.Configuration;
 
 namespace KeeFetch
 {
+    /// <summary>
+    /// Manages KeeFetch plugin configuration settings stored in KeePass custom config.
+    /// </summary>
     public sealed class Configuration
     {
         private const string Prefix = "KeeFetch.";
@@ -18,11 +21,18 @@ namespace KeeFetch
         private int? timeout;
         private string iconNamePrefix;
 
+        /// <summary>
+        /// Initializes a new instance of the Configuration class.
+        /// </summary>
+        /// <param name="customConfig">The KeePass custom configuration.</param>
         public Configuration(AceCustomConfig customConfig)
         {
             config = customConfig;
         }
 
+        /// <summary>
+        /// Gets or sets whether to automatically prefix URLs with http:// or https://.
+        /// </summary>
         public bool PrefixUrls
         {
             get
@@ -38,6 +48,9 @@ namespace KeeFetch
             }
         }
 
+        /// <summary>
+        /// Gets or sets whether to use the entry title field when URL is empty.
+        /// </summary>
         public bool UseTitleField
         {
             get
@@ -53,6 +66,9 @@ namespace KeeFetch
             }
         }
 
+        /// <summary>
+        /// Gets or sets whether to skip entries that already have custom icons.
+        /// </summary>
         public bool SkipExistingIcons
         {
             get
@@ -68,6 +84,9 @@ namespace KeeFetch
             }
         }
 
+        /// <summary>
+        /// Gets or sets whether to automatically save the database after downloading icons.
+        /// </summary>
         public bool AutoSave
         {
             get
@@ -83,6 +102,9 @@ namespace KeeFetch
             }
         }
 
+        /// <summary>
+        /// Gets or sets whether to allow self-signed SSL certificates.
+        /// </summary>
         public bool AllowSelfSignedCerts
         {
             get
@@ -98,6 +120,9 @@ namespace KeeFetch
             }
         }
 
+        /// <summary>
+        /// Gets or sets whether to use third-party fallback providers (Google, DuckDuckGo, etc.).
+        /// </summary>
         public bool UseThirdPartyFallbacks
         {
             get
@@ -113,6 +138,9 @@ namespace KeeFetch
             }
         }
 
+        /// <summary>
+        /// Gets or sets the maximum icon size in pixels.
+        /// </summary>
         public int MaxIconSize
         {
             get
@@ -128,6 +156,9 @@ namespace KeeFetch
             }
         }
 
+        /// <summary>
+        /// Gets or sets the timeout for icon downloads in seconds (clamped between 5-60).
+        /// </summary>
         public int Timeout
         {
             get
@@ -144,6 +175,9 @@ namespace KeeFetch
             }
         }
 
+        /// <summary>
+        /// Gets or sets the prefix for custom icon names in the database.
+        /// </summary>
         public string IconNamePrefix
         {
             get

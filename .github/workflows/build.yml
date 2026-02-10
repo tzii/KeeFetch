@@ -19,12 +19,10 @@ jobs:
       - name: Download KeePass portable
         shell: pwsh
         run: |
-          $keepassUrl = "https://sourceforge.net/projects/keepass/files/KeePass%202.x/2.57.1/KeePass-2.57.1.zip/download"
-          $zipPath = "$env:RUNNER_TEMP\KeePass.zip"
-          $extractPath = "$env:RUNNER_TEMP\KeePass"
-          Invoke-WebRequest -Uri $keepassUrl -OutFile $zipPath -MaximumRedirection 10 -UserAgent "Mozilla/5.0"
-          Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
-          Write-Output "KEEPASS_DIR=$extractPath" >> $env:GITHUB_ENV
+          # Use chocolatey to install KeePass instead of direct download
+          choco install keepass --version=2.57.1 --no-progress -y
+          $keepassDir = "C:\Program Files\KeePass Password Safe 2"
+          Write-Output "KEEPASS_DIR=$keepassDir" >> $env:GITHUB_ENV
 
       - name: Build DLL
         shell: pwsh

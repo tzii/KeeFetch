@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using KeePass.Plugins;
 using KeePassLib;
@@ -12,12 +13,16 @@ using KeePassLib.Interfaces;
 
 namespace KeeFetch
 {
+    /// <summary>
+    /// Manages concurrent favicon downloads with progress reporting and cancellation support.
+    /// </summary>
     internal sealed class FaviconDialog
     {
         private readonly IPluginHost host;
         private readonly Configuration config;
         private readonly PwEntry[] entries;
         private IStatusLogger logger;
+        private CancellationTokenSource cts;
 
         private int totalCount;
         private int successCount;
@@ -26,9 +31,6 @@ namespace KeeFetch
         private int errorCount;
         private int processedCount;
         private bool dbModified;
-        private int cancelled; // 0 = false, 1 = true (use Interlocked for thread-safe access)
-        private int workerDone; // 0 = false, 1 = true (use Interlocked for thread-safe access)
-        private int disposed; // 0 = false, 1 = true (prevents ObjectDisposedException on doneEvent/semaphore)
         private readonly List<string> errorLog = new List<string>();
         private readonly object errorLogLock = new object();
 
@@ -42,7 +44,10 @@ namespace KeeFetch
             this.entries = entries;
         }
 
-        public void Run()
+        /// <summary>
+        /// Runs the download dialog asynchronously. Must be called from the UI thread.
+        /// </summary>
+        public async Task RunAsync()
         {
             if (entries == null || entries.Length == 0)
                 return;
@@ -54,9 +59,7 @@ namespace KeeFetch
             errorCount = 0;
             processedCount = 0;
             dbModified = false;
-            cancelled = 0;
-            workerDone = 0;
-            disposed = 0;
+            cts = new CancellationTokenSource();
 
             logger = KeePass.UI.StatusUtil.CreateStatusDialog(
                 host.MainWindow, out var statusForm,
@@ -70,60 +73,43 @@ namespace KeeFetch
                 "Starting download for {0} entries...", totalCount),
                 LogStatusType.Info);
 
-            // Run the work on a background thread, pump messages on the UI thread
-            var workerThread = new Thread(WorkerThreadProc);
-            workerThread.IsBackground = true;
-            workerThread.Name = "KeeFetch-Worker";
-            workerThread.Start();
-
-            // Pump UI messages until the worker finishes
-            while (Interlocked.CompareExchange(ref workerDone, 0, 0) == 0)
-            {
-                Application.DoEvents();
-                Thread.Sleep(30);
-
-                // Check for user cancellation via the status dialog
-                if (Interlocked.CompareExchange(ref cancelled, 0, 0) == 0 && !logger.ContinueWork())
-                {
-                    Interlocked.Exchange(ref cancelled, 1);
-                }
-            }
-
-            logger.EndLogging();
-            ShowCompletionMessage();
-        }
-
-        private void WorkerThreadProc()
-        {
             try
             {
-                DoWork();
+                // Run the work on a background thread, pump messages on the UI thread
+                var workTask = Task.Run(() => DoWork(cts.Token), cts.Token);
+
+                // Pump UI messages until the worker finishes
+                while (!workTask.IsCompleted)
+                {
+                    Application.DoEvents();
+                    await Task.Delay(30);
+
+                    // Check for user cancellation via the status dialog
+                    if (!cts.IsCancellationRequested && !logger.ContinueWork())
+                    {
+                        cts.Cancel();
+                    }
+                }
+
+                await workTask; // observe exceptions
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when user cancels
             }
             finally
             {
-                Interlocked.Exchange(ref workerDone, 1);
+                logger.EndLogging();
+                ShowCompletionMessage();
             }
         }
 
-        private bool IsCancelled()
-        {
-            return Interlocked.CompareExchange(ref cancelled, 0, 0) == 1;
-        }
-
-        private bool IsDisposed()
-        {
-            return Interlocked.CompareExchange(ref disposed, 0, 0) == 1;
-        }
-
-        private void DoWork()
+        private async Task DoWork(CancellationToken token)
         {
             FaviconDownloader.SetupTls();
 
-            RemoteCertificateValidationCallback originalCallback =
-                ServicePointManager.ServerCertificateValidationCallback;
-
             if (config.AllowSelfSignedCerts)
-                FaviconDownloader.SetupSelfSignedCerts(true, originalCallback);
+                FaviconDownloader.SetupSelfSignedCerts(true);
 
             try
             {
@@ -136,64 +122,44 @@ namespace KeeFetch
 
                 // Use a semaphore to limit concurrent downloads
                 using (var semaphore = new SemaphoreSlim(MaxConcurrency, MaxConcurrency))
-                using (var doneEvent = new CountdownEvent(entries.Length))
                 {
+                    var tasks = new List<Task>();
+
                     for (int idx = 0; idx < entries.Length; idx++)
                     {
-                        if (IsCancelled())
-                        {
-                            // Signal remaining entries as done immediately
-                            int unsignaled = entries.Length - idx;
-                            for (int j = 0; j < unsignaled; j++)
-                            {
-                                Interlocked.Increment(ref processedCount);
-                                Interlocked.Increment(ref skippedCount);
-                                doneEvent.Signal();
-                            }
-                            break;
-                        }
+                        token.ThrowIfCancellationRequested();
 
                         PwEntry entry = entries[idx];
 
                         // Wait for a semaphore slot (with timeout to check cancellation)
-                        while (!semaphore.Wait(500))
+                        while (!semaphore.Wait(500, token))
                         {
-                            if (IsCancelled())
-                                break;
+                            token.ThrowIfCancellationRequested();
                         }
 
-                        if (IsCancelled())
-                        {
-                            // Signal remaining entries (including current one)
-                            int unsignaled = entries.Length - idx;
-                            for (int j = 0; j < unsignaled; j++)
-                            {
-                                Interlocked.Increment(ref processedCount);
-                                Interlocked.Increment(ref skippedCount);
-                                doneEvent.Signal();
-                            }
-                            break;
-                        }
+                        token.ThrowIfCancellationRequested();
 
-                        ThreadPool.QueueUserWorkItem(delegate
+                        // Capture current index for closure
+                        int entryIndex = idx;
+                        var task = Task.Run(async () =>
                         {
                             try
                             {
-                                if (IsCancelled())
-                                {
-                                    Interlocked.Increment(ref skippedCount);
-                                    return;
-                                }
-
-                                ProcessEntry(entry, db, proxy);
+                                token.ThrowIfCancellationRequested();
+                                await ProcessEntryAsync(entry, db, proxy, token);
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                Interlocked.Increment(ref skippedCount);
+                                throw;
                             }
                             catch (Exception ex)
                             {
                                 Interlocked.Increment(ref errorCount);
                                 string title = "?";
                                 string url = "?";
-                                try { title = entry.Strings.ReadSafe(PwDefs.TitleField); } catch { }
-                                try { url = entry.Strings.ReadSafe(PwDefs.UrlField); } catch { }
+                                try { title = entry.Strings.ReadSafe(PwDefs.TitleField); } catch (Exception ex2) { Logger.Debug("ProcessEntry", ex2); }
+                                try { url = entry.Strings.ReadSafe(PwDefs.UrlField); } catch (Exception ex2) { Logger.Debug("ProcessEntry", ex2); }
                                 lock (errorLogLock)
                                 {
                                     errorLog.Add(string.Format("[{0}] {1}: {2}", title, url, ex.ToString()));
@@ -201,11 +167,7 @@ namespace KeeFetch
                             }
                             finally
                             {
-                                // Check if disposed before accessing synchronization primitives
-                                if (!IsDisposed())
-                                {
-                                    try { semaphore.Release(); } catch (ObjectDisposedException) { }
-                                }
+                                semaphore.Release();
 
                                 int currentProcessed = Interlocked.Increment(ref processedCount);
                                 int pct = (int)(currentProcessed * 100.0 / totalCount);
@@ -225,67 +187,84 @@ namespace KeeFetch
                                         currentSuccess, currentSkipped, currentNotFound, currentErrors),
                                         LogStatusType.Info);
                                 });
-
-                                // Check if disposed before signaling
-                                if (!IsDisposed())
-                                {
-                                    try { doneEvent.Signal(); } catch (ObjectDisposedException) { }
-                                }
                             }
-                        });
+                        }, token);
+
+                        tasks.Add(task);
+
+                        // Periodically check for cancellation and wait for some tasks to complete
+                        // to avoid unbounded memory growth with huge entry lists
+                        if (tasks.Count >= MaxConcurrency * 2)
+                        {
+                            var completed = await Task.WhenAny(tasks);
+                            tasks.Remove(completed);
+                            // Observe any exceptions
+                            try { await completed; }
+                            catch (OperationCanceledException) { }
+                        }
                     }
 
-                    // Wait with periodic timeout checks instead of blocking forever
+                    // Wait for all remaining tasks with periodic UI updates
                     int totalWaitedMs = 0;
                     int waitIntervalMs = 1000;
 
-                    while (!doneEvent.Wait(waitIntervalMs))
+                    while (tasks.Count > 0)
                     {
-                        totalWaitedMs += waitIntervalMs;
-
-                        if (!logger.ContinueWork())
+                        // Use Task.WhenAny with a timeout task for .NET Framework 4.8 compatibility
+                        var timeoutTask = Task.Delay(waitIntervalMs, token);
+                        var completed = await Task.WhenAny(tasks.Concat(new[] { timeoutTask }).ToArray());
+                        
+                        if (completed == timeoutTask)
                         {
-                            Interlocked.Exchange(ref cancelled, 1);
-                        }
-
-                        // Update UI so user sees the dialog is alive
-                        int cp = Interlocked.CompareExchange(ref processedCount, 0, 0);
-                        int cs = Interlocked.CompareExchange(ref successCount, 0, 0);
-                        int csk = Interlocked.CompareExchange(ref skippedCount, 0, 0);
-                        int cnf = Interlocked.CompareExchange(ref notFoundCount, 0, 0);
-                        int ce = Interlocked.CompareExchange(ref errorCount, 0, 0);
-                        InvokeOnUI(() =>
-                        {
-                            logger.SetText(string.Format(
-                                "Waiting... Processed {0}/{1} — OK: {2}, Skipped: {3}, Not found: {4}, Errors: {5}",
-                                cp, totalCount, cs, csk, cnf, ce),
-                                LogStatusType.Info);
-                        });
-
-                        if (totalWaitedMs >= maxTotalWaitMs)
-                        {
-                            lock (errorLogLock)
+                            totalWaitedMs += waitIntervalMs;
+                            
+                            if (!logger.ContinueWork())
                             {
-                                errorLog.Add(string.Format(
-                                    "Operation timed out after {0}ms. {1}/{2} entries were processed.",
-                                    totalWaitedMs, processedCount, totalCount));
+                                cts?.Cancel();
                             }
-                            break;
-                        }
-                    }
 
-                    // Mark as disposed before exiting using block to prevent ObjectDisposedException
-                    Interlocked.Exchange(ref disposed, 1);
+                            // Update UI so user sees the dialog is alive
+                            int cp = Interlocked.CompareExchange(ref processedCount, 0, 0);
+                            int cs = Interlocked.CompareExchange(ref successCount, 0, 0);
+                            int csk = Interlocked.CompareExchange(ref skippedCount, 0, 0);
+                            int cnf = Interlocked.CompareExchange(ref notFoundCount, 0, 0);
+                            int ce = Interlocked.CompareExchange(ref errorCount, 0, 0);
+                            InvokeOnUI(() =>
+                            {
+                                logger.SetText(string.Format(
+                                    "Waiting... Processed {0}/{1} — OK: {2}, Skipped: {3}, Not found: {4}, Errors: {5}",
+                                    cp, totalCount, cs, csk, cnf, ce),
+                                    LogStatusType.Info);
+                            });
+
+                            if (totalWaitedMs >= maxTotalWaitMs)
+                            {
+                                lock (errorLogLock)
+                                {
+                                    errorLog.Add(string.Format(
+                                        "Operation timed out after {0}ms. {1}/{2} entries were processed.",
+                                        totalWaitedMs, processedCount, totalCount));
+                                }
+                                break;
+                            }
+                            continue;
+                        }
+                        
+                        tasks.Remove(completed);
+                        // Observe any exceptions
+                        try { await completed; }
+                        catch (OperationCanceledException) { }
+                    }
                 }
             }
             finally
             {
                 if (config.AllowSelfSignedCerts)
-                    FaviconDownloader.SetupSelfSignedCerts(false, originalCallback);
+                    FaviconDownloader.SetupSelfSignedCerts(false);
             }
         }
 
-        private void ProcessEntry(PwEntry entry, PwDatabase db, IWebProxy proxy)
+        private async Task ProcessEntryAsync(PwEntry entry, PwDatabase db, IWebProxy proxy, CancellationToken token)
         {
             if (config.SkipExistingIcons && !entry.CustomIconUuid.Equals(PwUuid.Zero))
             {
@@ -320,7 +299,7 @@ namespace KeeFetch
             }
 
             var downloader = new FaviconDownloader(config, proxy);
-            FaviconResult result = downloader.Download(url);
+            FaviconResult result = downloader.Download(url, token);
 
             if (result.Status != FaviconStatus.Success || result.IconData == null)
             {
@@ -357,7 +336,7 @@ namespace KeeFetch
                                 if (nameProperty != null)
                                     nameProperty.SetValue(newIcon, iconName);
                             }
-                            catch { }
+                            catch (Exception ex) { Logger.Debug("ProcessEntry", ex); }
                         }
 
                         db.CustomIcons.Add(newIcon);
@@ -385,7 +364,7 @@ namespace KeeFetch
                 else
                     action();
             }
-            catch { }
+            catch (Exception ex) { Logger.Debug("InvokeOnUI", ex); }
         }
 
         private void ShowCompletionMessage()
@@ -402,8 +381,10 @@ namespace KeeFetch
                         host.MainWindow.SaveDatabase(host.Database, null);
                     }
                 }
-                catch { }
+                catch (Exception ex) { Logger.Error("ShowCompletionMessage", ex); }
             }
+
+            bool wasCancelled = cts?.IsCancellationRequested ?? false;
 
             string message = string.Format(
                 "KeeFetch completed.\n\n" +
@@ -414,7 +395,7 @@ namespace KeeFetch
                 "Errors: {4}",
                 totalCount, successCount, skippedCount, notFoundCount, errorCount);
 
-            if (IsCancelled())
+            if (wasCancelled)
                 message += "\n\nDownload was cancelled by user.";
 
             if (errorLog.Count > 0)
@@ -427,11 +408,11 @@ namespace KeeFetch
                     File.WriteAllText(logPath, string.Join(Environment.NewLine + Environment.NewLine, errorLog));
                     message += "\n\nError log saved to:\n" + logPath;
                 }
-                catch { }
+                catch (Exception ex) { Logger.Error("ShowCompletionMessage", ex); }
             }
 
             MessageBox.Show(message, "KeeFetch", MessageBoxButtons.OK,
-                IsCancelled() ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
+                wasCancelled ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
         }
     }
 }

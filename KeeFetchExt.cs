@@ -69,8 +69,6 @@ namespace KeeFetch
                 var tsmi = new ToolStripMenuItem("KeeFetch - Download Favicons");
                 tsmi.Image = GetMenuIcon();
                 tsmi.Click += OnDownloadSelectedEntries;
-
-                tsmi.DropDownOpening += (s, e2) => { };
                 return tsmi;
             }
 
@@ -218,10 +216,19 @@ namespace KeeFetch
             return true;
         }
 
-        private void RunDownload(PwEntry[] entries)
+        private async void RunDownload(PwEntry[] entries)
         {
             var dialog = new FaviconDialog(host, Config, entries);
-            dialog.Run();
+            try
+            {
+                await dialog.RunAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("RunDownload", ex);
+                MessageBox.Show("An error occurred during favicon download:\n" + ex.Message,
+                    "KeeFetch", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         public override string UpdateUrl

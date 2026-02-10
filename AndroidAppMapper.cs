@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace KeeFetch
 {
+    /// <summary>
+    /// Maps Android app URLs (androidapp://) to web domains and fetches icons from Google Play.
+    /// </summary>
     internal static class AndroidAppMapper
     {
         private static readonly Dictionary<string, string> KnownMappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -152,12 +156,22 @@ namespace KeeFetch
             { "com.x8bit.bitwarden", "bitwarden.com" },
         };
 
+        /// <summary>
+        /// Determines whether the URL is an Android app URL (androidapp://).
+        /// </summary>
+        /// <param name="url">The URL to check.</param>
+        /// <returns>True if the URL is an Android app URL; otherwise, false.</returns>
         public static bool IsAndroidUrl(string url)
         {
             return !string.IsNullOrEmpty(url) &&
                    url.StartsWith("androidapp://", StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>
+        /// Extracts the package name from an Android app URL.
+        /// </summary>
+        /// <param name="url">The Android app URL.</param>
+        /// <returns>The package name, or null if extraction fails.</returns>
         public static string GetPackageName(string url)
         {
             if (!IsAndroidUrl(url))
@@ -171,12 +185,19 @@ namespace KeeFetch
                 package = package.Trim();
                 return string.IsNullOrEmpty(package) ? null : package;
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Debug("GetPackageName", ex);
                 return null;
             }
         }
 
+        /// <summary>
+        /// Maps an Android app URL to its corresponding web domain.
+        /// Uses known mappings or attempts to guess from the package name.
+        /// </summary>
+        /// <param name="url">The Android app URL.</param>
+        /// <returns>The web domain, or null if mapping fails.</returns>
         public static string MapToWebDomain(string url)
         {
             string package = GetPackageName(url);
@@ -189,13 +210,24 @@ namespace KeeFetch
             return TryGuessFromPackage(package);
         }
 
-        public static byte[] FetchGooglePlayIcon(string packageName, int timeoutMs, IWebProxy proxy)
+        /// <summary>
+        /// Fetches the icon for an Android app from the Google Play Store.
+        /// </summary>
+        /// <param name="packageName">The Android package name.</param>
+        /// <param name="timeoutMs">Timeout in milliseconds.</param>
+        /// <param name="proxy">Web proxy to use, or null for default.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>Icon image data, or null if fetching fails.</returns>
+        public static byte[] FetchGooglePlayIcon(string packageName, int timeoutMs, IWebProxy proxy,
+            CancellationToken token = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(packageName))
                 return null;
 
             try
             {
+                token.ThrowIfCancellationRequested();
+
                 string playUrl = "https://play.google.com/store/apps/details?id=" +
                                  Uri.EscapeDataString(packageName);
 
@@ -208,6 +240,7 @@ namespace KeeFetch
                 if (proxy != null) request.Proxy = proxy;
 
                 string html;
+                using (token.Register(() => request.Abort(), useSynchronizationContext: false))
                 using (var response = (HttpWebResponse)request.GetResponse())
                 using (var stream = response.GetResponseStream())
                 using (var ms = new MemoryStream())
@@ -219,6 +252,7 @@ namespace KeeFetch
                     const long MaxHtmlBytes = 10 * 1024 * 1024;
                     while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
                     {
+                        token.ThrowIfCancellationRequested();
                         ms.Write(buffer, 0, read);
                         total += read;
                         if (total > MaxHtmlBytes)
@@ -247,12 +281,15 @@ namespace KeeFetch
                 iconUrl = Regex.Replace(iconUrl, @"=s\d+", "=s128");
                 iconUrl = iconUrl.Replace("&amp;", "&");
 
+                token.ThrowIfCancellationRequested();
+
                 var iconRequest = (HttpWebRequest)WebRequest.Create(iconUrl);
                 iconRequest.Timeout = timeoutMs;
                 iconRequest.ReadWriteTimeout = timeoutMs * 2;
                 iconRequest.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
                 if (proxy != null) iconRequest.Proxy = proxy;
 
+                using (token.Register(() => iconRequest.Abort(), useSynchronizationContext: false))
                 using (var response = (HttpWebResponse)iconRequest.GetResponse())
                 using (var stream = response.GetResponseStream())
                 using (var ms = new MemoryStream())
@@ -263,12 +300,20 @@ namespace KeeFetch
                     return Util.IsValidImage(data) ? data : null;
                 }
             }
-            catch
+            catch (OperationCanceledException) { throw; }
+            catch (Exception ex)
             {
+                Logger.Warn("FetchGooglePlayIcon", ex);
                 return null;
             }
         }
 
+        /// <summary>
+        /// Attempts to guess a web domain from an Android package name.
+        /// Reverses com.example.app to example.com.
+        /// </summary>
+        /// <param name="package">The package name.</param>
+        /// <returns>The guessed domain, or null if guessing fails.</returns>
         public static string TryGuessFromPackage(string package)
         {
             string[] parts = package.Split('.');

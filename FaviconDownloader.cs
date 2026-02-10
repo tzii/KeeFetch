@@ -3,10 +3,14 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using KeeFetch.IconProviders;
 
 namespace KeeFetch
 {
+    /// <summary>
+    /// Orchestrates favicon downloads with a provider chain: direct site → Google → DuckDuckGo → Icon Horse → Yandex.
+    /// </summary>
     internal sealed class FaviconDownloader
     {
         private static readonly IIconProvider[] FallbackProviders = new IIconProvider[]
@@ -16,6 +20,10 @@ namespace KeeFetch
             new IconHorseProvider(),
             new YandexProvider()
         };
+
+        private static readonly object certLock = new object();
+        private static int certSetupCount = 0;
+        private static RemoteCertificateValidationCallback savedOriginalCallback;
 
         private readonly Configuration config;
         private readonly IWebProxy proxy;
@@ -31,6 +39,7 @@ namespace KeeFetch
             this.proxy = proxy;
         }
 
+        /// <summary>Configures TLS 1.1/1.2/1.3 if available on this .NET version.</summary>
         public static void SetupTls()
         {
             try
@@ -48,36 +57,64 @@ namespace KeeFetch
                 }
                 ServicePointManager.SecurityProtocol = spt;
             }
-            catch { }
+            catch (Exception ex) { Logger.Warn("SetupTls", ex); }
         }
 
-        public static RemoteCertificateValidationCallback SetupSelfSignedCerts(
-            bool allow, RemoteCertificateValidationCallback originalCallback)
+        /// <summary>
+        /// Installs or removes a permissive certificate callback that accepts self-signed certs.
+        /// Thread-safe: uses a reference count so concurrent FaviconDialog runs don't stomp each other.
+        /// Limitation: <see cref="ServicePointManager.ServerCertificateValidationCallback"/> is
+        /// process-global in .NET Framework, so other plugins may also be affected.
+        /// </summary>
+        public static void SetupSelfSignedCerts(bool allow)
         {
-            if (!allow)
+            lock (certLock)
             {
-                ServicePointManager.ServerCertificateValidationCallback = originalCallback;
-                return originalCallback;
-            }
-
-            ServicePointManager.ServerCertificateValidationCallback =
-                (object sender, X509Certificate cert, X509Chain chain, SslPolicyErrors errors) =>
+                if (allow)
                 {
-                    if (errors == SslPolicyErrors.None)
-                        return true;
-                    if ((errors & SslPolicyErrors.RemoteCertificateChainErrors) != 0 &&
-                        (errors & SslPolicyErrors.RemoteCertificateNameMismatch) == 0)
-                        return true;
-                    if (originalCallback != null)
-                        return originalCallback(sender, cert, chain, errors);
-                    return false;
-                };
-
-            return ServicePointManager.ServerCertificateValidationCallback;
+                    certSetupCount++;
+                    if (certSetupCount == 1)
+                    {
+                        // First caller — snapshot whatever callback is currently installed
+                        savedOriginalCallback = ServicePointManager.ServerCertificateValidationCallback;
+                        ServicePointManager.ServerCertificateValidationCallback =
+                            (object sender, X509Certificate cert, X509Chain chain, SslPolicyErrors errors) =>
+                            {
+                                if (errors == SslPolicyErrors.None)
+                                    return true;
+                                // Accept chain errors (self-signed) but reject name mismatches
+                                if ((errors & SslPolicyErrors.RemoteCertificateChainErrors) != 0 &&
+                                    (errors & SslPolicyErrors.RemoteCertificateNameMismatch) == 0)
+                                    return true;
+                                // Delegate to the original callback if one existed
+                                var orig = savedOriginalCallback;
+                                if (orig != null)
+                                    return orig(sender, cert, chain, errors);
+                                return false;
+                            };
+                    }
+                }
+                else
+                {
+                    certSetupCount--;
+                    if (certSetupCount <= 0)
+                    {
+                        certSetupCount = 0;
+                        ServicePointManager.ServerCertificateValidationCallback = savedOriginalCallback;
+                        savedOriginalCallback = null;
+                    }
+                }
+            }
         }
 
-        public FaviconResult Download(string url)
+        /// <summary>
+        /// Attempts to download a favicon for <paramref name="url"/>.
+        /// Respects <paramref name="token"/> for cancellation.
+        /// </summary>
+        public FaviconResult Download(string url, CancellationToken token = default(CancellationToken))
         {
+            token.ThrowIfCancellationRequested();
+
             var result = new FaviconResult();
             int primaryTimeoutMs = config.Timeout * 1000;
             int maxSize = config.MaxIconSize;
@@ -87,7 +124,7 @@ namespace KeeFetch
 
             if (AndroidAppMapper.IsAndroidUrl(url))
             {
-                return DownloadAndroidIcon(url, primaryTimeoutMs, maxSize, stopwatch);
+                return DownloadAndroidIcon(url, primaryTimeoutMs, maxSize, stopwatch, token);
             }
 
             string host = Util.ExtractHost(url);
@@ -125,12 +162,12 @@ namespace KeeFetch
                 if (isPrivate)
                 {
                     iconData = TryDirectPrivate(directProvider, hostWithPort, explicitScheme,
-                        maxSize, directTimeoutMs, isPrivate);
+                        maxSize, directTimeoutMs, isPrivate, token);
                 }
                 else
                 {
                     string origin = (explicitScheme ?? "https") + "://" + hostWithPort;
-                    iconData = directProvider.GetIconWithOrigin(origin, maxSize, directTimeoutMs, proxy, false);
+                    iconData = directProvider.GetIconWithOrigin(origin, maxSize, directTimeoutMs, proxy, false, token);
                 }
             }
 
@@ -156,6 +193,8 @@ namespace KeeFetch
 
             foreach (var provider in FallbackProviders)
             {
+                token.ThrowIfCancellationRequested();
+
                 // Check cumulative timeout
                 if (stopwatch.ElapsedMilliseconds >= MaxCumulativeTimeoutMs)
                     break;
@@ -168,7 +207,7 @@ namespace KeeFetch
 
                 try
                 {
-                    iconData = provider.GetIcon(host, maxSize, effectiveTimeout, proxy);
+                    iconData = provider.GetIcon(host, maxSize, effectiveTimeout, proxy, token);
                     if (iconData != null)
                     {
                         byte[] resized = Util.ResizeImage(iconData, maxSize, maxSize);
@@ -181,7 +220,8 @@ namespace KeeFetch
                         }
                     }
                 }
-                catch { }
+                catch (OperationCanceledException) { throw; }
+                catch (Exception ex) { Logger.Warn("Download", ex); }
             }
 
             result.Status = FaviconStatus.NotFound;
@@ -189,7 +229,8 @@ namespace KeeFetch
         }
 
         private byte[] TryDirectPrivate(DirectSiteProvider provider, string hostWithPort,
-            string explicitScheme, int maxSize, int timeoutMs, bool isPrivate)
+            string explicitScheme, int maxSize, int timeoutMs, bool isPrivate,
+            CancellationToken token = default(CancellationToken))
         {
             string[] schemes;
             if (explicitScheme != null)
@@ -202,8 +243,9 @@ namespace KeeFetch
 
             foreach (string scheme in schemes)
             {
+                token.ThrowIfCancellationRequested();
                 string origin = scheme + "://" + hostWithPort;
-                byte[] data = provider.GetIconWithOrigin(origin, maxSize, perSchemeTimeout, proxy, true);
+                byte[] data = provider.GetIconWithOrigin(origin, maxSize, perSchemeTimeout, proxy, true, token);
                 if (data != null)
                     return data;
             }
@@ -211,7 +253,8 @@ namespace KeeFetch
             return null;
         }
 
-        private FaviconResult DownloadAndroidIcon(string url, int primaryTimeoutMs, int maxSize, Stopwatch stopwatch)
+        private FaviconResult DownloadAndroidIcon(string url, int primaryTimeoutMs, int maxSize, Stopwatch stopwatch,
+            CancellationToken token = default(CancellationToken))
         {
             var result = new FaviconResult();
             string packageName = AndroidAppMapper.GetPackageName(url);
@@ -236,11 +279,12 @@ namespace KeeFetch
                 {
                     try
                     {
+                        token.ThrowIfCancellationRequested();
                         var directProvider = new DirectSiteProvider();
                         int timeout = Math.Min(GetEffectiveTimeout(true), 10000);
                         if (timeout >= 1000)
                         {
-                            byte[] iconData = directProvider.GetIcon(domain, maxSize, timeout, proxy);
+                            byte[] iconData = directProvider.GetIcon(domain, maxSize, timeout, proxy, token);
                             if (iconData != null)
                             {
                                 byte[] resized = Util.ResizeImage(iconData, maxSize, maxSize);
@@ -254,7 +298,8 @@ namespace KeeFetch
                             }
                         }
                     }
-                    catch { }
+                    catch (OperationCanceledException) { throw; }
+                    catch (Exception ex) { Logger.Debug("DownloadAndroidIcon", ex); }
                 }
 
                 // Try fallback providers with reduced timeout
@@ -264,12 +309,14 @@ namespace KeeFetch
                     {
                         if (IsTimeUp()) break;
 
+                        token.ThrowIfCancellationRequested();
+
                         int timeout = GetEffectiveTimeout(false);
                         if (timeout < 1000) break;
 
                         try
                         {
-                            byte[] iconData = provider.GetIcon(domain, maxSize, timeout, proxy);
+                            byte[] iconData = provider.GetIcon(domain, maxSize, timeout, proxy, token);
                             if (iconData != null)
                             {
                                 byte[] resized = Util.ResizeImage(iconData, maxSize, maxSize);
@@ -282,7 +329,8 @@ namespace KeeFetch
                                 }
                             }
                         }
-                        catch { }
+                        catch (OperationCanceledException) { throw; }
+                        catch (Exception ex) { Logger.Warn("DownloadAndroidIcon", ex); }
                     }
                 }
             }
@@ -298,7 +346,8 @@ namespace KeeFetch
                 {
                     try
                     {
-                        byte[] playIcon = AndroidAppMapper.FetchGooglePlayIcon(packageName, timeout, proxy);
+                        token.ThrowIfCancellationRequested();
+                        byte[] playIcon = AndroidAppMapper.FetchGooglePlayIcon(packageName, timeout, proxy, token);
                         if (playIcon != null)
                         {
                             byte[] resized = Util.ResizeImage(playIcon, maxSize, maxSize);
@@ -311,7 +360,8 @@ namespace KeeFetch
                             }
                         }
                     }
-                    catch { }
+                    catch (OperationCanceledException) { throw; }
+                    catch (Exception ex) { Logger.Warn("DownloadAndroidIcon", ex); }
                 }
 
                 // Try guessed domain from package name
@@ -327,12 +377,14 @@ namespace KeeFetch
                         {
                             if (IsTimeUp()) break;
 
+                            token.ThrowIfCancellationRequested();
+
                             timeout = GetEffectiveTimeout(false);
                             if (timeout < 1000) break;
 
                             try
                             {
-                                byte[] iconData = provider.GetIcon(guessedDomain, maxSize, timeout, proxy);
+                                byte[] iconData = provider.GetIcon(guessedDomain, maxSize, timeout, proxy, token);
                                 if (iconData != null)
                                 {
                                     byte[] resized = Util.ResizeImage(iconData, maxSize, maxSize);
@@ -346,7 +398,8 @@ namespace KeeFetch
                                     }
                                 }
                             }
-                            catch { }
+                            catch (OperationCanceledException) { throw; }
+                            catch (Exception ex) { Logger.Warn("DownloadAndroidIcon", ex); }
                         }
                     }
                 }
@@ -357,18 +410,19 @@ namespace KeeFetch
         }
     }
 
+    /// <summary>Result status of a favicon download attempt.</summary>
     internal enum FaviconStatus
     {
         Success,
-        NotFound,
-        Error
+        NotFound
     }
 
+    /// <summary>Result of a favicon download attempt.</summary>
     internal sealed class FaviconResult
     {
-        public byte[] IconData;
-        public FaviconStatus Status = FaviconStatus.Error;
-        public string Provider;
-        public string Host;
+        public byte[] IconData { get; set; }
+        public FaviconStatus Status { get; set; } = FaviconStatus.NotFound;
+        public string Provider { get; set; }
+        public string Host { get; set; }
     }
 }

@@ -12,8 +12,17 @@ using KeePassLib.Utility;
 
 namespace KeeFetch
 {
+    /// <summary>
+    /// Utility methods for URL parsing, image processing, and data hashing.
+    /// </summary>
     internal static class Util
     {
+        /// <summary>
+        /// Computes a truncated SHA256 hash of the provided data.
+        /// Returns the first 16 bytes of the hash.
+        /// </summary>
+        /// <param name="data">The data to hash.</param>
+        /// <returns>A 16-byte hash of the data.</returns>
         public static byte[] HashData(byte[] data)
         {
             using (var sha = SHA256.Create())
@@ -25,14 +34,19 @@ namespace KeeFetch
             }
         }
 
+        /// <summary>
+        /// Retrieves the default web proxy configured for KeePass.
+        /// </summary>
+        /// <returns>The configured web proxy, or null if none is available.</returns>
         public static IWebProxy GetKeePassProxy()
         {
             try
             {
                 return WebRequest.DefaultWebProxy;
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Debug("GetKeePassProxy", ex);
                 return null;
             }
         }
@@ -58,12 +72,19 @@ namespace KeeFetch
                 var uri = new Uri(url);
                 return uri.GetLeftPart(UriPartial.Authority);
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Debug("NormalizeUrl", ex);
                 return null;
             }
         }
 
+        /// <summary>
+        /// Extracts the hostname from a URL.
+        /// Automatically prepends https:// if no scheme is present.
+        /// </summary>
+        /// <param name="url">The URL to parse.</param>
+        /// <returns>The hostname, or null if parsing fails.</returns>
         public static string ExtractHost(string url)
         {
             try
@@ -75,12 +96,19 @@ namespace KeeFetch
                 var uri = new Uri(url);
                 return uri.Host;
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Debug("ExtractHost", ex);
                 return null;
             }
         }
 
+        /// <summary>
+        /// Extracts the hostname and port from a URL.
+        /// Returns just the hostname if using the default port for the scheme.
+        /// </summary>
+        /// <param name="url">The URL to parse.</param>
+        /// <returns>The hostname with port (if non-default), or null if parsing fails.</returns>
         public static string ExtractHostWithPort(string url)
         {
             try
@@ -94,12 +122,18 @@ namespace KeeFetch
                     return uri.Host;
                 return uri.Host + ":" + uri.Port;
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Debug("ExtractHostWithPort", ex);
                 return null;
             }
         }
 
+        /// <summary>
+        /// Extracts the scheme (http/https) from a URL.
+        /// </summary>
+        /// <param name="url">The URL to parse.</param>
+        /// <returns>The scheme, or null if parsing fails or no scheme is present.</returns>
         public static string ExtractScheme(string url)
         {
             try
@@ -111,8 +145,9 @@ namespace KeeFetch
                 var uri = new Uri(url);
                 return uri.Scheme;
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Debug("ExtractScheme", ex);
                 return null;
             }
         }
@@ -128,12 +163,19 @@ namespace KeeFetch
                 var uri = new Uri(url);
                 return uri.GetLeftPart(UriPartial.Authority);
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Debug("ExtractOrigin", ex);
                 return null;
             }
         }
 
+        /// <summary>
+        /// Determines whether a host is a private/internal address.
+        /// Checks for localhost, private IP ranges (RFC 1918), and internal TLDs.
+        /// </summary>
+        /// <param name="host">The hostname or IP address to check.</param>
+        /// <returns>True if the host is private; otherwise, false.</returns>
         public static bool IsPrivateHost(string host)
         {
             if (string.IsNullOrEmpty(host))
@@ -150,8 +192,7 @@ namespace KeeFetch
                 !lower.Contains("."))
                 return true;
 
-            IPAddress ip;
-            if (IPAddress.TryParse(host, out ip))
+            if (IPAddress.TryParse(host, out IPAddress ip))
             {
                 if (IPAddress.IsLoopback(ip))
                     return true;
@@ -184,6 +225,12 @@ namespace KeeFetch
             return false;
         }
 
+        /// <summary>
+        /// Attempts to guess a domain from an entry title.
+        /// Returns the title itself if it looks like a URL, or appends .com to simple names.
+        /// </summary>
+        /// <param name="title">The entry title to analyze.</param>
+        /// <returns>A guessed domain, or null if no guess can be made.</returns>
         public static string GuessDomainFromTitle(string title)
         {
             if (string.IsNullOrWhiteSpace(title)) return null;
@@ -206,6 +253,14 @@ namespace KeeFetch
             return null;
         }
 
+        /// <summary>
+        /// Resizes an image to fit within the specified maximum dimensions.
+        /// Maintains aspect ratio and outputs PNG format.
+        /// </summary>
+        /// <param name="data">The image data to resize.</param>
+        /// <param name="maxWidth">Maximum width in pixels.</param>
+        /// <param name="maxHeight">Maximum height in pixels.</param>
+        /// <returns>Resized image data as PNG, or null if resizing fails.</returns>
         public static byte[] ResizeImage(byte[] data, int maxWidth, int maxHeight)
         {
             if (data == null || data.Length == 0)
@@ -219,8 +274,9 @@ namespace KeeFetch
                 {
                     image = GfxUtil.LoadImage(data);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Logger.Debug("ResizeImage", ex);
                     using (var ms = new MemoryStream(data))
                         image = Image.FromStream(ms);
                 }
@@ -248,8 +304,9 @@ namespace KeeFetch
                 {
                     scaled = GfxUtil.ScaleImage(image, newW, newH);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Logger.Debug("ResizeImage", ex);
                     scaled = new Bitmap(image, newW, newH);
                 }
 
@@ -259,8 +316,9 @@ namespace KeeFetch
                     return ms.ToArray();
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Debug("ResizeImage", ex);
                 return null;
             }
             finally
@@ -270,6 +328,11 @@ namespace KeeFetch
             }
         }
 
+        /// <summary>
+        /// Validates whether the provided data is a valid image.
+        /// </summary>
+        /// <param name="data">The data to validate.</param>
+        /// <returns>True if the data is a valid image; otherwise, false.</returns>
         public static bool IsValidImage(byte[] data)
         {
             if (data == null || data.Length < 8)
@@ -283,12 +346,19 @@ namespace KeeFetch
                     return img.Width > 0 && img.Height > 0;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Debug("IsValidImage", ex);
                 return false;
             }
         }
 
+        /// <summary>
+        /// Resolves the URL for a password entry, expanding any {REF:} placeholders.
+        /// </summary>
+        /// <param name="entry">The password entry.</param>
+        /// <param name="db">The database containing the entry.</param>
+        /// <returns>The resolved URL.</returns>
         public static string ResolveEntryUrl(PwEntry entry, PwDatabase db)
         {
             string url = entry.Strings.ReadSafe(PwDefs.UrlField);
@@ -299,7 +369,7 @@ namespace KeeFetch
                 {
                     url = SprEngine.Compile(url, new SprContext(entry, db, SprCompileFlags.References));
                 }
-                catch { }
+                catch (Exception ex) { Logger.Debug("ResolveEntryUrl", ex); }
             }
 
             return url;

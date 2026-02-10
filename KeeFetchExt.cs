@@ -39,11 +39,7 @@ namespace KeeFetch
             if (t == PluginMenuType.Group)
             {
                 var tsmi = new ToolStripMenuItem("KeeFetch - Download Favicons");
-
-                var itemRecursive = new ToolStripMenuItem("Download for this group (recursive)");
-                itemRecursive.Click += OnDownloadGroup;
-
-                tsmi.DropDownItems.Add(itemRecursive);
+                tsmi.Click += OnDownloadGroup;
                 return tsmi;
             }
 

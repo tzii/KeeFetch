@@ -298,7 +298,10 @@ namespace KeeFetch
             string url = Util.ResolveEntryUrl(entry, db);
 
             if (string.IsNullOrWhiteSpace(url) && config.UseTitleField)
-                url = entry.Strings.ReadSafe(PwDefs.TitleField);
+            {
+                string title = entry.Strings.ReadSafe(PwDefs.TitleField);
+                url = Util.GuessDomainFromTitle(title);
+            }
 
             if (string.IsNullOrWhiteSpace(url))
             {

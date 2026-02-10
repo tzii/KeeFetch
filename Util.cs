@@ -77,6 +77,20 @@ namespace KeeFetch
             }
         }
 
+        public static string GuessDomainFromTitle(string title)
+        {
+            if (string.IsNullOrWhiteSpace(title)) return title;
+            string t = title.Trim();
+
+            if (t.Contains("://") || t.Contains("/") || t.Contains("."))
+                return t;
+
+            if (Regex.IsMatch(t, @"^[a-zA-Z0-9-]{2,63}$"))
+                return t + ".com";
+
+            return t;
+        }
+
         public static byte[] ResizeImage(byte[] data, int maxWidth, int maxHeight)
         {
             if (data == null || data.Length == 0)

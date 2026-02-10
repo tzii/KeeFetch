@@ -94,9 +94,15 @@ namespace KeeFetch
 
             result.Host = host;
 
-            // Primary attempt with full timeout
+            // Primary attempt — capped so fallback providers always get a chance
+            int directTimeoutMs = Math.Min(primaryTimeoutMs, 10000);
+            int directRemainingMs = (int)Math.Max(0, MaxCumulativeTimeoutMs - stopwatch.ElapsedMilliseconds);
+            directTimeoutMs = Math.Min(directTimeoutMs, directRemainingMs);
+
             var directProvider = new DirectSiteProvider();
-            byte[] iconData = directProvider.GetIcon(host, maxSize, primaryTimeoutMs, proxy);
+            byte[] iconData = null;
+            if (directTimeoutMs >= 1000)
+                iconData = directProvider.GetIcon(host, maxSize, directTimeoutMs, proxy);
 
             if (iconData != null)
             {
@@ -171,7 +177,7 @@ namespace KeeFetch
                     try
                     {
                         var directProvider = new DirectSiteProvider();
-                        int timeout = GetEffectiveTimeout(true);
+                        int timeout = Math.Min(GetEffectiveTimeout(true), 10000);
                         if (timeout >= 1000)
                         {
                             byte[] iconData = directProvider.GetIcon(domain, maxSize, timeout, proxy);

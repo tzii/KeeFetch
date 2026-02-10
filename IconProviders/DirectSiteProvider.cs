@@ -12,72 +12,70 @@ namespace KeeFetch.IconProviders
     {
         public string Name => "Direct Site";
 
-        private static readonly string[] FaviconPaths = new[]
+        private const int MaxCandidates = 8;
+        private const long MaxIconBytes = 512 * 1024;
+        private const long MaxHtmlBytes = 10 * 1024 * 1024;
+
+        private static readonly string[] WellKnownPaths = new[]
         {
-            "/apple-touch-icon.png",
-            "/apple-touch-icon-precomposed.png",
-            "/favicon-96x96.png",
-            "/favicon-32x32.png",
-            "/favicon.ico"
+            "/favicon.ico",
+            "/apple-touch-icon.png"
         };
 
         public byte[] GetIcon(string host, int size, int timeoutMs, IWebProxy proxy)
         {
             string baseUrl = "https://" + host;
+            var cookies = new CookieContainer();
 
-            var candidates = new List<IconCandidate>();
-
-            byte[] htmlData = DownloadData(baseUrl, timeoutMs, proxy);
-            if (htmlData != null)
+            int probeTimeout = Math.Min(1500, timeoutMs);
+            foreach (string path in WellKnownPaths)
             {
-                string html = Encoding.UTF8.GetString(htmlData);
-                candidates.AddRange(ParseIconLinks(html, baseUrl));
-            }
-
-            foreach (string path in FaviconPaths)
-            {
-                candidates.Add(new IconCandidate
+                try
                 {
-                    Url = baseUrl + path,
-                    Size = 0,
-                    Priority = 10
-                });
+                    Uri responseUri;
+                    byte[] data = DownloadData(baseUrl + path, probeTimeout, proxy,
+                        cookies, MaxIconBytes, out responseUri);
+                    if (data != null && Util.IsValidImage(data))
+                        return data;
+                }
+                catch { }
             }
+
+            int htmlTimeout = Math.Min(3000, timeoutMs);
+            Uri htmlResponseUri;
+            byte[] htmlData = DownloadData(baseUrl, htmlTimeout, proxy,
+                cookies, MaxHtmlBytes, out htmlResponseUri);
+
+            if (htmlData == null)
+                return null;
+
+            string resolvedBase = htmlResponseUri != null
+                ? htmlResponseUri.GetLeftPart(UriPartial.Authority)
+                : baseUrl;
+
+            string html = Encoding.UTF8.GetString(htmlData);
+            var candidates = ParseIconLinks(html, resolvedBase);
 
             candidates = candidates
                 .GroupBy(c => c.Url.ToLowerInvariant())
                 .Select(g => g.OrderByDescending(c => c.Size).ThenBy(c => c.Priority).First())
                 .OrderBy(c => c.Priority)
                 .ThenByDescending(c => c.Size)
+                .Take(MaxCandidates)
                 .ToList();
 
+            int candidateTimeout = Math.Min(2000, timeoutMs);
             foreach (var candidate in candidates)
             {
                 try
                 {
-                    byte[] iconData = DownloadData(candidate.Url, timeoutMs, proxy);
+                    Uri iconResponseUri;
+                    byte[] iconData = DownloadData(candidate.Url, candidateTimeout, proxy,
+                        cookies, MaxIconBytes, out iconResponseUri);
                     if (iconData != null && Util.IsValidImage(iconData))
                         return iconData;
                 }
                 catch { }
-            }
-
-            byte[] httpData = DownloadData("http://" + host, timeoutMs, proxy);
-            if (httpData != null)
-            {
-                string html = Encoding.UTF8.GetString(httpData);
-                var httpCandidates = ParseIconLinks(html, "http://" + host);
-
-                foreach (var candidate in httpCandidates.OrderBy(c => c.Priority).ThenByDescending(c => c.Size))
-                {
-                    try
-                    {
-                        byte[] iconData = DownloadData(candidate.Url, timeoutMs, proxy);
-                        if (iconData != null && Util.IsValidImage(iconData))
-                            return iconData;
-                    }
-                    catch { }
-                }
             }
 
             return null;
@@ -212,8 +210,10 @@ namespace KeeFetch.IconProviders
             }
         }
 
-        private byte[] DownloadData(string url, int timeoutMs, IWebProxy proxy)
+        private byte[] DownloadData(string url, int timeoutMs, IWebProxy proxy,
+            CookieContainer cookies, long maxBytes, out Uri responseUri)
         {
+            responseUri = null;
             try
             {
                 var request = (HttpWebRequest)WebRequest.Create(url);
@@ -225,30 +225,34 @@ namespace KeeFetch.IconProviders
                 request.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8";
                 request.Headers.Add(HttpRequestHeader.AcceptLanguage, "en-US,en;q=0.9");
                 request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-                request.CookieContainer = new CookieContainer();
+                request.CookieContainer = cookies;
 
                 if (proxy != null)
                     request.Proxy = proxy;
 
                 using (var response = (HttpWebResponse)request.GetResponse())
-                using (var stream = response.GetResponseStream())
-                using (var ms = new MemoryStream())
                 {
-                    if (stream == null)
-                        return null;
+                    responseUri = response.ResponseUri;
 
-                    byte[] buffer = new byte[8192];
-                    int read;
-                    long total = 0;
-                    while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                    using (var stream = response.GetResponseStream())
+                    using (var ms = new MemoryStream())
                     {
-                        ms.Write(buffer, 0, read);
-                        total += read;
-                        if (total > 10 * 1024 * 1024)
+                        if (stream == null)
                             return null;
-                    }
 
-                    return ms.ToArray();
+                        byte[] buffer = new byte[8192];
+                        int read;
+                        long total = 0;
+                        while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            ms.Write(buffer, 0, read);
+                            total += read;
+                            if (total > maxBytes)
+                                return null;
+                        }
+
+                        return ms.ToArray();
+                    }
                 }
             }
             catch

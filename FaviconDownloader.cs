@@ -105,6 +105,13 @@ namespace KeeFetch
             }
 
             result.Host = host;
+            bool isPrivate = Util.IsPrivateHost(host);
+
+            string hostWithPort = Util.ExtractHostWithPort(url);
+            if (string.IsNullOrEmpty(hostWithPort))
+                hostWithPort = host;
+
+            string explicitScheme = Util.ExtractScheme(url);
 
             // Primary attempt — capped so fallback providers always get a chance
             int directTimeoutMs = Math.Min(primaryTimeoutMs, 10000);
@@ -114,7 +121,18 @@ namespace KeeFetch
             var directProvider = new DirectSiteProvider();
             byte[] iconData = null;
             if (directTimeoutMs >= 1000)
-                iconData = directProvider.GetIcon(host, maxSize, directTimeoutMs, proxy);
+            {
+                if (isPrivate)
+                {
+                    iconData = TryDirectPrivate(directProvider, hostWithPort, explicitScheme,
+                        maxSize, directTimeoutMs, isPrivate);
+                }
+                else
+                {
+                    string origin = (explicitScheme ?? "https") + "://" + hostWithPort;
+                    iconData = directProvider.GetIconWithOrigin(origin, maxSize, directTimeoutMs, proxy, false);
+                }
+            }
 
             if (iconData != null)
             {
@@ -129,13 +147,8 @@ namespace KeeFetch
             }
 
             // Fallback attempts with reduced timeout and cumulative limit
-            if (!config.UseThirdPartyFallbacks)
-            {
-                result.Status = FaviconStatus.NotFound;
-                return result;
-            }
-
-            if (Util.IsPrivateHost(host))
+            // Skip third-party fallbacks for private hosts (they can't resolve them)
+            if (!config.UseThirdPartyFallbacks || isPrivate)
             {
                 result.Status = FaviconStatus.NotFound;
                 return result;
@@ -173,6 +186,29 @@ namespace KeeFetch
 
             result.Status = FaviconStatus.NotFound;
             return result;
+        }
+
+        private byte[] TryDirectPrivate(DirectSiteProvider provider, string hostWithPort,
+            string explicitScheme, int maxSize, int timeoutMs, bool isPrivate)
+        {
+            string[] schemes;
+            if (explicitScheme != null)
+                schemes = new[] { explicitScheme };
+            else
+                schemes = new[] { "http", "https" };
+
+            int perSchemeTimeout = schemes.Length > 1 ? timeoutMs / 2 : timeoutMs;
+            perSchemeTimeout = Math.Max(perSchemeTimeout, 1000);
+
+            foreach (string scheme in schemes)
+            {
+                string origin = scheme + "://" + hostWithPort;
+                byte[] data = provider.GetIconWithOrigin(origin, maxSize, perSchemeTimeout, proxy, true);
+                if (data != null)
+                    return data;
+            }
+
+            return null;
         }
 
         private FaviconResult DownloadAndroidIcon(string url, int primaryTimeoutMs, int maxSize, Stopwatch stopwatch)

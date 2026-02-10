@@ -312,7 +312,11 @@ namespace KeeFetch
                 !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) &&
                 !AndroidAppMapper.IsAndroidUrl(url))
             {
-                url = "https://" + url;
+                string testHost = Util.ExtractHost("https://" + url);
+                if (!string.IsNullOrEmpty(testHost) && Util.IsPrivateHost(testHost))
+                    url = "http://" + url;
+                else
+                    url = "https://" + url;
             }
 
             var downloader = new FaviconDownloader(config, proxy);

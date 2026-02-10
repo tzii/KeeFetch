@@ -13,3 +13,9 @@ Thumbs.db
 
 # Repomix output (large generated file)
 repomix-output.xml
+
+# Sisyphus
+.sisyphus/
+
+# Test projects
+TestServer/

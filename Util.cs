@@ -81,6 +81,42 @@ namespace KeeFetch
             }
         }
 
+        public static string ExtractHostWithPort(string url)
+        {
+            try
+            {
+                if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                    !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                    url = "https://" + url;
+
+                var uri = new Uri(url);
+                if (uri.IsDefaultPort)
+                    return uri.Host;
+                return uri.Host + ":" + uri.Port;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static string ExtractScheme(string url)
+        {
+            try
+            {
+                if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                    !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                    return null;
+
+                var uri = new Uri(url);
+                return uri.Scheme;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         public static string ExtractOrigin(string url)
         {
             try

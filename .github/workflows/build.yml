@@ -1,0 +1,76 @@
+name: Build KeeFetch
+
+on:
+  push:
+    branches: [master]
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Download KeePass portable
+        shell: pwsh
+        run: |
+          $keepassUrl = "https://sourceforge.net/projects/keepass/files/KeePass%202.x/2.57.1/KeePass-2.57.1.zip/download"
+          $zipPath = "$env:RUNNER_TEMP\KeePass.zip"
+          $extractPath = "$env:RUNNER_TEMP\KeePass"
+          Invoke-WebRequest -Uri $keepassUrl -OutFile $zipPath -MaximumRedirection 10 -UserAgent "Mozilla/5.0"
+          Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
+          Write-Output "KEEPASS_DIR=$extractPath" >> $env:GITHUB_ENV
+
+      - name: Build DLL
+        shell: pwsh
+        run: |
+          msbuild KeeFetch.csproj /p:Configuration=Release /p:Platform=AnyCPU /p:ReferencePath="$env:KEEPASS_DIR"
+
+      - name: Create PLGX
+        shell: pwsh
+        run: |
+          $plgxSrc = "$env:RUNNER_TEMP\KeeFetch"
+          New-Item -ItemType Directory -Path $plgxSrc -Force | Out-Null
+
+          # Copy only the files needed for plgx-create
+          Copy-Item -Path "*.cs" -Destination $plgxSrc
+          Copy-Item -Path "*.csproj" -Destination $plgxSrc
+          Copy-Item -Path "*.resx" -Destination $plgxSrc
+          Copy-Item -Path "Properties" -Destination $plgxSrc -Recurse
+          Copy-Item -Path "IconProviders" -Destination $plgxSrc -Recurse
+
+          $keepassExe = "$env:KEEPASS_DIR\KeePass.exe"
+          & $keepassExe --plgx-create $plgxSrc
+
+          # plgx is created in the parent directory of the source folder
+          $plgxFile = "$env:RUNNER_TEMP\KeeFetch.plgx"
+          if (!(Test-Path $plgxFile)) {
+            Write-Error "PLGX file not found at $plgxFile"
+            exit 1
+          }
+          Write-Output "PLGX_PATH=$plgxFile" >> $env:GITHUB_ENV
+
+      - name: Upload DLL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeeFetch.dll
+          path: bin/Release/KeeFetch.dll
+
+      - name: Upload PLGX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeeFetch.plgx
+          path: ${{ env.PLGX_PATH }}
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            bin/Release/KeeFetch.dll
+            ${{ env.PLGX_PATH }}

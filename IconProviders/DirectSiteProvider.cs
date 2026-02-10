@@ -24,7 +24,12 @@ namespace KeeFetch.IconProviders
 
         public byte[] GetIcon(string host, int size, int timeoutMs, IWebProxy proxy)
         {
-            string baseUrl = "https://" + host;
+            return GetIconWithOrigin("https://" + host, size, timeoutMs, proxy, false);
+        }
+
+        public byte[] GetIconWithOrigin(string origin, int size, int timeoutMs, IWebProxy proxy, bool allowPrivateResponse)
+        {
+            string baseUrl = origin;
             var cookies = new CookieContainer();
 
             int probeTimeout = Math.Min(1500, timeoutMs);
@@ -34,7 +39,7 @@ namespace KeeFetch.IconProviders
                 {
                     Uri responseUri;
                     byte[] data = DownloadData(baseUrl + path, probeTimeout, proxy,
-                        cookies, MaxIconBytes, out responseUri);
+                        cookies, MaxIconBytes, out responseUri, allowPrivateResponse);
                     if (data != null && Util.IsValidImage(data))
                         return data;
                 }
@@ -44,7 +49,7 @@ namespace KeeFetch.IconProviders
             int htmlTimeout = Math.Min(3000, timeoutMs);
             Uri htmlResponseUri;
             byte[] htmlData = DownloadData(baseUrl, htmlTimeout, proxy,
-                cookies, MaxHtmlBytes, out htmlResponseUri);
+                cookies, MaxHtmlBytes, out htmlResponseUri, allowPrivateResponse);
 
             if (htmlData == null)
                 return null;
@@ -84,7 +89,7 @@ namespace KeeFetch.IconProviders
                 {
                     Uri iconResponseUri;
                     byte[] iconData = DownloadData(candidate.Url, candidateTimeout, proxy,
-                        cookies, MaxIconBytes, out iconResponseUri);
+                        cookies, MaxIconBytes, out iconResponseUri, allowPrivateResponse);
                     if (iconData != null && Util.IsValidImage(iconData))
                         return iconData;
                 }
@@ -234,7 +239,8 @@ namespace KeeFetch.IconProviders
         }
 
         private byte[] DownloadData(string url, int timeoutMs, IWebProxy proxy,
-            CookieContainer cookies, long maxBytes, out Uri responseUri)
+            CookieContainer cookies, long maxBytes, out Uri responseUri,
+            bool allowPrivateResponse = false)
         {
             responseUri = null;
             try
@@ -257,7 +263,7 @@ namespace KeeFetch.IconProviders
                 {
                     responseUri = response.ResponseUri;
 
-                    if (responseUri != null)
+                    if (!allowPrivateResponse && responseUri != null)
                     {
                         string responseHost = responseUri.Host;
                         if (Util.IsPrivateHost(responseHost))

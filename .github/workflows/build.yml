@@ -32,6 +32,9 @@ jobs:
         run: |
           msbuild KeeFetch.csproj /p:Configuration=Release /p:Platform=AnyCPU /p:ReferencePath="$env:KEEPASS_DIR"
 
+      - name: Test
+        run: dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj --no-build
+
       - name: Create PLGX
         shell: pwsh
         run: |

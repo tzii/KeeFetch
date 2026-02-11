@@ -1,0 +1,195 @@
+name: Build KeeFetch Debug
+
+on:
+  push:
+    branches: [fix/architectural-and-correctness-issues]
+  workflow_dispatch:
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+
+jobs:
+  build-debug:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Install KeePass
+        shell: pwsh
+        run: |
+          choco install keepass.install --version=2.57.1 --no-progress -y --allow-downgrade
+          $keepassDir = "C:\Program Files\KeePass Password Safe 2"
+          $kpExe = Join-Path $keepassDir "KeePass.exe"
+          if (!(Test-Path $kpExe)) {
+            Write-Error "KeePass.exe not found at $kpExe"
+            exit 1
+          }
+          $version = (Get-Item $kpExe).VersionInfo.FileVersion
+          Write-Output "KeePass version: $version"
+          Write-Output "KEEPASS_DIR=$keepassDir" >> $env:GITHUB_ENV
+
+      - name: Debug - List source files
+        shell: pwsh
+        run: |
+          Write-Output "=== Root directory files ==="
+          Get-ChildItem -Path "." -Filter "*.cs" | Select-Object Name, Length, LastWriteTime
+          
+          Write-Output ""
+          Write-Output "=== IconProviders directory ==="
+          Get-ChildItem -Path "IconProviders" -Filter "*.cs" | Select-Object Name, Length, LastWriteTime
+          
+          Write-Output ""
+          Write-Output "=== Properties directory ==="
+          Get-ChildItem -Path "Properties" -Filter "*.cs" -Recurse | Select-Object Name, Length, LastWriteTime
+          
+          Write-Output ""
+          Write-Output "=== KeeFetch.plgx.csproj content ==="
+          Get-Content "KeeFetch.plgx.csproj"
+
+      - name: Create PLGX with detailed logging
+        shell: pwsh
+        run: |
+          $plgxSrc = "$env:RUNNER_TEMP\KeeFetch"
+          New-Item -ItemType Directory -Path $plgxSrc -Force | Out-Null
+
+          # Copy only the files needed for plgx-create
+          Write-Output "=== Copying .cs files ==="
+          $csFiles = Get-ChildItem -Path "." -Filter "*.cs" -Exclude "*Tests*", "TestCompile*"
+          foreach ($file in $csFiles) {
+            Write-Output "Copying: $($file.Name)"
+            Copy-Item -Path $file.FullName -Destination $plgxSrc
+          }
+          
+          Write-Output ""
+          Write-Output "=== Copying .resx files ==="
+          Copy-Item -Path "*.resx" -Destination $plgxSrc
+          
+          Write-Output ""
+          Write-Output "=== Copying Properties ==="
+          Copy-Item -Path "Properties" -Destination $plgxSrc -Recurse
+          
+          Write-Output ""
+          Write-Output "=== Copying IconProviders ==="
+          Copy-Item -Path "IconProviders" -Destination $plgxSrc -Recurse
+
+          # KeePass plgx-create needs a legacy-style .csproj
+          Write-Output ""
+          Write-Output "=== Copying .csproj ==="
+          Copy-Item -Path "KeeFetch.plgx.csproj" -Destination "$plgxSrc\KeeFetch.csproj"
+
+          Write-Output ""
+          Write-Output "=== Final PLGX source contents ==="
+          Get-ChildItem $plgxSrc -Recurse | ForEach-Object { 
+            $size = if ($_.PSIsContainer) { "<DIR>" } else { $_.Length }
+            Write-Output "$($_.FullName) [$size]"
+          }
+          
+          Write-Output ""
+          Write-Output "=== KeeFetch.csproj in staging ==="
+          Get-Content "$plgxSrc\KeeFetch.csproj"
+
+          $keepassExe = "$env:KEEPASS_DIR\KeePass.exe"
+          Write-Output ""
+          Write-Output "=== Running plgx-create ==="
+
+          # Run with --debug flag if available, otherwise standard
+          $proc = Start-Process -FilePath $keepassExe -ArgumentList "--plgx-create", "`"$plgxSrc`"" -Wait -PassThru -NoNewWindow
+          Write-Output "KeePass exited with code: $($proc.ExitCode)"
+
+          # Find the PLGX file
+          $plgxFile = "$env:RUNNER_TEMP\KeeFetch.plgx"
+          
+          Write-Output ""
+          Write-Output "=== Searching for .plgx files ==="
+          Get-ChildItem "$env:RUNNER_TEMP" -Filter "*.plgx" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { 
+            Write-Output "$($_.FullName) [$($_.Length) bytes]"
+          }
+          
+          if (Test-Path $plgxFile) {
+            Write-Output ""
+            Write-Output "=== PLGX file details ==="
+            $fileInfo = Get-Item $plgxFile
+            Write-Output "Size: $($fileInfo.Length) bytes"
+            Write-Output "Created: $($fileInfo.CreationTime)"
+            Write-Output "PLGX_PATH=$plgxFile" >> $env:GITHUB_ENV
+          } else {
+            Write-Error "PLGX file not found at $plgxFile"
+            exit 1
+          }
+
+      - name: Upload PLGX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeeFetch-debug.plgx
+          path: ${{ env.PLGX_PATH }}
+
+      - name: Test PLGX compilation locally
+        shell: pwsh
+        run: |
+          # Try to compile the PLGX source locally using CodeDom to see if there are errors
+          Write-Output "=== Testing PLGX compilation with CodeDom ==="
+          
+          $plgxSrc = "$env:RUNNER_TEMP\KeeFetch"
+          $sourceFiles = Get-ChildItem $plgxSrc -Filter "*.cs" -Recurse | Select-Object -ExpandProperty FullName
+          
+          Write-Output "Source files to compile:"
+          $sourceFiles | ForEach-Object { Write-Output "  $_" }
+          
+          # Setup compiler parameters like KeePass does
+          $cp = New-Object System.CodeDom.Compiler.CompilerParameters
+          $cp.GenerateInMemory = $false
+          $cp.GenerateExecutable = $false
+          $cp.OutputAssembly = "$env:RUNNER_TEMP\KeeFetch_test.dll"
+          
+          # Add references
+          $cp.ReferencedAssemblies.Add("System.dll") | Out-Null
+          $cp.ReferencedAssemblies.Add("System.Core.dll") | Out-Null
+          $cp.ReferencedAssemblies.Add("System.Drawing.dll") | Out-Null
+          $cp.ReferencedAssemblies.Add("System.Windows.Forms.dll") | Out-Null
+          $cp.ReferencedAssemblies.Add("System.Net.Http.dll") | Out-Null
+          $cp.ReferencedAssemblies.Add("$env:KEEPASS_DIR\KeePass.exe") | Out-Null
+          
+          # Try compiling with different compiler versions
+          $compilerVersions = @("v4.0", "v3.5", $null)
+          
+          foreach ($ver in $compilerVersions) {
+            Write-Output ""
+            Write-Output "=== Trying compiler version: $(if ($ver) { $ver } else { 'default' }) ==="
+            
+            try {
+              $providerOptions = New-Object System.Collections.Generic.Dictionary[string,string]
+              if ($ver) {
+                $providerOptions.Add("CompilerVersion", $ver)
+                $provider = New-Object Microsoft.CSharp.CSharpCodeProvider($providerOptions)
+              } else {
+                $provider = New-Object Microsoft.CSharp.CSharpCodeProvider
+              }
+              
+              $results = $provider.CompileAssemblyFromFile($cp, $sourceFiles)
+              
+              if ($results.Errors.HasErrors) {
+                Write-Output "ERRORS:"
+                $results.Errors | Where-Object { -not $_.IsWarning } | ForEach-Object {
+                  Write-Output "  $($_.ErrorNumber): $($_.ErrorText) at line $($_.Line)"
+                }
+              } else {
+                Write-Output "SUCCESS!"
+                Remove-Item $cp.OutputAssembly -ErrorAction SilentlyContinue
+                break
+              }
+            }
+            catch {
+              Write-Output "EXCEPTION: $($_.Exception.Message)"
+            }
+          }

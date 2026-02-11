@@ -19,9 +19,18 @@ jobs:
       - name: Download KeePass portable
         shell: pwsh
         run: |
-          # Use chocolatey to install KeePass instead of direct download
-          choco install keepass --version=2.57.1 --no-progress -y
+          # Install a specific version of keepass.install directly to avoid version mismatch
+          choco install keepass.install --version=2.57.1 --no-progress -y --allow-downgrade
           $keepassDir = "C:\Program Files\KeePass Password Safe 2"
+
+          # Verify the installed version
+          $kpExe = Join-Path $keepassDir "KeePass.exe"
+          if (!(Test-Path $kpExe)) {
+            Write-Error "KeePass.exe not found at $kpExe"
+            exit 1
+          }
+          $version = (Get-Item $kpExe).VersionInfo.FileVersion
+          Write-Output "KeePass version: $version"
           Write-Output "KEEPASS_DIR=$keepassDir" >> $env:GITHUB_ENV
 
       - name: Restore NuGet packages
@@ -55,7 +64,6 @@ jobs:
           Copy-Item -Path "IconProviders" -Destination $plgxSrc -Recurse
 
           # KeePass plgx-create needs a legacy-style .csproj — SDK-style won't work.
-          # Use the pre-created legacy .csproj file
           Copy-Item -Path "KeeFetch.plgx.csproj" -Destination "$plgxSrc\KeeFetch.csproj"
 
           Write-Output "=== PLGX source contents ==="
@@ -63,19 +71,30 @@ jobs:
 
           $keepassExe = "$env:KEEPASS_DIR\KeePass.exe"
           Write-Output "=== Running plgx-create ==="
-          & $keepassExe --plgx-create $plgxSrc
+
+          # Use Start-Process to wait for the GUI app to finish and capture exit code
+          $proc = Start-Process -FilePath $keepassExe -ArgumentList "--plgx-create", "`"$plgxSrc`"" -Wait -PassThru -NoNewWindow
+          Write-Output "KeePass exited with code: $($proc.ExitCode)"
 
           # plgx is created in the parent directory of the source folder
           $plgxFile = "$env:RUNNER_TEMP\KeeFetch.plgx"
-          
-          # Also check alternative locations
+
+          # Search everywhere for .plgx files in case KeePass put it somewhere unexpected
           Write-Output "=== Searching for .plgx files ==="
           Get-ChildItem "$env:RUNNER_TEMP" -Filter "*.plgx" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Output $_.FullName }
           Get-ChildItem "D:\a" -Filter "*.plgx" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Output $_.FullName }
+          Get-ChildItem "C:\" -Filter "*.plgx" -Depth 3 -ErrorAction SilentlyContinue | ForEach-Object { Write-Output $_.FullName }
 
+          # Check if it was created next to the source dir (expected behavior)
           if (!(Test-Path $plgxFile)) {
-            Write-Error "PLGX file not found at $plgxFile"
-            exit 1
+            # Also check the working directory
+            $altPath = Join-Path (Get-Location) "KeeFetch.plgx"
+            if (Test-Path $altPath) {
+              $plgxFile = $altPath
+            } else {
+              Write-Error "PLGX file not found at $plgxFile or $altPath"
+              exit 1
+            }
           }
           Write-Output "PLGX_PATH=$plgxFile" >> $env:GITHUB_ENV
 

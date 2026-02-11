@@ -35,26 +35,29 @@ A fast, smart, and modern favicon downloader plugin for KeePass 2.x.
 
 Right-click any entry and select **KeeFetch - Download Favicons**. The plugin will instantly search for the best icon, prioritizing high-resolution sources like `apple-touch-icon` and large PNGs.
 
-<!-- ![Single Entry Demo](docs/usage-single.gif) -->
-<!-- *Demo: Right-click on a single entry and the icon appears* -->
+![Single Entry Demo](docs/usage-single.gif)
+*Right-click any entry to instantly fetch its favicon*
 
 ### 2. Bulk Group Processing
 
 Process entire groups (including all subgroups) in one go. KeeFetch uses a concurrent engine with `SemaphoreSlim` for up to 8 parallel downloads, so fetching 100+ icons only takes seconds.
 
-<!-- ![Group Download Demo](docs/usage-group.gif) -->
-<!-- *Demo: Progress dialog moving through a large group* -->
+![Group Download Demo](docs/usage-group.gif)
+*Process entire groups with concurrent downloads*
 
 ### 3. Android App Support
 
 KeeFetch uniquely handles `androidapp://` URLs. It maps package names (like `com.instagram.android`) to official web domains using a built-in database of 100+ app mappings, with Google Play Store fallback.
 
-<!-- ![Android Mapping Demo](docs/usage-android.png) -->
-<!-- *Demo: Android entry before and after fetching* -->
+![Android Mapping Demo](docs/usage-android.gif)
+*Automatic androidapp:// URL to web domain mapping*
 
 ### 4. Database-wide Maintenance
 
 Keep your entire database up to date via the Tools menu. Perfect for cleaning up missing icons in large, existing databases.
+
+![Database Maintenance](docs/usage-maintenance.png)
+*Update all entries across your entire database*
 
 **Menu Path:** `Tools` → `KeeFetch` → `Download All Favicons`
 

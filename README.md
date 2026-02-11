@@ -149,8 +149,6 @@ Contributions are welcome! Please:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-See [PLAN.md](PLAN.md) for the development roadmap.
-
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/tzii/KeeFetch/issues)

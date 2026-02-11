@@ -9,12 +9,6 @@ A fast, smart, and modern favicon downloader plugin for KeePass 2.x.
 ![KeePass Plugin](https://img.shields.io/badge/KeePass-2.x%20Plugin-blue)
 ![.NET Framework](https://img.shields.io/badge/.NET%20Framework-4.8-purple)
 
-## 📸 Screenshots
-
-| Android Support | High Quality Icons | Progress Dialog |
-|:---:|:---:|:---:|
-| ![Android Support](issues/2.png) | ![High Quality Icons](issues/3.png) | ![Progress Dialog](issues/1.png) |
-
 ## ✨ Features
 
 - **Concurrent downloads** — Parallel favicon fetching using `SemaphoreSlim` to keep the UI responsive.

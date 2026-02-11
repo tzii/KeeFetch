@@ -50,16 +50,59 @@ jobs:
 
           # Copy only the files needed for plgx-create
           Copy-Item -Path "*.cs" -Destination $plgxSrc
-          Copy-Item -Path "*.csproj" -Destination $plgxSrc
           Copy-Item -Path "*.resx" -Destination $plgxSrc
           Copy-Item -Path "Properties" -Destination $plgxSrc -Recurse
           Copy-Item -Path "IconProviders" -Destination $plgxSrc -Recurse
 
+          # KeePass plgx-create needs a legacy-style .csproj — SDK-style won't work.
+          # Create a minimal legacy .csproj for PLGX generation.
+          @'
+          <?xml version="1.0" encoding="utf-8"?>
+          <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+            <PropertyGroup>
+              <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+              <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+              <OutputType>Library</OutputType>
+              <RootNamespace>KeeFetch</RootNamespace>
+              <AssemblyName>KeeFetch</AssemblyName>
+              <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+            </PropertyGroup>
+            <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+              <Optimize>true</Optimize>
+              <DefineConstants>TRACE</DefineConstants>
+            </PropertyGroup>
+            <ItemGroup>
+              <Reference Include="System" />
+              <Reference Include="System.Core" />
+              <Reference Include="System.Drawing" />
+              <Reference Include="System.Windows.Forms" />
+              <Reference Include="KeePass" />
+            </ItemGroup>
+            <ItemGroup>
+              <Compile Include="**\*.cs" />
+              <EmbeddedResource Include="SettingsForm.resx">
+                <DependentUpon>SettingsForm.cs</DependentUpon>
+              </EmbeddedResource>
+            </ItemGroup>
+            <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+          </Project>
+          '@ | Set-Content "$plgxSrc\KeeFetch.csproj" -Encoding UTF8
+
+          Write-Output "=== PLGX source contents ==="
+          Get-ChildItem $plgxSrc -Recurse | ForEach-Object { Write-Output $_.FullName }
+
           $keepassExe = "$env:KEEPASS_DIR\KeePass.exe"
+          Write-Output "=== Running plgx-create ==="
           & $keepassExe --plgx-create $plgxSrc
 
           # plgx is created in the parent directory of the source folder
           $plgxFile = "$env:RUNNER_TEMP\KeeFetch.plgx"
+          
+          # Also check alternative locations
+          Write-Output "=== Searching for .plgx files ==="
+          Get-ChildItem "$env:RUNNER_TEMP" -Filter "*.plgx" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Output $_.FullName }
+          Get-ChildItem "D:\a" -Filter "*.plgx" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Output $_.FullName }
+
           if (!(Test-Path $plgxFile)) {
             Write-Error "PLGX file not found at $plgxFile"
             exit 1

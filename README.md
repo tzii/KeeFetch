@@ -29,14 +29,36 @@ A fast, smart, and modern favicon downloader plugin for KeePass 2.x.
    - **Installed**: `%ProgramFiles%/KeePass Password Safe 2/Plugins/`
 3. Restart KeePass.
 
-## 🛠 Usage
+## 🛠 Usage & Demo
 
-| Action | Location |
-|:---:|:---|
-| **Single Entry** | Right-click entry → **KeeFetch - Download Favicons** |
-| **Entire Group** | Right-click group → **KeeFetch - Download Favicons** |
-| **All Entries** | **Tools** → **KeeFetch** → **Download All Favicons** |
-| **Settings** | **Tools** → **KeeFetch** → **Settings...** |
+### 1. Simple One-Click Fetch
+
+Right-click any entry and select **KeeFetch - Download Favicons**. The plugin will instantly search for the best icon, prioritizing high-resolution sources like `apple-touch-icon` and large PNGs.
+
+<!-- ![Single Entry Demo](docs/usage-single.gif) -->
+<!-- *Demo: Right-click on a single entry and the icon appears* -->
+
+### 2. Bulk Group Processing
+
+Process entire groups (including all subgroups) in one go. KeeFetch uses a concurrent engine with `SemaphoreSlim` for up to 8 parallel downloads, so fetching 100+ icons only takes seconds.
+
+<!-- ![Group Download Demo](docs/usage-group.gif) -->
+<!-- *Demo: Progress dialog moving through a large group* -->
+
+### 3. Android App Support
+
+KeeFetch uniquely handles `androidapp://` URLs. It maps package names (like `com.instagram.android`) to official web domains using a built-in database of 100+ app mappings, with Google Play Store fallback.
+
+<!-- ![Android Mapping Demo](docs/usage-android.png) -->
+<!-- *Demo: Android entry before and after fetching* -->
+
+### 4. Database-wide Maintenance
+
+Keep your entire database up to date via the Tools menu. Perfect for cleaning up missing icons in large, existing databases.
+
+**Menu Path:** `Tools` → `KeeFetch` → `Download All Favicons`
+
+> **💡 Tip:** Configure KeeFetch to skip entries that already have custom icons in **Settings** (`Tools` → `KeeFetch` → `Settings...`).
 
 ## 🏗 Building from Source
 

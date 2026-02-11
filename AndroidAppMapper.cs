@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace KeeFetch
 {
@@ -12,9 +14,30 @@ namespace KeeFetch
     /// </summary>
     internal static class AndroidAppMapper
     {
+        private const string UserAgentString =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
+
+        // Limit HTML scan to 256 KB (sufficient for finding og:image or img tags)
+        private const long MaxPlayStoreHtmlBytes = 256 * 1024;
+        private const long MaxIconBytes = 512 * 1024;
+
+        private static readonly HttpClient SharedHttpClient = CreateHttpClient();
+
+        private static HttpClient CreateHttpClient()
+        {
+            var handler = new HttpClientHandler
+            {
+                AllowAutoRedirect = true,
+                MaxAutomaticRedirections = 5, // Reduced for safety
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+            };
+            return new HttpClient(handler);
+        }
+
         private static readonly Dictionary<string, string> KnownMappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "com.google.android.gm", "gmail.com" },
+            // ... (rest of mappings preserved below) ...
             { "com.google.android.youtube", "youtube.com" },
             { "com.google.android.apps.maps", "maps.google.com" },
             { "com.google.android.apps.photos", "photos.google.com" },
@@ -218,7 +241,7 @@ namespace KeeFetch
         /// <param name="proxy">Web proxy to use, or null for default.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Icon image data, or null if fetching fails.</returns>
-        public static byte[] FetchGooglePlayIcon(string packageName, int timeoutMs, IWebProxy proxy,
+        public static async Task<byte[]> FetchGooglePlayIconAsync(string packageName, int timeoutMs, IWebProxy proxy,
             CancellationToken token = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(packageName))
@@ -231,35 +254,40 @@ namespace KeeFetch
                 string playUrl = "https://play.google.com/store/apps/details?id=" +
                                  Uri.EscapeDataString(packageName);
 
-                var request = (HttpWebRequest)WebRequest.Create(playUrl);
-                request.Timeout = timeoutMs;
-                request.ReadWriteTimeout = timeoutMs * 2;
-                request.AllowAutoRedirect = true;
-                request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
-                request.Headers.Add(HttpRequestHeader.AcceptLanguage, "en-US,en;q=0.9");
-                if (proxy != null) request.Proxy = proxy;
+                string html = null;
 
-                string html;
-                using (token.Register(() => request.Abort(), useSynchronizationContext: false))
-                using (var response = (HttpWebResponse)request.GetResponse())
-                using (var stream = response.GetResponseStream())
-                using (var ms = new MemoryStream())
+                using (var request = new HttpRequestMessage(HttpMethod.Get, playUrl))
                 {
-                    if (stream == null) return null;
-                    byte[] buffer = new byte[8192];
-                    int read;
-                    long total = 0;
-                    const long MaxHtmlBytes = 10 * 1024 * 1024;
-                    while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                    request.Headers.Add("User-Agent", UserAgentString);
+                    request.Headers.Add("Accept-Language", "en-US,en;q=0.9");
+
+                    using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
                     {
-                        token.ThrowIfCancellationRequested();
-                        ms.Write(buffer, 0, read);
-                        total += read;
-                        if (total > MaxHtmlBytes)
-                            return null;
+                        cts.CancelAfter(timeoutMs);
+
+                        var response = await SharedHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
+                        if (!response.IsSuccessStatusCode) return null;
+
+                        using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                        using (var ms = new MemoryStream())
+                        {
+                            if (stream == null) return null;
+                            byte[] buffer = new byte[8192];
+                            int read;
+                            long total = 0;
+                            while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token).ConfigureAwait(false)) > 0)
+                            {
+                                await ms.WriteAsync(buffer, 0, read, cts.Token).ConfigureAwait(false);
+                                total += read;
+                                if (total > MaxPlayStoreHtmlBytes)
+                                    break; // Stop reading after limit - we likely have the head
+                            }
+                            html = System.Text.Encoding.UTF8.GetString(ms.ToArray());
+                        }
                     }
-                    html = System.Text.Encoding.UTF8.GetString(ms.ToArray());
                 }
+
+                if (string.IsNullOrEmpty(html)) return null;
 
                 var imgPattern = new Regex(
                     @"<img[^>]*\bsrc\s*=\s*[""']([^""']*googleusercontent\.com[^""']*=s\d+[^""']*)[""']",
@@ -283,27 +311,39 @@ namespace KeeFetch
 
                 token.ThrowIfCancellationRequested();
 
-                var iconRequest = (HttpWebRequest)WebRequest.Create(iconUrl);
-                iconRequest.Timeout = timeoutMs;
-                iconRequest.ReadWriteTimeout = timeoutMs * 2;
-                iconRequest.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
-                if (proxy != null) iconRequest.Proxy = proxy;
-
-                using (token.Register(() => iconRequest.Abort(), useSynchronizationContext: false))
-                using (var response = (HttpWebResponse)iconRequest.GetResponse())
-                using (var stream = response.GetResponseStream())
-                using (var ms = new MemoryStream())
+                using (var iconRequest = new HttpRequestMessage(HttpMethod.Get, iconUrl))
                 {
-                    if (stream == null) return null;
-                    stream.CopyTo(ms);
-                    byte[] data = ms.ToArray();
-                    return Util.IsValidImage(data) ? data : null;
+                    iconRequest.Headers.Add("User-Agent", UserAgentString);
+
+                    using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
+                    {
+                        cts.CancelAfter(timeoutMs);
+                        var response = await SharedHttpClient.SendAsync(iconRequest, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
+                        if (!response.IsSuccessStatusCode) return null;
+
+                        using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                        using (var ms = new MemoryStream())
+                        {
+                            if (stream == null) return null;
+                            byte[] buffer = new byte[8192];
+                            int read;
+                            long total = 0;
+                            while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token).ConfigureAwait(false)) > 0)
+                            {
+                                await ms.WriteAsync(buffer, 0, read, cts.Token).ConfigureAwait(false);
+                                total += read;
+                                if (total > MaxIconBytes) return null;
+                            }
+                            byte[] data = ms.ToArray();
+                            return Util.IsValidImage(data) ? data : null;
+                        }
+                    }
                 }
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
-                Logger.Warn("FetchGooglePlayIcon", ex);
+                Logger.Warn("FetchGooglePlayIconAsync", ex);
                 return null;
             }
         }
@@ -316,6 +356,8 @@ namespace KeeFetch
         /// <returns>The guessed domain, or null if guessing fails.</returns>
         public static string TryGuessFromPackage(string package)
         {
+            if (string.IsNullOrEmpty(package)) return null;
+
             string[] parts = package.Split('.');
             if (parts.Length < 2)
                 return null;

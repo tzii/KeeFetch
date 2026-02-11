@@ -9,10 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
-    <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
-    <PackageReference Include="coverlet.collector" Version="3.1.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
+    <PackageReference Include="coverlet.collector" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,9 +21,13 @@
 
   <ItemGroup>
     <Reference Include="KeePass">
-      <HintPath>C:\Program Files\KeePass Password Safe 2\KeePass.exe</HintPath>
-      <Private>false</Private>
+      <HintPath>$(KeePassPath)\KeePass.exe</HintPath>
+      <Private>true</Private>
     </Reference>
   </ItemGroup>
+
+  <PropertyGroup>
+    <KeePassPath Condition="'$(KeePassPath)' == ''">C:\Program Files\KeePass Password Safe 2</KeePassPath>
+  </PropertyGroup>
 
 </Project>

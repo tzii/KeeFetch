@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using KeePass.Plugins;
 using KeePassLib;
@@ -109,7 +110,7 @@ namespace KeeFetch
             return null;
         }
 
-        private void OnDownloadSelectedEntries(object sender, EventArgs e)
+        private async void OnDownloadSelectedEntries(object sender, EventArgs e)
         {
             if (!EnsureDbOpen()) return;
 
@@ -121,10 +122,10 @@ namespace KeeFetch
                 return;
             }
 
-            RunDownload(entries);
+            await RunDownloadAsync(entries);
         }
 
-        private void OnDownloadGroup(object sender, EventArgs e)
+        private async void OnDownloadGroup(object sender, EventArgs e)
         {
             if (!EnsureDbOpen()) return;
 
@@ -154,10 +155,10 @@ namespace KeeFetch
 
             if (result != DialogResult.Yes) return;
 
-            RunDownload(entries.ToArray());
+            await RunDownloadAsync(entries.ToArray());
         }
 
-        private void OnDownloadAllEntries(object sender, EventArgs e)
+        private async void OnDownloadAllEntries(object sender, EventArgs e)
         {
             if (!EnsureDbOpen()) return;
 
@@ -194,7 +195,7 @@ namespace KeeFetch
 
             if (result != DialogResult.Yes) return;
 
-            RunDownload(entries.ToArray());
+            await RunDownloadAsync(entries.ToArray());
         }
 
         private void OnOpenSettings(object sender, EventArgs e)
@@ -216,16 +217,16 @@ namespace KeeFetch
             return true;
         }
 
-        private async void RunDownload(PwEntry[] entries)
+        private async Task RunDownloadAsync(PwEntry[] entries)
         {
-            var dialog = new FaviconDialog(host, Config, entries);
             try
             {
+                var dialog = new FaviconDialog(host, Config, entries);
                 await dialog.RunAsync();
             }
             catch (Exception ex)
             {
-                Logger.Error("RunDownload", ex);
+                Logger.Error("RunDownloadAsync", ex);
                 MessageBox.Show("An error occurred during favicon download:\n" + ex.Message,
                     "KeeFetch", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }

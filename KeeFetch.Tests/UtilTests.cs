@@ -59,9 +59,44 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
-        public void ExtractHost_InvalidUrl_ReturnsNull()
+        public void ExtractHost_NullUrl_ReturnsNull()
         {
-            string result = Util.ExtractHost("not a valid url");
+            string result = Util.ExtractHost(null);
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public void ExtractHost_EmptyUrl_ReturnsNull()
+        {
+            string result = Util.ExtractHost("");
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public void ExtractHost_WhitespaceUrl_ReturnsNull()
+        {
+            string result = Util.ExtractHost("   ");
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public void ExtractHostWithPort_NullUrl_ReturnsNull()
+        {
+            string result = Util.ExtractHostWithPort(null);
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public void ExtractScheme_NullUrl_ReturnsNull()
+        {
+            string result = Util.ExtractScheme(null);
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public void HashData_Null_ReturnsNull()
+        {
+            byte[] result = Util.HashData(null);
             Assert.IsNull(result);
         }
 
@@ -128,9 +163,15 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
-        public void IsPrivateHost_LoopbackIP_ReturnsTrue()
+        public void IsPrivateHost_Null_ReturnsTrue()
         {
-            Assert.IsTrue(Util.IsPrivateHost("127.0.0.1"));
+            Assert.IsTrue(Util.IsPrivateHost(null));
+        }
+
+        [TestMethod]
+        public void IsPrivateHost_Empty_ReturnsTrue()
+        {
+            Assert.IsTrue(Util.IsPrivateHost(""));
         }
 
         [TestMethod]
@@ -165,9 +206,23 @@ namespace KeeFetch.Tests
         public void IsValidImage_ValidPng_ReturnsTrue()
         {
             // PNG file header: 89 50 4E 47 0D 0A 1A 0A
-            byte[] pngHeader = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
-            // This won't be a valid image since it's just the header, but we test the method structure
-            // In real tests, you'd use actual image files
+            // Create a minimal valid PNG (1x1 pixel)
+            byte[] minimalPng = new byte[]
+            {
+                0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+                0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, // IHDR chunk
+                0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, // 1x1 pixel
+                0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53,
+                0xDE, // IHDR CRC
+                0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41, 0x54, // IDAT chunk
+                0x08, 0xD7, 0x63, 0xF8, 0x0F, 0x00, 0x00, 0x01,
+                0x01, 0x01, 0x00, 0x18, 0xDD, 0x8D, 0xB4, // IDAT data + CRC
+                0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, // IEND chunk
+                0xAE, 0x42, 0x60, 0x82 // IEND CRC
+            };
+            
+            bool result = Util.IsValidImage(minimalPng);
+            Assert.IsTrue(result, "Minimal valid PNG should be recognized as valid image");
         }
 
         [TestMethod]

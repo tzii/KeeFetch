@@ -75,20 +75,23 @@ namespace KeeFetch
 
             try
             {
-                // Run the work on a background thread, pump messages on the UI thread
+                // Run the work on a background thread
                 var workTask = Task.Run(() => DoWork(cts.Token), cts.Token);
 
                 // Pump UI messages until the worker finishes
+                // Replaced Application.DoEvents() loop with simple await
+                // The StatusDialog is modeless but we simulate modal behavior by waiting here
                 while (!workTask.IsCompleted)
                 {
-                    Application.DoEvents();
-                    await Task.Delay(30);
-
                     // Check for user cancellation via the status dialog
                     if (!cts.IsCancellationRequested && !logger.ContinueWork())
                     {
                         cts.Cancel();
+                        logger.SetText("Cancelling...", LogStatusType.Warning);
                     }
+
+                    // Wait a bit to let the UI update (yielding to message loop)
+                    await Task.Delay(100);
                 }
 
                 await workTask; // observe exceptions
@@ -101,6 +104,7 @@ namespace KeeFetch
             {
                 logger.EndLogging();
                 ShowCompletionMessage();
+                cts.Dispose();
             }
         }
 
@@ -118,7 +122,7 @@ namespace KeeFetch
 
                 int timeoutMs = config.Timeout * 1000;
                 // Safety timeout: generous but not infinite
-                int maxTotalWaitMs = Math.Max(timeoutMs * 5, entries.Length * 500);
+                int maxTotalWaitMs = Math.Max(timeoutMs * 5, entries.Length * 1000);
 
                 // Use a semaphore to limit concurrent downloads
                 using (var semaphore = new SemaphoreSlim(MaxConcurrency, MaxConcurrency))
@@ -132,7 +136,7 @@ namespace KeeFetch
                         PwEntry entry = entries[idx];
 
                         // Wait for a semaphore slot (with timeout to check cancellation)
-                        while (!semaphore.Wait(500, token))
+                        while (!await semaphore.WaitAsync(500, token))
                         {
                             token.ThrowIfCancellationRequested();
                         }
@@ -192,69 +196,17 @@ namespace KeeFetch
 
                         tasks.Add(task);
 
-                        // Periodically check for cancellation and wait for some tasks to complete
-                        // to avoid unbounded memory growth with huge entry lists
+                        // Periodically cleanup completed tasks
                         if (tasks.Count >= MaxConcurrency * 2)
                         {
                             var completed = await Task.WhenAny(tasks);
                             tasks.Remove(completed);
-                            // Observe any exceptions
-                            try { await completed; }
-                            catch (OperationCanceledException) { }
+                            try { await completed; } catch (OperationCanceledException) { }
                         }
                     }
 
-                    // Wait for all remaining tasks with periodic UI updates
-                    int totalWaitedMs = 0;
-                    int waitIntervalMs = 1000;
-
-                    while (tasks.Count > 0)
-                    {
-                        // Use Task.WhenAny with a timeout task for .NET Framework 4.8 compatibility
-                        var timeoutTask = Task.Delay(waitIntervalMs, token);
-                        var completed = await Task.WhenAny(tasks.Concat(new[] { timeoutTask }).ToArray());
-                        
-                        if (completed == timeoutTask)
-                        {
-                            totalWaitedMs += waitIntervalMs;
-                            
-                            if (!logger.ContinueWork())
-                            {
-                                cts?.Cancel();
-                            }
-
-                            // Update UI so user sees the dialog is alive
-                            int cp = Interlocked.CompareExchange(ref processedCount, 0, 0);
-                            int cs = Interlocked.CompareExchange(ref successCount, 0, 0);
-                            int csk = Interlocked.CompareExchange(ref skippedCount, 0, 0);
-                            int cnf = Interlocked.CompareExchange(ref notFoundCount, 0, 0);
-                            int ce = Interlocked.CompareExchange(ref errorCount, 0, 0);
-                            InvokeOnUI(() =>
-                            {
-                                logger.SetText(string.Format(
-                                    "Waiting... Processed {0}/{1} — OK: {2}, Skipped: {3}, Not found: {4}, Errors: {5}",
-                                    cp, totalCount, cs, csk, cnf, ce),
-                                    LogStatusType.Info);
-                            });
-
-                            if (totalWaitedMs >= maxTotalWaitMs)
-                            {
-                                lock (errorLogLock)
-                                {
-                                    errorLog.Add(string.Format(
-                                        "Operation timed out after {0}ms. {1}/{2} entries were processed.",
-                                        totalWaitedMs, processedCount, totalCount));
-                                }
-                                break;
-                            }
-                            continue;
-                        }
-                        
-                        tasks.Remove(completed);
-                        // Observe any exceptions
-                        try { await completed; }
-                        catch (OperationCanceledException) { }
-                    }
+                    // Wait for all remaining tasks
+                    await Task.WhenAll(tasks);
                 }
             }
             finally
@@ -286,20 +238,9 @@ namespace KeeFetch
                 return;
             }
 
-            if (config.PrefixUrls &&
-                !url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-                !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) &&
-                !AndroidAppMapper.IsAndroidUrl(url))
-            {
-                string testHost = Util.ExtractHost("https://" + url);
-                if (!string.IsNullOrEmpty(testHost) && Util.IsPrivateHost(testHost))
-                    url = "http://" + url;
-                else
-                    url = "https://" + url;
-            }
-
+            // Using async DownloadAsync
             var downloader = new FaviconDownloader(config, proxy);
-            FaviconResult result = downloader.Download(url, token);
+            FaviconResult result = await downloader.DownloadAsync(url, token).ConfigureAwait(false);
 
             if (result.Status != FaviconStatus.Success || result.IconData == null)
             {
@@ -311,9 +252,12 @@ namespace KeeFetch
             byte[] iconData = result.IconData;
             string iconHost = result.Host;
 
-            InvokeOnUI(() =>
+            // Marshal to UI thread - KeePass is single-threaded for DB operations
+            await InvokeOnUIAsync(() =>
             {
-                lock (db)
+                // Lock on the database to prevent race conditions
+                // KeePass's PwDatabase is not thread-safe
+                lock (db) 
                 {
                     PwUuid iconUuid = new PwUuid(iconHash);
 
@@ -354,15 +298,59 @@ namespace KeeFetch
             Interlocked.Increment(ref successCount);
         }
 
+        /// <summary>
+        /// Invokes an action on the UI thread asynchronously with proper exception handling.
+        /// Uses Invoke (not BeginInvoke) to ensure exceptions are properly propagated.
+        /// </summary>
+        private async Task InvokeOnUIAsync(Action action)
+        {
+            var mainForm = host.MainWindow;
+            if (mainForm != null && mainForm.InvokeRequired)
+            {
+                // Use TaskCompletionSource to make Invoke async-await friendly
+                var tcs = new TaskCompletionSource<object>();
+                mainForm.Invoke(new Action(() =>
+                {
+                    try
+                    {
+                        action();
+                        tcs.SetResult(null);
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.SetException(ex);
+                    }
+                }));
+                await tcs.Task;
+            }
+            else
+            {
+                // Already on UI thread, execute directly
+                action();
+            }
+        }
+
+        /// <summary>
+        /// Invokes an action on the UI thread for progress updates (fire-and-forget).
+        /// Exceptions are caught and logged.
+        /// </summary>
         private void InvokeOnUI(Action action)
         {
             try
             {
                 var mainForm = host.MainWindow;
                 if (mainForm != null && mainForm.InvokeRequired)
-                    mainForm.BeginInvoke(action);
+                {
+                    mainForm.BeginInvoke(new Action(() =>
+                    {
+                        try { action(); }
+                        catch (Exception ex) { Logger.Debug("InvokeOnUI", ex); }
+                    }));
+                }
                 else
+                {
                     action();
+                }
             }
             catch (Exception ex) { Logger.Debug("InvokeOnUI", ex); }
         }

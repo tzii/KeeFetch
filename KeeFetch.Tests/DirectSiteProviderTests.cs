@@ -1,6 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
-using System.Reflection;
 using KeeFetch.IconProviders;
 
 namespace KeeFetch.Tests
@@ -8,8 +7,8 @@ namespace KeeFetch.Tests
     [TestClass]
     public class DirectSiteProviderTests
     {
-        // Note: ParseIconLinks is private, so we test it via reflection
-        // or test the public behavior through GetIcon/GetIconWithOrigin
+        // ParseIconLinks is now internal (not private) and accessible via InternalsVisibleTo
+        // No need for reflection since AssemblyInfo.cs declares [assembly: InternalsVisibleTo("KeeFetch.Tests")]
 
         private DirectSiteProvider _provider;
 
@@ -25,131 +24,90 @@ namespace KeeFetch.Tests
             Assert.AreEqual("Direct Site", _provider.Name);
         }
 
-        // HTML parsing tests using reflection to test ParseIconLinks
         [TestMethod]
         public void ParseIconLinks_EmptyHtml_ReturnsEmptyList()
         {
-            var method = typeof(DirectSiteProvider).GetMethod("ParseIconLinks", 
-                BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.IsNotNull(method);
-
-            var result = method.Invoke(_provider, new object[] { "", "https://example.com" });
+            var result = _provider.ParseIconLinks("", "https://example.com");
             Assert.IsNotNull(result);
-            
-            var list = result as System.Collections.IList;
-            Assert.IsNotNull(list);
-            Assert.AreEqual(0, list.Count);
+            Assert.AreEqual(0, result.Count);
         }
 
         [TestMethod]
         public void ParseIconLinks_NullHtml_ReturnsEmptyList()
         {
-            var method = typeof(DirectSiteProvider).GetMethod("ParseIconLinks", 
-                BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.IsNotNull(method);
-
-            var result = method.Invoke(_provider, new object[] { null, "https://example.com" });
+            var result = _provider.ParseIconLinks(null, "https://example.com");
             Assert.IsNotNull(result);
-            
-            var list = result as System.Collections.IList;
-            Assert.IsNotNull(list);
-            Assert.AreEqual(0, list.Count);
+            Assert.AreEqual(0, result.Count);
         }
 
         [TestMethod]
         public void ParseIconLinks_WithFaviconLink_ReturnsCandidate()
         {
-            var method = typeof(DirectSiteProvider).GetMethod("ParseIconLinks", 
-                BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.IsNotNull(method);
-
             string html = @"<html><head><link rel='icon' href='/favicon.ico'></head></html>";
-            var result = method.Invoke(_provider, new object[] { html, "https://example.com" });
+            var result = _provider.ParseIconLinks(html, "https://example.com");
             Assert.IsNotNull(result);
-            
-            var list = result as System.Collections.IList;
-            Assert.IsNotNull(list);
-            Assert.IsTrue(list.Count > 0, "Should find at least one icon candidate");
+            Assert.IsTrue(result.Count > 0, "Should find at least one icon candidate");
         }
 
         [TestMethod]
         public void ParseIconLinks_WithAppleTouchIcon_ReturnsCandidate()
         {
-            var method = typeof(DirectSiteProvider).GetMethod("ParseIconLinks", 
-                BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.IsNotNull(method);
-
             string html = @"<html><head><link rel='apple-touch-icon' href='/apple-touch-icon.png'></head></html>";
-            var result = method.Invoke(_provider, new object[] { html, "https://example.com" });
+            var result = _provider.ParseIconLinks(html, "https://example.com");
             Assert.IsNotNull(result);
-            
-            var list = result as System.Collections.IList;
-            Assert.IsNotNull(list);
-            Assert.IsTrue(list.Count > 0, "Should find at least one icon candidate");
+            Assert.IsTrue(result.Count > 0, "Should find at least one icon candidate");
         }
 
         [TestMethod]
         public void ParseIconLinks_WithSizes_ReturnsCorrectSize()
         {
-            var method = typeof(DirectSiteProvider).GetMethod("ParseIconLinks", 
-                BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.IsNotNull(method);
-
             string html = @"<html><head><link rel='icon' href='/icon.png' sizes='64x64'></head></html>";
-            var result = method.Invoke(_provider, new object[] { html, "https://example.com" });
+            var result = _provider.ParseIconLinks(html, "https://example.com");
             Assert.IsNotNull(result);
+            Assert.IsTrue(result.Count > 0, "Should find icon with sizes attribute");
             
-            var list = result as System.Collections.IList;
-            Assert.IsNotNull(list);
-            Assert.IsTrue(list.Count > 0);
+            // Verify the size was parsed correctly
+            bool foundCorrectSize = false;
+            foreach (var candidate in result)
+            {
+                if (candidate.Size == 64)
+                {
+                    foundCorrectSize = true;
+                    break;
+                }
+            }
+            Assert.IsTrue(foundCorrectSize, "Should parse 64x64 size correctly");
         }
 
         [TestMethod]
         public void ParseIconLinks_WithOgImage_ReturnsCandidate()
         {
-            var method = typeof(DirectSiteProvider).GetMethod("ParseIconLinks", 
-                BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.IsNotNull(method);
-
             string html = @"<html><head><meta property='og:image' content='https://example.com/image.png'></head></html>";
-            var result = method.Invoke(_provider, new object[] { html, "https://example.com" });
+            var result = _provider.ParseIconLinks(html, "https://example.com");
             Assert.IsNotNull(result);
-            
-            var list = result as System.Collections.IList;
-            Assert.IsNotNull(list);
-            Assert.IsTrue(list.Count > 0, "Should find OG image candidate");
+            Assert.IsTrue(result.Count > 0, "Should find OG image candidate");
         }
 
         [TestMethod]
         public void ParseIconLinks_WithBaseTag_RespectsBaseUrl()
         {
-            var method = typeof(DirectSiteProvider).GetMethod("ParseIconLinks", 
-                BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.IsNotNull(method);
-
             string html = @"<html><head><base href='https://cdn.example.com/'><link rel='icon' href='favicon.ico'></head></html>";
-            var result = method.Invoke(_provider, new object[] { html, "https://example.com" });
+            var result = _provider.ParseIconLinks(html, "https://example.com");
             Assert.IsNotNull(result);
-            
-            var list = result as System.Collections.IList;
-            Assert.IsNotNull(list);
-            Assert.IsTrue(list.Count > 0);
+            Assert.IsTrue(result.Count > 0, "Should find icon with base tag");
         }
 
         [TestMethod]
         public void ParseIconLinks_DataUri_Ignored()
         {
-            var method = typeof(DirectSiteProvider).GetMethod("ParseIconLinks", 
-                BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.IsNotNull(method);
-
             string html = @"<html><head><link rel='icon' href='data:image/png;base64,abc123'></head></html>";
-            var result = method.Invoke(_provider, new object[] { html, "https://example.com" });
+            var result = _provider.ParseIconLinks(html, "https://example.com");
             Assert.IsNotNull(result);
-            
-            var list = result as System.Collections.IList;
-            Assert.IsNotNull(list);
-            // Data URIs should be filtered out
+            // Data URIs should be filtered out - verify no candidates with data: URLs
+            foreach (var candidate in result)
+            {
+                Assert.IsFalse(candidate.Url.StartsWith("data:"), "Data URIs should be filtered out");
+            }
         }
     }
 }

@@ -4,6 +4,12 @@ on:
   push:
     branches: [master]
     tags: ['v*']
+  pull_request:
+    branches: [master]
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
 
 jobs:
   build:
@@ -13,17 +19,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Download KeePass portable
+      - name: Install KeePass
         shell: pwsh
         run: |
-          # Install a specific version of keepass.install directly to avoid version mismatch
           choco install keepass.install --version=2.57.1 --no-progress -y --allow-downgrade
           $keepassDir = "C:\Program Files\KeePass Password Safe 2"
-
-          # Verify the installed version
           $kpExe = Join-Path $keepassDir "KeePass.exe"
           if (!(Test-Path $kpExe)) {
             Write-Error "KeePass.exe not found at $kpExe"
@@ -38,16 +46,16 @@ jobs:
           dotnet restore KeeFetch.csproj
           dotnet restore KeeFetch.Tests/KeeFetch.Tests.csproj
 
-      - name: Build DLL
+      - name: Build and Analyze
         shell: pwsh
         run: |
-          msbuild KeeFetch.csproj /p:Configuration=Release /p:Platform=AnyCPU /p:ReferencePath="$env:KEEPASS_DIR"
+          # Build with warnings as errors to enforce code quality
+          msbuild KeeFetch.csproj /p:Configuration=Release /p:Platform=AnyCPU /p:ReferencePath="$env:KEEPASS_DIR" /p:TreatWarningsAsErrors=true
 
       - name: Test
         shell: pwsh
         run: |
           dotnet build KeeFetch.Tests/KeeFetch.Tests.csproj --configuration Release --no-restore -p:ReferencePath="$env:KEEPASS_DIR"
-          # Copy KeePass.exe to test output so tests can load the assembly
           Copy-Item -Path "$env:KEEPASS_DIR\KeePass.exe" -Destination "KeeFetch.Tests\bin\Release\net48\"
           dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj --configuration Release --no-build
 
@@ -79,11 +87,10 @@ jobs:
           # plgx is created in the parent directory of the source folder
           $plgxFile = "$env:RUNNER_TEMP\KeeFetch.plgx"
 
-          # Search everywhere for .plgx files in case KeePass put it somewhere unexpected
+          # Search in expected locations only (not entire C: drive)
           Write-Output "=== Searching for .plgx files ==="
           Get-ChildItem "$env:RUNNER_TEMP" -Filter "*.plgx" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Output $_.FullName }
-          Get-ChildItem "D:\a" -Filter "*.plgx" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Output $_.FullName }
-          Get-ChildItem "C:\" -Filter "*.plgx" -Depth 3 -ErrorAction SilentlyContinue | ForEach-Object { Write-Output $_.FullName }
+          Get-ChildItem "$env:GITHUB_WORKSPACE" -Filter "*.plgx" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Output $_.FullName }
 
           # Check if it was created next to the source dir (expected behavior)
           if (!(Test-Path $plgxFile)) {

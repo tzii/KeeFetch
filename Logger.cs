@@ -22,6 +22,7 @@ namespace KeeFetch
     {
         private static readonly List<LogEntry> entries = new List<LogEntry>();
         private static readonly object lockObj = new object();
+        private const int MaxEntries = 10000; // Prevent unbounded memory growth
 
         public static void Debug(string context, string message)
         {
@@ -57,6 +58,12 @@ namespace KeeFetch
         {
             lock (lockObj)
             {
+                // Prevent unbounded growth - remove oldest entries if at limit
+                if (entries.Count >= MaxEntries)
+                {
+                    entries.RemoveRange(0, entries.Count - MaxEntries + 1);
+                }
+
                 entries.Add(new LogEntry
                 {
                     Level = level,

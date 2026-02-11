@@ -27,10 +27,15 @@
 
   <ItemGroup>
     <Reference Include="KeePass">
-      <HintPath>C:\Program Files\KeePass Password Safe 2\KeePass.exe</HintPath>
+      <HintPath>$(KeePassPath)\KeePass.exe</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <KeePassPath Condition="'$(KeePassPath)' == ''">C:\Program Files\KeePass Password Safe 2</KeePassPath>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Update="SettingsForm.Designer.cs">

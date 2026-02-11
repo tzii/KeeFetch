@@ -25,6 +25,7 @@ namespace KeeFetch
         /// <returns>A 16-byte hash of the data.</returns>
         public static byte[] HashData(byte[] data)
         {
+            if (data == null) return null;
             using (var sha = SHA256.Create())
             {
                 byte[] full = sha.ComputeHash(data);
@@ -51,34 +52,6 @@ namespace KeeFetch
             }
         }
 
-        public static string NormalizeUrl(string url)
-        {
-            if (string.IsNullOrWhiteSpace(url))
-                return null;
-
-            url = url.Trim();
-
-            if (url.StartsWith("androidapp://", StringComparison.OrdinalIgnoreCase))
-                return null;
-
-            if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-                !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            {
-                url = "https://" + url;
-            }
-
-            try
-            {
-                var uri = new Uri(url);
-                return uri.GetLeftPart(UriPartial.Authority);
-            }
-            catch (Exception ex)
-            {
-                Logger.Debug("NormalizeUrl", ex);
-                return null;
-            }
-        }
-
         /// <summary>
         /// Extracts the hostname from a URL.
         /// Automatically prepends https:// if no scheme is present.
@@ -87,6 +60,9 @@ namespace KeeFetch
         /// <returns>The hostname, or null if parsing fails.</returns>
         public static string ExtractHost(string url)
         {
+            if (string.IsNullOrWhiteSpace(url))
+                return null;
+
             try
             {
                 if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
@@ -111,6 +87,8 @@ namespace KeeFetch
         /// <returns>The hostname with port (if non-default), or null if parsing fails.</returns>
         public static string ExtractHostWithPort(string url)
         {
+            if (string.IsNullOrWhiteSpace(url)) return null;
+
             try
             {
                 if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
@@ -136,6 +114,8 @@ namespace KeeFetch
         /// <returns>The scheme, or null if parsing fails or no scheme is present.</returns>
         public static string ExtractScheme(string url)
         {
+            if (string.IsNullOrWhiteSpace(url)) return null;
+
             try
             {
                 if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
@@ -148,24 +128,6 @@ namespace KeeFetch
             catch (Exception ex)
             {
                 Logger.Debug("ExtractScheme", ex);
-                return null;
-            }
-        }
-
-        public static string ExtractOrigin(string url)
-        {
-            try
-            {
-                if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-                    !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                    url = "https://" + url;
-
-                var uri = new Uri(url);
-                return uri.GetLeftPart(UriPartial.Authority);
-            }
-            catch (Exception ex)
-            {
-                Logger.Debug("ExtractOrigin", ex);
                 return null;
             }
         }
@@ -284,13 +246,10 @@ namespace KeeFetch
                 if (image == null)
                     return null;
 
+                // If image already fits within bounds, return original data to avoid re-encoding
                 if (image.Width <= maxWidth && image.Height <= maxHeight)
                 {
-                    using (var ms = new MemoryStream())
-                    {
-                        image.Save(ms, ImageFormat.Png);
-                        return ms.ToArray();
-                    }
+                    return data;
                 }
 
                 double ratio = Math.Min(

@@ -16,9 +16,6 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Restore NuGet packages
-        run: nuget restore
-
       - name: Download KeePass portable
         shell: pwsh
         run: |
@@ -26,6 +23,11 @@ jobs:
           choco install keepass --version=2.57.1 --no-progress -y
           $keepassDir = "C:\Program Files\KeePass Password Safe 2"
           Write-Output "KEEPASS_DIR=$keepassDir" >> $env:GITHUB_ENV
+
+      - name: Restore NuGet packages
+        run: |
+          dotnet restore KeeFetch.csproj
+          dotnet restore KeeFetch.Tests/KeeFetch.Tests.csproj
 
       - name: Build DLL
         shell: pwsh
@@ -36,7 +38,7 @@ jobs:
         shell: pwsh
         run: |
           dotnet build KeeFetch.Tests/KeeFetch.Tests.csproj --configuration Release --no-restore -p:ReferencePath="$env:KEEPASS_DIR"
-          dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj --no-build
+          dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj --configuration Release --no-build
 
       - name: Create PLGX
         shell: pwsh

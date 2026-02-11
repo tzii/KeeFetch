@@ -2,7 +2,7 @@ name: Build KeeFetch
 
 on:
   push:
-    branches: [master]
+    branches: [master, fix/architectural-and-correctness-issues]
     tags: ['v*']
   pull_request:
     branches: [master]

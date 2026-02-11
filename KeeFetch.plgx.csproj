@@ -21,8 +21,25 @@
     <Reference Include="KeePass" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="*.cs" />
-    <Compile Include="IconProviders\*.cs" />
+    <!-- Root .cs files (explicitly listed for PLGX compatibility) -->
+    <Compile Include="AndroidAppMapper.cs" />
+    <Compile Include="Configuration.cs" />
+    <Compile Include="FaviconDialog.cs" />
+    <Compile Include="FaviconDownloader.cs" />
+    <Compile Include="KeeFetchExt.cs" />
+    <Compile Include="Logger.cs" />
+    <Compile Include="SettingsForm.cs" />
+    <Compile Include="SettingsForm.Designer.cs" />
+    <Compile Include="Util.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <!-- IconProviders folder -->
+    <Compile Include="IconProviders\DirectSiteProvider.cs" />
+    <Compile Include="IconProviders\DuckDuckGoProvider.cs" />
+    <Compile Include="IconProviders\GoogleProvider.cs" />
+    <Compile Include="IconProviders\IconHorseProvider.cs" />
+    <Compile Include="IconProviders\IconProviderBase.cs" />
+    <Compile Include="IconProviders\IIconProvider.cs" />
+    <Compile Include="IconProviders\YandexProvider.cs" />
     <EmbeddedResource Include="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>

@@ -1,7 +1,9 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("KeeFetch")]
+[assembly: InternalsVisibleTo("KeeFetch.Tests")]
 [assembly: AssemblyDescription("Fast and smart favicon downloader for KeePass 2")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("KeeFetch")]

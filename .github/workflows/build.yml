@@ -115,5 +115,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            bin/Release/KeeFetch.dll
+            bin/Release/net48/KeeFetch.dll
             ${{ env.PLGX_PATH }}

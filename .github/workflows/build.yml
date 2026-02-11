@@ -38,6 +38,8 @@ jobs:
         shell: pwsh
         run: |
           dotnet build KeeFetch.Tests/KeeFetch.Tests.csproj --configuration Release --no-restore -p:ReferencePath="$env:KEEPASS_DIR"
+          # Copy KeePass.exe to test output so tests can load the assembly
+          Copy-Item -Path "$env:KEEPASS_DIR\KeePass.exe" -Destination "KeeFetch.Tests\bin\Release\net48\"
           dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj --configuration Release --no-build
 
       - name: Create PLGX

@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Reflection;
+using KeeFetch.IconProviders;
 
 namespace KeeFetch.Tests
 {
@@ -21,12 +22,7 @@ namespace KeeFetch.Tests
         [TestMethod]
         public void Name_ReturnsDirectSite()
         {
-            // Access the Name property via reflection since it's internal
-            var nameProperty = typeof(DirectSiteProvider).GetProperty("Name", 
-                BindingFlags.Public | BindingFlags.Instance);
-            Assert.IsNotNull(nameProperty);
-            string name = (string)nameProperty.GetValue(_provider);
-            Assert.AreEqual("Direct Site", name);
+            Assert.AreEqual("Direct Site", _provider.Name);
         }
 
         // HTML parsing tests using reflection to test ParseIconLinks

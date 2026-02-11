@@ -17,5 +17,8 @@ repomix-output.xml
 # Sisyphus
 .sisyphus/
 
+# Issues folder (screenshots/attachments)
+issues/
+
 # Test projects
 TestServer/

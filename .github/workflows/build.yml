@@ -28,7 +28,7 @@ jobs:
       - name: Install KeePass
         shell: pwsh
         run: |
-          choco install keepass.install --version=2.57.1 --no-progress -y --allow-downgrade
+          choco install keepass.install --version=2.60.0 --no-progress -y --allow-downgrade
           $keepassDir = "C:\Program Files\KeePass Password Safe 2"
           $kpExe = Join-Path $keepassDir "KeePass.exe"
           if (!(Test-Path $kpExe)) {

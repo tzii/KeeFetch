@@ -68,6 +68,9 @@ jobs:
           Copy-Item -Path "Properties" -Destination $plgxSrc -Recurse
           Copy-Item -Path "IconProviders" -Destination $plgxSrc -Recurse
 
+          # KeePass plgx-create needs a legacy-style .csproj — SDK-style won't work.
+          Copy-Item -Path "KeeFetch.plgx.csproj" -Destination "$plgxSrc\KeeFetch.csproj"
+
           # Verify all expected source files are present
           $expectedFiles = @(
             "KeeFetchExt.cs", "FaviconDownloader.cs", "FaviconDialog.cs",
@@ -80,9 +83,6 @@ jobs:
             Write-Error "Missing files in PLGX staging: $($missing -join ', ')"
             exit 1
           }
-
-          # KeePass plgx-create needs a legacy-style .csproj — SDK-style won't work.
-          Copy-Item -Path "KeeFetch.plgx.csproj" -Destination "$plgxSrc\KeeFetch.csproj"
 
           Write-Output "=== PLGX source contents ==="
           Get-ChildItem $plgxSrc -Recurse | ForEach-Object { Write-Output $_.FullName }

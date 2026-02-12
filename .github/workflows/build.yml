@@ -63,10 +63,23 @@ jobs:
           New-Item -ItemType Directory -Path $plgxSrc -Force | Out-Null
 
           # Copy only the source files needed for plgx-create (exclude TestCompile.cs)
-          Get-ChildItem -Filter "*.cs" -Exclude "TestCompile.cs" | Copy-Item -Destination $plgxSrc
+          Copy-Item -Path "*.cs" -Destination $plgxSrc -Exclude "TestCompile.cs"
           Copy-Item -Path "SettingsForm.resx" -Destination $plgxSrc
           Copy-Item -Path "Properties" -Destination $plgxSrc -Recurse
           Copy-Item -Path "IconProviders" -Destination $plgxSrc -Recurse
+
+          # Verify all expected source files are present
+          $expectedFiles = @(
+            "KeeFetchExt.cs", "FaviconDownloader.cs", "FaviconDialog.cs",
+            "Configuration.cs", "SettingsForm.cs", "SettingsForm.Designer.cs",
+            "Logger.cs", "Util.cs", "AndroidAppMapper.cs",
+            "Properties\AssemblyInfo.cs", "KeeFetch.csproj"
+          )
+          $missing = $expectedFiles | Where-Object { !(Test-Path (Join-Path $plgxSrc $_)) }
+          if ($missing) {
+            Write-Error "Missing files in PLGX staging: $($missing -join ', ')"
+            exit 1
+          }
 
           # KeePass plgx-create needs a legacy-style .csproj — SDK-style won't work.
           Copy-Item -Path "KeeFetch.plgx.csproj" -Destination "$plgxSrc\KeeFetch.csproj"

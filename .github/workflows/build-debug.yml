@@ -157,19 +157,37 @@ jobs:
           name: KeeFetch-debug.plgx
           path: ${{ env.PLGX_PATH }}
 
-      - name: Extract and verify PLGX contents
+      - name: Verify PLGX header
         shell: pwsh
         run: |
-          # PLGX files are ZIP archives, extract and verify contents
+          # PLGX is a custom binary format (not ZIP) - parse the TLV header
           $plgxFile = "$env:RUNNER_TEMP\KeeFetch.plgx"
-          $extractDir = "$env:RUNNER_TEMP\KeeFetch_extracted"
-          
-          Write-Output "=== Extracting PLGX to verify contents ==="
-          Expand-Archive -Path $plgxFile -DestinationPath $extractDir -Force
-          
-          Write-Output ""
-          Write-Output "=== Extracted PLGX contents ==="
-          Get-ChildItem $extractDir -Recurse | ForEach-Object {
-            $size = if ($_.PSIsContainer) { "<DIR>" } else { $_.Length }
-            Write-Output "$($_.FullName.Substring($extractDir.Length)) [$size]"
+          $data = [System.IO.File]::ReadAllBytes($plgxFile)
+
+          Write-Output "=== PLGX header ==="
+          Write-Output "File size: $($data.Length) bytes"
+          $pos = 12
+          while ($pos + 6 -lt $data.Length) {
+            $type = [BitConverter]::ToUInt16($data, $pos)
+            $len  = [BitConverter]::ToInt32($data, $pos + 2)
+            if ($type -eq 0 -and $len -eq 0) { Write-Output "[$pos] END"; break }
+
+            $desc = switch ($type) {
+              1 { "FileUuid" }; 2 { "BaseFileName" }; 3 { "PrereqOs" }
+              4 { "FileEntry" }; 5 { "PrereqKP" }; 6 { "CreationTime" }
+              7 { "GeneratorName" }; 8 { "GeneratorVersion" }
+              default { "Unknown" }
+            }
+
+            if ($type -ne 4) {
+              $raw = [BitConverter]::ToString($data, $pos + 6, [Math]::Min($len, 32))
+              Write-Output "[$pos] Type=$type ($desc) Len=$len Data=$raw"
+            } else {
+              $sp = $pos + 6
+              $st = [BitConverter]::ToUInt16($data, $sp); $sp += 2
+              $nl = [BitConverter]::ToInt32($data, $sp);  $sp += 4
+              $nm = [System.Text.Encoding]::UTF8.GetString($data, $sp, $nl)
+              Write-Output "[$pos] Type=4 (FileEntry) Len=$len Name=$nm"
+            }
+            $pos += 6 + $len
           }

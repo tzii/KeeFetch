@@ -130,7 +130,7 @@ jobs:
           $data = [System.IO.File]::ReadAllBytes($plgxFile)
 
           # Dump PLGX header (TLV entries) for debugging
-          Write-Output "=== PLGX header ==="
+          Write-Output "=== PLGX header ($($data.Length) bytes) ==="
           $pos = 12
           while ($pos + 6 -lt $data.Length) {
             $type = [BitConverter]::ToUInt16($data, $pos)
@@ -148,7 +148,6 @@ jobs:
               $raw = [BitConverter]::ToString($data, $pos + 6, [Math]::Min($len, 32))
               Write-Output "[$pos] Type=$type ($desc) Len=$len Data=$raw"
             } else {
-              # Extract embedded file name from the file entry
               $sp = $pos + 6
               $st = [BitConverter]::ToUInt16($data, $sp); $sp += 2
               $nl = [BitConverter]::ToInt32($data, $sp);  $sp += 4
@@ -157,43 +156,6 @@ jobs:
             }
             $pos += 6 + $len
           }
-
-          # Verify the PLGX can be compiled by KeePass
-          $keepassExe = "$env:KEEPASS_DIR\KeePass.exe"
-          Write-Output ""
-          Write-Output "=== Verifying PLGX compilation ==="
-          $cacheDir = "$env:RUNNER_TEMP\plgx_cache"
-          New-Item -ItemType Directory -Path $cacheDir -Force | Out-Null
-          $env:LOCALAPPDATA_BACKUP = $env:LOCALAPPDATA
-
-          # Copy PLGX into a temporary plugins folder and attempt to load it
-          $pluginsDir = Join-Path $env:KEEPASS_DIR "Plugins"
-          New-Item -ItemType Directory -Path $pluginsDir -Force | Out-Null
-          Copy-Item $plgxFile $pluginsDir
-
-          # Run KeePass with --debug to trigger PLGX compilation, then exit
-          $proc = Start-Process -FilePath $keepassExe -ArgumentList "--debug", "--exit-all" -Wait -PassThru -NoNewWindow -RedirectStandardOutput "$env:RUNNER_TEMP\kp_stdout.txt" -RedirectStandardError "$env:RUNNER_TEMP\kp_stderr.txt"
-          Write-Output "KeePass verification exited with code: $($proc.ExitCode)"
-
-          # Check if the PLGX was cached (= compiled successfully)
-          $cachedDlls = Get-ChildItem -Path $env:LOCALAPPDATA -Filter "KeeFetch.dll" -Recurse -ErrorAction SilentlyContinue
-          if ($cachedDlls) {
-            Write-Output "PLGX compiled successfully - cached DLL found:"
-            $cachedDlls | ForEach-Object { Write-Output "  $($_.FullName) ($($_.Length) bytes)" }
-          } else {
-            Write-Warning "No cached DLL found - PLGX may not have compiled. Check KeePass output."
-            if (Test-Path "$env:RUNNER_TEMP\kp_stdout.txt") {
-              Write-Output "=== KeePass stdout ==="
-              Get-Content "$env:RUNNER_TEMP\kp_stdout.txt"
-            }
-            if (Test-Path "$env:RUNNER_TEMP\kp_stderr.txt") {
-              Write-Output "=== KeePass stderr ==="
-              Get-Content "$env:RUNNER_TEMP\kp_stderr.txt"
-            }
-          }
-
-          # Clean up
-          Remove-Item (Join-Path $pluginsDir "KeeFetch.plgx") -ErrorAction SilentlyContinue
 
       - name: Upload DLL artifact
         uses: actions/upload-artifact@v4

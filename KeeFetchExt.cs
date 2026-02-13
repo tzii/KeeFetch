@@ -234,7 +234,7 @@ namespace KeeFetch
 
         public override string UpdateUrl
         {
-            get { return "https://raw.githubusercontent.com/tzii/KeeFetch/main/version.txt"; }
+            get { return "https://raw.githubusercontent.com/tzii/KeeFetch/master/version.txt"; }
         }
     }
 }

@@ -92,7 +92,7 @@ For a deep dive into the code, see our [Project Structure](CONTRIBUTING.md#proje
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines and the process for submitting pull requests.
 
 ## ⚖️ License
 

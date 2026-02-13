@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed UI thread marshaling issues during concurrent downloads
 - Improved timeout handling for fallback providers
 
-## [1.0.0] - 2025-XX-XX
+## [1.0.0] - 2025-01-01
 
 ### Added
 - Initial release of KeeFetch plugin for KeePass

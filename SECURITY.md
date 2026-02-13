@@ -11,8 +11,8 @@ Only the latest version of KeeFetch is supported for security updates.
 
 ## Reporting a Vulnerability
 
-If you find a security vulnerability, please do not open a public issue. Instead, please report it via [GitHub Issues](https://github.com/tzii/KeeFetch/issues) if you can't find a more private way, or contact the maintainer directly if possible. 
+If you discover a security vulnerability in KeeFetch, please report it responsibly using [GitHub's private vulnerability reporting](https://github.com/tzii/KeeFetch/security/advisories/new).
 
-Actually, for this project, just use GitHub Issues and label it "security". 
+Please **do not** open a public issue for security vulnerabilities.
 
-We take security seriously and will address reported issues as quickly as possible.
+We take security seriously and will acknowledge your report within 48 hours, with a fix targeted as quickly as possible.

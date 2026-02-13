@@ -183,7 +183,7 @@ namespace KeeFetch
             get
             {
                 if (iconNamePrefix == null)
-                    iconNamePrefix = config.GetString(Prefix + "IconNamePrefix", "kpif-");
+                    iconNamePrefix = config.GetString(Prefix + "IconNamePrefix", "keefetch-");
                 return iconNamePrefix;
             }
             set

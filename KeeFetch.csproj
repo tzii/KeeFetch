@@ -9,7 +9,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWindowsForms>true</UseWindowsForms>
     <LangVersion>7.3</LangVersion>
-    <DefaultItemExcludes>$(DefaultItemExcludes);KeeFetch.Tests\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);KeeFetch.Tests\**;plgx_staging\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -27,10 +27,15 @@
 
   <ItemGroup>
     <Reference Include="KeePass">
-      <HintPath>C:\Program Files\KeePass Password Safe 2\KeePass.exe</HintPath>
+      <HintPath>$(KeePassPath)\KeePass.exe</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <KeePassPath Condition="'$(KeePassPath)' == ''">C:\Program Files\KeePass Password Safe 2</KeePassPath>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Update="SettingsForm.Designer.cs">

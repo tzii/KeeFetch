@@ -1,0 +1,185 @@
+name: Build KeeFetch Debug
+
+on:
+  push:
+    branches: [fix/architectural-and-correctness-issues]
+  workflow_dispatch:
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+
+jobs:
+  build-debug:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Install KeePass
+        shell: pwsh
+        run: |
+          choco install keepass.install --version=2.60.0 --no-progress -y --allow-downgrade
+          $keepassDir = "C:\Program Files\KeePass Password Safe 2"
+          $kpExe = Join-Path $keepassDir "KeePass.exe"
+          if (!(Test-Path $kpExe)) {
+            Write-Error "KeePass.exe not found at $kpExe"
+            exit 1
+          }
+          $version = (Get-Item $kpExe).VersionInfo.FileVersion
+          Write-Output "KeePass version: $version"
+          Write-Output "KEEPASS_DIR=$keepassDir" >> $env:GITHUB_ENV
+
+      - name: Debug - Check current directory
+        shell: pwsh
+        run: |
+          Write-Output "Current directory: $(Get-Location)"
+          Write-Output "GITHUB_WORKSPACE: $env:GITHUB_WORKSPACE"
+          Write-Output ""
+          Write-Output "=== All files in current directory ==="
+          Get-ChildItem -Force | Select-Object Name, Mode, Length
+
+      - name: Create PLGX with detailed logging
+        shell: pwsh
+        run: |
+          $plgxSrc = "$env:RUNNER_TEMP\KeeFetch"
+          New-Item -ItemType Directory -Path $plgxSrc -Force | Out-Null
+
+          Write-Output "=== Copying files from: $(Get-Location) ==="
+          
+          # Copy only the files needed for plgx-create (exclude TestCompile.cs)
+          Copy-Item -Path "*.cs" -Destination $plgxSrc -Exclude "TestCompile.cs"
+          Copy-Item -Path "SettingsForm.resx" -Destination $plgxSrc
+          
+          Write-Output "Copying Properties folder..."
+          Copy-Item -Path "Properties" -Destination $plgxSrc -Recurse
+          
+          Write-Output "Copying IconProviders folder..."
+          Copy-Item -Path "IconProviders" -Destination $plgxSrc -Recurse
+
+          Write-Output "Copying KeeFetch.plgx.csproj..."
+          Copy-Item -Path "KeeFetch.plgx.csproj" -Destination "$plgxSrc\KeeFetch.csproj"
+
+          Write-Output ""
+          Write-Output "=== Final PLGX source contents ==="
+          Get-ChildItem $plgxSrc -Recurse | ForEach-Object { 
+            $size = if ($_.PSIsContainer) { "<DIR>" } else { $_.Length }
+            Write-Output "$($_.FullName) [$size]"
+          }
+          
+          Write-Output ""
+          Write-Output "=== Verifying all expected files are present ==="
+          $expectedFiles = @(
+            "AndroidAppMapper.cs",
+            "Configuration.cs", 
+            "FaviconDialog.cs",
+            "FaviconDownloader.cs",
+            "KeeFetchExt.cs",
+            "Logger.cs",
+            "SettingsForm.cs",
+            "SettingsForm.Designer.cs",
+            "Util.cs",
+            "Properties\AssemblyInfo.cs",
+            "IconProviders\DirectSiteProvider.cs",
+            "IconProviders\IIconProvider.cs",
+            "IconProviders\IconProviderBase.cs",
+            "IconProviders\GoogleProvider.cs",
+            "IconProviders\DuckDuckGoProvider.cs",
+            "IconProviders\IconHorseProvider.cs",
+            "IconProviders\YandexProvider.cs",
+            "SettingsForm.resx",
+            "KeeFetch.csproj"
+          )
+          
+          $missingFiles = @()
+          foreach ($file in $expectedFiles) {
+            $fullPath = Join-Path $plgxSrc $file
+            if (Test-Path $fullPath) {
+              Write-Output "✓ $file"
+            } else {
+              Write-Output "✗ MISSING: $file"
+              $missingFiles += $file
+            }
+          }
+          
+          if ($missingFiles.Count -gt 0) {
+            Write-Error "Missing files: $($missingFiles -join ', ')"
+            exit 1
+          }
+
+          $keepassExe = "$env:KEEPASS_DIR\KeePass.exe"
+          Write-Output ""
+          Write-Output "=== Running plgx-create ==="
+
+          $proc = Start-Process -FilePath $keepassExe -ArgumentList "--plgx-create", "`"$plgxSrc`"" -Wait -PassThru -NoNewWindow
+          Write-Output "KeePass exited with code: $($proc.ExitCode)"
+
+          $plgxFile = "$env:RUNNER_TEMP\KeeFetch.plgx"
+          
+          Write-Output ""
+          Write-Output "=== Searching for .plgx files ==="
+          Get-ChildItem "$env:RUNNER_TEMP" -Filter "*.plgx" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { 
+            Write-Output "$($_.FullName) [$($_.Length) bytes]"
+          }
+          
+          if (Test-Path $plgxFile) {
+            Write-Output ""
+            Write-Output "=== PLGX file details ==="
+            $fileInfo = Get-Item $plgxFile
+            Write-Output "Size: $($fileInfo.Length) bytes"
+            Write-Output "Created: $($fileInfo.CreationTime)"
+            Write-Output "PLGX_PATH=$plgxFile" >> $env:GITHUB_ENV
+          } else {
+            Write-Error "PLGX file not found at $plgxFile"
+            exit 1
+          }
+
+      - name: Upload PLGX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeeFetch-debug.plgx
+          path: ${{ env.PLGX_PATH }}
+
+      - name: Verify PLGX header
+        shell: pwsh
+        run: |
+          # PLGX is a custom binary format (not ZIP) - parse the TLV header
+          $plgxFile = "$env:RUNNER_TEMP\KeeFetch.plgx"
+          $data = [System.IO.File]::ReadAllBytes($plgxFile)
+
+          Write-Output "=== PLGX header ==="
+          Write-Output "File size: $($data.Length) bytes"
+          $pos = 12
+          while ($pos + 6 -lt $data.Length) {
+            $type = [BitConverter]::ToUInt16($data, $pos)
+            $len  = [BitConverter]::ToInt32($data, $pos + 2)
+            if ($type -eq 0 -and $len -eq 0) { Write-Output "[$pos] END"; break }
+
+            $desc = switch ($type) {
+              1 { "FileUuid" }; 2 { "BaseFileName" }; 3 { "PrereqOs" }
+              4 { "FileEntry" }; 5 { "PrereqKP" }; 6 { "CreationTime" }
+              7 { "GeneratorName" }; 8 { "GeneratorVersion" }
+              default { "Unknown" }
+            }
+
+            if ($type -ne 4) {
+              $raw = [BitConverter]::ToString($data, $pos + 6, [Math]::Min($len, 32))
+              Write-Output "[$pos] Type=$type ($desc) Len=$len Data=$raw"
+            } else {
+              $sp = $pos + 6
+              $st = [BitConverter]::ToUInt16($data, $sp); $sp += 2
+              $nl = [BitConverter]::ToInt32($data, $sp);  $sp += 4
+              $nm = [System.Text.Encoding]::UTF8.GetString($data, $sp, $nl)
+              Write-Output "[$pos] Type=4 (FileEntry) Len=$len Name=$nm"
+            }
+            $pos += 6 + $len
+          }

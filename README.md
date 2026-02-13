@@ -1,95 +1,105 @@
 # KeeFetch
 
-A fast and smart favicon downloader plugin for KeePass 2.x.
+[![Build Status](https://github.com/tzii/KeeFetch/workflows/Build%20KeeFetch/badge.svg)](https://github.com/tzii/KeeFetch/actions)
+[![GitHub Release](https://img.shields.io/github/v/release/tzii/KeeFetch?include_prereleases)](https://github.com/tzii/KeeFetch/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Features
+A fast, smart, and modern favicon downloader plugin for KeePass 2.x.
 
-- **Concurrent downloads** — Uses ThreadPool for parallel favicon fetching without freezing the UI
-- **Smart icon detection** — Prioritizes apple-touch-icon, detects favicon-32x32.png, favicon-96x96.png, and modern patterns with `sizes` attribute parsing
-- **Robust fallback system** — Direct site → Google → DuckDuckGo → Icon Horse → Yandex
-- **Duplicate avoidance** — SHA-256-hashes icon data (truncated to 128 bits) to reuse existing custom icons
-- **Auto-prefix URLs** — Automatically adds `https://` to entries without a scheme
-- **Title field fallback** — Uses the Title field if URL is empty
-- **Skip existing icons** — Optionally skip entries that already have custom icons
-- **Configurable icon size** — Scales down to configurable max (default 128×128 px)
-- **Icon name prefix** — Configurable prefix (default: `kpif-`) for custom icon names
-- **Android URL support** — Converts `androidapp://` URLs to web domains with 100+ app mappings, Google Play Store fallback
-- **Placeholder resolution** — Resolves KeePass `{REF:...}` placeholders in URL fields
-- **Self-signed certificate support** — Optional bypass for internal servers
-- **Configurable timeout** — 5–60 seconds
-- **Auto-save** — Optionally save database after downloading
-- **Ghost modification fix** — Database only marked modified when icons actually change
-- **Proxy support** — Respects KeePass proxy settings
-- **Modern TLS** — Supports TLS 1.2/1.3 on .NET 4.8
+![KeePass Plugin](https://img.shields.io/badge/KeePass-2.x%20Plugin-blue)
+![.NET Framework](https://img.shields.io/badge/.NET%20Framework-4.8-purple)
 
-## Installation
+## ✨ Features
 
-1. Download `KeeFetch.dll` or `KeeFetch.plgx` from the [latest release](https://github.com/tzii/KeeFetch/releases)
-2. Copy it into the KeePass `Plugins` folder
-3. Restart KeePass
+- **Concurrent downloads** — Parallel favicon fetching using `SemaphoreSlim` to keep the UI responsive.
+- **Smart icon detection** — Prioritizes `apple-touch-icon`, parses modern `sizes` attributes, and detects high-resolution candidates.
+- **Robust fallback chain** — Direct site → Google → DuckDuckGo → Icon Horse → Yandex.
+- **Deduplication** — SHA-256 hashing ensures icons aren't duplicated in your database.
+- **Android Support** — Converts `androidapp://` URLs to web domains with 100+ built-in mappings and Play Store scraping.
+- **Intelligent URL handling** — Resolves KeePass `{REF:...}` placeholders and auto-prefixes schemes.
+- **Modern Standards** — Supports TLS 1.3, respects KeePass proxy settings, and handles self-signed certificates.
 
-## Building
+## 🚀 Installation
+
+### Quick Install (Recommended)
+
+1. Download `KeeFetch.plgx` from the [latest release](https://github.com/tzii/KeeFetch/releases/latest).
+2. Copy the file into your KeePass `Plugins` folder:
+   - **Portable**: `KeePass/Plugins/`
+   - **Installed**: `%ProgramFiles%/KeePass Password Safe 2/Plugins/`
+3. Restart KeePass.
+
+## 🛠 Usage & Demo
+
+### 1. Simple One-Click Fetch
+
+Right-click any entry and select **KeeFetch - Download Favicons**. The plugin will instantly search for the best icon, prioritizing high-resolution sources like `apple-touch-icon` and large PNGs.
+
+![Single Entry Demo](docs/usage-single.gif)
+*Right-click any entry to instantly fetch its favicon*
+
+### 2. Bulk Group Processing
+
+Process entire groups (including all subgroups) in one go. KeeFetch uses a concurrent engine with `SemaphoreSlim` for up to 8 parallel downloads, so fetching 100+ icons only takes seconds.
+
+![Group Download Demo](docs/usage-group.gif)
+*Process entire groups with concurrent downloads*
+
+### 3. Android App Support
+
+KeeFetch uniquely handles `androidapp://` URLs. It maps package names (like `com.instagram.android`) to official web domains using a built-in database of 100+ app mappings, with Google Play Store fallback.
+
+![Android Mapping Demo](docs/usage-android.gif)
+*Automatic androidapp:// URL to web domain mapping*
+
+### 4. Database-wide Maintenance
+
+Keep your entire database up to date via the Tools menu. Perfect for cleaning up missing icons in large, existing databases.
+
+![Database Maintenance](docs/usage-maintenance.png)
+*Update all entries across your entire database*
+
+**Menu Path:** `Tools` → `KeeFetch` → `Download All Favicons`
+
+> **💡 Tip:** Configure KeeFetch to skip entries that already have custom icons in **Settings** (`Tools` → `KeeFetch` → `Settings...`).
+
+## 🏗 Building from Source
+
+KeeFetch uses an SDK-style project for development and a legacy-style project for PLGX compatibility.
 
 ### Prerequisites
-- Visual Studio 2019+ or MSBuild
-- .NET Framework 4.8 SDK
-- KeePass 2.x (install or portable ZIP)
+- Visual Studio 2022 or .NET 8 SDK
+- .NET Framework 4.8 Targeting Pack
+- KeePass 2.x (installed for PLGX creation)
 
-### Build DLL
-```
-msbuild KeeFetch.csproj /p:Configuration=Release
-```
+### Build Commands
+```powershell
+# Build the DLL and run tests
+dotnet build
+dotnet test
 
-### Build PLGX
-```
+# Create PLGX (requires KeePass.exe in Path)
 KeePass.exe --plgx-create "path\to\KeeFetch"
 ```
 
-## Usage
+## 📖 Architecture
 
-- **Right-click entries** → "KeeFetch - Download Favicons"
-- **Right-click a group** → "KeeFetch - Download Favicons" (recursive, includes subgroups)
-- **Tools menu** → "KeeFetch" → "Download All Favicons"
-- **Tools menu** → "KeeFetch" → "Settings..."
+KeeFetch is designed with a **provider-based fallback strategy**. It first attempts to parse the website directly to find the highest quality icon (looking for `apple-touch-icon` or large PNGs). If that fails, it cycles through multiple specialized favicon services until an icon is found or all sources are exhausted.
 
-## Project Structure
+For a deep dive into the code, see our [Project Structure](CONTRIBUTING.md#project-structure) in the contribution guide.
 
-```
-KeeFetch/
-├── KeeFetchExt.cs              Main plugin entry point
-├── FaviconDownloader.cs        Core download orchestrator with fallback chain
-├── FaviconDialog.cs            Concurrent download UI with progress
-├── Configuration.cs            Plugin settings (persisted via KeePass config)
-├── SettingsForm.cs             Settings dialog
-├── AndroidAppMapper.cs         androidapp:// URL → web domain mapper
-├── Util.cs                     Image resize, hashing, URL helpers
-├── IconProviders/
-│   ├── IIconProvider.cs        Provider interface
-│   ├── IconProviderBase.cs     Shared HTTP download logic
-│   ├── DirectSiteProvider.cs   Primary: HTML parsing, apple-touch-icon, etc.
-│   ├── GoogleProvider.cs       Fallback: Google S2 favicons
-│   ├── DuckDuckGoProvider.cs   Fallback: DuckDuckGo icons
-│   ├── IconHorseProvider.cs    Fallback: icon.horse
-│   └── YandexProvider.cs       Fallback: Yandex favicon service
-└── Properties/
-    └── AssemblyInfo.cs
-```
+## 🤝 Contributing
 
-## Architecture
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-The download pipeline follows a **provider chain** pattern:
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
-1. **DirectSiteProvider** fetches the actual website, parses HTML for `<link rel="icon">` and `<link rel="apple-touch-icon">` tags, and downloads the best candidate icon ordered by size and priority.
-2. If the direct approach fails, **fallback providers** (Google S2, DuckDuckGo, Icon Horse, Yandex) are tried in order, each with reduced timeouts and a cumulative time budget.
-3. For `androidapp://` URLs, the package name is mapped to a web domain via a 100+ entry lookup table, with Google Play Store icon scraping as a last resort.
-4. Downloaded icons are hashed (SHA-256, truncated to 128 bits for `PwUuid`) to deduplicate against existing custom icons in the database.
+## ⚖️ License
 
-Concurrency is managed with a `SemaphoreSlim` (max 8 parallel downloads) and progress is reported via KeePass's built-in `IStatusLogger`.
+Distributed under the MIT License. See `LICENSE` for more information.
 
-## Contributing
+## 🙏 Acknowledgments
 
-See [PLAN.md](PLAN.md) for the current refactor roadmap.
-
-## License
-
-MIT
+- [KeePass Password Safe](https://keepass.info/) — The ultimate password manager.
+- Inspired by [KeePass-Yet-Another-Favicon-Downloader](https://github.com/navossoc/KeePass-Yet-Another-Favicon-Downloader) — The original favicon downloader plugin that inspired this project.
+- [Icon Horse](https://icon.horse/), [DuckDuckGo](https://duckduckgo.com/), [Google](https://google.com), and [Yandex](https://yandex.com) for their favicon APIs.

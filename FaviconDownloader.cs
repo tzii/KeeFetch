@@ -30,7 +30,6 @@ namespace KeeFetch
         private static RemoteCertificateValidationCallback savedOriginalCallback;
 
         private readonly Configuration config;
-        private readonly IWebProxy proxy;
 
         // Cumulative timeout for all attempts on a single entry (prevents hang on many fallbacks)
         private const int MaxCumulativeTimeoutMs = 45000; // 45 seconds max per entry
@@ -41,10 +40,9 @@ namespace KeeFetch
         private static readonly ConcurrentDictionary<string, byte[]> DownloadCache = 
             new ConcurrentDictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
 
-        public FaviconDownloader(Configuration config, IWebProxy proxy)
+        public FaviconDownloader(Configuration config)
         {
             this.config = config;
-            this.proxy = proxy;
         }
 
         /// <summary>Configures TLS 1.1/1.2/1.3 if available on this .NET version.</summary>
@@ -222,7 +220,7 @@ namespace KeeFetch
                 else
                 {
                     string origin = (explicitScheme ?? "https") + "://" + hostWithPort;
-                    iconData = await directProvider.GetIconWithOriginAsync(origin, maxSize, directTimeoutMs, proxy, false, token).ConfigureAwait(false);
+                    iconData = await directProvider.GetIconWithOriginAsync(origin, maxSize, directTimeoutMs, false, token).ConfigureAwait(false);
                 }
                 
                 if (iconData != null)
@@ -249,7 +247,7 @@ namespace KeeFetch
 
                     try
                     {
-                        iconData = await provider.GetIconAsync(host, maxSize, effectiveTimeout, proxy, token).ConfigureAwait(false);
+                        iconData = await provider.GetIconAsync(host, maxSize, effectiveTimeout, token).ConfigureAwait(false);
                         if (iconData != null)
                         {
                             successProvider = provider.Name;
@@ -295,7 +293,7 @@ namespace KeeFetch
             {
                 token.ThrowIfCancellationRequested();
                 string origin = scheme + "://" + hostWithPort;
-                byte[] data = await provider.GetIconWithOriginAsync(origin, maxSize, perSchemeTimeout, proxy, true, token).ConfigureAwait(false);
+                byte[] data = await provider.GetIconWithOriginAsync(origin, maxSize, perSchemeTimeout, true, token).ConfigureAwait(false);
                 if (data != null)
                     return data;
             }
@@ -352,7 +350,7 @@ namespace KeeFetch
                         int timeout = Math.Min(GetEffectiveTimeout(stopwatch, primaryTimeoutMs, true), 10000);
                         if (timeout >= 1000)
                         {
-                            byte[] iconData = await directProvider.GetIconAsync(domain, maxSize, timeout, proxy, token).ConfigureAwait(false);
+                            byte[] iconData = await directProvider.GetIconAsync(domain, maxSize, timeout, token).ConfigureAwait(false);
                             if (iconData != null)
                             {
                                 byte[] resized = Util.ResizeImage(iconData, maxSize, maxSize);
@@ -386,7 +384,7 @@ namespace KeeFetch
 
                         try
                         {
-                            byte[] iconData = await provider.GetIconAsync(domain, maxSize, timeout, proxy, token).ConfigureAwait(false);
+                            byte[] iconData = await provider.GetIconAsync(domain, maxSize, timeout, token).ConfigureAwait(false);
                             if (iconData != null)
                             {
                                 byte[] resized = Util.ResizeImage(iconData, maxSize, maxSize);
@@ -428,7 +426,7 @@ namespace KeeFetch
                     try
                     {
                         token.ThrowIfCancellationRequested();
-                        byte[] playIcon = await AndroidAppMapper.FetchGooglePlayIconAsync(packageName, timeout, proxy, token).ConfigureAwait(false);
+                        byte[] playIcon = await AndroidAppMapper.FetchGooglePlayIconAsync(packageName, timeout, token).ConfigureAwait(false);
                         if (playIcon != null)
                         {
                             byte[] resized = Util.ResizeImage(playIcon, maxSize, maxSize);
@@ -477,7 +475,7 @@ namespace KeeFetch
 
                             try
                             {
-                                byte[] iconData = await provider.GetIconAsync(guessedDomain, maxSize, timeout, proxy, token).ConfigureAwait(false);
+                                byte[] iconData = await provider.GetIconAsync(guessedDomain, maxSize, timeout, token).ConfigureAwait(false);
                                 if (iconData != null)
                                 {
                                     byte[] resized = Util.ResizeImage(iconData, maxSize, maxSize);

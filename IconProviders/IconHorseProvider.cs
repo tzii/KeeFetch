@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,7 +8,7 @@ namespace KeeFetch.IconProviders
     {
         public override string Name { get { return "Icon Horse"; } }
 
-        public override Task<byte[]> GetIconAsync(string host, int size, int timeoutMs, IWebProxy proxy,
+        public override Task<byte[]> GetIconAsync(string host, int size, int timeoutMs,
             CancellationToken token = default(CancellationToken))
         {
             if (Util.IsPrivateHost(host))
@@ -19,7 +18,7 @@ namespace KeeFetch.IconProviders
                 "https://icon.horse/icon/{0}",
                 Uri.EscapeDataString(host));
 
-            return DownloadBytesAsync(url, timeoutMs, proxy, token);
+            return DownloadBytesAsync(url, timeoutMs, token);
         }
     }
 }

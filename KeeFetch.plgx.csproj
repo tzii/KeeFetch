@@ -28,6 +28,7 @@
     <Compile Include="FaviconDownloader.cs" />
     <Compile Include="KeeFetchExt.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="SharedHttp.cs" />
     <Compile Include="SettingsForm.cs" />
     <Compile Include="SettingsForm.Designer.cs" />
     <Compile Include="Util.cs" />

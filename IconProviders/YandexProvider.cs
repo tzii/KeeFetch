@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,7 +8,7 @@ namespace KeeFetch.IconProviders
     {
         public override string Name { get { return "Yandex"; } }
 
-        public override Task<byte[]> GetIconAsync(string host, int size, int timeoutMs, IWebProxy proxy,
+        public override Task<byte[]> GetIconAsync(string host, int size, int timeoutMs,
             CancellationToken token = default(CancellationToken))
         {
             if (Util.IsPrivateHost(host))
@@ -23,7 +22,7 @@ namespace KeeFetch.IconProviders
                 "https://favicon.yandex.net/favicon/{0}?size={1}",
                 Uri.EscapeDataString(host), resolvedSize);
 
-            return DownloadBytesAsync(url, timeoutMs, proxy, token);
+            return DownloadBytesAsync(url, timeoutMs, token);
         }
     }
 }

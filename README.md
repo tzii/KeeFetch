@@ -19,6 +19,10 @@ A fast, smart, and modern favicon downloader plugin for KeePass 2.x.
 - **Intelligent URL handling** — Resolves KeePass `{REF:...}` placeholders and auto-prefixes schemes.
 - **Modern Standards** — Supports TLS 1.3, respects KeePass proxy settings, and handles self-signed certificates.
 
+## 🔒 Privacy
+
+By default, KeeFetch uses third-party favicon services (Google, DuckDuckGo, Icon Horse, Yandex) as fallbacks when direct site fetching fails. When enabled, domain names from your password entries are sent to these services. You can disable third-party services in the plugin settings (`Tools` → `KeeFetch` → `Settings...`) if you prefer to only use direct site fetching.
+
 ## 🚀 Installation
 
 ### Quick Install (Recommended)

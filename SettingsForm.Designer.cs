@@ -158,7 +158,7 @@ namespace KeeFetch
             //
             // chkAllowSelfSigned
             //
-            this.chkAllowSelfSigned.Text = "Allow self-signed SSL certificates";
+            this.chkAllowSelfSigned.Text = "Allow self-signed SSL certificates (weakens TLS validation globally)";
             this.chkAllowSelfSigned.Location = new System.Drawing.Point(15, 25);
             this.chkAllowSelfSigned.Size = new System.Drawing.Size(380, 22);
             this.chkAllowSelfSigned.AutoSize = true;

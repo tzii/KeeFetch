@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,28 +18,15 @@ namespace KeeFetch.IconProviders
         private const string UserAgentString =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
 
-        private static readonly HttpClient SharedHttpClient = CreateHttpClient();
-
-        private static HttpClient CreateHttpClient()
-        {
-            var handler = new HttpClientHandler
-            {
-                AllowAutoRedirect = true,
-                MaxAutomaticRedirections = 10,
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
-            };
-            return new HttpClient(handler);
-        }
-
         public abstract string Name { get; }
-        public abstract Task<byte[]> GetIconAsync(string host, int size, int timeoutMs, IWebProxy proxy,
+        public abstract Task<byte[]> GetIconAsync(string host, int size, int timeoutMs,
             CancellationToken token = default(CancellationToken));
 
         /// <summary>
         /// Downloads bytes from <paramref name="url"/> with a size cap of <see cref="MaxIconDownloadBytes"/>,
         /// validates the result as an image, and supports cancellation via <paramref name="token"/>.
         /// </summary>
-        protected async Task<byte[]> DownloadBytesAsync(string url, int timeoutMs, IWebProxy proxy,
+        protected async Task<byte[]> DownloadBytesAsync(string url, int timeoutMs,
             CancellationToken token = default(CancellationToken))
         {
             try
@@ -55,7 +41,7 @@ namespace KeeFetch.IconProviders
                     using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
                     {
                         cts.CancelAfter(timeoutMs);
-                        var response = await SharedHttpClient.SendAsync(request,
+                        var response = await SharedHttp.Instance.SendAsync(request,
                             HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
 
                         if (!response.IsSuccessStatusCode)

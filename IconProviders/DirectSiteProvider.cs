@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -27,26 +26,13 @@ namespace KeeFetch.IconProviders
             "/apple-touch-icon.png"
         };
 
-        private static readonly HttpClient SharedHttpClient = CreateHttpClient();
-
-        private static HttpClient CreateHttpClient()
-        {
-            var handler = new HttpClientHandler
-            {
-                AllowAutoRedirect = true,
-                MaxAutomaticRedirections = 10,
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
-            };
-            return new HttpClient(handler);
-        }
-
-        public Task<byte[]> GetIconAsync(string host, int size, int timeoutMs, IWebProxy proxy,
+        public Task<byte[]> GetIconAsync(string host, int size, int timeoutMs,
             CancellationToken token = default(CancellationToken))
         {
-            return GetIconWithOriginAsync("https://" + host, size, timeoutMs, proxy, false, token);
+            return GetIconWithOriginAsync("https://" + host, size, timeoutMs, false, token);
         }
 
-        public async Task<byte[]> GetIconWithOriginAsync(string origin, int size, int timeoutMs, IWebProxy proxy,
+        public async Task<byte[]> GetIconWithOriginAsync(string origin, int size, int timeoutMs,
             bool allowPrivateResponse, CancellationToken token = default(CancellationToken))
         {
             token.ThrowIfCancellationRequested();
@@ -57,8 +43,8 @@ namespace KeeFetch.IconProviders
             {
                 try
                 {
-                    token.ThrowIfCancellationRequested();
-                    var probeResult = await DownloadDataAsync(baseUrl + path, probeTimeout, proxy,
+                token.ThrowIfCancellationRequested();
+                    var probeResult = await DownloadDataAsync(baseUrl + path, probeTimeout,
                         MaxIconBytes, allowPrivateResponse, token).ConfigureAwait(false);
                     if (probeResult.Data != null && Util.IsValidImage(probeResult.Data))
                         return probeResult.Data;
@@ -68,7 +54,7 @@ namespace KeeFetch.IconProviders
             }
 
             int htmlTimeout = Math.Min(3000, timeoutMs);
-            var htmlResult = await DownloadDataAsync(baseUrl, htmlTimeout, proxy,
+            var htmlResult = await DownloadDataAsync(baseUrl, htmlTimeout,
                 MaxHtmlBytes, allowPrivateResponse, token).ConfigureAwait(false);
 
             if (htmlResult.Data == null)
@@ -108,7 +94,7 @@ namespace KeeFetch.IconProviders
                 try
                 {
                     token.ThrowIfCancellationRequested();
-                    var candidateResult = await DownloadDataAsync(candidate.Url, candidateTimeout, proxy,
+                    var candidateResult = await DownloadDataAsync(candidate.Url, candidateTimeout,
                         MaxIconBytes, allowPrivateResponse, token).ConfigureAwait(false);
                     if (candidateResult.Data != null && Util.IsValidImage(candidateResult.Data))
                         return candidateResult.Data;
@@ -276,7 +262,7 @@ namespace KeeFetch.IconProviders
             }
         }
 
-        private async Task<DownloadResult> DownloadDataAsync(string url, int timeoutMs, IWebProxy proxy,
+        private async Task<DownloadResult> DownloadDataAsync(string url, int timeoutMs,
             long maxBytes, bool allowPrivateResponse = false, CancellationToken token = default(CancellationToken))
         {
             Uri responseUri = null;
@@ -293,7 +279,7 @@ namespace KeeFetch.IconProviders
                     using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
                     {
                         cts.CancelAfter(timeoutMs);
-                        var response = await SharedHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
+                        var response = await SharedHttp.Instance.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
                         
                         if (!response.IsSuccessStatusCode)
                             return new DownloadResult { Data = null, ResponseUri = null };

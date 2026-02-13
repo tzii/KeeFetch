@@ -76,7 +76,7 @@ namespace KeeFetch.Tests
             // UseThirdPartyFallbacks: true
             // MaxIconSize: 128
             // Timeout: 15
-            // IconNamePrefix: "kpif-"
+            // IconNamePrefix: "keefetch-"
             
             // Verify the Configuration class has all expected properties
             var type = typeof(Configuration);

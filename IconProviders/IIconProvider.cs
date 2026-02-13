@@ -16,7 +16,7 @@ namespace KeeFetch.IconProviders
         /// Attempts to download a favicon for <paramref name="host"/>.
         /// Returns raw image bytes on success, or null if the icon could not be obtained.
         /// </summary>
-        Task<byte[]> GetIconAsync(string host, int size, int timeoutMs, IWebProxy proxy,
+        Task<byte[]> GetIconAsync(string host, int size, int timeoutMs,
             CancellationToken token = default(CancellationToken));
     }
 }

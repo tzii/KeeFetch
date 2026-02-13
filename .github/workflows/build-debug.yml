@@ -56,17 +56,9 @@ jobs:
 
           Write-Output "=== Copying files from: $(Get-Location) ==="
           
-          # Copy only the files needed for plgx-create
-          Write-Output "Copying *.cs files..."
-          $csFiles = Get-ChildItem -Filter "*.cs" -Exclude "*Tests*"
-          Write-Output "Found $($csFiles.Count) .cs files"
-          $csFiles | ForEach-Object { 
-            Write-Output "  Copying: $($_.Name)"
-            Copy-Item -Path $_.FullName -Destination $plgxSrc
-          }
-          
-          Write-Output "Copying *.resx files..."
-          Copy-Item -Path "*.resx" -Destination $plgxSrc
+          # Copy only the files needed for plgx-create (exclude TestCompile.cs)
+          Copy-Item -Path "*.cs" -Destination $plgxSrc -Exclude "TestCompile.cs"
+          Copy-Item -Path "SettingsForm.resx" -Destination $plgxSrc
           
           Write-Output "Copying Properties folder..."
           Copy-Item -Path "Properties" -Destination $plgxSrc -Recurse

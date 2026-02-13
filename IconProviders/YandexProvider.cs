@@ -7,7 +7,7 @@ namespace KeeFetch.IconProviders
 {
     internal sealed class YandexProvider : IconProviderBase
     {
-        public override string Name => "Yandex";
+        public override string Name { get { return "Yandex"; } }
 
         public override Task<byte[]> GetIconAsync(string host, int size, int timeoutMs, IWebProxy proxy,
             CancellationToken token = default(CancellationToken))

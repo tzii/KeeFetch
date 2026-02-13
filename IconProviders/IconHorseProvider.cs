@@ -7,7 +7,7 @@ namespace KeeFetch.IconProviders
 {
     internal sealed class IconHorseProvider : IconProviderBase
     {
-        public override string Name => "Icon Horse";
+        public override string Name { get { return "Icon Horse"; } }
 
         public override Task<byte[]> GetIconAsync(string host, int size, int timeoutMs, IWebProxy proxy,
             CancellationToken token = default(CancellationToken))

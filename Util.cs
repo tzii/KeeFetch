@@ -154,7 +154,8 @@ namespace KeeFetch
                 !lower.Contains("."))
                 return true;
 
-            if (IPAddress.TryParse(host, out IPAddress ip))
+            IPAddress ip;
+            if (IPAddress.TryParse(host, out ip))
             {
                 if (IPAddress.IsLoopback(ip))
                     return true;

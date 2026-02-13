@@ -13,7 +13,7 @@ namespace KeeFetch.IconProviders
 {
     internal sealed class DirectSiteProvider : IIconProvider
     {
-        public string Name => "Direct Site";
+        public string Name { get { return "Direct Site"; } }
 
         private const int MaxCandidates = 8;
         /// <summary>Maximum icon download size (512 KB).</summary>
@@ -58,28 +58,28 @@ namespace KeeFetch.IconProviders
                 try
                 {
                     token.ThrowIfCancellationRequested();
-                    var (data, responseUri) = await DownloadDataAsync(baseUrl + path, probeTimeout, proxy,
+                    var probeResult = await DownloadDataAsync(baseUrl + path, probeTimeout, proxy,
                         MaxIconBytes, allowPrivateResponse, token).ConfigureAwait(false);
-                    if (data != null && Util.IsValidImage(data))
-                        return data;
+                    if (probeResult.Data != null && Util.IsValidImage(probeResult.Data))
+                        return probeResult.Data;
                 }
                 catch (OperationCanceledException) { throw; }
                 catch (Exception ex) { Logger.Debug("GetIconWithOrigin", ex); }
             }
 
             int htmlTimeout = Math.Min(3000, timeoutMs);
-            var (htmlData, htmlResponseUri) = await DownloadDataAsync(baseUrl, htmlTimeout, proxy,
+            var htmlResult = await DownloadDataAsync(baseUrl, htmlTimeout, proxy,
                 MaxHtmlBytes, allowPrivateResponse, token).ConfigureAwait(false);
 
-            if (htmlData == null)
+            if (htmlResult.Data == null)
                 return null;
 
-            string resolvedBase = htmlResponseUri != null
-                ? htmlResponseUri.GetLeftPart(UriPartial.Authority)
+            string resolvedBase = htmlResult.ResponseUri != null
+                ? htmlResult.ResponseUri.GetLeftPart(UriPartial.Authority)
                 : baseUrl;
 
             Encoding encoding = Encoding.UTF8;
-            string htmlStr = encoding.GetString(htmlData);
+            string htmlStr = encoding.GetString(htmlResult.Data);
             var charsetMatch = Regex.Match(htmlStr.Substring(0, Math.Min(htmlStr.Length, 4096)),
                 @"charset\s*=\s*[""']?([^""'\s;>]+)", RegexOptions.IgnoreCase);
             if (charsetMatch.Success)
@@ -87,7 +87,7 @@ namespace KeeFetch.IconProviders
                 try
                 {
                     encoding = Encoding.GetEncoding(charsetMatch.Groups[1].Value.Trim());
-                    htmlStr = encoding.GetString(htmlData);
+                    htmlStr = encoding.GetString(htmlResult.Data);
                 }
                 catch (Exception ex) { Logger.Debug("GetIconWithOrigin", ex); }
             }
@@ -108,10 +108,10 @@ namespace KeeFetch.IconProviders
                 try
                 {
                     token.ThrowIfCancellationRequested();
-                    var (iconData, _) = await DownloadDataAsync(candidate.Url, candidateTimeout, proxy,
+                    var candidateResult = await DownloadDataAsync(candidate.Url, candidateTimeout, proxy,
                         MaxIconBytes, allowPrivateResponse, token).ConfigureAwait(false);
-                    if (iconData != null && Util.IsValidImage(iconData))
-                        return iconData;
+                    if (candidateResult.Data != null && Util.IsValidImage(candidateResult.Data))
+                        return candidateResult.Data;
                 }
                 catch (OperationCanceledException) { throw; }
                 catch (Exception ex) { Logger.Debug("GetIconWithOrigin", ex); }
@@ -185,8 +185,9 @@ namespace KeeFetch.IconProviders
                 if (sizeMatch.Success)
                 {
                     // Use TryParse with overflow protection
-                    if (int.TryParse(sizeMatch.Groups[1].Value, out int w) &&
-                        int.TryParse(sizeMatch.Groups[2].Value, out int h))
+                    int w, h;
+                    if (int.TryParse(sizeMatch.Groups[1].Value, out w) &&
+                        int.TryParse(sizeMatch.Groups[2].Value, out h))
                     {
                         iconSize = Math.Max(w, h);
                     }
@@ -212,10 +213,11 @@ namespace KeeFetch.IconProviders
                 if (sizeMatch.Success)
                 {
                     // Use TryParse with overflow protection
-                    if (int.TryParse(sizeMatch.Groups[1].Value, out int w) &&
-                        int.TryParse(sizeMatch.Groups[2].Value, out int h))
+                    int w2, h2;
+                    if (int.TryParse(sizeMatch.Groups[1].Value, out w2) &&
+                        int.TryParse(sizeMatch.Groups[2].Value, out h2))
                     {
-                        iconSize = Math.Max(w, h);
+                        iconSize = Math.Max(w2, h2);
                     }
                 }
 
@@ -274,7 +276,7 @@ namespace KeeFetch.IconProviders
             }
         }
 
-        private async Task<(byte[] Data, Uri ResponseUri)> DownloadDataAsync(string url, int timeoutMs, IWebProxy proxy,
+        private async Task<DownloadResult> DownloadDataAsync(string url, int timeoutMs, IWebProxy proxy,
             long maxBytes, bool allowPrivateResponse = false, CancellationToken token = default(CancellationToken))
         {
             Uri responseUri = null;
@@ -294,7 +296,7 @@ namespace KeeFetch.IconProviders
                         var response = await SharedHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
                         
                         if (!response.IsSuccessStatusCode)
-                            return (null, null);
+                            return new DownloadResult { Data = null, ResponseUri = null };
 
                         responseUri = response.RequestMessage.RequestUri;
 
@@ -302,18 +304,18 @@ namespace KeeFetch.IconProviders
                         {
                             string responseHost = responseUri.Host;
                             if (Util.IsPrivateHost(responseHost))
-                                return (null, null);
+                                return new DownloadResult { Data = null, ResponseUri = null };
                         }
 
                         var contentLength = response.Content.Headers.ContentLength;
                         if (contentLength.HasValue && contentLength.Value > maxBytes)
-                            return (null, null);
+                            return new DownloadResult { Data = null, ResponseUri = null };
 
                         using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
                         using (var ms = new MemoryStream())
                         {
                             if (stream == null)
-                                return (null, responseUri);
+                                return new DownloadResult { Data = null, ResponseUri = responseUri };
 
                             byte[] buffer = new byte[8192];
                             int read;
@@ -323,10 +325,10 @@ namespace KeeFetch.IconProviders
                                 await ms.WriteAsync(buffer, 0, read, cts.Token).ConfigureAwait(false);
                                 total += read;
                                 if (total > maxBytes)
-                                    return (null, responseUri);
+                                    return new DownloadResult { Data = null, ResponseUri = responseUri };
                             }
 
-                            return (ms.ToArray(), responseUri);
+                            return new DownloadResult { Data = ms.ToArray(), ResponseUri = responseUri };
                         }
                     }
                 }
@@ -335,7 +337,7 @@ namespace KeeFetch.IconProviders
             catch (Exception ex)
             {
                 Logger.Debug("DownloadDataAsync", ex);
-                return (null, responseUri);
+                return new DownloadResult { Data = null, ResponseUri = responseUri };
             }
         }
 
@@ -344,6 +346,12 @@ namespace KeeFetch.IconProviders
             public string Url { get; set; }
             public int Size { get; set; }
             public int Priority { get; set; }
+        }
+
+        private sealed class DownloadResult
+        {
+            public byte[] Data { get; set; }
+            public Uri ResponseUri { get; set; }
         }
     }
 }

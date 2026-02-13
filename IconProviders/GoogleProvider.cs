@@ -7,7 +7,7 @@ namespace KeeFetch.IconProviders
 {
     internal sealed class GoogleProvider : IconProviderBase
     {
-        public override string Name => "Google";
+        public override string Name { get { return "Google"; } }
 
         public override Task<byte[]> GetIconAsync(string host, int size, int timeoutMs, IWebProxy proxy,
             CancellationToken token = default(CancellationToken))

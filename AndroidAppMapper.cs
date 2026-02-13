@@ -227,7 +227,8 @@ namespace KeeFetch
             if (package == null)
                 return null;
 
-            if (KnownMappings.TryGetValue(package, out string domain))
+            string domain;
+            if (KnownMappings.TryGetValue(package, out domain))
                 return domain;
 
             return TryGuessFromPackage(package);

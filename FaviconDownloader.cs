@@ -80,7 +80,8 @@ namespace KeeFetch
         public static byte[] GetCachedIcon(string host)
         {
             if (string.IsNullOrEmpty(host)) return null;
-            DownloadCache.TryGetValue(host, out byte[] data);
+            byte[] data;
+            DownloadCache.TryGetValue(host, out data);
             return data;
         }
 
@@ -302,6 +303,23 @@ namespace KeeFetch
             return null;
         }
 
+        private static bool IsTimeUp(Stopwatch stopwatch)
+        {
+            return stopwatch.ElapsedMilliseconds >= MaxCumulativeTimeoutMs;
+        }
+
+        private static int GetRemainingMs(Stopwatch stopwatch)
+        {
+            return (int)Math.Max(0, MaxCumulativeTimeoutMs - stopwatch.ElapsedMilliseconds);
+        }
+
+        private static int GetEffectiveTimeout(Stopwatch stopwatch, int primaryTimeoutMs, bool isPrimary)
+        {
+            int remaining = GetRemainingMs(stopwatch);
+            int baseTimeout = isPrimary ? primaryTimeoutMs : FallbackTimeoutMs;
+            return Math.Min(baseTimeout, remaining);
+        }
+
         private async Task<FaviconResult> DownloadAndroidIconAsync(string url, int primaryTimeoutMs, int maxSize, Stopwatch stopwatch,
             CancellationToken token = default(CancellationToken))
         {
@@ -309,15 +327,7 @@ namespace KeeFetch
             string packageName = AndroidAppMapper.GetPackageName(url);
             string domain = AndroidAppMapper.MapToWebDomain(url);
 
-            // Helper to check if we've exceeded cumulative timeout
-            bool IsTimeUp() => stopwatch.ElapsedMilliseconds >= MaxCumulativeTimeoutMs;
-            int GetRemainingMs() => (int)Math.Max(0, MaxCumulativeTimeoutMs - stopwatch.ElapsedMilliseconds);
-            int GetEffectiveTimeout(bool isPrimary) 
-            {
-                int remaining = GetRemainingMs();
-                int baseTimeout = isPrimary ? primaryTimeoutMs : FallbackTimeoutMs;
-                return Math.Min(baseTimeout, remaining);
-            }
+            // Helper checks moved to private methods: IsTimeUp, GetRemainingMs, GetEffectiveTimeout
 
             if (!string.IsNullOrEmpty(domain))
             {
@@ -333,13 +343,13 @@ namespace KeeFetch
                 }
 
                 // Try direct site provider with primary timeout
-                if (!IsTimeUp())
+                if (!IsTimeUp(stopwatch))
                 {
                     try
                     {
                         token.ThrowIfCancellationRequested();
                         var directProvider = new DirectSiteProvider();
-                        int timeout = Math.Min(GetEffectiveTimeout(true), 10000);
+                        int timeout = Math.Min(GetEffectiveTimeout(stopwatch, primaryTimeoutMs, true), 10000);
                         if (timeout >= 1000)
                         {
                             byte[] iconData = await directProvider.GetIconAsync(domain, maxSize, timeout, proxy, token).ConfigureAwait(false);
@@ -368,10 +378,10 @@ namespace KeeFetch
                     {
                         var provider = DefaultProviders[i];
 
-                        if (IsTimeUp()) break;
+                        if (IsTimeUp(stopwatch)) break;
                         token.ThrowIfCancellationRequested();
 
-                        int timeout = GetEffectiveTimeout(false);
+                        int timeout = GetEffectiveTimeout(stopwatch, primaryTimeoutMs, false);
                         if (timeout < 1000) break;
 
                         try
@@ -397,7 +407,7 @@ namespace KeeFetch
             }
 
             // Try Google Play Store icon
-            if (!string.IsNullOrEmpty(packageName) && !IsTimeUp())
+            if (!string.IsNullOrEmpty(packageName) && !IsTimeUp(stopwatch))
             {
                 if (string.IsNullOrEmpty(result.Host))
                     result.Host = packageName;
@@ -412,7 +422,7 @@ namespace KeeFetch
                     return result;
                 }
 
-                int timeout = GetEffectiveTimeout(false);
+                int timeout = GetEffectiveTimeout(stopwatch, primaryTimeoutMs, false);
                 if (timeout >= 2000) // Google Play needs a bit more time
                 {
                     try
@@ -437,7 +447,7 @@ namespace KeeFetch
                 }
 
                 // Try guessed domain from package name
-                if (!IsTimeUp())
+                if (!IsTimeUp(stopwatch))
                 {
                     string guessedDomain = AndroidAppMapper.TryGuessFromPackage(packageName);
                     if (!string.IsNullOrEmpty(guessedDomain) &&
@@ -459,10 +469,10 @@ namespace KeeFetch
                         {
                             var provider = DefaultProviders[i];
 
-                            if (IsTimeUp()) break;
+                            if (IsTimeUp(stopwatch)) break;
                             token.ThrowIfCancellationRequested();
 
-                            timeout = GetEffectiveTimeout(false);
+                            timeout = GetEffectiveTimeout(stopwatch, primaryTimeoutMs, false);
                             if (timeout < 1000) break;
 
                             try
@@ -504,8 +514,13 @@ namespace KeeFetch
     /// <summary>Result of a favicon download attempt.</summary>
     internal sealed class FaviconResult
     {
+        public FaviconResult()
+        {
+            Status = FaviconStatus.NotFound;
+        }
+
         public byte[] IconData { get; set; }
-        public FaviconStatus Status { get; set; } = FaviconStatus.NotFound;
+        public FaviconStatus Status { get; set; }
         public string Provider { get; set; }
         public string Host { get; set; }
     }

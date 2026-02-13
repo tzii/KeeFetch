@@ -61,8 +61,9 @@ namespace KeeFetch
             dbModified = false;
             cts = new CancellationTokenSource();
 
+            Form statusForm;
             logger = KeePass.UI.StatusUtil.CreateStatusDialog(
-                host.MainWindow, out var statusForm,
+                host.MainWindow, out statusForm,
                 "KeeFetch - Downloading Favicons",
                 "Downloading favicons for " + totalCount + " entries...",
                 true, true);
@@ -372,7 +373,7 @@ namespace KeeFetch
                 catch (Exception ex) { Logger.Error("ShowCompletionMessage", ex); }
             }
 
-            bool wasCancelled = cts?.IsCancellationRequested ?? false;
+            bool wasCancelled = cts != null && cts.IsCancellationRequested;
 
             string message = string.Format(
                 "KeeFetch completed.\n\n" +

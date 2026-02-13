@@ -49,6 +49,14 @@ jobs:
         run: |
           dotnet build KeeFetch.csproj --configuration Release --no-restore -p:KeePassPath="$env:KEEPASS_DIR"
 
+      - name: Verify C# 5 compatibility
+        shell: pwsh
+        run: |
+          dotnet build KeeFetch.csproj --configuration Release `
+            -p:KeePassPath="$env:KEEPASS_DIR" `
+            -p:LangVersion=5 `
+            -warnaserror
+
       - name: Test
         shell: pwsh
         run: |

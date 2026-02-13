@@ -96,6 +96,9 @@ namespace KeeFetch
                 }
 
                 await workTask; // observe exceptions
+
+                // Clear the download cache to free memory
+                FaviconDownloader.ClearCache();
             }
             catch (OperationCanceledException)
             {
@@ -118,7 +121,6 @@ namespace KeeFetch
 
             try
             {
-                IWebProxy proxy = Util.GetKeePassProxy();
                 PwDatabase db = host.Database;
 
                 int timeoutMs = config.Timeout * 1000;
@@ -151,7 +153,7 @@ namespace KeeFetch
                             try
                             {
                                 token.ThrowIfCancellationRequested();
-                                await ProcessEntryAsync(entry, db, proxy, token);
+                                await ProcessEntryAsync(entry, db, token);
                             }
                             catch (OperationCanceledException)
                             {
@@ -217,7 +219,7 @@ namespace KeeFetch
             }
         }
 
-        private async Task ProcessEntryAsync(PwEntry entry, PwDatabase db, IWebProxy proxy, CancellationToken token)
+        private async Task ProcessEntryAsync(PwEntry entry, PwDatabase db, CancellationToken token)
         {
             if (config.SkipExistingIcons && !entry.CustomIconUuid.Equals(PwUuid.Zero))
             {
@@ -240,7 +242,7 @@ namespace KeeFetch
             }
 
             // Using async DownloadAsync
-            var downloader = new FaviconDownloader(config, proxy);
+            var downloader = new FaviconDownloader(config);
             FaviconResult result = await downloader.DownloadAsync(url, token).ConfigureAwait(false);
 
             if (result.Status != FaviconStatus.Success || result.IconData == null)
@@ -391,9 +393,19 @@ namespace KeeFetch
             {
                 try
                 {
-                    string logPath = Path.Combine(
-                        Path.GetDirectoryName(host.Database.IOConnectionInfo.Path),
-                        "KeeFetch_errors.log");
+                    string logDir = null;
+                    try
+                    {
+                        var dbPath = host.Database.IOConnectionInfo.Path;
+                        if (!string.IsNullOrEmpty(dbPath) && File.Exists(dbPath))
+                            logDir = Path.GetDirectoryName(dbPath);
+                    }
+                    catch { }
+
+                    if (string.IsNullOrEmpty(logDir) || !Directory.Exists(logDir))
+                        logDir = Path.GetTempPath();
+
+                    string logPath = Path.Combine(logDir, "KeeFetch_errors.log");
                     File.WriteAllText(logPath, string.Join(Environment.NewLine + Environment.NewLine, errorLog));
                     message += "\n\nError log saved to:\n" + logPath;
                 }

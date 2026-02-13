@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -20,19 +19,6 @@ namespace KeeFetch
         // Limit HTML scan to 256 KB (sufficient for finding og:image or img tags)
         private const long MaxPlayStoreHtmlBytes = 256 * 1024;
         private const long MaxIconBytes = 512 * 1024;
-
-        private static readonly HttpClient SharedHttpClient = CreateHttpClient();
-
-        private static HttpClient CreateHttpClient()
-        {
-            var handler = new HttpClientHandler
-            {
-                AllowAutoRedirect = true,
-                MaxAutomaticRedirections = 5, // Reduced for safety
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
-            };
-            return new HttpClient(handler);
-        }
 
         private static readonly Dictionary<string, string> KnownMappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -239,10 +225,9 @@ namespace KeeFetch
         /// </summary>
         /// <param name="packageName">The Android package name.</param>
         /// <param name="timeoutMs">Timeout in milliseconds.</param>
-        /// <param name="proxy">Web proxy to use, or null for default.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>Icon image data, or null if fetching fails.</returns>
-        public static async Task<byte[]> FetchGooglePlayIconAsync(string packageName, int timeoutMs, IWebProxy proxy,
+        public static async Task<byte[]> FetchGooglePlayIconAsync(string packageName, int timeoutMs,
             CancellationToken token = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(packageName))
@@ -266,7 +251,7 @@ namespace KeeFetch
                     {
                         cts.CancelAfter(timeoutMs);
 
-                        var response = await SharedHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
+                        var response = await SharedHttp.Instance.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
                         if (!response.IsSuccessStatusCode) return null;
 
                         using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
@@ -319,7 +304,7 @@ namespace KeeFetch
                     using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
                     {
                         cts.CancelAfter(timeoutMs);
-                        var response = await SharedHttpClient.SendAsync(iconRequest, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
+                        var response = await SharedHttp.Instance.SendAsync(iconRequest, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
                         if (!response.IsSuccessStatusCode) return null;
 
                         using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))

@@ -36,23 +36,6 @@ namespace KeeFetch
         }
 
         /// <summary>
-        /// Retrieves the default web proxy configured for KeePass.
-        /// </summary>
-        /// <returns>The configured web proxy, or null if none is available.</returns>
-        public static IWebProxy GetKeePassProxy()
-        {
-            try
-            {
-                return WebRequest.DefaultWebProxy;
-            }
-            catch (Exception ex)
-            {
-                Logger.Debug("GetKeePassProxy", ex);
-                return null;
-            }
-        }
-
-        /// <summary>
         /// Extracts the hostname from a URL.
         /// Automatically prepends https:// if no scheme is present.
         /// </summary>

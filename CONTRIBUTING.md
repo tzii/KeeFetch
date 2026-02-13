@@ -22,6 +22,8 @@ Thank you for your interest in contributing to KeeFetch!
 - Avoid external dependencies unless absolutely necessary.
 - **All code must be C# 5 compatible** — the PLGX is compiled by KeePass using `CSharpCodeProvider` (legacy `csc.exe`). This means: no string interpolation, no expression-bodied members, no null-conditional operators, no pattern matching.
 
+**Why C# 5?** KeePass compiles PLGX files at runtime using CSharpCodeProvider, which on some systems still invokes the legacy C# 5 compiler. CI enforces this with a `LangVersion=5` build step.
+
 ## Development Environment
 
 - Visual Studio 2022 or VS Code with C# Dev Kit.

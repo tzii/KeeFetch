@@ -25,8 +25,8 @@ Thank you for your interest in contributing to KeeFetch!
 ## Development Environment
 
 - Visual Studio 2022 or VS Code with C# Dev Kit.
-- .NET 8 SDK (for building the project).
-- .NET Framework 4.8 targeting pack.
+- .NET 8 SDK (required for SDK-style project support).
+- .NET Framework 4.8 targeting pack (the plugin targets .NET Framework 4.8).
 - KeePass 2.x installed for testing and PLGX creation.
 
 ## Building the PLGX

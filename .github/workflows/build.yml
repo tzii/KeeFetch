@@ -28,20 +28,8 @@ jobs:
       - name: Install KeePass
         shell: pwsh
         run: |
-          # Download KeePass portable directly from SourceForge
-          # Must match the version used for local PLGX builds to avoid
-          # binary-level differences that cause load failures.
-          $keepassVersion = "2.60"
-          $keepassDir = "$env:RUNNER_TEMP\KeePass"
-          New-Item -ItemType Directory -Path $keepassDir -Force | Out-Null
-
-          $zipUrl = "https://sourceforge.net/projects/keepass/files/KeePass%202.x/$keepassVersion/KeePass-$keepassVersion.zip/download"
-          $zipFile = "$env:RUNNER_TEMP\KeePass.zip"
-
-          Write-Output "Downloading KeePass $keepassVersion portable..."
-          Invoke-WebRequest -Uri $zipUrl -OutFile $zipFile -UseBasicParsing
-          Expand-Archive -Path $zipFile -DestinationPath $keepassDir -Force
-
+          choco install keepass.install --version=2.60.0 --no-progress -y --allow-downgrade
+          $keepassDir = "C:\Program Files\KeePass Password Safe 2"
           $kpExe = Join-Path $keepassDir "KeePass.exe"
           if (!(Test-Path $kpExe)) {
             Write-Error "KeePass.exe not found at $kpExe"

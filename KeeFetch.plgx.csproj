@@ -36,11 +36,19 @@
     <!-- IconProviders folder -->
     <Compile Include="IconProviders\DirectSiteProvider.cs" />
     <Compile Include="IconProviders\DuckDuckGoProvider.cs" />
+    <Compile Include="IconProviders\FaviconeProvider.cs" />
     <Compile Include="IconProviders\GoogleProvider.cs" />
     <Compile Include="IconProviders\IconHorseProvider.cs" />
     <Compile Include="IconProviders\IconProviderBase.cs" />
     <Compile Include="IconProviders\IIconProvider.cs" />
+    <Compile Include="IconProviders\TwentyIconsProvider.cs" />
     <Compile Include="IconProviders\YandexProvider.cs" />
+    <Compile Include="IconSelection\IconCandidate.cs" />
+    <Compile Include="IconSelection\IconRequest.cs" />
+    <Compile Include="IconSelection\IconSelectionResult.cs" />
+    <Compile Include="IconSelection\IconSelector.cs" />
+    <Compile Include="IconSelection\IconTier.cs" />
+    <Compile Include="IconSelection\ProviderCapabilities.cs" />
     <EmbeddedResource Include="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>

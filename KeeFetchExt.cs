@@ -221,6 +221,9 @@ namespace KeeFetch
         {
             try
             {
+                if (!EnsureFirstRunDisclosure())
+                    return;
+
                 var dialog = new FaviconDialog(host, Config, entries);
                 await dialog.RunAsync();
             }
@@ -230,6 +233,25 @@ namespace KeeFetch
                 MessageBox.Show("An error occurred during favicon download:\n" + ex.Message,
                     "KeeFetch", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private bool EnsureFirstRunDisclosure()
+        {
+            if (Config.HasSeenFirstRunDisclosure)
+                return true;
+
+            MessageBox.Show(
+                "KeeFetch is availability-first by default.\n\n" +
+                "To maximize success rates, domain names may be sent to third-party favicon services " +
+                "(Twenty Icons, DuckDuckGo, Google, Yandex, Favicone, Icon Horse) when direct fetching " +
+                "is insufficient.\n\n" +
+                "You can disable third-party or synthetic fallbacks in KeeFetch Settings.",
+                "KeeFetch disclosure",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+
+            Config.HasSeenFirstRunDisclosure = true;
+            return true;
         }
 
         public override string UpdateUrl

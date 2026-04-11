@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using KeePass.Plugins;
 using KeePassLib;
 using KeePassLib.Interfaces;
+using KeeFetch.IconSelection;
 
 namespace KeeFetch
 {
@@ -26,13 +27,18 @@ namespace KeeFetch
 
         private int totalCount;
         private int successCount;
+        private int directSiteSuccessCount;
+        private int resolvedSuccessCount;
+        private int syntheticSuccessCount;
         private int skippedCount;
         private int notFoundCount;
         private int errorCount;
         private int processedCount;
         private bool dbModified;
         private readonly List<string> errorLog = new List<string>();
+        private readonly List<string> diagnosticsLog = new List<string>();
         private readonly object errorLogLock = new object();
+        private readonly object diagnosticsLogLock = new object();
 
         // Concurrency limit to avoid ThreadPool starvation and excessive network load
         private const int MaxConcurrency = 8;
@@ -54,11 +60,16 @@ namespace KeeFetch
 
             totalCount = entries.Length;
             successCount = 0;
+            directSiteSuccessCount = 0;
+            resolvedSuccessCount = 0;
+            syntheticSuccessCount = 0;
             skippedCount = 0;
             notFoundCount = 0;
             errorCount = 0;
             processedCount = 0;
             dbModified = false;
+            lock (errorLogLock) { errorLog.Clear(); }
+            lock (diagnosticsLogLock) { diagnosticsLog.Clear(); }
             cts = new CancellationTokenSource();
 
             Form statusForm;
@@ -181,6 +192,9 @@ namespace KeeFetch
                                 uint progressValue = (uint)Math.Min(Math.Max(pct, 0), 100);
 
                                 int currentSuccess = Interlocked.CompareExchange(ref successCount, 0, 0);
+                                int currentDirect = Interlocked.CompareExchange(ref directSiteSuccessCount, 0, 0);
+                                int currentResolved = Interlocked.CompareExchange(ref resolvedSuccessCount, 0, 0);
+                                int currentSynthetic = Interlocked.CompareExchange(ref syntheticSuccessCount, 0, 0);
                                 int currentSkipped = Interlocked.CompareExchange(ref skippedCount, 0, 0);
                                 int currentNotFound = Interlocked.CompareExchange(ref notFoundCount, 0, 0);
                                 int currentErrors = Interlocked.CompareExchange(ref errorCount, 0, 0);
@@ -189,9 +203,10 @@ namespace KeeFetch
                                 {
                                     logger.SetProgress(progressValue);
                                     logger.SetText(string.Format(
-                                        "Processed {0}/{1} ({2}%) — OK: {3}, Skipped: {4}, Not found: {5}, Errors: {6}",
+                                        "Processed {0}/{1} ({2}%) — OK: {3} (Direct {4}, Resolved {5}, Synthetic {6}), Skipped: {7}, Not found: {8}, Errors: {9}",
                                         currentProcessed, totalCount, pct,
-                                        currentSuccess, currentSkipped, currentNotFound, currentErrors),
+                                        currentSuccess, currentDirect, currentResolved, currentSynthetic,
+                                        currentSkipped, currentNotFound, currentErrors),
                                         LogStatusType.Info);
                                 });
                             }
@@ -248,8 +263,16 @@ namespace KeeFetch
             if (result.Status != FaviconStatus.Success || result.IconData == null)
             {
                 Interlocked.Increment(ref notFoundCount);
+                AddDiagnosticsEntry(entry, url, result);
                 return;
             }
+
+            if (result.WasSyntheticFallback || result.SelectedTier == IconTier.SyntheticFallback)
+                Interlocked.Increment(ref syntheticSuccessCount);
+            else if (result.SelectedTier == IconTier.SiteCanonical)
+                Interlocked.Increment(ref directSiteSuccessCount);
+            else if (result.SelectedTier == IconTier.StrongResolved)
+                Interlocked.Increment(ref resolvedSuccessCount);
 
             byte[] iconHash = Util.HashData(result.IconData);
             byte[] iconData = result.IconData;
@@ -299,6 +322,7 @@ namespace KeeFetch
             });
 
             Interlocked.Increment(ref successCount);
+            AddDiagnosticsEntry(entry, url, result);
         }
 
         /// <summary>
@@ -381,30 +405,45 @@ namespace KeeFetch
                 "KeeFetch completed.\n\n" +
                 "Total entries: {0}\n" +
                 "Icons downloaded: {1}\n" +
-                "Skipped: {2}\n" +
-                "Not found: {3}\n" +
-                "Errors: {4}",
-                totalCount, successCount, skippedCount, notFoundCount, errorCount);
+                "  - Direct-site successes: {2}\n" +
+                "  - Third-party resolved successes: {3}\n" +
+                "  - Synthetic fallback successes: {4}\n" +
+                "Skipped: {5}\n" +
+                "Not found: {6}\n" +
+                "Errors: {7}",
+                totalCount, successCount, directSiteSuccessCount, resolvedSuccessCount,
+                syntheticSuccessCount, skippedCount, notFoundCount, errorCount);
 
             if (wasCancelled)
                 message += "\n\nDownload was cancelled by user.";
+
+            string logDir = null;
+            try
+            {
+                var dbPath = host.Database.IOConnectionInfo.Path;
+                if (!string.IsNullOrEmpty(dbPath) && File.Exists(dbPath))
+                    logDir = Path.GetDirectoryName(dbPath);
+            }
+            catch { }
+
+            if (string.IsNullOrEmpty(logDir) || !Directory.Exists(logDir))
+                logDir = Path.GetTempPath();
+
+            if (diagnosticsLog.Count > 0)
+            {
+                try
+                {
+                    string diagnosticsPath = Path.Combine(logDir, "KeeFetch_diagnostics.log");
+                    File.WriteAllText(diagnosticsPath, string.Join(Environment.NewLine, diagnosticsLog));
+                    message += "\n\nDiagnostics log saved to:\n" + diagnosticsPath;
+                }
+                catch (Exception ex) { Logger.Error("ShowCompletionMessage", ex); }
+            }
 
             if (errorLog.Count > 0)
             {
                 try
                 {
-                    string logDir = null;
-                    try
-                    {
-                        var dbPath = host.Database.IOConnectionInfo.Path;
-                        if (!string.IsNullOrEmpty(dbPath) && File.Exists(dbPath))
-                            logDir = Path.GetDirectoryName(dbPath);
-                    }
-                    catch { }
-
-                    if (string.IsNullOrEmpty(logDir) || !Directory.Exists(logDir))
-                        logDir = Path.GetTempPath();
-
                     string logPath = Path.Combine(logDir, "KeeFetch_errors.log");
                     File.WriteAllText(logPath, string.Join(Environment.NewLine + Environment.NewLine, errorLog));
                     message += "\n\nError log saved to:\n" + logPath;
@@ -414,6 +453,51 @@ namespace KeeFetch
 
             MessageBox.Show(message, "KeeFetch", MessageBoxButtons.OK,
                 wasCancelled ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
+        }
+
+        private void AddDiagnosticsEntry(PwEntry entry, string resolvedUrl, FaviconResult result)
+        {
+            try
+            {
+                string title = entry != null ? entry.Strings.ReadSafe(PwDefs.TitleField) : string.Empty;
+                string provider = result != null && !string.IsNullOrEmpty(result.Provider) ? result.Provider : "none";
+                string tier = result != null ? result.SelectedTier.ToString() : "Rejected";
+                string synthetic = (result != null && result.WasSyntheticFallback) ? "true" : "false";
+                string attempted = result != null && result.AttemptedProviders != null
+                    ? string.Join(", ", result.AttemptedProviders)
+                    : string.Empty;
+                string summary = result != null ? result.DiagnosticsSummary : "no-selection";
+
+                string rejected = string.Empty;
+                if (result != null && result.RejectedCandidates != null && result.RejectedCandidates.Count > 0)
+                {
+                    rejected = string.Join(" || ", result.RejectedCandidates
+                        .Where(c => c != null)
+                        .Select(c => string.Format("{0}:{1}", c.ProviderName, c.Notes)));
+                }
+
+                string line = string.Format(
+                    "[{0}] url={1}; provider={2}; tier={3}; synthetic={4}; attempted=[{5}]; summary={6}",
+                    title ?? string.Empty,
+                    resolvedUrl ?? string.Empty,
+                    provider,
+                    tier,
+                    synthetic,
+                    attempted,
+                    summary ?? string.Empty);
+
+                if (!string.IsNullOrWhiteSpace(rejected))
+                    line += "; rejected=" + rejected;
+
+                lock (diagnosticsLogLock)
+                {
+                    diagnosticsLog.Add(line);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug("AddDiagnosticsEntry", ex);
+            }
         }
     }
 }

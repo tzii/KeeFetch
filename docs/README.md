@@ -10,6 +10,9 @@ This folder contains documentation assets used in the KeeFetch README.
 | `usage-group.gif` | Demo of bulk group processing with progress dialog |
 | `usage-android.gif` | Demo of Android `androidapp://` URL mapping |
 | `usage-maintenance.png` | Screenshot of database-wide maintenance via Tools menu |
+| `availability-first-reliability-implementation.md` | File-by-file implementation summary for the reliability redesign |
+| `availability-first-reliability-validation.md` | Build/test/packaging validation commands and outcomes |
+| `availability-first-reliability-regression.md` | Regression corpus and test coverage summary |
 
 ## Recording Guidelines
 

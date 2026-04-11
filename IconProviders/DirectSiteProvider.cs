@@ -2,234 +2,370 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using KeeFetch.IconSelection;
 
 namespace KeeFetch.IconProviders
 {
     internal sealed class DirectSiteProvider : IIconProvider
     {
-        public string Name { get { return "Direct Site"; } }
-
-        private const int MaxCandidates = 8;
-        /// <summary>Maximum icon download size (512 KB).</summary>
+        private const int MaxCandidates = 12;
         private const long MaxIconBytes = 512 * 1024;
-        /// <summary>Maximum HTML download size for icon link parsing (256 KB — icon links are in &lt;head&gt;).</summary>
         private const long MaxHtmlBytes = 256 * 1024;
+        private const long MaxManifestBytes = 128 * 1024;
 
         private static readonly string[] WellKnownPaths = new[]
         {
             "/favicon.ico",
-            "/apple-touch-icon.png"
+            "/apple-touch-icon.png",
+            "/apple-touch-icon-precomposed.png"
         };
 
-        public Task<byte[]> GetIconAsync(string host, int size, int timeoutMs,
+        private static readonly ProviderCapabilities capabilities =
+            new ProviderCapabilities("Direct Site", IconTier.SiteCanonical,
+                isThirdParty: false, isSyntheticCapable: false, isPlaceholderProne: false,
+                concurrencyCap: 4, baseConfidence: 0.86, allowPrivateHosts: true);
+
+        private static readonly Random RetryJitter = new Random();
+        private static readonly object RetryJitterLock = new object();
+
+        public string Name { get { return "Direct Site"; } }
+        public ProviderCapabilities Capabilities { get { return capabilities; } }
+
+        public async Task<IReadOnlyList<IconCandidate>> GetCandidatesAsync(IconRequest request,
             CancellationToken token = default(CancellationToken))
         {
-            return GetIconWithOriginAsync("https://" + host, size, timeoutMs, false, token);
-        }
+            var results = new List<IconCandidate>();
+            if (request == null || string.IsNullOrWhiteSpace(request.TargetHost))
+                return results;
 
-        public async Task<byte[]> GetIconWithOriginAsync(string origin, int size, int timeoutMs,
-            bool allowPrivateResponse, CancellationToken token = default(CancellationToken))
-        {
             token.ThrowIfCancellationRequested();
-            string baseUrl = origin;
 
-            int probeTimeout = Math.Min(1500, timeoutMs);
-            foreach (string path in WellKnownPaths)
+            bool allowPrivateResponse = request.AllowPrivateResponse;
+            string origin = !string.IsNullOrWhiteSpace(request.TargetOrigin)
+                ? request.TargetOrigin
+                : "https://" + request.TargetHost;
+
+            var discoveredLinks = new List<DiscoveredIconLink>();
+            discoveredLinks.AddRange(BuildWellKnownCandidates(origin));
+
+            int htmlTimeout = Math.Min(3000, Math.Max(1000, request.TimeoutMs));
+            var htmlResult = await DownloadDataAsync(origin, htmlTimeout, MaxHtmlBytes,
+                allowPrivateResponse, token).ConfigureAwait(false);
+
+            if (htmlResult.Data != null)
             {
-                try
+                string html = DecodeText(htmlResult.Data);
+                string resolvedBase = htmlResult.ResponseUri != null
+                    ? htmlResult.ResponseUri.GetLeftPart(UriPartial.Authority)
+                    : origin;
+
+                discoveredLinks.AddRange(ParseIconLinks(html, resolvedBase));
+
+                var manifestLinks = ParseManifestLinks(html, resolvedBase);
+                foreach (string manifestUrl in manifestLinks.Take(2))
                 {
-                token.ThrowIfCancellationRequested();
-                    var probeResult = await DownloadDataAsync(baseUrl + path, probeTimeout,
-                        MaxIconBytes, allowPrivateResponse, token).ConfigureAwait(false);
-                    if (probeResult.Data != null && Util.IsValidImage(probeResult.Data))
-                        return probeResult.Data;
+                    token.ThrowIfCancellationRequested();
+                    int manifestTimeout = Math.Min(2500, Math.Max(1000, request.TimeoutMs));
+                    var manifestResult = await DownloadDataAsync(manifestUrl, manifestTimeout,
+                        MaxManifestBytes, allowPrivateResponse, token).ConfigureAwait(false);
+                    if (manifestResult.Data == null)
+                        continue;
+
+                    string manifestJson = DecodeText(manifestResult.Data);
+                    discoveredLinks.AddRange(ParseManifestIcons(manifestJson, manifestUrl));
                 }
-                catch (OperationCanceledException) { throw; }
-                catch (Exception ex) { Logger.Debug("GetIconWithOrigin", ex); }
             }
 
-            int htmlTimeout = Math.Min(3000, timeoutMs);
-            var htmlResult = await DownloadDataAsync(baseUrl, htmlTimeout,
-                MaxHtmlBytes, allowPrivateResponse, token).ConfigureAwait(false);
-
-            if (htmlResult.Data == null)
-                return null;
-
-            string resolvedBase = htmlResult.ResponseUri != null
-                ? htmlResult.ResponseUri.GetLeftPart(UriPartial.Authority)
-                : baseUrl;
-
-            Encoding encoding = Encoding.UTF8;
-            string htmlStr = encoding.GetString(htmlResult.Data);
-            var charsetMatch = Regex.Match(htmlStr.Substring(0, Math.Min(htmlStr.Length, 4096)),
-                @"charset\s*=\s*[""']?([^""'\s;>]+)", RegexOptions.IgnoreCase);
-            if (charsetMatch.Success)
-            {
-                try
-                {
-                    encoding = Encoding.GetEncoding(charsetMatch.Groups[1].Value.Trim());
-                    htmlStr = encoding.GetString(htmlResult.Data);
-                }
-                catch (Exception ex) { Logger.Debug("GetIconWithOrigin", ex); }
-            }
-            string html = htmlStr;
-            var candidates = ParseIconLinks(html, resolvedBase);
-
-            candidates = candidates
-                .GroupBy(c => c.Url.ToLowerInvariant())
-                .Select(g => g.OrderByDescending(c => c.Size).ThenBy(c => c.Priority).First())
+            discoveredLinks = discoveredLinks
+                .Where(c => !string.IsNullOrWhiteSpace(c.Url))
+                .GroupBy(c => c.Url, StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.OrderBy(c => c.Priority)
+                    .ThenByDescending(c => c.Size)
+                    .First())
                 .OrderBy(c => c.Priority)
                 .ThenByDescending(c => c.Size)
                 .Take(MaxCandidates)
                 .ToList();
 
-            int candidateTimeout = Math.Min(2000, timeoutMs);
-            foreach (var candidate in candidates)
+            int candidateTimeout = Math.Min(2200, Math.Max(1000, request.TimeoutMs));
+            foreach (var link in discoveredLinks)
             {
-                try
-                {
-                    token.ThrowIfCancellationRequested();
-                    var candidateResult = await DownloadDataAsync(candidate.Url, candidateTimeout,
-                        MaxIconBytes, allowPrivateResponse, token).ConfigureAwait(false);
-                    if (candidateResult.Data != null && Util.IsValidImage(candidateResult.Data))
-                        return candidateResult.Data;
-                }
-                catch (OperationCanceledException) { throw; }
-                catch (Exception ex) { Logger.Debug("GetIconWithOrigin", ex); }
+                token.ThrowIfCancellationRequested();
+
+                var candidateResult = await DownloadDataAsync(link.Url, candidateTimeout,
+                    MaxIconBytes, allowPrivateResponse, token).ConfigureAwait(false);
+                if (candidateResult.Data == null)
+                    continue;
+
+                var candidate = BuildCandidate(request.TargetHost, link, candidateResult);
+                if (candidate != null)
+                    results.Add(candidate);
             }
 
-            return null;
+            return results;
         }
 
-        internal List<IconCandidate> ParseIconLinks(string html, string baseUrl)
+        internal List<DiscoveredIconLink> ParseIconLinks(string html, string baseUrl)
         {
-            var results = new List<IconCandidate>();
-
+            var results = new List<DiscoveredIconLink>();
             if (string.IsNullOrEmpty(html))
                 return results;
 
+            string head = ExtractHead(html);
+            string resolvedBase = ResolveBaseTag(head, baseUrl);
+
+            var iconPattern = new Regex(
+                @"<link\b[^>]*\brel\s*=\s*[""']?(?:shortcut\s+)?icon[""']?[^>]*>",
+                RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+            var applePattern = new Regex(
+                @"<link\b[^>]*\brel\s*=\s*[""']?apple-touch-icon(?:-precomposed)?[""']?[^>]*>",
+                RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+            var hrefPattern = new Regex(@"\bhref\s*=\s*[""']?([^""'\s>]+)",
+                RegexOptions.IgnoreCase);
+            var sizePattern = new Regex(@"\bsizes\s*=\s*[""']?(\d+)x(\d+)",
+                RegexOptions.IgnoreCase);
+
+            foreach (Match linkMatch in applePattern.Matches(head))
+            {
+                var hrefMatch = hrefPattern.Match(linkMatch.Value);
+                if (!hrefMatch.Success) continue;
+
+                string href = ResolveUrl(hrefMatch.Groups[1].Value, resolvedBase);
+                if (href == null) continue;
+
+                int iconSize = 180;
+                var sizeMatch = sizePattern.Match(linkMatch.Value);
+                if (sizeMatch.Success)
+                {
+                    int w, h;
+                    if (int.TryParse(sizeMatch.Groups[1].Value, out w) &&
+                        int.TryParse(sizeMatch.Groups[2].Value, out h))
+                        iconSize = Math.Max(w, h);
+                }
+
+                results.Add(new DiscoveredIconLink
+                {
+                    Url = href,
+                    Size = iconSize,
+                    Priority = 1,
+                    Tier = IconTier.SiteCanonical,
+                    SourceType = "apple-touch-icon",
+                    IsSvgHint = href.EndsWith(".svg", StringComparison.OrdinalIgnoreCase),
+                    BaseConfidence = 0.94
+                });
+            }
+
+            foreach (Match linkMatch in iconPattern.Matches(head))
+            {
+                var hrefMatch = hrefPattern.Match(linkMatch.Value);
+                if (!hrefMatch.Success) continue;
+
+                string href = ResolveUrl(hrefMatch.Groups[1].Value, resolvedBase);
+                if (href == null) continue;
+
+                int iconSize = 0;
+                var sizeMatch = sizePattern.Match(linkMatch.Value);
+                if (sizeMatch.Success)
+                {
+                    int w, h;
+                    if (int.TryParse(sizeMatch.Groups[1].Value, out w) &&
+                        int.TryParse(sizeMatch.Groups[2].Value, out h))
+                        iconSize = Math.Max(w, h);
+                }
+
+                int priority = iconSize >= 64 ? 2 : 4;
+                results.Add(new DiscoveredIconLink
+                {
+                    Url = href,
+                    Size = iconSize,
+                    Priority = priority,
+                    Tier = IconTier.SiteCanonical,
+                    SourceType = "rel-icon",
+                    IsSvgHint = href.EndsWith(".svg", StringComparison.OrdinalIgnoreCase),
+                    BaseConfidence = iconSize >= 64 ? 0.90 : 0.82
+                });
+            }
+
+            string ogUrl = ParseOgImage(head, resolvedBase);
+            if (ogUrl != null)
+            {
+                results.Add(new DiscoveredIconLink
+                {
+                    Url = ogUrl,
+                    Size = 200,
+                    Priority = 10,
+                    Tier = IconTier.StrongResolved,
+                    SourceType = "og:image-backup",
+                    IsSvgHint = ogUrl.EndsWith(".svg", StringComparison.OrdinalIgnoreCase),
+                    BaseConfidence = 0.52
+                });
+            }
+
+            return results;
+        }
+
+        internal List<string> ParseManifestLinks(string html, string baseUrl)
+        {
+            var results = new List<string>();
+            if (string.IsNullOrEmpty(html))
+                return results;
+
+            string head = ExtractHead(html);
+            string resolvedBase = ResolveBaseTag(head, baseUrl);
+
+            var manifestPattern = new Regex(
+                @"<link\b[^>]*\brel\s*=\s*[""'][^""']*manifest[^""']*[""'][^>]*>",
+                RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var hrefPattern = new Regex(
+                @"\bhref\s*=\s*[""']?([^""'\s>]+)",
+                RegexOptions.IgnoreCase);
+
+            foreach (Match linkMatch in manifestPattern.Matches(head))
+            {
+                var hrefMatch = hrefPattern.Match(linkMatch.Value);
+                if (!hrefMatch.Success)
+                    continue;
+
+                string manifestUrl = ResolveUrl(hrefMatch.Groups[1].Value, resolvedBase);
+                if (manifestUrl != null)
+                    results.Add(manifestUrl);
+            }
+
+            return results
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        internal List<DiscoveredIconLink> ParseManifestIcons(string manifestJson, string manifestUrl)
+        {
+            var results = new List<DiscoveredIconLink>();
+            if (string.IsNullOrWhiteSpace(manifestJson))
+                return results;
+
+            var objectPattern = new Regex(@"\{[^{}]*""src""\s*:\s*""(?<src>[^""]+)""[^{}]*\}",
+                RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+            foreach (Match match in objectPattern.Matches(manifestJson))
+            {
+                string objectText = match.Value;
+                string src = match.Groups["src"].Value;
+                string resolved = ResolveUrl(src, manifestUrl);
+                if (resolved == null)
+                    continue;
+
+                int size = 192;
+                var sizeMatch = Regex.Match(objectText, @"""sizes""\s*:\s*""(?<sizes>[^""]+)""",
+                    RegexOptions.IgnoreCase);
+                if (sizeMatch.Success)
+                {
+                    int parsed = ParseLargestSize(sizeMatch.Groups["sizes"].Value);
+                    if (parsed > 0) size = parsed;
+                }
+
+                bool isSvg = resolved.EndsWith(".svg", StringComparison.OrdinalIgnoreCase) ||
+                             Regex.IsMatch(objectText, @"image/svg\+xml", RegexOptions.IgnoreCase);
+
+                results.Add(new DiscoveredIconLink
+                {
+                    Url = resolved,
+                    Size = size,
+                    Priority = isSvg ? 3 : 2,
+                    Tier = IconTier.SiteCanonical,
+                    SourceType = "manifest-icon",
+                    IsSvgHint = isSvg,
+                    BaseConfidence = isSvg ? 0.68 : 0.91
+                });
+            }
+
+            return results;
+        }
+
+        private List<DiscoveredIconLink> BuildWellKnownCandidates(string origin)
+        {
+            var results = new List<DiscoveredIconLink>();
+            foreach (string path in WellKnownPaths)
+            {
+                results.Add(new DiscoveredIconLink
+                {
+                    Url = origin.TrimEnd('/') + path,
+                    Size = path.IndexOf("apple-touch", StringComparison.OrdinalIgnoreCase) >= 0 ? 180 : 32,
+                    Priority = path.IndexOf("apple-touch", StringComparison.OrdinalIgnoreCase) >= 0 ? 1 : 3,
+                    Tier = IconTier.SiteCanonical,
+                    SourceType = "well-known",
+                    IsSvgHint = false,
+                    BaseConfidence = path.IndexOf("apple-touch", StringComparison.OrdinalIgnoreCase) >= 0 ? 0.90 : 0.84
+                });
+            }
+            return results;
+        }
+
+        private static string ExtractHead(string html)
+        {
             string head = html;
             var headMatch = Regex.Match(html, @"<head[^>]*>(.*?)</head>",
                 RegexOptions.Singleline | RegexOptions.IgnoreCase);
             if (headMatch.Success)
                 head = headMatch.Groups[1].Value;
 
-            head = Regex.Replace(head, @"<!--.*?-->", string.Empty,
-                RegexOptions.Singleline);
+            head = Regex.Replace(head, @"<!--.*?-->", string.Empty, RegexOptions.Singleline);
             head = Regex.Replace(head, @"<script[^>]*>.*?</script>", string.Empty,
                 RegexOptions.Singleline | RegexOptions.IgnoreCase);
             head = Regex.Replace(head, @"<style[^>]*>.*?</style>", string.Empty,
                 RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            return head;
+        }
 
-            string resolvedBase = baseUrl;
+        private static string ResolveBaseTag(string head, string fallbackBase)
+        {
+            string resolvedBase = fallbackBase;
             var baseMatch = Regex.Match(head, @"<base[^>]+href\s*=\s*[""']([^""']+)[""']",
                 RegexOptions.IgnoreCase);
-            if (baseMatch.Success)
+            if (!baseMatch.Success)
+                return resolvedBase;
+
+            string candidate = baseMatch.Groups[1].Value.Trim();
+            try
             {
-                string candidate = baseMatch.Groups[1].Value.TrimEnd('/');
-                try
-                {
-                    var baseUri = new Uri(baseUrl);
-                    var candidateUri = new Uri(candidate);
-                    if (candidateUri.Host.Equals(baseUri.Host, StringComparison.OrdinalIgnoreCase))
-                        resolvedBase = candidate;
-                }
-                catch (Exception ex) { Logger.Debug("ParseIconLinks", ex); }
+                var fallbackUri = new Uri(fallbackBase);
+                var candidateUri = new Uri(candidate);
+                if (candidateUri.Host.Equals(fallbackUri.Host, StringComparison.OrdinalIgnoreCase))
+                    resolvedBase = candidate;
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug("ResolveBaseTag", ex);
             }
 
-            var linkPattern = new Regex(
-                @"<link\b[^>]*\brel\s*=\s*[""']?(?:shortcut\s+)?icon[""']?[^>]*>",
-                RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            return resolvedBase;
+        }
 
-            var appleLinkPattern = new Regex(
-                @"<link\b[^>]*\brel\s*=\s*[""']?apple-touch-icon(?:-precomposed)?[""']?[^>]*>",
-                RegexOptions.IgnoreCase | RegexOptions.Singleline);
-
-            var hrefPattern = new Regex(
-                @"\bhref\s*=\s*[""']?([^""'\s>]+)",
-                RegexOptions.IgnoreCase);
-
-            var sizesPattern = new Regex(
-                @"\bsizes\s*=\s*[""']?(\d+)x(\d+)",
-                RegexOptions.IgnoreCase);
-
-            foreach (Match linkMatch in appleLinkPattern.Matches(head))
-            {
-                var hrefMatch = hrefPattern.Match(linkMatch.Value);
-                if (!hrefMatch.Success) continue;
-
-                string href = ResolveUrl(hrefMatch.Groups[1].Value, resolvedBase);
-                if (href == null) continue;
-
-                int iconSize = 0;
-                var sizeMatch = sizesPattern.Match(linkMatch.Value);
-                if (sizeMatch.Success)
-                {
-                    // Use TryParse with overflow protection
-                    int w, h;
-                    if (int.TryParse(sizeMatch.Groups[1].Value, out w) &&
-                        int.TryParse(sizeMatch.Groups[2].Value, out h))
-                    {
-                        iconSize = Math.Max(w, h);
-                    }
-                }
-                else
-                {
-                    iconSize = 180;
-                }
-
-                results.Add(new IconCandidate { Url = href, Size = iconSize, Priority = 1 });
-            }
-
-            foreach (Match linkMatch in linkPattern.Matches(head))
-            {
-                var hrefMatch = hrefPattern.Match(linkMatch.Value);
-                if (!hrefMatch.Success) continue;
-
-                string href = ResolveUrl(hrefMatch.Groups[1].Value, resolvedBase);
-                if (href == null) continue;
-
-                int iconSize = 0;
-                var sizeMatch = sizesPattern.Match(linkMatch.Value);
-                if (sizeMatch.Success)
-                {
-                    // Use TryParse with overflow protection
-                    int w2, h2;
-                    if (int.TryParse(sizeMatch.Groups[1].Value, out w2) &&
-                        int.TryParse(sizeMatch.Groups[2].Value, out h2))
-                    {
-                        iconSize = Math.Max(w2, h2);
-                    }
-                }
-
-                int priority = iconSize >= 32 ? 2 : 5;
-                results.Add(new IconCandidate { Url = href, Size = iconSize, Priority = priority });
-            }
-
-            var ogImagePattern = new Regex(
+        private string ParseOgImage(string head, string baseUrl)
+        {
+            var ogPattern = new Regex(
                 @"<meta\b[^>]*\bproperty\s*=\s*[""']?og:image[""']?[^>]*\bcontent\s*=\s*[""']?([^""'\s>]+)",
                 RegexOptions.IgnoreCase);
-            var ogMatch = ogImagePattern.Match(head);
-            if (!ogMatch.Success)
+
+            var match = ogPattern.Match(head);
+            if (!match.Success)
             {
-                ogImagePattern = new Regex(
+                ogPattern = new Regex(
                     @"<meta\b[^>]*\bcontent\s*=\s*[""']?([^""'\s>]+)[^>]*\bproperty\s*=\s*[""']?og:image[""']?",
                     RegexOptions.IgnoreCase);
-                ogMatch = ogImagePattern.Match(head);
-            }
-            if (ogMatch.Success)
-            {
-                string ogUrl = ResolveUrl(ogMatch.Groups[1].Value, resolvedBase);
-                if (ogUrl != null)
-                    results.Add(new IconCandidate { Url = ogUrl, Size = 200, Priority = 8 });
+                match = ogPattern.Match(head);
             }
 
-            return results;
+            if (!match.Success)
+                return null;
+
+            return ResolveUrl(match.Groups[1].Value, baseUrl);
         }
 
         private string ResolveUrl(string href, string baseUrl)
@@ -238,7 +374,6 @@ namespace KeeFetch.IconProviders
                 return null;
 
             href = href.Trim();
-
             if (href.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
                 return null;
 
@@ -251,8 +386,8 @@ namespace KeeFetch.IconProviders
 
             try
             {
-                var bUri = new Uri(baseUrl.TrimEnd('/') + "/");
-                var resolved = new Uri(bUri, href);
+                var baseUri = new Uri(baseUrl.TrimEnd('/') + "/");
+                var resolved = new Uri(baseUri, href);
                 return resolved.AbsoluteUri;
             }
             catch (Exception ex)
@@ -262,82 +397,334 @@ namespace KeeFetch.IconProviders
             }
         }
 
-        private async Task<DownloadResult> DownloadDataAsync(string url, int timeoutMs,
-            long maxBytes, bool allowPrivateResponse = false, CancellationToken token = default(CancellationToken))
+        private static int ParseLargestSize(string sizesValue)
         {
-            Uri responseUri = null;
-            try
+            if (string.IsNullOrWhiteSpace(sizesValue))
+                return 0;
+
+            int max = 0;
+            var tokens = sizesValue.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string token in tokens)
             {
-                token.ThrowIfCancellationRequested();
+                var m = Regex.Match(token, @"(\d+)x(\d+)", RegexOptions.IgnoreCase);
+                if (!m.Success)
+                    continue;
 
-                using (var request = new HttpRequestMessage(HttpMethod.Get, url))
+                int w, h;
+                if (int.TryParse(m.Groups[1].Value, out w) &&
+                    int.TryParse(m.Groups[2].Value, out h))
                 {
-                    request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-                    request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
-                    request.Headers.Add("Accept-Language", "en-US,en;q=0.9");
+                    max = Math.Max(max, Math.Max(w, h));
+                }
+            }
 
-                    using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
+            return max;
+        }
+
+        private IconCandidate BuildCandidate(string targetHost, DiscoveredIconLink link, DownloadResult download)
+        {
+            byte[] data = download.Data;
+            if (data == null || data.Length == 0)
+                return null;
+
+            bool isSvg = link.IsSvgHint || LooksLikeSvg(link.Url, download.ContentType, data);
+            if (isSvg)
+            {
+                return new IconCandidate
+                {
+                    ProviderName = Name,
+                    TargetHost = targetHost,
+                    SourceUrl = link.Url,
+                    Tier = link.Tier,
+                    RawData = data,
+                    NormalizedPngData = null,
+                    OriginalFormat = "svg",
+                    Width = 0,
+                    Height = 0,
+                    IsSvg = true,
+                    IsSynthetic = false,
+                    IsPlaceholderSuspected = false,
+                    IsBlankSuspected = false,
+                    ConfidenceScore = Math.Max(0.05, link.BaseConfidence - 0.40),
+                    Notes = "SVG candidate detected from " + link.SourceType + "."
+                };
+            }
+
+            if (!Util.IsValidImage(data))
+                return null;
+
+            byte[] normalized = Util.NormalizeToPng(data);
+            byte[] normalizedPng = normalized ?? data;
+
+            int width;
+            int height;
+            string format;
+            Util.TryGetImageInfo(normalizedPng, out width, out height, out format);
+
+            bool blank = Util.IsProbablyBlankImage(normalizedPng);
+            double score = link.BaseConfidence + ComputeSizeScore(width, height);
+            if (blank)
+                score -= 0.30;
+            score = Math.Max(0.0, Math.Min(1.0, score));
+
+            return new IconCandidate
+            {
+                ProviderName = Name,
+                TargetHost = targetHost,
+                SourceUrl = link.Url,
+                Tier = link.Tier,
+                RawData = data,
+                NormalizedPngData = normalizedPng,
+                OriginalFormat = string.IsNullOrEmpty(format) ? "unknown" : format,
+                Width = width,
+                Height = height,
+                IsSvg = false,
+                IsSynthetic = false,
+                IsPlaceholderSuspected = false,
+                IsBlankSuspected = blank,
+                ConfidenceScore = score,
+                Notes = link.SourceType
+            };
+        }
+
+        private static double ComputeSizeScore(int width, int height)
+        {
+            int max = Math.Max(width, height);
+            if (max <= 0) return 0.0;
+            if (max >= 192) return 0.15;
+            if (max >= 128) return 0.10;
+            if (max >= 64) return 0.06;
+            if (max >= 32) return 0.03;
+            return 0.01;
+        }
+
+        private async Task<DownloadResult> DownloadDataAsync(string url, int timeoutMs, long maxBytes,
+            bool allowPrivateResponse, CancellationToken token = default(CancellationToken))
+        {
+            int attempt = 0;
+            Uri responseUri = null;
+
+            while (attempt < 2)
+            {
+                bool shouldRetry = false;
+
+                try
+                {
+                    token.ThrowIfCancellationRequested();
+
+                    using (var request = new HttpRequestMessage(HttpMethod.Get, url))
                     {
-                        cts.CancelAfter(timeoutMs);
-                        var response = await SharedHttp.Instance.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
-                        
-                        if (!response.IsSuccessStatusCode)
-                            return new DownloadResult { Data = null, ResponseUri = null };
+                        request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+                        request.Headers.Add("Accept", "text/html,application/manifest+json,application/json,image/svg+xml,image/webp,image/apng,image/*,*/*;q=0.8");
+                        request.Headers.Add("Accept-Language", "en-US,en;q=0.9");
 
-                        responseUri = response.RequestMessage.RequestUri;
-
-                        if (!allowPrivateResponse && responseUri != null)
+                        using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
                         {
-                            string responseHost = responseUri.Host;
-                            if (Util.IsPrivateHost(responseHost))
-                                return new DownloadResult { Data = null, ResponseUri = null };
-                        }
+                            cts.CancelAfter(Math.Max(1000, timeoutMs));
+                            var response = await SharedHttp.Instance.SendAsync(request,
+                                HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
 
-                        var contentLength = response.Content.Headers.ContentLength;
-                        if (contentLength.HasValue && contentLength.Value > maxBytes)
-                            return new DownloadResult { Data = null, ResponseUri = null };
-
-                        using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                        using (var ms = new MemoryStream())
-                        {
-                            if (stream == null)
-                                return new DownloadResult { Data = null, ResponseUri = responseUri };
-
-                            byte[] buffer = new byte[8192];
-                            int read;
-                            long total = 0;
-                            while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token).ConfigureAwait(false)) > 0)
+                            if (!response.IsSuccessStatusCode)
                             {
-                                await ms.WriteAsync(buffer, 0, read, cts.Token).ConfigureAwait(false);
-                                total += read;
-                                if (total > maxBytes)
-                                    return new DownloadResult { Data = null, ResponseUri = responseUri };
+                                shouldRetry = attempt == 0 && IsRetryableStatus(response.StatusCode);
+                                if (!shouldRetry)
+                                {
+                                    return new DownloadResult
+                                    {
+                                        Data = null,
+                                        ResponseUri = null,
+                                        ContentType = null,
+                                        StatusCode = response.StatusCode
+                                    };
+                                }
+                                continue;
                             }
 
-                            return new DownloadResult { Data = ms.ToArray(), ResponseUri = responseUri };
+                            responseUri = response.RequestMessage != null ? response.RequestMessage.RequestUri : null;
+                            if (!allowPrivateResponse && responseUri != null && Util.IsPrivateHost(responseUri.Host))
+                            {
+                                return new DownloadResult
+                                {
+                                    Data = null,
+                                    ResponseUri = responseUri,
+                                    ContentType = null,
+                                    StatusCode = response.StatusCode
+                                };
+                            }
+
+                            var contentLength = response.Content.Headers.ContentLength;
+                            if (contentLength.HasValue && contentLength.Value > maxBytes)
+                            {
+                                return new DownloadResult
+                                {
+                                    Data = null,
+                                    ResponseUri = responseUri,
+                                    ContentType = null,
+                                    StatusCode = response.StatusCode
+                                };
+                            }
+
+                            using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                            using (var ms = new MemoryStream())
+                            {
+                                if (stream == null)
+                                {
+                                    return new DownloadResult
+                                    {
+                                        Data = null,
+                                        ResponseUri = responseUri,
+                                        ContentType = response.Content.Headers.ContentType != null
+                                            ? response.Content.Headers.ContentType.MediaType
+                                            : null,
+                                        StatusCode = response.StatusCode
+                                    };
+                                }
+
+                                byte[] buffer = new byte[8192];
+                                int read;
+                                long total = 0;
+                                while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token).ConfigureAwait(false)) > 0)
+                                {
+                                    await ms.WriteAsync(buffer, 0, read, cts.Token).ConfigureAwait(false);
+                                    total += read;
+                                    if (total > maxBytes)
+                                    {
+                                        return new DownloadResult
+                                        {
+                                            Data = null,
+                                            ResponseUri = responseUri,
+                                            ContentType = response.Content.Headers.ContentType != null
+                                                ? response.Content.Headers.ContentType.MediaType
+                                                : null,
+                                            StatusCode = response.StatusCode
+                                        };
+                                    }
+                                }
+
+                                return new DownloadResult
+                                {
+                                    Data = ms.ToArray(),
+                                    ResponseUri = responseUri,
+                                    ContentType = response.Content.Headers.ContentType != null
+                                        ? response.Content.Headers.ContentType.MediaType
+                                        : null,
+                                    StatusCode = response.StatusCode
+                                };
+                            }
                         }
                     }
                 }
+                catch (OperationCanceledException)
+                {
+                    if (token.IsCancellationRequested)
+                        throw;
+                    shouldRetry = attempt == 0;
+                }
+                catch (HttpRequestException ex)
+                {
+                    Logger.Debug("DownloadDataAsync", ex);
+                    shouldRetry = attempt == 0;
+                }
+                catch (IOException ex)
+                {
+                    Logger.Debug("DownloadDataAsync", ex);
+                    shouldRetry = attempt == 0;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug("DownloadDataAsync", ex);
+                    return new DownloadResult { Data = null, ResponseUri = responseUri, ContentType = null, StatusCode = null };
+                }
+                finally
+                {
+                    attempt++;
+                }
+
+                if (shouldRetry && attempt < 2)
+                {
+                    await Task.Delay(150 + NextJitter(250), token).ConfigureAwait(false);
+                    continue;
+                }
+
+                break;
             }
-            catch (OperationCanceledException) { throw; }
-            catch (Exception ex)
+
+            return new DownloadResult { Data = null, ResponseUri = responseUri, ContentType = null, StatusCode = null };
+        }
+
+        private static bool IsRetryableStatus(HttpStatusCode statusCode)
+        {
+            return statusCode == (HttpStatusCode)429 ||
+                   statusCode == HttpStatusCode.ServiceUnavailable ||
+                   statusCode == HttpStatusCode.BadGateway ||
+                   statusCode == HttpStatusCode.GatewayTimeout;
+        }
+
+        private static int NextJitter(int maxExclusive)
+        {
+            lock (RetryJitterLock)
             {
-                Logger.Debug("DownloadDataAsync", ex);
-                return new DownloadResult { Data = null, ResponseUri = responseUri };
+                return RetryJitter.Next(0, Math.Max(1, maxExclusive));
             }
         }
 
-        internal class IconCandidate
+        private static string DecodeText(byte[] data)
+        {
+            if (data == null || data.Length == 0)
+                return string.Empty;
+
+            Encoding encoding = Encoding.UTF8;
+            string text = encoding.GetString(data);
+            string headSample = text.Substring(0, Math.Min(text.Length, 4096));
+            var charsetMatch = Regex.Match(headSample,
+                @"charset\s*=\s*[""']?([^""'\s;>]+)", RegexOptions.IgnoreCase);
+            if (charsetMatch.Success)
+            {
+                try
+                {
+                    encoding = Encoding.GetEncoding(charsetMatch.Groups[1].Value.Trim());
+                    text = encoding.GetString(data);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug("DecodeText", ex);
+                }
+            }
+            return text;
+        }
+
+        private static bool LooksLikeSvg(string sourceUrl, string contentType, byte[] data)
+        {
+            if (!string.IsNullOrEmpty(contentType) &&
+                contentType.IndexOf("svg", StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+
+            if (!string.IsNullOrEmpty(sourceUrl) &&
+                sourceUrl.IndexOf(".svg", StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+
+            int sampleLength = Math.Min(data.Length, 512);
+            string sample = Encoding.UTF8.GetString(data, 0, sampleLength);
+            return sample.IndexOf("<svg", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        internal sealed class DiscoveredIconLink
         {
             public string Url { get; set; }
             public int Size { get; set; }
             public int Priority { get; set; }
+            public IconTier Tier { get; set; }
+            public string SourceType { get; set; }
+            public bool IsSvgHint { get; set; }
+            public double BaseConfidence { get; set; }
         }
 
         private sealed class DownloadResult
         {
             public byte[] Data { get; set; }
             public Uri ResponseUri { get; set; }
+            public string ContentType { get; set; }
+            public HttpStatusCode? StatusCode { get; set; }
         }
     }
 }

@@ -129,6 +129,30 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
+        public void TryParseHttpUri_WithPrefixEnabled_ParsesBareHost()
+        {
+            System.Uri uri;
+            bool ok = Util.TryParseHttpUri("example.com/login", true, out uri);
+            Assert.IsTrue(ok);
+            Assert.AreEqual("example.com", uri.Host);
+            Assert.AreEqual("https", uri.Scheme);
+        }
+
+        [TestMethod]
+        public void GetNormalizedOriginKey_DistinguishesSchemeAndPort()
+        {
+            string https = Util.GetNormalizedOriginKey("https://example.com", true);
+            string http = Util.GetNormalizedOriginKey("http://example.com", true);
+            string custom = Util.GetNormalizedOriginKey("https://example.com:8443", true);
+
+            Assert.AreEqual("https://example.com:443", https);
+            Assert.AreEqual("http://example.com:80", http);
+            Assert.AreEqual("https://example.com:8443", custom);
+            Assert.AreNotEqual(https, http);
+            Assert.AreNotEqual(https, custom);
+        }
+
+        [TestMethod]
         public void IsPrivateHost_Localhost_ReturnsTrue()
         {
             Assert.IsTrue(Util.IsPrivateHost("localhost"));

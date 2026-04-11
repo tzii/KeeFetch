@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using KeePass.App.Configuration;
 
 namespace KeeFetch
@@ -17,22 +19,28 @@ namespace KeeFetch
         private bool? autoSave;
         private bool? allowSelfSignedCerts;
         private bool? useThirdPartyFallbacks;
+        private bool? allowSyntheticFallbacks;
+        private bool? hasSeenFirstRunDisclosure;
+
+        private bool? enableDirectSiteProvider;
+        private bool? enableTwentyIconsProvider;
+        private bool? enableDuckDuckGoProvider;
+        private bool? enableGoogleProvider;
+        private bool? enableYandexProvider;
+        private bool? enableFaviconeProvider;
+        private bool? enableIconHorseProvider;
+
         private int? maxIconSize;
         private int? timeout;
-        private string iconNamePrefix;
 
-        /// <summary>
-        /// Initializes a new instance of the Configuration class.
-        /// </summary>
-        /// <param name="customConfig">The KeePass custom configuration.</param>
+        private string iconNamePrefix;
+        private string providerOrder;
+
         public Configuration(AceCustomConfig customConfig)
         {
             config = customConfig;
         }
 
-        /// <summary>
-        /// Gets or sets whether to automatically prefix URLs with http:// or https://.
-        /// </summary>
         public bool PrefixUrls
         {
             get
@@ -48,9 +56,6 @@ namespace KeeFetch
             }
         }
 
-        /// <summary>
-        /// Gets or sets whether to use the entry title field when URL is empty.
-        /// </summary>
         public bool UseTitleField
         {
             get
@@ -66,9 +71,6 @@ namespace KeeFetch
             }
         }
 
-        /// <summary>
-        /// Gets or sets whether to skip entries that already have custom icons.
-        /// </summary>
         public bool SkipExistingIcons
         {
             get
@@ -84,9 +86,6 @@ namespace KeeFetch
             }
         }
 
-        /// <summary>
-        /// Gets or sets whether to automatically save the database after downloading icons.
-        /// </summary>
         public bool AutoSave
         {
             get
@@ -102,9 +101,6 @@ namespace KeeFetch
             }
         }
 
-        /// <summary>
-        /// Gets or sets whether to allow self-signed SSL certificates.
-        /// </summary>
         public bool AllowSelfSignedCerts
         {
             get
@@ -120,9 +116,6 @@ namespace KeeFetch
             }
         }
 
-        /// <summary>
-        /// Gets or sets whether to use third-party fallback providers (Google, DuckDuckGo, etc.).
-        /// </summary>
         public bool UseThirdPartyFallbacks
         {
             get
@@ -138,9 +131,36 @@ namespace KeeFetch
             }
         }
 
-        /// <summary>
-        /// Gets or sets the maximum icon size in pixels.
-        /// </summary>
+        public bool AllowSyntheticFallbacks
+        {
+            get
+            {
+                if (!allowSyntheticFallbacks.HasValue)
+                    allowSyntheticFallbacks = config.GetBool(Prefix + "AllowSyntheticFallbacks", true);
+                return allowSyntheticFallbacks.Value;
+            }
+            set
+            {
+                allowSyntheticFallbacks = value;
+                config.SetBool(Prefix + "AllowSyntheticFallbacks", value);
+            }
+        }
+
+        public bool HasSeenFirstRunDisclosure
+        {
+            get
+            {
+                if (!hasSeenFirstRunDisclosure.HasValue)
+                    hasSeenFirstRunDisclosure = config.GetBool(Prefix + "HasSeenFirstRunDisclosure", false);
+                return hasSeenFirstRunDisclosure.Value;
+            }
+            set
+            {
+                hasSeenFirstRunDisclosure = value;
+                config.SetBool(Prefix + "HasSeenFirstRunDisclosure", value);
+            }
+        }
+
         public int MaxIconSize
         {
             get
@@ -151,14 +171,12 @@ namespace KeeFetch
             }
             set
             {
-                maxIconSize = value;
-                config.SetLong(Prefix + "MaxIconSize", value);
+                int clamped = Math.Max(16, Math.Min(256, value));
+                maxIconSize = clamped;
+                config.SetLong(Prefix + "MaxIconSize", clamped);
             }
         }
 
-        /// <summary>
-        /// Gets or sets the timeout for icon downloads in seconds (clamped between 5-60).
-        /// </summary>
         public int Timeout
         {
             get
@@ -175,9 +193,6 @@ namespace KeeFetch
             }
         }
 
-        /// <summary>
-        /// Gets or sets the prefix for custom icon names in the database.
-        /// </summary>
         public string IconNamePrefix
         {
             get
@@ -191,6 +206,223 @@ namespace KeeFetch
                 iconNamePrefix = value ?? string.Empty;
                 config.SetString(Prefix + "IconNamePrefix", iconNamePrefix);
             }
+        }
+
+        public string ProviderOrder
+        {
+            get
+            {
+                if (providerOrder == null)
+                {
+                    providerOrder = config.GetString(Prefix + "ProviderOrder",
+                        string.Join(",", FaviconDownloader.DefaultProviderOrder));
+                }
+                return providerOrder;
+            }
+            set
+            {
+                providerOrder = string.IsNullOrWhiteSpace(value)
+                    ? string.Join(",", FaviconDownloader.DefaultProviderOrder)
+                    : value;
+                config.SetString(Prefix + "ProviderOrder", providerOrder);
+            }
+        }
+
+        public bool EnableDirectSiteProvider
+        {
+            get
+            {
+                if (!enableDirectSiteProvider.HasValue)
+                    enableDirectSiteProvider = config.GetBool(Prefix + "EnableDirectSiteProvider", true);
+                return enableDirectSiteProvider.Value;
+            }
+            set
+            {
+                enableDirectSiteProvider = value;
+                config.SetBool(Prefix + "EnableDirectSiteProvider", value);
+            }
+        }
+
+        public bool EnableTwentyIconsProvider
+        {
+            get
+            {
+                if (!enableTwentyIconsProvider.HasValue)
+                    enableTwentyIconsProvider = config.GetBool(Prefix + "EnableTwentyIconsProvider", true);
+                return enableTwentyIconsProvider.Value;
+            }
+            set
+            {
+                enableTwentyIconsProvider = value;
+                config.SetBool(Prefix + "EnableTwentyIconsProvider", value);
+            }
+        }
+
+        public bool EnableDuckDuckGoProvider
+        {
+            get
+            {
+                if (!enableDuckDuckGoProvider.HasValue)
+                    enableDuckDuckGoProvider = config.GetBool(Prefix + "EnableDuckDuckGoProvider", true);
+                return enableDuckDuckGoProvider.Value;
+            }
+            set
+            {
+                enableDuckDuckGoProvider = value;
+                config.SetBool(Prefix + "EnableDuckDuckGoProvider", value);
+            }
+        }
+
+        public bool EnableGoogleProvider
+        {
+            get
+            {
+                if (!enableGoogleProvider.HasValue)
+                    enableGoogleProvider = config.GetBool(Prefix + "EnableGoogleProvider", true);
+                return enableGoogleProvider.Value;
+            }
+            set
+            {
+                enableGoogleProvider = value;
+                config.SetBool(Prefix + "EnableGoogleProvider", value);
+            }
+        }
+
+        public bool EnableYandexProvider
+        {
+            get
+            {
+                if (!enableYandexProvider.HasValue)
+                    enableYandexProvider = config.GetBool(Prefix + "EnableYandexProvider", true);
+                return enableYandexProvider.Value;
+            }
+            set
+            {
+                enableYandexProvider = value;
+                config.SetBool(Prefix + "EnableYandexProvider", value);
+            }
+        }
+
+        public bool EnableFaviconeProvider
+        {
+            get
+            {
+                if (!enableFaviconeProvider.HasValue)
+                    enableFaviconeProvider = config.GetBool(Prefix + "EnableFaviconeProvider", true);
+                return enableFaviconeProvider.Value;
+            }
+            set
+            {
+                enableFaviconeProvider = value;
+                config.SetBool(Prefix + "EnableFaviconeProvider", value);
+            }
+        }
+
+        public bool EnableIconHorseProvider
+        {
+            get
+            {
+                if (!enableIconHorseProvider.HasValue)
+                    enableIconHorseProvider = config.GetBool(Prefix + "EnableIconHorseProvider", true);
+                return enableIconHorseProvider.Value;
+            }
+            set
+            {
+                enableIconHorseProvider = value;
+                config.SetBool(Prefix + "EnableIconHorseProvider", value);
+            }
+        }
+
+        public bool IsProviderEnabled(string providerName)
+        {
+            if (string.IsNullOrWhiteSpace(providerName))
+                return false;
+
+            string normalized = NormalizeProviderName(providerName);
+            switch (normalized)
+            {
+                case "Direct Site":
+                    return EnableDirectSiteProvider;
+                case "Twenty Icons":
+                    return EnableTwentyIconsProvider;
+                case "DuckDuckGo":
+                    return EnableDuckDuckGoProvider;
+                case "Google":
+                    return EnableGoogleProvider;
+                case "Yandex":
+                    return EnableYandexProvider;
+                case "Favicone":
+                    return EnableFaviconeProvider;
+                case "Icon Horse":
+                    return EnableIconHorseProvider;
+                default:
+                    return true;
+            }
+        }
+
+        public void SetProviderEnabled(string providerName, bool enabled)
+        {
+            if (string.IsNullOrWhiteSpace(providerName))
+                return;
+
+            string normalized = NormalizeProviderName(providerName);
+            switch (normalized)
+            {
+                case "Direct Site":
+                    EnableDirectSiteProvider = enabled;
+                    break;
+                case "Twenty Icons":
+                    EnableTwentyIconsProvider = enabled;
+                    break;
+                case "DuckDuckGo":
+                    EnableDuckDuckGoProvider = enabled;
+                    break;
+                case "Google":
+                    EnableGoogleProvider = enabled;
+                    break;
+                case "Yandex":
+                    EnableYandexProvider = enabled;
+                    break;
+                case "Favicone":
+                    EnableFaviconeProvider = enabled;
+                    break;
+                case "Icon Horse":
+                    EnableIconHorseProvider = enabled;
+                    break;
+            }
+        }
+
+        private static string NormalizeProviderName(string providerName)
+        {
+            if (providerName == null)
+                return string.Empty;
+
+            string value = providerName.Trim();
+            if (value.Equals("direct site", StringComparison.OrdinalIgnoreCase)) return "Direct Site";
+            if (value.Equals("twenty icons", StringComparison.OrdinalIgnoreCase)) return "Twenty Icons";
+            if (value.Equals("duckduckgo", StringComparison.OrdinalIgnoreCase)) return "DuckDuckGo";
+            if (value.Equals("google", StringComparison.OrdinalIgnoreCase)) return "Google";
+            if (value.Equals("yandex", StringComparison.OrdinalIgnoreCase)) return "Yandex";
+            if (value.Equals("favicone", StringComparison.OrdinalIgnoreCase)) return "Favicone";
+            if (value.Equals("icon horse", StringComparison.OrdinalIgnoreCase)) return "Icon Horse";
+            return value;
+        }
+
+        public List<string> GetProviderOrderList()
+        {
+            var configured = new List<string>();
+            if (!string.IsNullOrWhiteSpace(ProviderOrder))
+            {
+                configured.AddRange(ProviderOrder
+                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(p => p.Trim())
+                    .Where(p => !string.IsNullOrWhiteSpace(p)));
+            }
+
+            if (configured.Count == 0)
+                configured.AddRange(FaviconDownloader.DefaultProviderOrder);
+
+            return configured;
         }
     }
 }

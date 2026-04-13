@@ -415,14 +415,32 @@ namespace KeeFetch
             {
                 configured.AddRange(ProviderOrder
                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(p => p.Trim())
+                    .Select(NormalizeProviderName)
                     .Where(p => !string.IsNullOrWhiteSpace(p)));
             }
 
             if (configured.Count == 0)
                 configured.AddRange(FaviconDownloader.DefaultProviderOrder);
 
-            return configured;
+            var ordered = new List<string>();
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (string provider in configured)
+            {
+                if (string.IsNullOrWhiteSpace(provider))
+                    continue;
+
+                if (seen.Add(provider))
+                    ordered.Add(provider);
+            }
+
+            foreach (string provider in FaviconDownloader.DefaultProviderOrder)
+            {
+                if (seen.Add(provider))
+                    ordered.Add(provider);
+            }
+
+            return ordered;
         }
     }
 }

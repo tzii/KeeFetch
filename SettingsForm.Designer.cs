@@ -23,17 +23,20 @@ namespace KeeFetch
         private System.Windows.Forms.NumericUpDown numMaxIconSize;
         private System.Windows.Forms.NumericUpDown numTimeout;
         private System.Windows.Forms.TextBox txtIconPrefix;
-        private System.Windows.Forms.TextBox txtProviderOrder;
+        private System.Windows.Forms.ListBox lstProviderOrder;
 
         private System.Windows.Forms.Label lblMaxIconSize;
         private System.Windows.Forms.Label lblTimeout;
         private System.Windows.Forms.Label lblIconPrefix;
         private System.Windows.Forms.Label lblTimeoutUnit;
         private System.Windows.Forms.Label lblIconSizeUnit;
-        private System.Windows.Forms.Label lblProviderOrder;
+        private System.Windows.Forms.Label lblProviderOrderHint;
 
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Button btnProviderUp;
+        private System.Windows.Forms.Button btnProviderDown;
+        private System.Windows.Forms.Button btnProviderReset;
         private System.Windows.Forms.GroupBox grpDownload;
         private System.Windows.Forms.GroupBox grpIcons;
         private System.Windows.Forms.GroupBox grpNetwork;
@@ -67,15 +70,18 @@ namespace KeeFetch
             this.numMaxIconSize = new System.Windows.Forms.NumericUpDown();
             this.numTimeout = new System.Windows.Forms.NumericUpDown();
             this.txtIconPrefix = new System.Windows.Forms.TextBox();
-            this.txtProviderOrder = new System.Windows.Forms.TextBox();
+            this.lstProviderOrder = new System.Windows.Forms.ListBox();
             this.lblMaxIconSize = new System.Windows.Forms.Label();
             this.lblTimeout = new System.Windows.Forms.Label();
             this.lblIconPrefix = new System.Windows.Forms.Label();
             this.lblTimeoutUnit = new System.Windows.Forms.Label();
             this.lblIconSizeUnit = new System.Windows.Forms.Label();
-            this.lblProviderOrder = new System.Windows.Forms.Label();
+            this.lblProviderOrderHint = new System.Windows.Forms.Label();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
+            this.btnProviderUp = new System.Windows.Forms.Button();
+            this.btnProviderDown = new System.Windows.Forms.Button();
+            this.btnProviderReset = new System.Windows.Forms.Button();
             this.grpDownload = new System.Windows.Forms.GroupBox();
             this.grpIcons = new System.Windows.Forms.GroupBox();
             this.grpNetwork = new System.Windows.Forms.GroupBox();
@@ -231,7 +237,7 @@ namespace KeeFetch
             //
             this.grpProviders.Text = "Provider Controls";
             this.grpProviders.Location = new System.Drawing.Point(12, 441);
-            this.grpProviders.Size = new System.Drawing.Size(430, 232);
+            this.grpProviders.Size = new System.Drawing.Size(430, 252);
             this.grpProviders.Controls.Add(this.chkProviderDirectSite);
             this.grpProviders.Controls.Add(this.chkProviderTwentyIcons);
             this.grpProviders.Controls.Add(this.chkProviderDuckDuckGo);
@@ -239,8 +245,11 @@ namespace KeeFetch
             this.grpProviders.Controls.Add(this.chkProviderYandex);
             this.grpProviders.Controls.Add(this.chkProviderFavicone);
             this.grpProviders.Controls.Add(this.chkProviderIconHorse);
-            this.grpProviders.Controls.Add(this.lblProviderOrder);
-            this.grpProviders.Controls.Add(this.txtProviderOrder);
+            this.grpProviders.Controls.Add(this.lblProviderOrderHint);
+            this.grpProviders.Controls.Add(this.lstProviderOrder);
+            this.grpProviders.Controls.Add(this.btnProviderUp);
+            this.grpProviders.Controls.Add(this.btnProviderDown);
+            this.grpProviders.Controls.Add(this.btnProviderReset);
             //
             // chkProviderDirectSite
             //
@@ -291,22 +300,45 @@ namespace KeeFetch
             this.chkProviderIconHorse.Size = new System.Drawing.Size(180, 22);
             this.chkProviderIconHorse.AutoSize = true;
             //
-            // lblProviderOrder
+            // lblProviderOrderHint
             //
-            this.lblProviderOrder.Text = "Provider order (comma-separated):";
-            this.lblProviderOrder.Location = new System.Drawing.Point(15, 132);
-            this.lblProviderOrder.Size = new System.Drawing.Size(260, 20);
-            this.lblProviderOrder.AutoSize = true;
+            this.lblProviderOrderHint.Text = "Provider order: select one and move it up or down.";
+            this.lblProviderOrderHint.Location = new System.Drawing.Point(15, 132);
+            this.lblProviderOrderHint.Size = new System.Drawing.Size(310, 20);
+            this.lblProviderOrderHint.AutoSize = true;
             //
-            // txtProviderOrder
+            // lstProviderOrder
             //
-            this.txtProviderOrder.Location = new System.Drawing.Point(15, 157);
-            this.txtProviderOrder.Size = new System.Drawing.Size(395, 23);
+            this.lstProviderOrder.Location = new System.Drawing.Point(15, 157);
+            this.lstProviderOrder.Size = new System.Drawing.Size(285, 76);
+            this.lstProviderOrder.IntegralHeight = false;
+            this.lstProviderOrder.SelectedIndexChanged += new System.EventHandler(this.lstProviderOrder_SelectedIndexChanged);
+            //
+            // btnProviderUp
+            //
+            this.btnProviderUp.Text = "Move Up";
+            this.btnProviderUp.Location = new System.Drawing.Point(315, 157);
+            this.btnProviderUp.Size = new System.Drawing.Size(95, 28);
+            this.btnProviderUp.Click += new System.EventHandler(this.btnProviderUp_Click);
+            //
+            // btnProviderDown
+            //
+            this.btnProviderDown.Text = "Move Down";
+            this.btnProviderDown.Location = new System.Drawing.Point(315, 191);
+            this.btnProviderDown.Size = new System.Drawing.Size(95, 28);
+            this.btnProviderDown.Click += new System.EventHandler(this.btnProviderDown_Click);
+            //
+            // btnProviderReset
+            //
+            this.btnProviderReset.Text = "Reset";
+            this.btnProviderReset.Location = new System.Drawing.Point(315, 225);
+            this.btnProviderReset.Size = new System.Drawing.Size(95, 28);
+            this.btnProviderReset.Click += new System.EventHandler(this.btnProviderReset_Click);
             //
             // btnOK
             //
             this.btnOK.Text = "OK";
-            this.btnOK.Location = new System.Drawing.Point(286, 684);
+            this.btnOK.Location = new System.Drawing.Point(286, 704);
             this.btnOK.Size = new System.Drawing.Size(75, 28);
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
@@ -314,7 +346,7 @@ namespace KeeFetch
             // btnCancel
             //
             this.btnCancel.Text = "Cancel";
-            this.btnCancel.Location = new System.Drawing.Point(367, 684);
+            this.btnCancel.Location = new System.Drawing.Point(367, 704);
             this.btnCancel.Size = new System.Drawing.Size(75, 28);
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
@@ -322,7 +354,7 @@ namespace KeeFetch
             // SettingsForm
             //
             this.Text = "KeeFetch Settings";
-            this.ClientSize = new System.Drawing.Size(454, 724);
+            this.ClientSize = new System.Drawing.Size(454, 744);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;

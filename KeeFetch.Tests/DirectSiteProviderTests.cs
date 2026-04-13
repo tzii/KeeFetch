@@ -86,6 +86,16 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
+        public void ParseIconLinks_ResolvesRelativeIconAgainstPagePath()
+        {
+            string html = @"<html><head><link rel='icon' href='favicon.ico'></head></html>";
+            var result = provider.ParseIconLinks(html, "https://example.com/app/login");
+
+            Assert.IsTrue(result.Any(c => c.Url == "https://example.com/app/favicon.ico"),
+                "Relative icon URLs should resolve against the page document path.");
+        }
+
+        [TestMethod]
         public void ParseIconLinks_DataUri_Ignored()
         {
             string html = @"<html><head><link rel='icon' href='data:image/png;base64,abc123'></head></html>";
@@ -119,6 +129,21 @@ namespace KeeFetch.Tests
             Assert.IsTrue(icons.Any(i => i.Url == "https://example.com/icons/icon-192.png"));
             Assert.IsTrue(icons.Any(i => i.Url == "https://example.com/icons/icon.svg" && i.IsSvgHint));
             Assert.IsTrue(icons.All(i => i.Tier == IconTier.SiteCanonical));
+        }
+
+        [TestMethod]
+        public void ParseManifestIcons_ResolvesRelativeToManifestDocument()
+        {
+            string manifest = @"{
+  ""icons"": [
+    { ""src"": ""icons/icon-192.png"", ""sizes"": ""192x192"", ""type"": ""image/png"" }
+  ]
+}";
+
+            var icons = provider.ParseManifestIcons(manifest, "https://example.com/pwa/site.webmanifest");
+
+            Assert.IsTrue(icons.Any(i => i.Url == "https://example.com/pwa/icons/icon-192.png"),
+                "Manifest icon URLs should resolve relative to the manifest location.");
         }
     }
 }

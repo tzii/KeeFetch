@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace KeeFetch
@@ -34,7 +35,8 @@ namespace KeeFetch
             chkProviderYandex.Checked = config.EnableYandexProvider;
             chkProviderFavicone.Checked = config.EnableFaviconeProvider;
             chkProviderIconHorse.Checked = config.EnableIconHorseProvider;
-            txtProviderOrder.Text = config.ProviderOrder;
+
+            LoadProviderOrderList();
         }
 
         private void btnOK_Click(object sender, EventArgs e)
@@ -57,7 +59,8 @@ namespace KeeFetch
             config.EnableYandexProvider = chkProviderYandex.Checked;
             config.EnableFaviconeProvider = chkProviderFavicone.Checked;
             config.EnableIconHorseProvider = chkProviderIconHorse.Checked;
-            config.ProviderOrder = txtProviderOrder.Text;
+            config.ProviderOrder = string.Join(",",
+                lstProviderOrder.Items.Cast<object>().Select(item => item.ToString()));
 
             DialogResult = DialogResult.OK;
             Close();
@@ -67,6 +70,71 @@ namespace KeeFetch
         {
             DialogResult = DialogResult.Cancel;
             Close();
+        }
+
+        private void LoadProviderOrderList()
+        {
+            lstProviderOrder.Items.Clear();
+            foreach (string provider in config.GetProviderOrderList())
+                lstProviderOrder.Items.Add(provider);
+
+            if (lstProviderOrder.Items.Count > 0)
+                lstProviderOrder.SelectedIndex = 0;
+
+            UpdateProviderOrderButtons();
+        }
+
+        private void btnProviderUp_Click(object sender, EventArgs e)
+        {
+            MoveSelectedProvider(-1);
+        }
+
+        private void btnProviderDown_Click(object sender, EventArgs e)
+        {
+            MoveSelectedProvider(1);
+        }
+
+        private void btnProviderReset_Click(object sender, EventArgs e)
+        {
+            lstProviderOrder.Items.Clear();
+            foreach (string provider in FaviconDownloader.DefaultProviderOrder)
+                lstProviderOrder.Items.Add(provider);
+
+            if (lstProviderOrder.Items.Count > 0)
+                lstProviderOrder.SelectedIndex = 0;
+
+            UpdateProviderOrderButtons();
+        }
+
+        private void lstProviderOrder_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UpdateProviderOrderButtons();
+        }
+
+        private void MoveSelectedProvider(int delta)
+        {
+            int index = lstProviderOrder.SelectedIndex;
+            if (index < 0)
+                return;
+
+            int newIndex = index + delta;
+            if (newIndex < 0 || newIndex >= lstProviderOrder.Items.Count)
+                return;
+
+            object item = lstProviderOrder.Items[index];
+            lstProviderOrder.Items.RemoveAt(index);
+            lstProviderOrder.Items.Insert(newIndex, item);
+            lstProviderOrder.SelectedIndex = newIndex;
+            UpdateProviderOrderButtons();
+        }
+
+        private void UpdateProviderOrderButtons()
+        {
+            int index = lstProviderOrder.SelectedIndex;
+            bool hasSelection = index >= 0;
+
+            btnProviderUp.Enabled = hasSelection && index > 0;
+            btnProviderDown.Enabled = hasSelection && index < lstProviderOrder.Items.Count - 1;
         }
     }
 }

@@ -45,17 +45,16 @@ namespace KeeFetch
         private static int certSetupCount;
         private static RemoteCertificateValidationCallback savedOriginalCallback;
 
-        private static readonly ConcurrentDictionary<string, byte[]> DownloadCache =
-            new ConcurrentDictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+        private static readonly ConcurrentDictionary<string, CachedIconEntry> DownloadCache =
+            new ConcurrentDictionary<string, CachedIconEntry>(StringComparer.OrdinalIgnoreCase);
 
         private static readonly ConcurrentDictionary<string, SemaphoreSlim> ProviderSemaphores =
             new ConcurrentDictionary<string, SemaphoreSlim>(StringComparer.OrdinalIgnoreCase);
 
-        private static readonly ConcurrentDictionary<string, ProviderHealthState> ProviderHealth =
-            new ConcurrentDictionary<string, ProviderHealthState>(StringComparer.OrdinalIgnoreCase);
-
         private readonly Configuration config;
         private readonly IconSelector selector = new IconSelector();
+        private readonly ConcurrentDictionary<string, ProviderHealthState> providerHealth =
+            new ConcurrentDictionary<string, ProviderHealthState>(StringComparer.OrdinalIgnoreCase);
 
         private const int MaxCumulativeTimeoutMs = 45000;
         private const int PrimaryProviderTimeoutMs = 10000;
@@ -142,17 +141,40 @@ namespace KeeFetch
             if (string.IsNullOrWhiteSpace(cacheKey))
                 return null;
 
-            byte[] data;
-            DownloadCache.TryGetValue(cacheKey, out data);
-            return data;
+            CachedIconEntry entry;
+            DownloadCache.TryGetValue(cacheKey, out entry);
+            return entry != null ? entry.IconData : null;
+        }
+
+        internal static CachedIconEntry GetCachedEntry(string cacheKey)
+        {
+            if (string.IsNullOrWhiteSpace(cacheKey))
+                return null;
+
+            CachedIconEntry entry;
+            DownloadCache.TryGetValue(cacheKey, out entry);
+            return entry;
         }
 
         public static void CacheIcon(string cacheKey, byte[] iconData)
         {
+            CacheIcon(cacheKey, iconData, "Cache", IconTier.SiteCanonical, false, "cache-hit");
+        }
+
+        internal static void CacheIcon(string cacheKey, byte[] iconData, string provider,
+            IconTier selectedTier, bool wasSyntheticFallback, string diagnosticsSummary)
+        {
             if (string.IsNullOrWhiteSpace(cacheKey) || iconData == null)
                 return;
 
-            DownloadCache.TryAdd(cacheKey, iconData);
+            DownloadCache[cacheKey] = new CachedIconEntry
+            {
+                IconData = iconData,
+                Provider = string.IsNullOrWhiteSpace(provider) ? "Cache" : provider,
+                SelectedTier = selectedTier,
+                WasSyntheticFallback = wasSyntheticFallback,
+                DiagnosticsSummary = string.IsNullOrWhiteSpace(diagnosticsSummary) ? "cache-hit" : diagnosticsSummary
+            };
         }
 
         public static void ClearCache()
@@ -183,20 +205,9 @@ namespace KeeFetch
             string cacheKey = Util.GetNormalizedOriginKey(normalizedUri);
             bool isPrivate = Util.IsPrivateHost(host);
 
-            byte[] cached = GetCachedIcon(cacheKey);
+            var cached = GetCachedEntry(cacheKey);
             if (cached != null)
-            {
-                return new FaviconResult
-                {
-                    IconData = cached,
-                    Status = FaviconStatus.Success,
-                    Provider = "Cache",
-                    Host = host,
-                    CacheKey = cacheKey,
-                    SelectedTier = IconTier.SiteCanonical,
-                    DiagnosticsSummary = "cache-hit"
-                };
-            }
+                return BuildCachedResult(cached, host, cacheKey);
 
             var request = new IconRequest
             {
@@ -241,20 +252,9 @@ namespace KeeFetch
                 if (Util.TryParseHttpUri("https://" + resolvedDomain, true, out domainUri))
                 {
                     cacheKey = Util.GetNormalizedOriginKey(domainUri);
-                    byte[] cached = GetCachedIcon(cacheKey);
+                    var cached = GetCachedEntry(cacheKey);
                     if (cached != null)
-                    {
-                        return new FaviconResult
-                        {
-                            IconData = cached,
-                            Status = FaviconStatus.Success,
-                            Provider = "Cache",
-                            Host = resolvedDomain,
-                            CacheKey = cacheKey,
-                            SelectedTier = IconTier.SiteCanonical,
-                            DiagnosticsSummary = "cache-hit"
-                        };
-                    }
+                        return BuildCachedResult(cached, resolvedDomain, cacheKey);
 
                     var domainRequest = new IconRequest
                     {
@@ -335,6 +335,7 @@ namespace KeeFetch
                 catch (Exception ex)
                 {
                     Logger.Warn("CollectCandidatesAsync", ex);
+                    RecordProviderFailure(provider.Name);
                     candidates = null;
                 }
 
@@ -347,10 +348,9 @@ namespace KeeFetch
                         result.Candidates.Add(candidate);
                     }
                     RecordProviderSuccess(provider.Name);
-                }
-                else
-                {
-                    RecordProviderFailure(provider.Name);
+
+                    if (CanStopEarly(provider, result.Candidates))
+                        break;
                 }
             }
 
@@ -427,25 +427,25 @@ namespace KeeFetch
             return active;
         }
 
-        private static bool IsProviderInCooldown(string providerName)
+        private bool IsProviderInCooldown(string providerName)
         {
             ProviderHealthState state;
-            if (!ProviderHealth.TryGetValue(providerName, out state))
+            if (!providerHealth.TryGetValue(providerName, out state))
                 return false;
 
             return state.CooldownUntilUtc > DateTime.UtcNow;
         }
 
-        private static void RecordProviderSuccess(string providerName)
+        private void RecordProviderSuccess(string providerName)
         {
-            ProviderHealth.AddOrUpdate(providerName,
+            providerHealth.AddOrUpdate(providerName,
                 _ => new ProviderHealthState(0, DateTime.MinValue),
                 (_, __) => new ProviderHealthState(0, DateTime.MinValue));
         }
 
-        private static void RecordProviderFailure(string providerName)
+        private void RecordProviderFailure(string providerName)
         {
-            ProviderHealth.AddOrUpdate(providerName,
+            providerHealth.AddOrUpdate(providerName,
                 _ => new ProviderHealthState(1, DateTime.MinValue),
                 (_, existing) =>
                 {
@@ -455,6 +455,24 @@ namespace KeeFetch
                         : existing.CooldownUntilUtc;
                     return new ProviderHealthState(failures, cooldown);
                 });
+        }
+
+        private static bool CanStopEarly(IIconProvider provider, IReadOnlyList<IconCandidate> candidates)
+        {
+            if (provider == null || candidates == null || candidates.Count == 0)
+                return false;
+
+            // Safe fast path: if Direct Site already produced a strong non-blank raster icon,
+            // there is little value in querying every resolver just to confirm it.
+            return provider.Name.Equals("Direct Site", StringComparison.OrdinalIgnoreCase) &&
+                   candidates.Any(c =>
+                       c != null &&
+                       c.ProviderName.Equals("Direct Site", StringComparison.OrdinalIgnoreCase) &&
+                       c.Tier == IconTier.SiteCanonical &&
+                       !c.IsSvg &&
+                       !c.IsBlankSuspected &&
+                       !c.IsPlaceholderSuspected &&
+                       c.ConfidenceScore >= 0.90);
         }
 
         private static int GetProviderTimeout(IIconProvider provider, int requestedTimeoutMs, int remainingMs)
@@ -533,9 +551,29 @@ namespace KeeFetch
             result.WasSyntheticFallback = selection.WasSyntheticFallback;
 
             if (!string.IsNullOrWhiteSpace(cacheKey))
-                CacheIcon(cacheKey, resized);
+            {
+                CacheIcon(cacheKey, resized, result.Provider, result.SelectedTier,
+                    result.WasSyntheticFallback, result.DiagnosticsSummary);
+            }
 
             return result;
+        }
+
+        private static FaviconResult BuildCachedResult(CachedIconEntry cached, string host, string cacheKey)
+        {
+            return new FaviconResult
+            {
+                IconData = cached.IconData,
+                Status = FaviconStatus.Success,
+                Provider = cached.Provider,
+                Host = host,
+                CacheKey = cacheKey,
+                SelectedTier = cached.SelectedTier,
+                WasSyntheticFallback = cached.WasSyntheticFallback,
+                DiagnosticsSummary = string.IsNullOrWhiteSpace(cached.DiagnosticsSummary)
+                    ? "cache-hit"
+                    : "cache-hit; " + cached.DiagnosticsSummary
+            };
         }
 
         private sealed class ProviderHealthState
@@ -560,6 +598,15 @@ namespace KeeFetch
 
             public List<IconCandidate> Candidates { get; private set; }
             public List<string> AttemptedProviders { get; private set; }
+        }
+
+        internal sealed class CachedIconEntry
+        {
+            public byte[] IconData { get; set; }
+            public string Provider { get; set; }
+            public IconTier SelectedTier { get; set; }
+            public bool WasSyntheticFallback { get; set; }
+            public string DiagnosticsSummary { get; set; }
         }
     }
 

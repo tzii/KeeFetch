@@ -62,7 +62,7 @@ namespace KeeFetch.IconProviders
             {
                 string html = DecodeText(htmlResult.Data);
                 string resolvedBase = htmlResult.ResponseUri != null
-                    ? htmlResult.ResponseUri.GetLeftPart(UriPartial.Authority)
+                    ? htmlResult.ResponseUri.AbsoluteUri
                     : origin;
 
                 discoveredLinks.AddRange(ParseIconLinks(html, resolvedBase));
@@ -335,9 +335,9 @@ namespace KeeFetch.IconProviders
             try
             {
                 var fallbackUri = new Uri(fallbackBase);
-                var candidateUri = new Uri(candidate);
+                var candidateUri = new Uri(fallbackUri, candidate);
                 if (candidateUri.Host.Equals(fallbackUri.Host, StringComparison.OrdinalIgnoreCase))
-                    resolvedBase = candidate;
+                    resolvedBase = candidateUri.AbsoluteUri;
             }
             catch (Exception ex)
             {
@@ -386,7 +386,7 @@ namespace KeeFetch.IconProviders
 
             try
             {
-                var baseUri = new Uri(baseUrl.TrimEnd('/') + "/");
+                var baseUri = new Uri(baseUrl);
                 var resolved = new Uri(baseUri, href);
                 return resolved.AbsoluteUri;
             }

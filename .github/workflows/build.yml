@@ -75,6 +75,7 @@ jobs:
           Copy-Item -Path "SettingsForm.resx" -Destination $plgxSrc
           Copy-Item -Path "Properties" -Destination $plgxSrc -Recurse
           Copy-Item -Path "IconProviders" -Destination $plgxSrc -Recurse
+          Copy-Item -Path "IconSelection" -Destination $plgxSrc -Recurse
 
           # KeePass plgx-create needs a legacy-style .csproj — SDK-style won't work.
           Copy-Item -Path "KeeFetch.plgx.csproj" -Destination "$plgxSrc\KeeFetch.csproj"
@@ -84,7 +85,8 @@ jobs:
             "KeeFetchExt.cs", "FaviconDownloader.cs", "FaviconDialog.cs",
             "Configuration.cs", "SettingsForm.cs", "SettingsForm.Designer.cs",
             "Logger.cs", "Util.cs", "AndroidAppMapper.cs",
-            "Properties\AssemblyInfo.cs", "KeeFetch.csproj"
+            "Properties\AssemblyInfo.cs", "KeeFetch.csproj",
+            "IconSelection\IconSelector.cs", "IconSelection\IconCandidate.cs"
           )
           $missing = $expectedFiles | Where-Object { !(Test-Path (Join-Path $plgxSrc $_)) }
           if ($missing) {

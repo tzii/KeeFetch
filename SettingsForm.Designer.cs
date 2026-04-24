@@ -24,7 +24,10 @@ namespace KeeFetch
         private System.Windows.Forms.NumericUpDown numTimeout;
         private System.Windows.Forms.TextBox txtIconPrefix;
         private System.Windows.Forms.ListBox lstProviderOrder;
+        private System.Windows.Forms.ComboBox cmbFetchPreset;
 
+        private System.Windows.Forms.Label lblFetchPreset;
+        private System.Windows.Forms.Label lblFetchPresetDescription;
         private System.Windows.Forms.Label lblMaxIconSize;
         private System.Windows.Forms.Label lblTimeout;
         private System.Windows.Forms.Label lblIconPrefix;
@@ -71,6 +74,9 @@ namespace KeeFetch
             this.numTimeout = new System.Windows.Forms.NumericUpDown();
             this.txtIconPrefix = new System.Windows.Forms.TextBox();
             this.lstProviderOrder = new System.Windows.Forms.ListBox();
+            this.cmbFetchPreset = new System.Windows.Forms.ComboBox();
+            this.lblFetchPreset = new System.Windows.Forms.Label();
+            this.lblFetchPresetDescription = new System.Windows.Forms.Label();
             this.lblMaxIconSize = new System.Windows.Forms.Label();
             this.lblTimeout = new System.Windows.Forms.Label();
             this.lblIconPrefix = new System.Windows.Forms.Label();
@@ -182,7 +188,10 @@ namespace KeeFetch
             //
             this.grpNetwork.Text = "Network and Fallback Options";
             this.grpNetwork.Location = new System.Drawing.Point(12, 268);
-            this.grpNetwork.Size = new System.Drawing.Size(430, 165);
+            this.grpNetwork.Size = new System.Drawing.Size(430, 220);
+            this.grpNetwork.Controls.Add(this.lblFetchPreset);
+            this.grpNetwork.Controls.Add(this.cmbFetchPreset);
+            this.grpNetwork.Controls.Add(this.lblFetchPresetDescription);
             this.grpNetwork.Controls.Add(this.chkAllowSelfSigned);
             this.grpNetwork.Controls.Add(this.lblTimeout);
             this.grpNetwork.Controls.Add(this.numTimeout);
@@ -190,23 +199,43 @@ namespace KeeFetch
             this.grpNetwork.Controls.Add(this.chkUseThirdPartyFallbacks);
             this.grpNetwork.Controls.Add(this.chkAllowSyntheticFallbacks);
             //
+            // lblFetchPreset
+            //
+            this.lblFetchPreset.Text = "Preset:";
+            this.lblFetchPreset.Location = new System.Drawing.Point(15, 28);
+            this.lblFetchPreset.Size = new System.Drawing.Size(120, 20);
+            this.lblFetchPreset.AutoSize = true;
+            //
+            // cmbFetchPreset
+            //
+            this.cmbFetchPreset.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbFetchPreset.Location = new System.Drawing.Point(145, 25);
+            this.cmbFetchPreset.Size = new System.Drawing.Size(140, 23);
+            this.cmbFetchPreset.SelectedIndexChanged += new System.EventHandler(this.cmbFetchPreset_SelectedIndexChanged);
+            //
+            // lblFetchPresetDescription
+            //
+            this.lblFetchPresetDescription.Location = new System.Drawing.Point(15, 55);
+            this.lblFetchPresetDescription.Size = new System.Drawing.Size(395, 32);
+            this.lblFetchPresetDescription.Text = "Preset description";
+            //
             // chkAllowSelfSigned
             //
             this.chkAllowSelfSigned.Text = "Allow self-signed SSL certificates (weakens TLS validation globally)";
-            this.chkAllowSelfSigned.Location = new System.Drawing.Point(15, 25);
+            this.chkAllowSelfSigned.Location = new System.Drawing.Point(15, 92);
             this.chkAllowSelfSigned.Size = new System.Drawing.Size(400, 22);
             this.chkAllowSelfSigned.AutoSize = true;
             //
             // lblTimeout
             //
             this.lblTimeout.Text = "Connection timeout:";
-            this.lblTimeout.Location = new System.Drawing.Point(15, 58);
+            this.lblTimeout.Location = new System.Drawing.Point(15, 125);
             this.lblTimeout.Size = new System.Drawing.Size(120, 20);
             this.lblTimeout.AutoSize = true;
             //
             // numTimeout
             //
-            this.numTimeout.Location = new System.Drawing.Point(145, 56);
+            this.numTimeout.Location = new System.Drawing.Point(145, 123);
             this.numTimeout.Size = new System.Drawing.Size(70, 23);
             this.numTimeout.Minimum = 5;
             this.numTimeout.Maximum = 60;
@@ -215,28 +244,28 @@ namespace KeeFetch
             // lblTimeoutUnit
             //
             this.lblTimeoutUnit.Text = "seconds";
-            this.lblTimeoutUnit.Location = new System.Drawing.Point(220, 58);
+            this.lblTimeoutUnit.Location = new System.Drawing.Point(220, 125);
             this.lblTimeoutUnit.Size = new System.Drawing.Size(60, 20);
             this.lblTimeoutUnit.AutoSize = true;
             //
             // chkUseThirdPartyFallbacks
             //
             this.chkUseThirdPartyFallbacks.Text = "Use third-party favicon services";
-            this.chkUseThirdPartyFallbacks.Location = new System.Drawing.Point(15, 88);
+            this.chkUseThirdPartyFallbacks.Location = new System.Drawing.Point(15, 155);
             this.chkUseThirdPartyFallbacks.Size = new System.Drawing.Size(400, 22);
             this.chkUseThirdPartyFallbacks.AutoSize = true;
             //
             // chkAllowSyntheticFallbacks
             //
             this.chkAllowSyntheticFallbacks.Text = "Allow synthetic fallback icons (last resort)";
-            this.chkAllowSyntheticFallbacks.Location = new System.Drawing.Point(15, 113);
+            this.chkAllowSyntheticFallbacks.Location = new System.Drawing.Point(15, 180);
             this.chkAllowSyntheticFallbacks.Size = new System.Drawing.Size(400, 22);
             this.chkAllowSyntheticFallbacks.AutoSize = true;
             //
             // grpProviders
             //
             this.grpProviders.Text = "Provider Controls";
-            this.grpProviders.Location = new System.Drawing.Point(12, 441);
+            this.grpProviders.Location = new System.Drawing.Point(12, 496);
             this.grpProviders.Size = new System.Drawing.Size(430, 252);
             this.grpProviders.Controls.Add(this.chkProviderDirectSite);
             this.grpProviders.Controls.Add(this.chkProviderTwentyIcons);
@@ -338,7 +367,7 @@ namespace KeeFetch
             // btnOK
             //
             this.btnOK.Text = "OK";
-            this.btnOK.Location = new System.Drawing.Point(286, 704);
+            this.btnOK.Location = new System.Drawing.Point(286, 759);
             this.btnOK.Size = new System.Drawing.Size(75, 28);
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
@@ -346,7 +375,7 @@ namespace KeeFetch
             // btnCancel
             //
             this.btnCancel.Text = "Cancel";
-            this.btnCancel.Location = new System.Drawing.Point(367, 704);
+            this.btnCancel.Location = new System.Drawing.Point(367, 759);
             this.btnCancel.Size = new System.Drawing.Size(75, 28);
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
@@ -354,7 +383,7 @@ namespace KeeFetch
             // SettingsForm
             //
             this.Text = "KeeFetch Settings";
-            this.ClientSize = new System.Drawing.Size(454, 744);
+            this.ClientSize = new System.Drawing.Size(454, 799);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;

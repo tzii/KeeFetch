@@ -13,6 +13,7 @@ namespace KeeFetch
         private const string Prefix = "KeeFetch.";
         private readonly AceCustomConfig config;
 
+        private FetchPresetMode? fetchPresetMode;
         private bool? prefixUrls;
         private bool? useTitleField;
         private bool? skipExistingIcons;
@@ -53,6 +54,24 @@ namespace KeeFetch
             {
                 prefixUrls = value;
                 config.SetBool(Prefix + "PrefixUrls", value);
+            }
+        }
+
+        public FetchPresetMode FetchPresetMode
+        {
+            get
+            {
+                if (!fetchPresetMode.HasValue)
+                {
+                    fetchPresetMode = ParseFetchPresetMode(config.GetString(
+                        Prefix + "FetchPresetMode", FetchPresetMode.Custom.ToString()));
+                }
+                return fetchPresetMode.Value;
+            }
+            set
+            {
+                fetchPresetMode = value;
+                config.SetString(Prefix + "FetchPresetMode", value.ToString());
             }
         }
 
@@ -442,5 +461,168 @@ namespace KeeFetch
 
             return ordered;
         }
+
+        public bool ShouldStopAfterStrongResolvedProvider()
+        {
+            return FetchPresetMode == FetchPresetMode.Fast ||
+                   FetchPresetMode == FetchPresetMode.Balanced;
+        }
+
+        public static string GetPresetDescription(FetchPresetMode mode)
+        {
+            switch (mode)
+            {
+                case FetchPresetMode.Fast:
+                    return "Shortest path. Tries direct site, then a compact strong-resolver chain with reduced time budgets for faster large batches.";
+                case FetchPresetMode.Balanced:
+                    return "Recommended default. Uses direct site, Google, and a lightweight synthetic fallback to balance coverage and batch speed.";
+                case FetchPresetMode.Thorough:
+                    return "Availability-first mode. Uses the full resolver chain with the largest time budgets and synthetic fallbacks for maximum coverage.";
+                default:
+                    return "Manual configuration. KeeFetch will use the exact provider toggles and timeout values shown below.";
+            }
+        }
+
+        public static int GetPresetTimeout(FetchPresetMode mode)
+        {
+            switch (mode)
+            {
+                case FetchPresetMode.Fast:
+                    return 5;
+                case FetchPresetMode.Balanced:
+                    return 7;
+                case FetchPresetMode.Thorough:
+                    return 15;
+                default:
+                    return 15;
+            }
+        }
+
+        public static bool GetPresetUseThirdPartyFallbacks(FetchPresetMode mode)
+        {
+            return mode != FetchPresetMode.Custom;
+        }
+
+        public static bool GetPresetAllowSyntheticFallbacks(FetchPresetMode mode)
+        {
+            return mode == FetchPresetMode.Balanced ||
+                   mode == FetchPresetMode.Thorough;
+        }
+
+        public static List<string> GetPresetProviderOrderList(FetchPresetMode mode)
+        {
+            switch (mode)
+            {
+                case FetchPresetMode.Fast:
+                    return new List<string>
+                    {
+                        "Direct Site",
+                        "Google",
+                        "Twenty Icons"
+                    };
+                case FetchPresetMode.Balanced:
+                    return new List<string>
+                    {
+                        "Direct Site",
+                        "Google",
+                        "Favicone"
+                    };
+                case FetchPresetMode.Thorough:
+                    return new List<string>(FaviconDownloader.DefaultProviderOrder);
+                default:
+                    return new List<string>(FaviconDownloader.DefaultProviderOrder);
+            }
+        }
+
+        public static int GetPresetMaxCumulativeTimeoutMs(FetchPresetMode mode)
+        {
+            switch (mode)
+            {
+                case FetchPresetMode.Fast:
+                    return 15000;
+                case FetchPresetMode.Balanced:
+                    return 22000;
+                case FetchPresetMode.Thorough:
+                    return 45000;
+                default:
+                    return 45000;
+            }
+        }
+
+        public static int GetPresetPrimaryProviderTimeoutMs(FetchPresetMode mode)
+        {
+            switch (mode)
+            {
+                case FetchPresetMode.Fast:
+                    return 4000;
+                case FetchPresetMode.Balanced:
+                    return 6000;
+                case FetchPresetMode.Thorough:
+                    return 10000;
+                default:
+                    return 10000;
+            }
+        }
+
+        public static int GetPresetFallbackProviderTimeoutMs(FetchPresetMode mode)
+        {
+            switch (mode)
+            {
+                case FetchPresetMode.Fast:
+                    return 2500;
+                case FetchPresetMode.Balanced:
+                    return 3500;
+                case FetchPresetMode.Thorough:
+                    return 5000;
+                default:
+                    return 5000;
+            }
+        }
+
+        public static bool IsProviderEnabledByPreset(FetchPresetMode mode, string providerName)
+        {
+            if (string.IsNullOrWhiteSpace(providerName))
+                return false;
+
+            string normalized = NormalizeProviderName(providerName);
+            switch (mode)
+            {
+                case FetchPresetMode.Fast:
+                    return normalized == "Direct Site" ||
+                           normalized == "Google" ||
+                           normalized == "Twenty Icons";
+                case FetchPresetMode.Balanced:
+                    return normalized == "Direct Site" ||
+                           normalized == "Google" ||
+                           normalized == "Favicone";
+                case FetchPresetMode.Thorough:
+                    return true;
+                default:
+                    return true;
+            }
+        }
+
+        private static FetchPresetMode ParseFetchPresetMode(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+                return FetchPresetMode.Custom;
+
+            string normalized = raw.Trim();
+            if (normalized.Equals(FetchPresetMode.Fast.ToString(), StringComparison.OrdinalIgnoreCase))
+                return FetchPresetMode.Fast;
+            if (normalized.Equals(FetchPresetMode.Balanced.ToString(), StringComparison.OrdinalIgnoreCase))
+                return FetchPresetMode.Balanced;
+            if (normalized.Equals(FetchPresetMode.Thorough.ToString(), StringComparison.OrdinalIgnoreCase))
+                return FetchPresetMode.Thorough;
+            return FetchPresetMode.Custom;
+        }
+    }
+
+    public enum FetchPresetMode
+    {
+        Custom = 0,
+        Fast = 1,
+        Balanced = 2,
+        Thorough = 3
     }
 }

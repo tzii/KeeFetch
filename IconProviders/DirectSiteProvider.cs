@@ -15,6 +15,7 @@ namespace KeeFetch.IconProviders
     internal sealed class DirectSiteProvider : IIconProvider
     {
         private const int MaxCandidates = 12;
+        private const int MaxCandidateFetchConcurrency = 3;
         private const long MaxIconBytes = 512 * 1024;
         private const long MaxHtmlBytes = 256 * 1024;
         private const long MaxManifestBytes = 128 * 1024;
@@ -94,21 +95,67 @@ namespace KeeFetch.IconProviders
                 .ToList();
 
             int candidateTimeout = Math.Min(2200, Math.Max(1000, request.TimeoutMs));
-            foreach (var link in discoveredLinks)
+            results.AddRange(await DownloadCandidatesAsync(request.TargetHost, discoveredLinks,
+                candidateTimeout, allowPrivateResponse, token).ConfigureAwait(false));
+
+            return results;
+        }
+
+        private async Task<List<IconCandidate>> DownloadCandidatesAsync(string targetHost,
+            List<DiscoveredIconLink> discoveredLinks, int candidateTimeout, bool allowPrivateResponse,
+            CancellationToken token)
+        {
+            var results = new List<IconCandidate>();
+            if (discoveredLinks == null || discoveredLinks.Count == 0)
+                return results;
+
+            int maxConcurrency = Math.Min(MaxCandidateFetchConcurrency, Math.Max(1, discoveredLinks.Count));
+            using (var semaphore = new SemaphoreSlim(maxConcurrency, maxConcurrency))
+            {
+                var tasks = new List<Task<CandidateDownloadOutcome>>();
+
+                for (int i = 0; i < discoveredLinks.Count; i++)
+                {
+                    token.ThrowIfCancellationRequested();
+                    await semaphore.WaitAsync(token).ConfigureAwait(false);
+
+                    int order = i;
+                    var link = discoveredLinks[i];
+                    tasks.Add(DownloadCandidateWithSemaphoreAsync(targetHost, link, order,
+                        candidateTimeout, allowPrivateResponse, semaphore, token));
+                }
+
+                CandidateDownloadOutcome[] outcomes = await Task.WhenAll(tasks).ConfigureAwait(false);
+                foreach (var outcome in outcomes.OrderBy(o => o.Order))
+                {
+                    if (outcome.Candidate != null)
+                        results.Add(outcome.Candidate);
+                }
+            }
+
+            return results;
+        }
+
+        private async Task<CandidateDownloadOutcome> DownloadCandidateWithSemaphoreAsync(
+            string targetHost, DiscoveredIconLink link, int order, int candidateTimeout,
+            bool allowPrivateResponse, SemaphoreSlim semaphore, CancellationToken token)
+        {
+            try
             {
                 token.ThrowIfCancellationRequested();
 
                 var candidateResult = await DownloadDataAsync(link.Url, candidateTimeout,
                     MaxIconBytes, allowPrivateResponse, token).ConfigureAwait(false);
                 if (candidateResult.Data == null)
-                    continue;
+                    return new CandidateDownloadOutcome(order, null);
 
-                var candidate = BuildCandidate(request.TargetHost, link, candidateResult);
-                if (candidate != null)
-                    results.Add(candidate);
+                var candidate = BuildCandidate(targetHost, link, candidateResult);
+                return new CandidateDownloadOutcome(order, candidate);
             }
-
-            return results;
+            finally
+            {
+                semaphore.Release();
+            }
         }
 
         internal List<DiscoveredIconLink> ParseIconLinks(string html, string baseUrl)
@@ -725,6 +772,18 @@ namespace KeeFetch.IconProviders
             public Uri ResponseUri { get; set; }
             public string ContentType { get; set; }
             public HttpStatusCode? StatusCode { get; set; }
+        }
+
+        private sealed class CandidateDownloadOutcome
+        {
+            public CandidateDownloadOutcome(int order, IconCandidate candidate)
+            {
+                Order = order;
+                Candidate = candidate;
+            }
+
+            public int Order { get; private set; }
+            public IconCandidate Candidate { get; private set; }
         }
     }
 }

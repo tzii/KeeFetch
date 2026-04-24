@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using KeePass.Plugins;
@@ -15,6 +16,7 @@ namespace KeeFetch
         private IPluginHost host;
         internal static Configuration Config;
         private static Image menuIcon;
+        private static int activeDownloadJob;
 
         private static Image GetMenuIcon()
         {
@@ -217,22 +219,47 @@ namespace KeeFetch
             return true;
         }
 
-        private async Task RunDownloadAsync(PwEntry[] entries)
+        private Task RunDownloadAsync(PwEntry[] entries)
         {
+            if (!EnsureFirstRunDisclosure())
+                return Task.CompletedTask;
+
+            if (System.Threading.Interlocked.CompareExchange(ref activeDownloadJob, 1, 0) != 0)
+            {
+                MessageBox.Show(
+                    "A KeeFetch download job is already running.",
+                    "KeeFetch",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return Task.CompletedTask;
+            }
+
             try
             {
-                if (!EnsureFirstRunDisclosure())
-                    return;
-
                 var dialog = new FaviconDialog(host, Config, entries);
-                await dialog.RunAsync();
+                var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
+                dialog.RunAsync().ContinueWith(t =>
+                {
+                    System.Threading.Interlocked.Exchange(ref activeDownloadJob, 0);
+
+                    if (t.IsFaulted && t.Exception != null)
+                    {
+                        Exception ex = t.Exception.GetBaseException();
+                        Logger.Error("RunDownloadAsync", ex);
+                        MessageBox.Show("An error occurred during favicon download:\n" + ex.Message,
+                            "KeeFetch", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }, CancellationToken.None, TaskContinuationOptions.None, scheduler);
             }
             catch (Exception ex)
             {
+                System.Threading.Interlocked.Exchange(ref activeDownloadJob, 0);
                 Logger.Error("RunDownloadAsync", ex);
                 MessageBox.Show("An error occurred during favicon download:\n" + ex.Message,
                     "KeeFetch", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
+            return Task.CompletedTask;
         }
 
         private bool EnsureFirstRunDisclosure()

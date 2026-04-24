@@ -7,6 +7,7 @@ namespace KeeFetch
     public partial class SettingsForm : Form
     {
         private readonly Configuration config;
+        private bool isLoadingSettings;
 
         public SettingsForm(Configuration config)
         {
@@ -17,26 +18,20 @@ namespace KeeFetch
 
         private void LoadSettings()
         {
+            isLoadingSettings = true;
+            LoadPresetOptions();
+
             chkPrefixUrls.Checked = config.PrefixUrls;
             chkUseTitleField.Checked = config.UseTitleField;
             chkSkipExistingIcons.Checked = config.SkipExistingIcons;
             chkAutoSave.Checked = config.AutoSave;
             chkAllowSelfSigned.Checked = config.AllowSelfSignedCerts;
-            chkUseThirdPartyFallbacks.Checked = config.UseThirdPartyFallbacks;
-            chkAllowSyntheticFallbacks.Checked = config.AllowSyntheticFallbacks;
             numMaxIconSize.Value = config.MaxIconSize;
-            numTimeout.Value = config.Timeout;
             txtIconPrefix.Text = config.IconNamePrefix;
 
-            chkProviderDirectSite.Checked = config.EnableDirectSiteProvider;
-            chkProviderTwentyIcons.Checked = config.EnableTwentyIconsProvider;
-            chkProviderDuckDuckGo.Checked = config.EnableDuckDuckGoProvider;
-            chkProviderGoogle.Checked = config.EnableGoogleProvider;
-            chkProviderYandex.Checked = config.EnableYandexProvider;
-            chkProviderFavicone.Checked = config.EnableFaviconeProvider;
-            chkProviderIconHorse.Checked = config.EnableIconHorseProvider;
-
-            LoadProviderOrderList();
+            cmbFetchPreset.SelectedItem = config.FetchPresetMode.ToString();
+            LoadNetworkAndProviderSettings();
+            isLoadingSettings = false;
         }
 
         private void btnOK_Click(object sender, EventArgs e)
@@ -46,6 +41,7 @@ namespace KeeFetch
             config.SkipExistingIcons = chkSkipExistingIcons.Checked;
             config.AutoSave = chkAutoSave.Checked;
             config.AllowSelfSignedCerts = chkAllowSelfSigned.Checked;
+            config.FetchPresetMode = GetSelectedPresetMode();
             config.UseThirdPartyFallbacks = chkUseThirdPartyFallbacks.Checked;
             config.AllowSyntheticFallbacks = chkAllowSyntheticFallbacks.Checked;
             config.MaxIconSize = (int)numMaxIconSize.Value;
@@ -97,7 +93,7 @@ namespace KeeFetch
         private void btnProviderReset_Click(object sender, EventArgs e)
         {
             lstProviderOrder.Items.Clear();
-            foreach (string provider in FaviconDownloader.DefaultProviderOrder)
+            foreach (string provider in GetProviderOrderForSelectedMode())
                 lstProviderOrder.Items.Add(provider);
 
             if (lstProviderOrder.Items.Count > 0)
@@ -135,6 +131,93 @@ namespace KeeFetch
 
             btnProviderUp.Enabled = hasSelection && index > 0;
             btnProviderDown.Enabled = hasSelection && index < lstProviderOrder.Items.Count - 1;
+        }
+
+        private void LoadPresetOptions()
+        {
+            cmbFetchPreset.Items.Clear();
+            foreach (FetchPresetMode mode in Enum.GetValues(typeof(FetchPresetMode)))
+                cmbFetchPreset.Items.Add(mode.ToString());
+        }
+
+        private void LoadNetworkAndProviderSettings()
+        {
+            var mode = GetSelectedPresetMode();
+            if (mode == FetchPresetMode.Custom)
+            {
+                chkUseThirdPartyFallbacks.Checked = config.UseThirdPartyFallbacks;
+                chkAllowSyntheticFallbacks.Checked = config.AllowSyntheticFallbacks;
+                numTimeout.Value = config.Timeout;
+
+                chkProviderDirectSite.Checked = config.EnableDirectSiteProvider;
+                chkProviderTwentyIcons.Checked = config.EnableTwentyIconsProvider;
+                chkProviderDuckDuckGo.Checked = config.EnableDuckDuckGoProvider;
+                chkProviderGoogle.Checked = config.EnableGoogleProvider;
+                chkProviderYandex.Checked = config.EnableYandexProvider;
+                chkProviderFavicone.Checked = config.EnableFaviconeProvider;
+                chkProviderIconHorse.Checked = config.EnableIconHorseProvider;
+
+                LoadProviderOrderList();
+            }
+            else
+            {
+                ApplyPresetToControls(mode);
+            }
+
+            lblFetchPresetDescription.Text = Configuration.GetPresetDescription(mode);
+        }
+
+        private void ApplyPresetToControls(FetchPresetMode mode)
+        {
+            numTimeout.Value = Configuration.GetPresetTimeout(mode);
+            chkUseThirdPartyFallbacks.Checked = Configuration.GetPresetUseThirdPartyFallbacks(mode);
+            chkAllowSyntheticFallbacks.Checked = Configuration.GetPresetAllowSyntheticFallbacks(mode);
+
+            chkProviderDirectSite.Checked = Configuration.IsProviderEnabledByPreset(mode, "Direct Site");
+            chkProviderTwentyIcons.Checked = Configuration.IsProviderEnabledByPreset(mode, "Twenty Icons");
+            chkProviderDuckDuckGo.Checked = Configuration.IsProviderEnabledByPreset(mode, "DuckDuckGo");
+            chkProviderGoogle.Checked = Configuration.IsProviderEnabledByPreset(mode, "Google");
+            chkProviderYandex.Checked = Configuration.IsProviderEnabledByPreset(mode, "Yandex");
+            chkProviderFavicone.Checked = Configuration.IsProviderEnabledByPreset(mode, "Favicone");
+            chkProviderIconHorse.Checked = Configuration.IsProviderEnabledByPreset(mode, "Icon Horse");
+
+            lstProviderOrder.Items.Clear();
+            foreach (string provider in Configuration.GetPresetProviderOrderList(mode))
+                lstProviderOrder.Items.Add(provider);
+
+            if (lstProviderOrder.Items.Count > 0)
+                lstProviderOrder.SelectedIndex = 0;
+
+            UpdateProviderOrderButtons();
+        }
+
+        private FetchPresetMode GetSelectedPresetMode()
+        {
+            if (cmbFetchPreset.SelectedItem == null)
+                return FetchPresetMode.Custom;
+
+            string selected = cmbFetchPreset.SelectedItem.ToString();
+            FetchPresetMode parsed;
+            if (Enum.TryParse(selected, true, out parsed))
+                return parsed;
+            return FetchPresetMode.Custom;
+        }
+
+        private System.Collections.Generic.List<string> GetProviderOrderForSelectedMode()
+        {
+            var mode = GetSelectedPresetMode();
+            if (mode == FetchPresetMode.Custom)
+                return new System.Collections.Generic.List<string>(FaviconDownloader.DefaultProviderOrder);
+
+            return Configuration.GetPresetProviderOrderList(mode);
+        }
+
+        private void cmbFetchPreset_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (isLoadingSettings)
+                return;
+
+            LoadNetworkAndProviderSettings();
         }
     }
 }

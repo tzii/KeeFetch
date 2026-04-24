@@ -30,6 +30,7 @@ namespace KeeFetch.Tests
             
             // Boolean properties
             Assert.IsNotNull(type.GetProperty("PrefixUrls"));
+            Assert.IsNotNull(type.GetProperty("FetchPresetMode"));
             Assert.IsNotNull(type.GetProperty("UseTitleField"));
             Assert.IsNotNull(type.GetProperty("SkipExistingIcons"));
             Assert.IsNotNull(type.GetProperty("AutoSave"));
@@ -62,6 +63,10 @@ namespace KeeFetch.Tests
             var prefixUrls = type.GetProperty("PrefixUrls");
             Assert.IsTrue(prefixUrls.CanRead);
             Assert.IsTrue(prefixUrls.CanWrite);
+
+            var fetchPresetMode = type.GetProperty("FetchPresetMode");
+            Assert.IsTrue(fetchPresetMode.CanRead);
+            Assert.IsTrue(fetchPresetMode.CanWrite);
             
             var timeout = type.GetProperty("Timeout");
             Assert.IsTrue(timeout.CanRead);
@@ -98,6 +103,7 @@ namespace KeeFetch.Tests
             // Verify the Configuration class has all expected properties
             var type = typeof(Configuration);
             Assert.IsNotNull(type.GetProperty("PrefixUrls"));
+            Assert.IsNotNull(type.GetProperty("FetchPresetMode"));
             Assert.IsNotNull(type.GetProperty("UseTitleField"));
             Assert.IsNotNull(type.GetProperty("SkipExistingIcons"));
             Assert.IsNotNull(type.GetProperty("AutoSave"));
@@ -141,6 +147,63 @@ namespace KeeFetch.Tests
             Assert.IsNotNull(type.GetMethod("IsProviderEnabled"));
             Assert.IsNotNull(type.GetMethod("SetProviderEnabled"));
             Assert.IsNotNull(type.GetMethod("GetProviderOrderList"));
+            Assert.IsNotNull(type.GetMethod("ShouldStopAfterStrongResolvedProvider"));
+            Assert.IsNotNull(type.GetMethod("GetPresetDescription", BindingFlags.Public | BindingFlags.Static));
+            Assert.IsNotNull(type.GetMethod("GetPresetTimeout", BindingFlags.Public | BindingFlags.Static));
+            Assert.IsNotNull(type.GetMethod("GetPresetMaxCumulativeTimeoutMs", BindingFlags.Public | BindingFlags.Static));
+            Assert.IsNotNull(type.GetMethod("GetPresetPrimaryProviderTimeoutMs", BindingFlags.Public | BindingFlags.Static));
+            Assert.IsNotNull(type.GetMethod("GetPresetFallbackProviderTimeoutMs", BindingFlags.Public | BindingFlags.Static));
+        }
+
+        [TestMethod]
+        public void Configuration_PresetProviderOrders_AreDistinct()
+        {
+            CollectionAssert.AreEqual(
+                new[] { "Direct Site", "Google", "Twenty Icons" },
+                Configuration.GetPresetProviderOrderList(FetchPresetMode.Fast));
+
+            CollectionAssert.AreEqual(
+                new[] { "Direct Site", "Google", "Favicone" },
+                Configuration.GetPresetProviderOrderList(FetchPresetMode.Balanced));
+
+            CollectionAssert.AreEqual(
+                FaviconDownloader.DefaultProviderOrder,
+                Configuration.GetPresetProviderOrderList(FetchPresetMode.Thorough));
+        }
+
+        [TestMethod]
+        public void Configuration_PresetTimeoutBudgets_AreMonotonic()
+        {
+            Assert.IsTrue(
+                Configuration.GetPresetPrimaryProviderTimeoutMs(FetchPresetMode.Fast) <
+                Configuration.GetPresetPrimaryProviderTimeoutMs(FetchPresetMode.Balanced));
+            Assert.IsTrue(
+                Configuration.GetPresetPrimaryProviderTimeoutMs(FetchPresetMode.Balanced) <
+                Configuration.GetPresetPrimaryProviderTimeoutMs(FetchPresetMode.Thorough));
+
+            Assert.IsTrue(
+                Configuration.GetPresetFallbackProviderTimeoutMs(FetchPresetMode.Fast) <
+                Configuration.GetPresetFallbackProviderTimeoutMs(FetchPresetMode.Balanced));
+            Assert.IsTrue(
+                Configuration.GetPresetFallbackProviderTimeoutMs(FetchPresetMode.Balanced) <
+                Configuration.GetPresetFallbackProviderTimeoutMs(FetchPresetMode.Thorough));
+
+            Assert.IsTrue(
+                Configuration.GetPresetMaxCumulativeTimeoutMs(FetchPresetMode.Fast) <
+                Configuration.GetPresetMaxCumulativeTimeoutMs(FetchPresetMode.Balanced));
+            Assert.IsTrue(
+                Configuration.GetPresetMaxCumulativeTimeoutMs(FetchPresetMode.Balanced) <
+                Configuration.GetPresetMaxCumulativeTimeoutMs(FetchPresetMode.Thorough));
+        }
+
+        [TestMethod]
+        public void Configuration_BalancedPreset_UsesSyntheticFallbackWithoutIconHorse()
+        {
+            Assert.IsTrue(Configuration.GetPresetAllowSyntheticFallbacks(FetchPresetMode.Balanced));
+            Assert.IsTrue(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "Favicone"));
+            Assert.IsFalse(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "Twenty Icons"));
+            Assert.IsFalse(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "DuckDuckGo"));
+            Assert.IsFalse(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "Icon Horse"));
         }
     }
 }

@@ -1,9 +1,9 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,12 +16,20 @@ namespace KeeFetch
 {
     /// <summary>
     /// Manages concurrent favicon downloads with progress reporting and cancellation support.
+    /// Network work runs off the UI thread; KeePass DB mutations are applied in small UI batches.
     /// </summary>
     internal sealed class FaviconDialog
     {
         private readonly IPluginHost host;
         private readonly Configuration config;
         private readonly PwEntry[] entries;
+        private readonly FaviconDownloader downloader;
+        private readonly ConcurrentQueue<PendingIconUpdate> pendingIconUpdates =
+            new ConcurrentQueue<PendingIconUpdate>();
+        private readonly Dictionary<string, ProviderMetricAggregate> providerMetricAggregates =
+            new Dictionary<string, ProviderMetricAggregate>(StringComparer.OrdinalIgnoreCase);
+        private readonly object providerMetricsLock = new object();
+
         private IStatusLogger logger;
         private CancellationTokenSource cts;
 
@@ -34,20 +42,28 @@ namespace KeeFetch
         private int notFoundCount;
         private int errorCount;
         private int processedCount;
+        private int pendingIconUpdateCount;
+        private int cacheHitCount;
         private bool dbModified;
+        private long totalDownloadElapsedMs;
+        private long maxDownloadElapsedMs;
+
         private readonly List<string> errorLog = new List<string>();
         private readonly List<string> diagnosticsLog = new List<string>();
         private readonly object errorLogLock = new object();
         private readonly object diagnosticsLogLock = new object();
 
-        // Concurrency limit to avoid ThreadPool starvation and excessive network load
+        // Concurrency limit to avoid ThreadPool starvation and excessive network load.
         private const int MaxConcurrency = 8;
+        private const int UiPollDelayMs = 100;
+        private const int UiApplyBatchSize = 12;
 
         public FaviconDialog(IPluginHost host, Configuration config, PwEntry[] entries)
         {
             this.host = host;
             this.config = config;
             this.entries = entries;
+            downloader = new FaviconDownloader(config);
         }
 
         /// <summary>
@@ -67,9 +83,16 @@ namespace KeeFetch
             notFoundCount = 0;
             errorCount = 0;
             processedCount = 0;
+            pendingIconUpdateCount = 0;
+            cacheHitCount = 0;
             dbModified = false;
+            totalDownloadElapsedMs = 0;
+            maxDownloadElapsedMs = 0;
+
             lock (errorLogLock) { errorLog.Clear(); }
             lock (diagnosticsLogLock) { diagnosticsLog.Clear(); }
+            lock (providerMetricsLock) { providerMetricAggregates.Clear(); }
+
             cts = new CancellationTokenSource();
 
             Form statusForm;
@@ -87,36 +110,33 @@ namespace KeeFetch
 
             try
             {
-                // Run the work on a background thread
                 var workTask = Task.Run(() => DoWork(cts.Token), cts.Token);
 
-                // Pump UI messages until the worker finishes
-                // Replaced Application.DoEvents() loop with simple await
-                // The StatusDialog is modeless but we simulate modal behavior by waiting here
                 while (!workTask.IsCompleted)
                 {
-                    // Check for user cancellation via the status dialog
                     if (!cts.IsCancellationRequested && !logger.ContinueWork())
                     {
                         cts.Cancel();
                         logger.SetText("Cancelling...", LogStatusType.Warning);
                     }
 
-                    // Wait a bit to let the UI update (yielding to message loop)
-                    await Task.Delay(100);
+                    FlushPendingUpdates(UiApplyBatchSize);
+                    UpdateProgressDisplay();
+
+                    await Task.Delay(UiPollDelayMs);
                 }
 
-                await workTask; // observe exceptions
-
-                // Clear the download cache to free memory
-                FaviconDownloader.ClearCache();
+                await workTask;
             }
             catch (OperationCanceledException)
             {
-                // Expected when user cancels
+                // Expected when the user cancels.
             }
             finally
             {
+                FlushPendingUpdates(int.MaxValue);
+                UpdateProgressDisplay();
+                FaviconDownloader.ClearCache();
                 logger.EndLogging();
                 ShowCompletionMessage();
                 cts.Dispose();
@@ -134,11 +154,6 @@ namespace KeeFetch
             {
                 PwDatabase db = host.Database;
 
-                int timeoutMs = config.Timeout * 1000;
-                // Safety timeout: generous but not infinite
-                int maxTotalWaitMs = Math.Max(timeoutMs * 5, entries.Length * 1000);
-
-                // Use a semaphore to limit concurrent downloads
                 using (var semaphore = new SemaphoreSlim(MaxConcurrency, MaxConcurrency))
                 {
                     var tasks = new List<Task>();
@@ -149,16 +164,11 @@ namespace KeeFetch
 
                         PwEntry entry = entries[idx];
 
-                        // Wait for a semaphore slot (with timeout to check cancellation)
                         while (!await semaphore.WaitAsync(500, token))
                         {
                             token.ThrowIfCancellationRequested();
                         }
 
-                        token.ThrowIfCancellationRequested();
-
-                        // Capture current index for closure
-                        int entryIndex = idx;
                         var task = Task.Run(async () =>
                         {
                             try
@@ -174,56 +184,38 @@ namespace KeeFetch
                             catch (Exception ex)
                             {
                                 Interlocked.Increment(ref errorCount);
+
                                 string title = "?";
                                 string url = "?";
-                                try { title = entry.Strings.ReadSafe(PwDefs.TitleField); } catch (Exception ex2) { Logger.Debug("ProcessEntry", ex2); }
-                                try { url = entry.Strings.ReadSafe(PwDefs.UrlField); } catch (Exception ex2) { Logger.Debug("ProcessEntry", ex2); }
+                                try { title = entry.Strings.ReadSafe(PwDefs.TitleField); }
+                                catch (Exception ex2) { Logger.Debug("ProcessEntry", ex2); }
+                                try { url = entry.Strings.ReadSafe(PwDefs.UrlField); }
+                                catch (Exception ex2) { Logger.Debug("ProcessEntry", ex2); }
+
                                 lock (errorLogLock)
                                 {
-                                    errorLog.Add(string.Format("[{0}] {1}: {2}", title, url, ex.ToString()));
+                                    errorLog.Add(string.Format("[{0}] {1}: {2}",
+                                        title, url, ex.ToString()));
                                 }
                             }
                             finally
                             {
                                 semaphore.Release();
-
-                                int currentProcessed = Interlocked.Increment(ref processedCount);
-                                int pct = (int)(currentProcessed * 100.0 / totalCount);
-                                uint progressValue = (uint)Math.Min(Math.Max(pct, 0), 100);
-
-                                int currentSuccess = Interlocked.CompareExchange(ref successCount, 0, 0);
-                                int currentDirect = Interlocked.CompareExchange(ref directSiteSuccessCount, 0, 0);
-                                int currentResolved = Interlocked.CompareExchange(ref resolvedSuccessCount, 0, 0);
-                                int currentSynthetic = Interlocked.CompareExchange(ref syntheticSuccessCount, 0, 0);
-                                int currentSkipped = Interlocked.CompareExchange(ref skippedCount, 0, 0);
-                                int currentNotFound = Interlocked.CompareExchange(ref notFoundCount, 0, 0);
-                                int currentErrors = Interlocked.CompareExchange(ref errorCount, 0, 0);
-
-                                InvokeOnUI(() =>
-                                {
-                                    logger.SetProgress(progressValue);
-                                    logger.SetText(string.Format(
-                                        "Processed {0}/{1} ({2}%) — OK: {3} (Direct {4}, Resolved {5}, Synthetic {6}), Skipped: {7}, Not found: {8}, Errors: {9}",
-                                        currentProcessed, totalCount, pct,
-                                        currentSuccess, currentDirect, currentResolved, currentSynthetic,
-                                        currentSkipped, currentNotFound, currentErrors),
-                                        LogStatusType.Info);
-                                });
+                                Interlocked.Increment(ref processedCount);
                             }
                         }, token);
 
                         tasks.Add(task);
 
-                        // Periodically cleanup completed tasks
                         if (tasks.Count >= MaxConcurrency * 2)
                         {
                             var completed = await Task.WhenAny(tasks);
                             tasks.Remove(completed);
-                            try { await completed; } catch (OperationCanceledException) { }
+                            try { await completed; }
+                            catch (OperationCanceledException) { }
                         }
                     }
 
-                    // Wait for all remaining tasks
                     await Task.WhenAll(tasks);
                 }
             }
@@ -256,9 +248,12 @@ namespace KeeFetch
                 return;
             }
 
-            // Using async DownloadAsync
-            var downloader = new FaviconDownloader(config);
+            var stopwatch = Stopwatch.StartNew();
             FaviconResult result = await downloader.DownloadAsync(url, token).ConfigureAwait(false);
+            if (result.ElapsedMilliseconds <= 0)
+                result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+
+            RecordDownloadMetrics(result);
 
             if (result.Status != FaviconStatus.Success || result.IconData == null)
             {
@@ -267,119 +262,174 @@ namespace KeeFetch
                 return;
             }
 
-            if (result.WasSyntheticFallback || result.SelectedTier == IconTier.SyntheticFallback)
-                Interlocked.Increment(ref syntheticSuccessCount);
-            else if (result.SelectedTier == IconTier.SiteCanonical)
-                Interlocked.Increment(ref directSiteSuccessCount);
-            else if (result.SelectedTier == IconTier.StrongResolved)
-                Interlocked.Increment(ref resolvedSuccessCount);
-
             byte[] iconHash = Util.HashData(result.IconData);
-            byte[] iconData = result.IconData;
-            string iconHost = result.Host;
+            pendingIconUpdates.Enqueue(new PendingIconUpdate(entry, iconHash, result.IconData,
+                result.Host, result.SelectedTier, result.WasSyntheticFallback, url));
+            Interlocked.Increment(ref pendingIconUpdateCount);
 
-            // Marshal to UI thread - KeePass is single-threaded for DB operations
-            await InvokeOnUIAsync(() =>
-            {
-                // Lock on the database to prevent race conditions
-                // KeePass's PwDatabase is not thread-safe
-                lock (db) 
-                {
-                    PwUuid iconUuid = new PwUuid(iconHash);
-
-                    bool iconExists = db.CustomIcons.Any(ci => ci.Uuid.Equals(iconUuid));
-                    if (!iconExists)
-                    {
-                        PwCustomIcon newIcon = new PwCustomIcon(iconUuid, iconData);
-
-                        string iconName = config.IconNamePrefix;
-                        if (!string.IsNullOrEmpty(iconName) && !string.IsNullOrEmpty(iconHost))
-                            iconName += iconHost;
-                        else if (!string.IsNullOrEmpty(iconHost))
-                            iconName = iconHost;
-
-                        if (!string.IsNullOrEmpty(iconName))
-                        {
-                            try
-                            {
-                                var nameProperty = newIcon.GetType().GetProperty("Name");
-                                if (nameProperty != null)
-                                    nameProperty.SetValue(newIcon, iconName);
-                            }
-                            catch (Exception ex) { Logger.Debug("ProcessEntry", ex); }
-                        }
-
-                        db.CustomIcons.Add(newIcon);
-                    }
-
-                    if (!entry.CustomIconUuid.Equals(iconUuid))
-                    {
-                        entry.CustomIconUuid = iconUuid;
-                        entry.Touch(true, false);
-                        dbModified = true;
-                    }
-                }
-            });
-
-            Interlocked.Increment(ref successCount);
             AddDiagnosticsEntry(entry, url, result);
         }
 
-        /// <summary>
-        /// Invokes an action on the UI thread asynchronously with proper exception handling.
-        /// Uses Invoke (not BeginInvoke) to ensure exceptions are properly propagated.
-        /// </summary>
-        private async Task InvokeOnUIAsync(Action action)
+        private void FlushPendingUpdates(int maxBatchSize)
         {
-            var mainForm = host.MainWindow;
-            if (mainForm != null && mainForm.InvokeRequired)
+            if (maxBatchSize <= 0)
+                return;
+
+            PwDatabase db = host.Database;
+            if (db == null)
+                return;
+
+            int applied = 0;
+
+            lock (db)
             {
-                // Use TaskCompletionSource to make Invoke async-await friendly
-                var tcs = new TaskCompletionSource<object>();
-                mainForm.Invoke(new Action(() =>
+                while (applied < maxBatchSize)
                 {
+                    PendingIconUpdate pending;
+                    if (!pendingIconUpdates.TryDequeue(out pending))
+                        break;
+
+                    Interlocked.Decrement(ref pendingIconUpdateCount);
+
                     try
                     {
-                        action();
-                        tcs.SetResult(null);
+                        ApplyIconUpdate(db, pending);
                     }
                     catch (Exception ex)
                     {
-                        tcs.SetException(ex);
+                        Interlocked.Increment(ref errorCount);
+                        lock (errorLogLock)
+                        {
+                            errorLog.Add(string.Format("[{0}] {1}: {2}",
+                                pending.EntryTitle, pending.ResolvedUrl, ex.ToString()));
+                        }
                     }
-                }));
-                await tcs.Task;
-            }
-            else
-            {
-                // Already on UI thread, execute directly
-                action();
+
+                    applied++;
+                }
             }
         }
 
-        /// <summary>
-        /// Invokes an action on the UI thread for progress updates (fire-and-forget).
-        /// Exceptions are caught and logged.
-        /// </summary>
-        private void InvokeOnUI(Action action)
+        private void ApplyIconUpdate(PwDatabase db, PendingIconUpdate pending)
         {
-            try
+            PwUuid iconUuid = new PwUuid(pending.IconHash);
+            bool iconExists = db.CustomIcons.Any(ci => ci.Uuid.Equals(iconUuid));
+            if (!iconExists)
             {
-                var mainForm = host.MainWindow;
-                if (mainForm != null && mainForm.InvokeRequired)
+                PwCustomIcon newIcon = new PwCustomIcon(iconUuid, pending.IconData);
+
+                string iconName = config.IconNamePrefix;
+                if (!string.IsNullOrEmpty(iconName) && !string.IsNullOrEmpty(pending.IconHost))
+                    iconName += pending.IconHost;
+                else if (!string.IsNullOrEmpty(pending.IconHost))
+                    iconName = pending.IconHost;
+
+                if (!string.IsNullOrEmpty(iconName))
                 {
-                    mainForm.BeginInvoke(new Action(() =>
+                    try
                     {
-                        try { action(); }
-                        catch (Exception ex) { Logger.Debug("InvokeOnUI", ex); }
-                    }));
+                        var nameProperty = newIcon.GetType().GetProperty("Name");
+                        if (nameProperty != null)
+                            nameProperty.SetValue(newIcon, iconName);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Debug("ApplyIconUpdate", ex);
+                    }
                 }
-                else
+
+                db.CustomIcons.Add(newIcon);
+            }
+
+            if (!pending.Entry.CustomIconUuid.Equals(iconUuid))
+            {
+                pending.Entry.CustomIconUuid = iconUuid;
+                pending.Entry.Touch(true, false);
+                dbModified = true;
+            }
+
+            Interlocked.Increment(ref successCount);
+            if (pending.WasSyntheticFallback || pending.SelectedTier == IconTier.SyntheticFallback)
+                Interlocked.Increment(ref syntheticSuccessCount);
+            else if (pending.SelectedTier == IconTier.SiteCanonical)
+                Interlocked.Increment(ref directSiteSuccessCount);
+            else if (pending.SelectedTier == IconTier.StrongResolved)
+                Interlocked.Increment(ref resolvedSuccessCount);
+        }
+
+        private void UpdateProgressDisplay()
+        {
+            int currentProcessed = Interlocked.CompareExchange(ref processedCount, 0, 0);
+            int pct = totalCount > 0 ? (int)(currentProcessed * 100.0 / totalCount) : 100;
+            uint progressValue = (uint)Math.Min(Math.Max(pct, 0), 100);
+
+            int currentSuccess = Interlocked.CompareExchange(ref successCount, 0, 0);
+            int currentDirect = Interlocked.CompareExchange(ref directSiteSuccessCount, 0, 0);
+            int currentResolved = Interlocked.CompareExchange(ref resolvedSuccessCount, 0, 0);
+            int currentSynthetic = Interlocked.CompareExchange(ref syntheticSuccessCount, 0, 0);
+            int currentSkipped = Interlocked.CompareExchange(ref skippedCount, 0, 0);
+            int currentNotFound = Interlocked.CompareExchange(ref notFoundCount, 0, 0);
+            int currentErrors = Interlocked.CompareExchange(ref errorCount, 0, 0);
+            int currentPending = Interlocked.CompareExchange(ref pendingIconUpdateCount, 0, 0);
+
+            logger.SetProgress(progressValue);
+            logger.SetText(string.Format(
+                "Processed {0}/{1} ({2}%) — OK: {3} (Direct {4}, Resolved {5}, Synthetic {6}), Skipped: {7}, Not found: {8}, Errors: {9}, Pending UI apply: {10}",
+                currentProcessed, totalCount, pct,
+                currentSuccess, currentDirect, currentResolved, currentSynthetic,
+                currentSkipped, currentNotFound, currentErrors, currentPending),
+                LogStatusType.Info);
+        }
+
+        private void RecordDownloadMetrics(FaviconResult result)
+        {
+            if (result == null)
+                return;
+
+            long elapsed = Math.Max(0L, result.ElapsedMilliseconds);
+            Interlocked.Add(ref totalDownloadElapsedMs, elapsed);
+            TryRecordMaxElapsed(elapsed);
+
+            if (result.DiagnosticsSummary != null &&
+                result.DiagnosticsSummary.IndexOf("cache-hit", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                Interlocked.Increment(ref cacheHitCount);
+            }
+
+            if (result.ProviderMetrics == null)
+                return;
+
+            lock (providerMetricsLock)
+            {
+                foreach (ProviderAttemptMetric metric in result.ProviderMetrics)
                 {
-                    action();
+                    if (metric == null || string.IsNullOrWhiteSpace(metric.ProviderName))
+                        continue;
+
+                    ProviderMetricAggregate aggregate;
+                    if (!providerMetricAggregates.TryGetValue(metric.ProviderName, out aggregate))
+                    {
+                        aggregate = new ProviderMetricAggregate(metric.ProviderName);
+                        providerMetricAggregates[metric.ProviderName] = aggregate;
+                    }
+
+                    aggregate.Add(metric);
                 }
             }
-            catch (Exception ex) { Logger.Debug("InvokeOnUI", ex); }
+        }
+
+        private void TryRecordMaxElapsed(long elapsedMilliseconds)
+        {
+            while (true)
+            {
+                long current = Interlocked.Read(ref maxDownloadElapsedMs);
+                if (elapsedMilliseconds <= current)
+                    return;
+
+                if (Interlocked.CompareExchange(ref maxDownloadElapsedMs,
+                    elapsedMilliseconds, current) == current)
+                    return;
+            }
         }
 
         private void ShowCompletionMessage()
@@ -396,7 +446,10 @@ namespace KeeFetch
                         host.MainWindow.SaveDatabase(host.Database, null);
                     }
                 }
-                catch (Exception ex) { Logger.Error("ShowCompletionMessage", ex); }
+                catch (Exception ex)
+                {
+                    Logger.Error("ShowCompletionMessage", ex);
+                }
             }
 
             bool wasCancelled = cts != null && cts.IsCancellationRequested;
@@ -414,6 +467,10 @@ namespace KeeFetch
                 totalCount, successCount, directSiteSuccessCount, resolvedSuccessCount,
                 syntheticSuccessCount, skippedCount, notFoundCount, errorCount);
 
+            string timingSummary = BuildTimingSummary();
+            if (!string.IsNullOrEmpty(timingSummary))
+                message += "\n\n" + timingSummary;
+
             if (wasCancelled)
                 message += "\n\nDownload was cancelled by user.";
 
@@ -424,7 +481,9 @@ namespace KeeFetch
                 if (!string.IsNullOrEmpty(dbPath) && File.Exists(dbPath))
                     logDir = Path.GetDirectoryName(dbPath);
             }
-            catch { }
+            catch
+            {
+            }
 
             if (string.IsNullOrEmpty(logDir) || !Directory.Exists(logDir))
                 logDir = Path.GetTempPath();
@@ -437,7 +496,10 @@ namespace KeeFetch
                     File.WriteAllText(diagnosticsPath, string.Join(Environment.NewLine, diagnosticsLog));
                     message += "\n\nDiagnostics log saved to:\n" + diagnosticsPath;
                 }
-                catch (Exception ex) { Logger.Error("ShowCompletionMessage", ex); }
+                catch (Exception ex)
+                {
+                    Logger.Error("ShowCompletionMessage", ex);
+                }
             }
 
             if (errorLog.Count > 0)
@@ -445,10 +507,14 @@ namespace KeeFetch
                 try
                 {
                     string logPath = Path.Combine(logDir, "KeeFetch_errors.log");
-                    File.WriteAllText(logPath, string.Join(Environment.NewLine + Environment.NewLine, errorLog));
+                    File.WriteAllText(logPath,
+                        string.Join(Environment.NewLine + Environment.NewLine, errorLog));
                     message += "\n\nError log saved to:\n" + logPath;
                 }
-                catch (Exception ex) { Logger.Error("ShowCompletionMessage", ex); }
+                catch (Exception ex)
+                {
+                    Logger.Error("ShowCompletionMessage", ex);
+                }
             }
 
             MessageBox.Show(message, "KeeFetch", MessageBoxButtons.OK,
@@ -460,16 +526,29 @@ namespace KeeFetch
             try
             {
                 string title = entry != null ? entry.Strings.ReadSafe(PwDefs.TitleField) : string.Empty;
-                string provider = result != null && !string.IsNullOrEmpty(result.Provider) ? result.Provider : "none";
+                string provider = result != null && !string.IsNullOrEmpty(result.Provider)
+                    ? result.Provider : "none";
                 string tier = result != null ? result.SelectedTier.ToString() : "Rejected";
                 string synthetic = (result != null && result.WasSyntheticFallback) ? "true" : "false";
                 string attempted = result != null && result.AttemptedProviders != null
                     ? string.Join(", ", result.AttemptedProviders)
                     : string.Empty;
                 string summary = result != null ? result.DiagnosticsSummary : "no-selection";
+                string elapsed = result != null ? result.ElapsedMilliseconds + "ms" : "0ms";
+
+                string providerTimings = string.Empty;
+                if (result != null && result.ProviderMetrics != null && result.ProviderMetrics.Count > 0)
+                {
+                    providerTimings = string.Join(", ", result.ProviderMetrics
+                        .Where(m => m != null)
+                        .Select(m => string.Format("{0}:{1}ms/{2}/{3}",
+                            m.ProviderName, m.ElapsedMilliseconds, m.CandidateCount, m.Outcome))
+                        .ToArray());
+                }
 
                 string rejected = string.Empty;
-                if (result != null && result.RejectedCandidates != null && result.RejectedCandidates.Count > 0)
+                if (result != null && result.RejectedCandidates != null &&
+                    result.RejectedCandidates.Count > 0)
                 {
                     rejected = string.Join(" || ", result.RejectedCandidates
                         .Where(c => c != null)
@@ -477,17 +556,20 @@ namespace KeeFetch
                 }
 
                 string line = string.Format(
-                    "[{0}] url={1}; provider={2}; tier={3}; synthetic={4}; attempted=[{5}]; summary={6}",
+                    "[{0}] url={1}; provider={2}; tier={3}; synthetic={4}; elapsed={5}; attempted=[{6}]; summary={7}",
                     title ?? string.Empty,
                     resolvedUrl ?? string.Empty,
                     provider,
                     tier,
                     synthetic,
+                    elapsed,
                     attempted,
                     summary ?? string.Empty);
 
                 if (!string.IsNullOrWhiteSpace(rejected))
                     line += "; rejected=" + rejected;
+                if (!string.IsNullOrWhiteSpace(providerTimings))
+                    line += "; providers=" + providerTimings;
 
                 lock (diagnosticsLogLock)
                 {
@@ -497,6 +579,96 @@ namespace KeeFetch
             catch (Exception ex)
             {
                 Logger.Debug("AddDiagnosticsEntry", ex);
+            }
+        }
+
+        private string BuildTimingSummary()
+        {
+            int completed = Math.Max(1, Interlocked.CompareExchange(ref processedCount, 0, 0));
+            long totalMs = Interlocked.Read(ref totalDownloadElapsedMs);
+            long maxMs = Interlocked.Read(ref maxDownloadElapsedMs);
+            int cacheHits = Interlocked.CompareExchange(ref cacheHitCount, 0, 0);
+            long averageMs = completed > 0 ? totalMs / completed : 0;
+
+            var lines = new List<string>();
+            lines.Add(string.Format(
+                "Timing: avg {0} ms per entry, slowest {1} ms, cache hits {2}.",
+                averageMs, maxMs, cacheHits));
+
+            List<ProviderMetricAggregate> aggregates;
+            lock (providerMetricsLock)
+            {
+                aggregates = providerMetricAggregates.Values
+                    .OrderByDescending(v => v.TotalElapsedMilliseconds)
+                    .ThenBy(v => v.ProviderName, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+            }
+
+            if (aggregates.Count > 0)
+            {
+                lines.Add("Provider timings:");
+                foreach (ProviderMetricAggregate aggregate in aggregates.Take(6))
+                {
+                    lines.Add(string.Format(
+                        "- {0}: {1} calls, {2} ms total, avg {3} ms, candidates {4}, errors {5}",
+                        aggregate.ProviderName,
+                        aggregate.CallCount,
+                        aggregate.TotalElapsedMilliseconds,
+                        aggregate.CallCount > 0 ? aggregate.TotalElapsedMilliseconds / aggregate.CallCount : 0,
+                        aggregate.TotalCandidates,
+                        aggregate.ErrorCount));
+                }
+            }
+
+            return string.Join(Environment.NewLine, lines.ToArray());
+        }
+
+        private sealed class PendingIconUpdate
+        {
+            public PendingIconUpdate(PwEntry entry, byte[] iconHash, byte[] iconData,
+                string iconHost, IconTier selectedTier, bool wasSyntheticFallback,
+                string resolvedUrl)
+            {
+                Entry = entry;
+                IconHash = iconHash;
+                IconData = iconData;
+                IconHost = iconHost;
+                SelectedTier = selectedTier;
+                WasSyntheticFallback = wasSyntheticFallback;
+                ResolvedUrl = resolvedUrl ?? string.Empty;
+                EntryTitle = entry != null ? entry.Strings.ReadSafe(PwDefs.TitleField) : string.Empty;
+            }
+
+            public PwEntry Entry { get; private set; }
+            public byte[] IconHash { get; private set; }
+            public byte[] IconData { get; private set; }
+            public string IconHost { get; private set; }
+            public IconTier SelectedTier { get; private set; }
+            public bool WasSyntheticFallback { get; private set; }
+            public string ResolvedUrl { get; private set; }
+            public string EntryTitle { get; private set; }
+        }
+
+        private sealed class ProviderMetricAggregate
+        {
+            public ProviderMetricAggregate(string providerName)
+            {
+                ProviderName = providerName;
+            }
+
+            public string ProviderName { get; private set; }
+            public int CallCount { get; private set; }
+            public long TotalElapsedMilliseconds { get; private set; }
+            public int TotalCandidates { get; private set; }
+            public int ErrorCount { get; private set; }
+
+            public void Add(ProviderAttemptMetric metric)
+            {
+                CallCount++;
+                TotalElapsedMilliseconds += Math.Max(0L, metric.ElapsedMilliseconds);
+                TotalCandidates += Math.Max(0, metric.CandidateCount);
+                if (string.Equals(metric.Outcome, "error", StringComparison.OrdinalIgnoreCase))
+                    ErrorCount++;
             }
         }
     }

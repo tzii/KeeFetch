@@ -38,6 +38,17 @@ Rationale:
 - It avoided providers that were low-yield or noisy for the balanced use case on this corpus.
 - It still gives users a clear escalation path: `Fast` for bulk speed, `Thorough` for maximum coverage.
 
+## Real KeePass validation
+
+The tuned `Balanced` preset was also tested in KeePass against `X:\Downloads\keefetch_favicon_test_suite_200_FIXED(1).kdbx`.
+
+| Build | Success | Not found | Average ms | Slowest ms | Cache hits | Direct Site calls | Google calls | Favicone calls | Coalesced calls |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Balanced before in-flight coalescing | 148/200 | 52 | 5415 | 34524 | 34 | 156 | 50 | 32 | 0 |
+| Balanced after in-flight coalescing | 148/200 | 52 | 4868 | 37705 | 34 | 151 | 46 | 28 | 5 |
+
+The coalescing result confirms that repeated-origin entries can now share active network work. Coverage stayed stable at `148/200`, while average elapsed time improved by about 10% and fallback provider call counts dropped.
+
 ## Provider observations
 
 - `Direct Site` remains the most important provider and dominates elapsed time.
@@ -57,8 +68,8 @@ Rationale:
 
 ## Follow-up work
 
-1. Run a real KeePass UI batch with the rebuilt `KeeFetch.plgx` and compare the completion dialog against the harness results.
-2. Add in-flight origin deduplication so concurrent entries for the same origin share one lookup instead of racing duplicate network work.
-3. Add optional per-origin result export in diagnostics to identify which URL categories still miss.
-4. Consider a small UI affordance that explains presets in user terms: speed, recommended, maximum coverage.
-5. Keep `Thorough` available, but avoid making it the default unless a user explicitly prioritizes coverage over time.
+1. Add optional per-origin result export in diagnostics to identify which URL categories still miss.
+2. Improve Direct Site diagnostics so misses can be grouped by reason: invalid URL, private host, timeout, no candidate, rejected candidate, blank placeholder, SVG-only, or image validation failure.
+3. Consider per-origin negative caching inside a single batch so repeated misses for the same origin do not rerun the same failed lookup after the first one completes.
+4. Evaluate Direct Site candidate fetching next, because it still dominates total provider time even after preset tuning and coalescing.
+5. Keep `Balanced` as the default and reserve `Thorough` for users who explicitly prefer maximum coverage over time.

@@ -64,7 +64,7 @@ namespace KeeFetch
                 if (!fetchPresetMode.HasValue)
                 {
                     fetchPresetMode = ParseFetchPresetMode(config.GetString(
-                        Prefix + "FetchPresetMode", FetchPresetMode.Custom.ToString()));
+                        Prefix + "FetchPresetMode", FetchPresetMode.Balanced.ToString()));
                 }
                 return fetchPresetMode.Value;
             }

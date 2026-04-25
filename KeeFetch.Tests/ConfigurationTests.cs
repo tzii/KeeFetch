@@ -88,6 +88,7 @@ namespace KeeFetch.Tests
             // These values are defined in the Configuration class property getters
             // and should match the documentation below:
             // PrefixUrls: true
+            // FetchPresetMode: Balanced
             // UseTitleField: true
             // SkipExistingIcons: false
             // AutoSave: false
@@ -204,6 +205,13 @@ namespace KeeFetch.Tests
             Assert.IsFalse(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "Twenty Icons"));
             Assert.IsFalse(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "DuckDuckGo"));
             Assert.IsFalse(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "Icon Horse"));
+        }
+
+        [TestMethod]
+        public void Configuration_DefaultFetchPresetMode_IsBalanced()
+        {
+            var config = new Configuration(new KeePass.App.Configuration.AceCustomConfig());
+            Assert.AreEqual(FetchPresetMode.Balanced, config.FetchPresetMode);
         }
     }
 }

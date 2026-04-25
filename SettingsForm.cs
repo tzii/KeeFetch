@@ -128,16 +128,19 @@ namespace KeeFetch
         {
             int index = lstProviderOrder.SelectedIndex;
             bool hasSelection = index >= 0;
+            bool canEditOrder = GetSelectedPresetMode() == FetchPresetMode.Custom;
 
-            btnProviderUp.Enabled = hasSelection && index > 0;
-            btnProviderDown.Enabled = hasSelection && index < lstProviderOrder.Items.Count - 1;
+            btnProviderUp.Enabled = canEditOrder && hasSelection && index > 0;
+            btnProviderDown.Enabled = canEditOrder && hasSelection && index < lstProviderOrder.Items.Count - 1;
         }
 
         private void LoadPresetOptions()
         {
             cmbFetchPreset.Items.Clear();
-            foreach (FetchPresetMode mode in Enum.GetValues(typeof(FetchPresetMode)))
-                cmbFetchPreset.Items.Add(mode.ToString());
+            cmbFetchPreset.Items.Add(FetchPresetMode.Balanced.ToString());
+            cmbFetchPreset.Items.Add(FetchPresetMode.Fast.ToString());
+            cmbFetchPreset.Items.Add(FetchPresetMode.Thorough.ToString());
+            cmbFetchPreset.Items.Add(FetchPresetMode.Custom.ToString());
         }
 
         private void LoadNetworkAndProviderSettings()
@@ -165,6 +168,7 @@ namespace KeeFetch
             }
 
             lblFetchPresetDescription.Text = Configuration.GetPresetDescription(mode);
+            UpdatePresetManagedControlStates(mode);
         }
 
         private void ApplyPresetToControls(FetchPresetMode mode)
@@ -187,6 +191,31 @@ namespace KeeFetch
 
             if (lstProviderOrder.Items.Count > 0)
                 lstProviderOrder.SelectedIndex = 0;
+
+            UpdateProviderOrderButtons();
+        }
+
+        private void UpdatePresetManagedControlStates(FetchPresetMode mode)
+        {
+            bool isCustom = mode == FetchPresetMode.Custom;
+
+            grpProviders.Text = isCustom
+                ? "Provider Controls"
+                : "Provider Controls (preset managed)";
+
+            numTimeout.Enabled = isCustom;
+            chkUseThirdPartyFallbacks.Enabled = isCustom;
+            chkAllowSyntheticFallbacks.Enabled = isCustom;
+
+            chkProviderDirectSite.Enabled = isCustom;
+            chkProviderTwentyIcons.Enabled = isCustom;
+            chkProviderDuckDuckGo.Enabled = isCustom;
+            chkProviderGoogle.Enabled = isCustom;
+            chkProviderYandex.Enabled = isCustom;
+            chkProviderFavicone.Enabled = isCustom;
+            chkProviderIconHorse.Enabled = isCustom;
+            lstProviderOrder.Enabled = isCustom;
+            btnProviderReset.Enabled = isCustom;
 
             UpdateProviderOrderButtons();
         }

@@ -48,6 +48,9 @@ namespace KeeFetch
         private static readonly ConcurrentDictionary<string, CachedIconEntry> DownloadCache =
             new ConcurrentDictionary<string, CachedIconEntry>(StringComparer.OrdinalIgnoreCase);
 
+        private static readonly ConcurrentDictionary<string, Lazy<Task<FaviconResult>>> InFlightDownloads =
+            new ConcurrentDictionary<string, Lazy<Task<FaviconResult>>>(StringComparer.OrdinalIgnoreCase);
+
         private static readonly ConcurrentDictionary<string, SemaphoreSlim> ProviderSemaphores =
             new ConcurrentDictionary<string, SemaphoreSlim>(StringComparer.OrdinalIgnoreCase);
 
@@ -180,6 +183,7 @@ namespace KeeFetch
         public static void ClearCache()
         {
             DownloadCache.Clear();
+            InFlightDownloads.Clear();
         }
 
         public async Task<FaviconResult> DownloadAsync(string url, CancellationToken token = default(CancellationToken))
@@ -220,9 +224,40 @@ namespace KeeFetch
                 return cachedResult;
             }
 
+            string inFlightKey = BuildInFlightKey(cacheKey, maxSize);
+            var lazyDownload = new Lazy<Task<FaviconResult>>(
+                () => DownloadParsedHttpAsync(url, normalizedUri, host, cacheKey, isPrivate,
+                    maxSize, timeoutMs, token),
+                LazyThreadSafetyMode.ExecutionAndPublication);
+            var activeDownload = InFlightDownloads.GetOrAdd(inFlightKey, lazyDownload);
+            bool isOwner = ReferenceEquals(activeDownload, lazyDownload);
+
+            FaviconResult result;
+            try
+            {
+                result = await activeDownload.Value.ConfigureAwait(false);
+            }
+            finally
+            {
+                if (isOwner)
+                {
+                    Lazy<Task<FaviconResult>> ignored;
+                    InFlightDownloads.TryRemove(inFlightKey, out ignored);
+                }
+            }
+
+            result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+            return isOwner
+                ? result
+                : BuildCoalescedResult(result, stopwatch.ElapsedMilliseconds);
+        }
+
+        private async Task<FaviconResult> DownloadParsedHttpAsync(string originalUrl, Uri normalizedUri,
+            string host, string cacheKey, bool isPrivate, int maxSize, int timeoutMs, CancellationToken token)
+        {
             var request = new IconRequest
             {
-                OriginalUrl = url,
+                OriginalUrl = originalUrl,
                 TargetHost = host,
                 TargetOrigin = normalizedUri.GetLeftPart(UriPartial.Authority),
                 CacheKey = cacheKey,
@@ -236,7 +271,6 @@ namespace KeeFetch
                 config.AllowSyntheticFallbacks);
             var result = BuildResultFromSelection(selection, host, cacheKey, maxSize);
             result.ProviderMetrics = collection.ProviderMetrics;
-            result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
             return result;
         }
 
@@ -668,6 +702,62 @@ namespace KeeFetch
                 DiagnosticsSummary = string.IsNullOrWhiteSpace(cached.DiagnosticsSummary)
                     ? "cache-hit"
                     : "cache-hit; " + cached.DiagnosticsSummary
+            };
+        }
+
+        private string BuildInFlightKey(string cacheKey, int maxSize)
+        {
+            return string.Join("|", new[]
+            {
+                cacheKey ?? string.Empty,
+                maxSize.ToString(),
+                config.FetchPresetMode.ToString(),
+                config.Timeout.ToString(),
+                config.UseThirdPartyFallbacks.ToString(),
+                config.AllowSyntheticFallbacks.ToString(),
+                config.ProviderOrder ?? string.Empty
+            });
+        }
+
+        private static FaviconResult BuildCoalescedResult(FaviconResult source, long elapsedMilliseconds)
+        {
+            if (source == null)
+            {
+                return new FaviconResult
+                {
+                    Status = FaviconStatus.NotFound,
+                    ElapsedMilliseconds = elapsedMilliseconds,
+                    ProviderMetrics = new List<ProviderAttemptMetric>
+                    {
+                        new ProviderAttemptMetric("Coalesced", 0, 0, "empty")
+                    },
+                    DiagnosticsSummary = "coalesced-empty"
+                };
+            }
+
+            string diagnostics = string.IsNullOrWhiteSpace(source.DiagnosticsSummary)
+                ? "coalesced"
+                : "coalesced; " + source.DiagnosticsSummary;
+
+            return new FaviconResult
+            {
+                IconData = source.IconData,
+                Status = source.Status,
+                Provider = source.Provider,
+                Host = source.Host,
+                CacheKey = source.CacheKey,
+                SelectedTier = source.SelectedTier,
+                WasSyntheticFallback = source.WasSyntheticFallback,
+                DiagnosticsSummary = diagnostics,
+                AttemptedProviders = source.AttemptedProviders,
+                RejectedCandidates = source.RejectedCandidates,
+                Selection = source.Selection,
+                ElapsedMilliseconds = elapsedMilliseconds,
+                ProviderMetrics = new List<ProviderAttemptMetric>
+                {
+                    new ProviderAttemptMetric("Coalesced", 0,
+                        source.Status == FaviconStatus.Success ? 1 : 0, "shared")
+                }
             };
         }
 

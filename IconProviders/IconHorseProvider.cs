@@ -1,24 +1,26 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
+using KeeFetch.IconSelection;
 
 namespace KeeFetch.IconProviders
 {
     internal sealed class IconHorseProvider : IconProviderBase
     {
+        private static readonly ProviderCapabilities capabilities =
+            new ProviderCapabilities("Icon Horse", IconTier.SyntheticFallback,
+                isThirdParty: true, isSyntheticCapable: true, isPlaceholderProne: true,
+                concurrencyCap: 2, baseConfidence: 0.35, allowPrivateHosts: false);
+
         public override string Name { get { return "Icon Horse"; } }
+        public override ProviderCapabilities Capabilities { get { return capabilities; } }
 
-        public override Task<byte[]> GetIconAsync(string host, int size, int timeoutMs,
-            CancellationToken token = default(CancellationToken))
+        protected override string BuildRequestUrl(IconRequest request)
         {
-            if (Util.IsPrivateHost(host))
-                return Task.FromResult<byte[]>(null);
+            if (request == null || string.IsNullOrWhiteSpace(request.TargetHost))
+                return null;
 
-            string url = string.Format(
+            return string.Format(
                 "https://icon.horse/icon/{0}",
-                Uri.EscapeDataString(host));
-
-            return DownloadBytesAsync(url, timeoutMs, token);
+                Uri.EscapeDataString(request.TargetHost));
         }
     }
 }

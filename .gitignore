@@ -29,6 +29,8 @@ KeePass.*.resources
 *.res
 
 # PLGX build artifacts
+KeeFetch.plgx
+artifacts/
 plgx_staging/
 plgx_staging.plgx
 
@@ -50,3 +52,8 @@ test_db.xml
 
 # Misc junk
 nul
+
+# Local planning/benchmark artifacts
+KeeFetch-repo-plan-spec-package-*.zip
+eng/benchmark-*.csv
+eng/benchmark-db-*.txt

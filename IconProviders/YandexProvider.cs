@@ -1,28 +1,32 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
+using KeeFetch.IconSelection;
 
 namespace KeeFetch.IconProviders
 {
     internal sealed class YandexProvider : IconProviderBase
     {
-        public override string Name { get { return "Yandex"; } }
+        private static readonly ProviderCapabilities capabilities =
+            new ProviderCapabilities("Yandex", IconTier.StrongResolved,
+                isThirdParty: true, isSyntheticCapable: false, isPlaceholderProne: false,
+                concurrencyCap: 2, baseConfidence: 0.70, allowPrivateHosts: false);
 
-        public override Task<byte[]> GetIconAsync(string host, int size, int timeoutMs,
-            CancellationToken token = default(CancellationToken))
+        public override string Name { get { return "Yandex"; } }
+        public override ProviderCapabilities Capabilities { get { return capabilities; } }
+
+        protected override string BuildRequestUrl(IconRequest request)
         {
-            if (Util.IsPrivateHost(host))
-                return Task.FromResult<byte[]>(null);
+            if (request == null || string.IsNullOrWhiteSpace(request.TargetHost))
+                return null;
+
+            int size = Math.Max(16, Math.Min(256, request.MaxIconSize));
 
             string resolvedSize = "l";
             if (size <= 16) resolvedSize = "s";
             else if (size <= 32) resolvedSize = "m";
 
-            string url = string.Format(
+            return string.Format(
                 "https://favicon.yandex.net/favicon/{0}?size={1}",
-                Uri.EscapeDataString(host), resolvedSize);
-
-            return DownloadBytesAsync(url, timeoutMs, token);
+                Uri.EscapeDataString(request.TargetHost), resolvedSize);
         }
     }
 }

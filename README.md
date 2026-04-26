@@ -12,16 +12,19 @@ A fast, smart, and modern favicon downloader plugin for KeePass 2.x.
 ## ✨ Features
 
 - **Concurrent downloads** — Parallel favicon fetching using `SemaphoreSlim` to keep the UI responsive.
-- **Smart icon detection** — Prioritizes `apple-touch-icon`, parses modern `sizes` attributes, and detects high-resolution candidates.
-- **Robust fallback chain** — Direct site → Google → DuckDuckGo → Icon Horse → Yandex.
+- **Availability-first selector engine** — Collects provider candidates, then ranks by trust tier (`Site canonical` → `Strong resolver` → `Synthetic fallback`) so placeholder-prone results cannot outrank stronger real icons.
+- **Smart icon detection** — Parses `rel=icon`, `apple-touch-icon`, `rel=manifest` icon entries, and detects SVG-only situations for resolver fallback competition.
+- **Expanded fallback chain** — Direct site → Twenty Icons → DuckDuckGo → Google → Yandex → Favicone → Icon Horse.
 - **Deduplication** — SHA-256 hashing ensures icons aren't duplicated in your database.
 - **Android Support** — Converts `androidapp://` URLs to web domains with 100+ built-in mappings and Play Store scraping.
 - **Intelligent URL handling** — Resolves KeePass `{REF:...}` placeholders and auto-prefixes schemes.
-- **Modern Standards** — Supports TLS 1.3, respects KeePass proxy settings, and handles self-signed certificates.
+- **Modern Standards** — Supports TLS 1.3, uses the system default proxy configuration, and handles self-signed certificates.
 
 ## 🔒 Privacy
 
-By default, KeeFetch uses third-party favicon services (Google, DuckDuckGo, Icon Horse, Yandex) as fallbacks when direct site fetching fails. When enabled, domain names from your password entries are sent to these services. You can disable third-party services in the plugin settings (`Tools` → `KeeFetch` → `Settings...`) if you prefer to only use direct site fetching.
+By default, KeeFetch uses third-party favicon services (Twenty Icons, DuckDuckGo, Google, Yandex, Favicone, Icon Horse) as fallbacks when direct site fetching is insufficient. Domain names from your password entries may be sent to these services to maximize icon availability.
+
+KeeFetch shows a one-time first-run disclosure about this behavior and keeps the availability-first defaults enabled. You can still disable third-party providers, synthetic fallbacks, or specific resolvers in plugin settings (`Tools` → `KeeFetch` → `Settings...`).
 
 ## 🚀 Installation
 
@@ -88,7 +91,7 @@ KeePass.exe --plgx-create "path\to\KeeFetch"
 
 ## 📖 Architecture
 
-KeeFetch is designed with a **provider-based fallback strategy**. It first attempts to parse the website directly to find the highest quality icon (looking for `apple-touch-icon` or large PNGs). If that fails, it cycles through multiple specialized favicon services until an icon is found or all sources are exhausted.
+KeeFetch is designed with an **availability-first ranked selection strategy**. Providers return structured candidates with tier and confidence metadata. The selector then chooses the best surviving candidate, ensuring synthetic fallback providers only win when no stronger site-backed or resolver-backed icon survives.
 
 For a deep dive into the code, see our [Project Structure](CONTRIBUTING.md#project-structure) in the contribution guide.
 
@@ -106,4 +109,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 - [KeePass Password Safe](https://keepass.info/) — The ultimate password manager.
 - Inspired by [KeePass-Yet-Another-Favicon-Downloader](https://github.com/navossoc/KeePass-Yet-Another-Favicon-Downloader) — The original favicon downloader plugin that inspired this project.
-- [Icon Horse](https://icon.horse/), [DuckDuckGo](https://duckduckgo.com/), [Google](https://google.com), and [Yandex](https://yandex.com) for their favicon APIs.
+- [Twenty Icons](https://twenty-icons.com/), [DuckDuckGo](https://duckduckgo.com/), [Google](https://google.com), [Yandex](https://yandex.com), [Favicone](https://favicone.com/), and [Icon Horse](https://icon.horse/) for favicon APIs.

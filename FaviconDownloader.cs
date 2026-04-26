@@ -2,43 +2,69 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using KeeFetch.IconProviders;
+using KeeFetch.IconSelection;
 
 namespace KeeFetch
 {
     /// <summary>
-    /// Orchestrates favicon downloads with a provider chain: direct site → Google → DuckDuckGo → Icon Horse → Yandex.
+    /// Collects provider candidates, ranks by tier/score, and selects the best favicon result.
     /// </summary>
     internal sealed class FaviconDownloader
     {
-        private static readonly IIconProvider[] DefaultProviders = new IIconProvider[]
+        internal static readonly string[] DefaultProviderOrder = new[]
         {
-            new DirectSiteProvider(),
-            new GoogleProvider(),
-            new DuckDuckGoProvider(),
-            new IconHorseProvider(),
-            new YandexProvider()
+            "Direct Site",
+            "Twenty Icons",
+            "DuckDuckGo",
+            "Google",
+            "Yandex",
+            "Favicone",
+            "Icon Horse"
         };
 
+        private static readonly Dictionary<string, Func<IIconProvider>> ProviderFactories =
+            new Dictionary<string, Func<IIconProvider>>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Direct Site", () => new DirectSiteProvider() },
+                { "Twenty Icons", () => new TwentyIconsProvider() },
+                { "DuckDuckGo", () => new DuckDuckGoProvider() },
+                { "Google", () => new GoogleProvider() },
+                { "Yandex", () => new YandexProvider() },
+                { "Favicone", () => new FaviconeProvider() },
+                { "Icon Horse", () => new IconHorseProvider() }
+            };
+
         private static readonly object certLock = new object();
-        private static int certSetupCount = 0;
+        private static int certSetupCount;
         private static RemoteCertificateValidationCallback savedOriginalCallback;
 
+        private static readonly ConcurrentDictionary<string, CachedIconEntry> DownloadCache =
+            new ConcurrentDictionary<string, CachedIconEntry>(StringComparer.OrdinalIgnoreCase);
+
+        private static readonly ConcurrentDictionary<string, CachedNegativeEntry> NegativeDownloadCache =
+            new ConcurrentDictionary<string, CachedNegativeEntry>(StringComparer.OrdinalIgnoreCase);
+
+        private static readonly ConcurrentDictionary<string, Lazy<Task<FaviconResult>>> InFlightDownloads =
+            new ConcurrentDictionary<string, Lazy<Task<FaviconResult>>>(StringComparer.OrdinalIgnoreCase);
+
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> ProviderSemaphores =
+            new ConcurrentDictionary<string, SemaphoreSlim>(StringComparer.OrdinalIgnoreCase);
+
         private readonly Configuration config;
+        private readonly IconSelector selector = new IconSelector();
+        private readonly ConcurrentDictionary<string, ProviderHealthState> providerHealth =
+            new ConcurrentDictionary<string, ProviderHealthState>(StringComparer.OrdinalIgnoreCase);
 
-        // Cumulative timeout for all attempts on a single entry (prevents hang on many fallbacks)
-        private const int MaxCumulativeTimeoutMs = 45000; // 45 seconds max per entry
-        // Reduced timeout for fallback providers (faster failure)
-        private const int FallbackTimeoutMs = 5000; // 5 seconds per fallback provider
-
-        // Download cache for deduplication: key = host, value = icon data
-        private static readonly ConcurrentDictionary<string, byte[]> DownloadCache = 
-            new ConcurrentDictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+        private const int DefaultMaxCumulativeTimeoutMs = 45000;
+        private const int DefaultPrimaryProviderTimeoutMs = 10000;
+        private const int DefaultFallbackProviderTimeoutMs = 5000;
 
         public FaviconDownloader(Configuration config)
         {
@@ -61,50 +87,20 @@ namespace KeeFetch
                         spt |= (SecurityProtocolType)Enum.Parse(tSpt, name, true);
                     }
                 }
-                ServicePointManager.SecurityProtocol = spt;
 
-                // Increase connection limit to avoid throttling with concurrent downloads
-                if (ServicePointManager.DefaultConnectionLimit < 20)
-                    ServicePointManager.DefaultConnectionLimit = 20;
-                
+                ServicePointManager.SecurityProtocol = spt;
+                if (ServicePointManager.DefaultConnectionLimit < 24)
+                    ServicePointManager.DefaultConnectionLimit = 24;
                 ServicePointManager.MaxServicePointIdleTime = 10000;
             }
-            catch (Exception ex) { Logger.Warn("SetupTls", ex); }
-        }
-
-        /// <summary>
-        /// Gets an icon from the cache if available, or null if not cached.
-        /// </summary>
-        public static byte[] GetCachedIcon(string host)
-        {
-            if (string.IsNullOrEmpty(host)) return null;
-            byte[] data;
-            DownloadCache.TryGetValue(host, out data);
-            return data;
-        }
-
-        /// <summary>
-        /// Adds an icon to the download cache.
-        /// </summary>
-        public static void CacheIcon(string host, byte[] iconData)
-        {
-            if (string.IsNullOrEmpty(host) || iconData == null) return;
-            DownloadCache.TryAdd(host, iconData);
-        }
-
-        /// <summary>
-        /// Clears the download cache.
-        /// </summary>
-        public static void ClearCache()
-        {
-            DownloadCache.Clear();
+            catch (Exception ex)
+            {
+                Logger.Warn("SetupTls", ex);
+            }
         }
 
         /// <summary>
         /// Installs or removes a permissive certificate callback that accepts self-signed certs.
-        /// Thread-safe: uses a reference count so concurrent FaviconDialog runs don't stomp each other.
-        /// Limitation: <see cref="ServicePointManager.ServerCertificateValidationCallback"/> is
-        /// process-global in .NET Framework, so other plugins may also be affected.
         /// </summary>
         public static void SetupSelfSignedCerts(bool allow)
         {
@@ -115,21 +111,20 @@ namespace KeeFetch
                     certSetupCount++;
                     if (certSetupCount == 1)
                     {
-                        // First caller — snapshot whatever callback is currently installed
                         savedOriginalCallback = ServicePointManager.ServerCertificateValidationCallback;
                         ServicePointManager.ServerCertificateValidationCallback =
                             (object sender, X509Certificate cert, X509Chain chain, SslPolicyErrors errors) =>
                             {
                                 if (errors == SslPolicyErrors.None)
                                     return true;
-                                // Accept chain errors (self-signed) but reject name mismatches
+
                                 if ((errors & SslPolicyErrors.RemoteCertificateChainErrors) != 0 &&
                                     (errors & SslPolicyErrors.RemoteCertificateNameMismatch) == 0)
                                     return true;
-                                // Delegate to the original callback if one existed
-                                var orig = savedOriginalCallback;
-                                if (orig != null)
-                                    return orig(sender, cert, chain, errors);
+
+                                var original = savedOriginalCallback;
+                                if (original != null)
+                                    return original(sender, cert, chain, errors);
                                 return false;
                             };
                     }
@@ -147,379 +142,790 @@ namespace KeeFetch
             }
         }
 
-        /// <summary>
-        /// Attempts to download a favicon for <paramref name="url"/>.
-        /// Respects <paramref name="token"/> for cancellation.
-        /// </summary>
+        public static byte[] GetCachedIcon(string cacheKey)
+        {
+            if (string.IsNullOrWhiteSpace(cacheKey))
+                return null;
+
+            CachedIconEntry entry;
+            DownloadCache.TryGetValue(cacheKey, out entry);
+            return entry != null ? entry.IconData : null;
+        }
+
+        internal static CachedIconEntry GetCachedEntry(string cacheKey)
+        {
+            if (string.IsNullOrWhiteSpace(cacheKey))
+                return null;
+
+            CachedIconEntry entry;
+            DownloadCache.TryGetValue(cacheKey, out entry);
+            return entry;
+        }
+
+        public static void CacheIcon(string cacheKey, byte[] iconData)
+        {
+            CacheIcon(cacheKey, iconData, "Cache", IconTier.SiteCanonical, false, "cache-hit");
+        }
+
+        internal static void CacheIcon(string cacheKey, byte[] iconData, string provider,
+            IconTier selectedTier, bool wasSyntheticFallback, string diagnosticsSummary)
+        {
+            if (string.IsNullOrWhiteSpace(cacheKey) || iconData == null)
+                return;
+
+            DownloadCache[cacheKey] = new CachedIconEntry
+            {
+                IconData = iconData,
+                Provider = string.IsNullOrWhiteSpace(provider) ? "Cache" : provider,
+                SelectedTier = selectedTier,
+                WasSyntheticFallback = wasSyntheticFallback,
+                DiagnosticsSummary = string.IsNullOrWhiteSpace(diagnosticsSummary) ? "cache-hit" : diagnosticsSummary
+            };
+        }
+
+        public static void ClearCache()
+        {
+            DownloadCache.Clear();
+            NegativeDownloadCache.Clear();
+            InFlightDownloads.Clear();
+        }
+
         public async Task<FaviconResult> DownloadAsync(string url, CancellationToken token = default(CancellationToken))
         {
             token.ThrowIfCancellationRequested();
-
-            var result = new FaviconResult();
-            int primaryTimeoutMs = config.Timeout * 1000;
-            int maxSize = config.MaxIconSize;
-
-            // Start cumulative timer
             var stopwatch = Stopwatch.StartNew();
+
+            int timeoutMs = Math.Max(5000, config.Timeout * 1000);
+            int maxSize = config.MaxIconSize;
 
             if (AndroidAppMapper.IsAndroidUrl(url))
             {
-                return await DownloadAndroidIconAsync(url, primaryTimeoutMs, maxSize, stopwatch, token).ConfigureAwait(false);
+                var androidResult = await DownloadAndroidIconAsync(url, maxSize, timeoutMs, token)
+                    .ConfigureAwait(false);
+                androidResult.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+                return androidResult;
             }
 
-            string host = Util.ExtractHost(url);
-            if (string.IsNullOrEmpty(host))
+            Uri normalizedUri;
+            if (!Util.TryParseHttpUri(url, config.PrefixUrls, out normalizedUri))
             {
-                if (config.PrefixUrls)
+                return new FaviconResult
                 {
-                    host = Util.ExtractHost("https://" + url);
-                }
-                if (string.IsNullOrEmpty(host))
-                {
-                    result.Status = FaviconStatus.NotFound;
-                    return result;
-                }
+                    Status = FaviconStatus.NotFound,
+                    ElapsedMilliseconds = stopwatch.ElapsedMilliseconds
+                };
             }
 
-            result.Host = host;
-            
-            // Check cache first
-            byte[] cached = GetCachedIcon(host);
+            string host = normalizedUri.Host;
+            string cacheKey = Util.GetNormalizedOriginKey(normalizedUri);
+            bool isPrivate = Util.IsPrivateHost(host);
+
+            var cached = GetCachedEntry(cacheKey);
             if (cached != null)
             {
-                result.IconData = cached; // Already resized when cached
-                result.Status = FaviconStatus.Success;
-                result.Provider = "Cache";
+                var cachedResult = BuildCachedResult(cached, host, cacheKey);
+                cachedResult.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+                return cachedResult;
+            }
+
+            string inFlightKey = BuildInFlightKey(cacheKey, maxSize);
+            CachedNegativeEntry negativeEntry;
+            if (NegativeDownloadCache.TryGetValue(inFlightKey, out negativeEntry))
+            {
+                var negativeResult = BuildNegativeCachedResult(negativeEntry, host, cacheKey);
+                negativeResult.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+                return negativeResult;
+            }
+
+            var lazyDownload = new Lazy<Task<FaviconResult>>(
+                () => DownloadParsedHttpAsync(url, normalizedUri, host, cacheKey, isPrivate,
+                    maxSize, timeoutMs, token),
+                LazyThreadSafetyMode.ExecutionAndPublication);
+            var activeDownload = InFlightDownloads.GetOrAdd(inFlightKey, lazyDownload);
+            bool isOwner = ReferenceEquals(activeDownload, lazyDownload);
+
+            FaviconResult result;
+            try
+            {
+                result = await activeDownload.Value.ConfigureAwait(false);
+            }
+            finally
+            {
+                if (isOwner)
+                {
+                    Lazy<Task<FaviconResult>> ignored;
+                    InFlightDownloads.TryRemove(inFlightKey, out ignored);
+                }
+            }
+
+            result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+            if (isOwner && result.Status == FaviconStatus.NotFound)
+                CacheNegativeResult(inFlightKey, result);
+
+            return isOwner
+                ? result
+                : BuildCoalescedResult(result, stopwatch.ElapsedMilliseconds);
+        }
+
+        private async Task<FaviconResult> DownloadParsedHttpAsync(string originalUrl, Uri normalizedUri,
+            string host, string cacheKey, bool isPrivate, int maxSize, int timeoutMs, CancellationToken token)
+        {
+            var request = new IconRequest
+            {
+                OriginalUrl = originalUrl,
+                TargetHost = host,
+                TargetOrigin = normalizedUri.GetLeftPart(UriPartial.Authority),
+                CacheKey = cacheKey,
+                MaxIconSize = maxSize,
+                TimeoutMs = timeoutMs,
+                AllowPrivateResponse = isPrivate
+            };
+
+            var collection = await CollectCandidatesAsync(request, isPrivate, token).ConfigureAwait(false);
+            var selection = selector.Select(collection.Candidates, collection.AttemptedProviders,
+                config.AllowSyntheticFallbacks);
+            var result = BuildResultFromSelection(selection, host, cacheKey, maxSize);
+            result.ProviderMetrics = collection.ProviderMetrics;
+            return result;
+        }
+
+        private async Task<FaviconResult> DownloadAndroidIconAsync(string url, int maxSize, int timeoutMs,
+            CancellationToken token = default(CancellationToken))
+        {
+            var providerMetrics = new List<ProviderAttemptMetric>();
+            string packageName = AndroidAppMapper.GetPackageName(url);
+            string mappedDomain = AndroidAppMapper.MapToWebDomain(url);
+            string guessedDomain = string.IsNullOrWhiteSpace(mappedDomain)
+                ? AndroidAppMapper.TryGuessFromPackage(packageName)
+                : null;
+
+            string resolvedDomain = !string.IsNullOrWhiteSpace(mappedDomain)
+                ? mappedDomain
+                : guessedDomain;
+
+            var combinedCandidates = new List<IconCandidate>();
+            var attemptedProviders = new List<string>();
+
+            string hostForResult = resolvedDomain ?? packageName;
+            string cacheKey = null;
+
+            if (!string.IsNullOrWhiteSpace(resolvedDomain))
+            {
+                Uri domainUri;
+                if (Util.TryParseHttpUri("https://" + resolvedDomain, true, out domainUri))
+                {
+                    cacheKey = Util.GetNormalizedOriginKey(domainUri);
+                    var cached = GetCachedEntry(cacheKey);
+                    if (cached != null)
+                    {
+                        var cachedResult = BuildCachedResult(cached, resolvedDomain, cacheKey);
+                        cachedResult.ProviderMetrics = new List<ProviderAttemptMetric>(cachedResult.ProviderMetrics);
+                        return cachedResult;
+                    }
+
+                    var domainRequest = new IconRequest
+                    {
+                        OriginalUrl = url,
+                        TargetHost = resolvedDomain,
+                        TargetOrigin = domainUri.GetLeftPart(UriPartial.Authority),
+                        CacheKey = cacheKey,
+                        TargetPackageName = packageName,
+                        MaxIconSize = maxSize,
+                        TimeoutMs = timeoutMs,
+                        AllowPrivateResponse = Util.IsPrivateHost(resolvedDomain)
+                    };
+
+                    var collected = await CollectCandidatesAsync(domainRequest,
+                        Util.IsPrivateHost(resolvedDomain), token).ConfigureAwait(false);
+                    combinedCandidates.AddRange(collected.Candidates);
+                    attemptedProviders.AddRange(collected.AttemptedProviders);
+                    providerMetrics.AddRange(collected.ProviderMetrics);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(packageName))
+            {
+                token.ThrowIfCancellationRequested();
+                attemptedProviders.Add("Google Play");
+                var playStopwatch = Stopwatch.StartNew();
+                var playCandidate = await AndroidAppMapper.FetchGooglePlayIconCandidateAsync(
+                    packageName, Math.Max(2000, Math.Min(7000, timeoutMs)), token).ConfigureAwait(false);
+                providerMetrics.Add(new ProviderAttemptMetric("Google Play",
+                    playStopwatch.ElapsedMilliseconds, playCandidate != null ? 1 : 0,
+                    playCandidate != null ? "candidate" : "empty"));
+                if (playCandidate != null)
+                {
+                    if (string.IsNullOrWhiteSpace(playCandidate.TargetHost))
+                        playCandidate.TargetHost = hostForResult;
+                    combinedCandidates.Add(playCandidate);
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(cacheKey) && !string.IsNullOrWhiteSpace(packageName))
+                cacheKey = "androidapp://" + packageName.ToLowerInvariant();
+
+            var selection = selector.Select(combinedCandidates, attemptedProviders,
+                config.AllowSyntheticFallbacks);
+            var result = BuildResultFromSelection(selection, hostForResult, cacheKey, maxSize);
+            result.ProviderMetrics = providerMetrics;
+            return result;
+        }
+
+        private async Task<CandidateCollectionResult> CollectCandidatesAsync(IconRequest request,
+            bool isPrivateTarget, CancellationToken token)
+        {
+            var result = new CandidateCollectionResult();
+            var providers = BuildProviderPipeline(isPrivateTarget);
+            if (providers.Count == 0)
+                return result;
+
+            var stopwatch = Stopwatch.StartNew();
+
+            foreach (var provider in providers)
+            {
+                token.ThrowIfCancellationRequested();
+                result.AttemptedProviders.Add(provider.Name);
+
+                int remaining = (int)Math.Max(0, GetMaxCumulativeTimeoutMs() - stopwatch.ElapsedMilliseconds);
+                if (remaining < 1000)
+                    break;
+
+                int providerTimeout = GetProviderTimeout(provider, request.TimeoutMs, remaining);
+                if (providerTimeout < 1000)
+                    break;
+
+                var providerRequest = CloneRequest(request, providerTimeout);
+
+                IReadOnlyList<IconCandidate> candidates;
+                var providerStopwatch = Stopwatch.StartNew();
+                string providerOutcome = "empty";
+                int candidateCount = 0;
+                try
+                {
+                    candidates = await ExecuteProviderWithConcurrencyAsync(provider, providerRequest, token)
+                        .ConfigureAwait(false);
+                    candidateCount = candidates != null ? candidates.Count : 0;
+                    providerOutcome = candidateCount > 0 ? "candidate" : "empty";
+                }
+                catch (OperationCanceledException)
+                {
+                    result.ProviderMetrics.Add(new ProviderAttemptMetric(provider.Name,
+                        providerStopwatch.ElapsedMilliseconds, candidateCount, "cancelled"));
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warn("CollectCandidatesAsync", ex);
+                    RecordProviderFailure(provider.Name);
+                    candidates = null;
+                    providerOutcome = "error";
+                }
+
+                result.ProviderMetrics.Add(new ProviderAttemptMetric(provider.Name,
+                    providerStopwatch.ElapsedMilliseconds, candidateCount, providerOutcome));
+
+                if (candidates != null && candidates.Count > 0)
+                {
+                    foreach (var candidate in candidates)
+                    {
+                        if (candidate == null)
+                            continue;
+                        result.Candidates.Add(candidate);
+                    }
+                    RecordProviderSuccess(provider.Name);
+
+                    if (CanStopEarly(provider, result.Candidates))
+                        break;
+                }
+            }
+
+            return result;
+        }
+
+        private async Task<IReadOnlyList<IconCandidate>> ExecuteProviderWithConcurrencyAsync(
+            IIconProvider provider, IconRequest request, CancellationToken token)
+        {
+            var semaphore = ProviderSemaphores.GetOrAdd(provider.Name,
+                _ => new SemaphoreSlim(provider.Capabilities.ConcurrencyCap,
+                    provider.Capabilities.ConcurrencyCap));
+
+            await semaphore.WaitAsync(token).ConfigureAwait(false);
+            try
+            {
+                return await provider.GetCandidatesAsync(request, token).ConfigureAwait(false);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+        private List<IIconProvider> BuildProviderPipeline(bool isPrivateTarget)
+        {
+            var orderedNames = GetConfiguredProviderOrder();
+            var allNames = new List<string>();
+
+            if (orderedNames != null)
+                allNames.AddRange(orderedNames);
+
+            foreach (var provider in DefaultProviderOrder)
+                allNames.Add(provider);
+
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var orderedProviders = new List<IIconProvider>();
+
+            foreach (string providerName in allNames)
+            {
+                if (string.IsNullOrWhiteSpace(providerName))
+                    continue;
+                if (!seen.Add(providerName))
+                    continue;
+
+                Func<IIconProvider> factory;
+                if (!ProviderFactories.TryGetValue(providerName, out factory))
+                    continue;
+
+                if (!IsProviderEnabledForCurrentMode(providerName))
+                    continue;
+
+                var provider = factory();
+                if (provider.Capabilities.IsThirdParty && !config.UseThirdPartyFallbacks)
+                    continue;
+
+                if (isPrivateTarget && !provider.Capabilities.AllowPrivateHosts)
+                    continue;
+
+                orderedProviders.Add(provider);
+            }
+
+            var active = new List<IIconProvider>();
+            var cooledDown = new List<IIconProvider>();
+            foreach (var provider in orderedProviders)
+            {
+                if (IsProviderInCooldown(provider.Name))
+                    cooledDown.Add(provider);
+                else
+                    active.Add(provider);
+            }
+
+            active.AddRange(cooledDown);
+            return active;
+        }
+
+        private List<string> GetConfiguredProviderOrder()
+        {
+            if (config == null || config.FetchPresetMode == FetchPresetMode.Custom)
+                return config != null
+                    ? config.GetProviderOrderList()
+                    : new List<string>(DefaultProviderOrder);
+
+            return Configuration.GetPresetProviderOrderList(config.FetchPresetMode);
+        }
+
+        private bool IsProviderEnabledForCurrentMode(string providerName)
+        {
+            if (config == null)
+                return true;
+
+            if (config.FetchPresetMode == FetchPresetMode.Custom)
+                return config.IsProviderEnabled(providerName);
+
+            return Configuration.IsProviderEnabledByPreset(config.FetchPresetMode, providerName);
+        }
+
+        private bool IsProviderInCooldown(string providerName)
+        {
+            ProviderHealthState state;
+            if (!providerHealth.TryGetValue(providerName, out state))
+                return false;
+
+            return state.CooldownUntilUtc > DateTime.UtcNow;
+        }
+
+        private void RecordProviderSuccess(string providerName)
+        {
+            providerHealth.AddOrUpdate(providerName,
+                _ => new ProviderHealthState(0, DateTime.MinValue),
+                (_, __) => new ProviderHealthState(0, DateTime.MinValue));
+        }
+
+        private void RecordProviderFailure(string providerName)
+        {
+            providerHealth.AddOrUpdate(providerName,
+                _ => new ProviderHealthState(1, DateTime.MinValue),
+                (_, existing) =>
+                {
+                    int failures = existing.ConsecutiveFailures + 1;
+                    DateTime cooldown = failures >= 4
+                        ? DateTime.UtcNow.AddMinutes(1)
+                        : existing.CooldownUntilUtc;
+                    return new ProviderHealthState(failures, cooldown);
+                });
+        }
+
+        private bool CanStopEarly(IIconProvider provider, IReadOnlyList<IconCandidate> candidates)
+        {
+            if (provider == null || candidates == null || candidates.Count == 0)
+                return false;
+
+            // Safe fast path: if Direct Site already produced a strong non-blank raster icon,
+            // there is little value in querying every resolver just to confirm it.
+            if (provider.Name.Equals("Direct Site", StringComparison.OrdinalIgnoreCase) &&
+                candidates.Any(c => IsStrongStoppingCandidate(c, provider.Name, IconTier.SiteCanonical, 0.90)))
+            {
+                return true;
+            }
+
+            if (!config.ShouldStopAfterStrongResolvedProvider())
+                return false;
+
+            return candidates.Any(c => IsStrongStoppingCandidate(c, provider.Name, IconTier.StrongResolved, 0.72));
+        }
+
+        private static bool IsStrongStoppingCandidate(IconCandidate candidate, string providerName,
+            IconTier minimumTier, double minimumConfidence)
+        {
+            if (candidate == null || string.IsNullOrEmpty(candidate.ProviderName))
+                return false;
+
+            if (!candidate.ProviderName.Equals(providerName, StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            if (candidate.Tier > minimumTier)
+                return false;
+
+            return !candidate.IsSvg &&
+                   !candidate.IsBlankSuspected &&
+                   !candidate.IsPlaceholderSuspected &&
+                   !candidate.IsSynthetic &&
+                   candidate.ConfidenceScore >= minimumConfidence;
+        }
+
+        private int GetMaxCumulativeTimeoutMs()
+        {
+            if (config == null)
+                return DefaultMaxCumulativeTimeoutMs;
+
+            if (config.FetchPresetMode == FetchPresetMode.Custom)
+                return DefaultMaxCumulativeTimeoutMs;
+
+            return Configuration.GetPresetMaxCumulativeTimeoutMs(config.FetchPresetMode);
+        }
+
+        private int GetProviderTimeout(IIconProvider provider, int requestedTimeoutMs, int remainingMs)
+        {
+            bool isPrimary = provider.Capabilities.DefaultTier == IconTier.SiteCanonical &&
+                             provider.Name.Equals("Direct Site", StringComparison.OrdinalIgnoreCase);
+
+            int providerCap = isPrimary
+                ? GetPrimaryProviderTimeoutMs()
+                : GetFallbackProviderTimeoutMs();
+            int timeout = Math.Min(requestedTimeoutMs, providerCap);
+            timeout = Math.Min(timeout, remainingMs);
+            return Math.Max(0, timeout);
+        }
+
+        private int GetPrimaryProviderTimeoutMs()
+        {
+            if (config == null)
+                return DefaultPrimaryProviderTimeoutMs;
+
+            if (config.FetchPresetMode == FetchPresetMode.Custom)
+                return DefaultPrimaryProviderTimeoutMs;
+
+            return Configuration.GetPresetPrimaryProviderTimeoutMs(config.FetchPresetMode);
+        }
+
+        private int GetFallbackProviderTimeoutMs()
+        {
+            if (config == null)
+                return DefaultFallbackProviderTimeoutMs;
+
+            if (config.FetchPresetMode == FetchPresetMode.Custom)
+                return DefaultFallbackProviderTimeoutMs;
+
+            return Configuration.GetPresetFallbackProviderTimeoutMs(config.FetchPresetMode);
+        }
+
+        private static IconRequest CloneRequest(IconRequest source, int timeoutMs)
+        {
+            return new IconRequest
+            {
+                OriginalUrl = source.OriginalUrl,
+                TargetHost = source.TargetHost,
+                TargetOrigin = source.TargetOrigin,
+                CacheKey = source.CacheKey,
+                TargetPackageName = source.TargetPackageName,
+                MaxIconSize = source.MaxIconSize,
+                TimeoutMs = timeoutMs,
+                AllowPrivateResponse = source.AllowPrivateResponse
+            };
+        }
+
+        private FaviconResult BuildResultFromSelection(IconSelectionResult selection, string host,
+            string cacheKey, int maxSize)
+        {
+            var result = new FaviconResult
+            {
+                Host = host,
+                CacheKey = cacheKey,
+                Selection = selection,
+                DiagnosticsSummary = selection.DiagnosticsSummary,
+                AttemptedProviders = selection.AttemptedProviders,
+                RejectedCandidates = selection.RejectedCandidates
+            };
+
+            if (selection.SelectedCandidate == null)
+            {
+                result.Status = FaviconStatus.NotFound;
+                result.Provider = null;
+                result.SelectedTier = IconTier.Rejected;
+                result.WasSyntheticFallback = false;
                 return result;
             }
 
-            bool isPrivate = Util.IsPrivateHost(host);
-
-            string hostWithPort = Util.ExtractHostWithPort(url);
-            if (string.IsNullOrEmpty(hostWithPort))
-                hostWithPort = host;
-
-            string explicitScheme = Util.ExtractScheme(url);
-
-            // Primary attempt — capped so fallback providers always get a chance
-            int directTimeoutMs = Math.Min(primaryTimeoutMs, 10000);
-            int directRemainingMs = (int)Math.Max(0, MaxCumulativeTimeoutMs - stopwatch.ElapsedMilliseconds);
-            directTimeoutMs = Math.Min(directTimeoutMs, directRemainingMs);
-
-            byte[] iconData = null;
-            string successProvider = null;
-
-            if (directTimeoutMs >= 1000)
+            byte[] selectedBytes = selection.SelectedCandidate.NormalizedPngData ??
+                                   selection.SelectedCandidate.RawData;
+            if (selectedBytes == null || !Util.IsValidImage(selectedBytes))
             {
-                var directProvider = new DirectSiteProvider();
-                if (isPrivate)
-                {
-                    iconData = await TryDirectPrivateAsync(directProvider, hostWithPort, explicitScheme,
-                        maxSize, directTimeoutMs, isPrivate, token).ConfigureAwait(false);
-                }
-                else
-                {
-                    string origin = (explicitScheme ?? "https") + "://" + hostWithPort;
-                    iconData = await directProvider.GetIconWithOriginAsync(origin, maxSize, directTimeoutMs, false, token).ConfigureAwait(false);
-                }
-                
-                if (iconData != null)
-                    successProvider = directProvider.Name;
+                result.Status = FaviconStatus.NotFound;
+                result.Provider = null;
+                result.SelectedTier = IconTier.Rejected;
+                result.WasSyntheticFallback = false;
+                return result;
             }
 
-            // Fallback attempts
-            if (iconData == null && config.UseThirdPartyFallbacks && !isPrivate)
+            byte[] resized = Util.ResizeImage(selectedBytes, maxSize, maxSize);
+            if (resized == null || !Util.IsValidImage(resized))
             {
-                // Skip the first one (DirectSiteProvider) as we already tried it
-                for (int i = 1; i < DefaultProviders.Length; i++)
-                {
-                    var provider = DefaultProviders[i];
-
-                    token.ThrowIfCancellationRequested();
-
-                    if (stopwatch.ElapsedMilliseconds >= MaxCumulativeTimeoutMs)
-                        break;
-
-                    int remainingMs = (int)Math.Max(0, MaxCumulativeTimeoutMs - stopwatch.ElapsedMilliseconds);
-                    int effectiveTimeout = Math.Min(FallbackTimeoutMs, remainingMs);
-
-                    if (effectiveTimeout < 1000) break;
-
-                    try
-                    {
-                        iconData = await provider.GetIconAsync(host, maxSize, effectiveTimeout, token).ConfigureAwait(false);
-                        if (iconData != null)
-                        {
-                            successProvider = provider.Name;
-                            break;
-                        }
-                    }
-                    catch (OperationCanceledException) { throw; }
-                    catch (Exception ex) { Logger.Warn("DownloadAsync", ex); }
-                }
+                result.Status = FaviconStatus.NotFound;
+                result.Provider = null;
+                result.SelectedTier = IconTier.Rejected;
+                result.WasSyntheticFallback = false;
+                return result;
             }
 
-            if (iconData != null)
+            result.IconData = resized;
+            result.Status = FaviconStatus.Success;
+            result.Provider = selection.SelectedCandidate.ProviderName;
+            result.SelectedTier = selection.SelectedCandidate.Tier;
+            result.WasSyntheticFallback = selection.WasSyntheticFallback;
+
+            if (!string.IsNullOrWhiteSpace(cacheKey))
             {
-                byte[] resized = Util.ResizeImage(iconData, maxSize, maxSize);
-                if (resized != null)
-                {
-                    CacheIcon(host, resized);
-                    result.IconData = resized;
-                    result.Status = FaviconStatus.Success;
-                    result.Provider = successProvider;
-                    return result;
-                }
+                CacheIcon(cacheKey, resized, result.Provider, result.SelectedTier,
+                    result.WasSyntheticFallback, result.DiagnosticsSummary);
             }
 
-            result.Status = FaviconStatus.NotFound;
             return result;
         }
 
-        private async Task<byte[]> TryDirectPrivateAsync(DirectSiteProvider provider, string hostWithPort,
-            string explicitScheme, int maxSize, int timeoutMs, bool isPrivate,
-            CancellationToken token = default(CancellationToken))
+        private static FaviconResult BuildCachedResult(CachedIconEntry cached, string host, string cacheKey)
         {
-            string[] schemes;
-            if (explicitScheme != null)
-                schemes = new[] { explicitScheme };
-            else
-                schemes = new[] { "http", "https" };
-
-            int perSchemeTimeout = schemes.Length > 1 ? timeoutMs / 2 : timeoutMs;
-            perSchemeTimeout = Math.Max(perSchemeTimeout, 1000);
-
-            foreach (string scheme in schemes)
+            return new FaviconResult
             {
-                token.ThrowIfCancellationRequested();
-                string origin = scheme + "://" + hostWithPort;
-                byte[] data = await provider.GetIconWithOriginAsync(origin, maxSize, perSchemeTimeout, true, token).ConfigureAwait(false);
-                if (data != null)
-                    return data;
+                IconData = cached.IconData,
+                Status = FaviconStatus.Success,
+                Provider = cached.Provider,
+                Host = host,
+                CacheKey = cacheKey,
+                SelectedTier = cached.SelectedTier,
+                WasSyntheticFallback = cached.WasSyntheticFallback,
+                ProviderMetrics = new List<ProviderAttemptMetric>
+                {
+                    new ProviderAttemptMetric("Cache", 0, 1, "hit")
+                },
+                DiagnosticsSummary = string.IsNullOrWhiteSpace(cached.DiagnosticsSummary)
+                    ? "cache-hit"
+                    : "cache-hit; " + cached.DiagnosticsSummary
+            };
+        }
+
+        private static void CacheNegativeResult(string negativeKey, FaviconResult result)
+        {
+            if (string.IsNullOrWhiteSpace(negativeKey) || result == null ||
+                result.Status != FaviconStatus.NotFound)
+                return;
+
+            NegativeDownloadCache[negativeKey] = new CachedNegativeEntry
+            {
+                DiagnosticsSummary = result.DiagnosticsSummary,
+                AttemptedProviders = result.AttemptedProviders != null
+                    ? result.AttemptedProviders.ToList()
+                    : new List<string>(),
+                RejectedCandidates = result.RejectedCandidates != null
+                    ? result.RejectedCandidates.ToList()
+                    : new List<IconCandidate>()
+            };
+        }
+
+        private static FaviconResult BuildNegativeCachedResult(CachedNegativeEntry cached,
+            string host, string cacheKey)
+        {
+            return new FaviconResult
+            {
+                Status = FaviconStatus.NotFound,
+                Provider = null,
+                Host = host,
+                CacheKey = cacheKey,
+                SelectedTier = IconTier.Rejected,
+                WasSyntheticFallback = false,
+                AttemptedProviders = cached.AttemptedProviders,
+                RejectedCandidates = cached.RejectedCandidates,
+                ProviderMetrics = new List<ProviderAttemptMetric>
+                {
+                    new ProviderAttemptMetric("Cache", 0, 0, "negative-hit")
+                },
+                DiagnosticsSummary = string.IsNullOrWhiteSpace(cached.DiagnosticsSummary)
+                    ? "negative-cache-hit"
+                    : "negative-cache-hit; " + cached.DiagnosticsSummary
+            };
+        }
+
+        private string BuildInFlightKey(string cacheKey, int maxSize)
+        {
+            return string.Join("|", new[]
+            {
+                cacheKey ?? string.Empty,
+                maxSize.ToString(),
+                config.FetchPresetMode.ToString(),
+                config.Timeout.ToString(),
+                config.UseThirdPartyFallbacks.ToString(),
+                config.AllowSyntheticFallbacks.ToString(),
+                config.ProviderOrder ?? string.Empty
+            });
+        }
+
+        private static FaviconResult BuildCoalescedResult(FaviconResult source, long elapsedMilliseconds)
+        {
+            if (source == null)
+            {
+                return new FaviconResult
+                {
+                    Status = FaviconStatus.NotFound,
+                    ElapsedMilliseconds = elapsedMilliseconds,
+                    ProviderMetrics = new List<ProviderAttemptMetric>
+                    {
+                        new ProviderAttemptMetric("Coalesced", 0, 0, "empty")
+                    },
+                    DiagnosticsSummary = "coalesced-empty"
+                };
             }
 
-            return null;
-        }
+            string diagnostics = string.IsNullOrWhiteSpace(source.DiagnosticsSummary)
+                ? "coalesced"
+                : "coalesced; " + source.DiagnosticsSummary;
 
-        private static bool IsTimeUp(Stopwatch stopwatch)
-        {
-            return stopwatch.ElapsedMilliseconds >= MaxCumulativeTimeoutMs;
-        }
-
-        private static int GetRemainingMs(Stopwatch stopwatch)
-        {
-            return (int)Math.Max(0, MaxCumulativeTimeoutMs - stopwatch.ElapsedMilliseconds);
-        }
-
-        private static int GetEffectiveTimeout(Stopwatch stopwatch, int primaryTimeoutMs, bool isPrimary)
-        {
-            int remaining = GetRemainingMs(stopwatch);
-            int baseTimeout = isPrimary ? primaryTimeoutMs : FallbackTimeoutMs;
-            return Math.Min(baseTimeout, remaining);
-        }
-
-        private async Task<FaviconResult> DownloadAndroidIconAsync(string url, int primaryTimeoutMs, int maxSize, Stopwatch stopwatch,
-            CancellationToken token = default(CancellationToken))
-        {
-            var result = new FaviconResult();
-            string packageName = AndroidAppMapper.GetPackageName(url);
-            string domain = AndroidAppMapper.MapToWebDomain(url);
-
-            // Helper checks moved to private methods: IsTimeUp, GetRemainingMs, GetEffectiveTimeout
-
-            if (!string.IsNullOrEmpty(domain))
+            return new FaviconResult
             {
-                result.Host = domain;
-
-                byte[] cached = GetCachedIcon(domain);
-                if (cached != null)
+                IconData = source.IconData,
+                Status = source.Status,
+                Provider = source.Provider,
+                Host = source.Host,
+                CacheKey = source.CacheKey,
+                SelectedTier = source.SelectedTier,
+                WasSyntheticFallback = source.WasSyntheticFallback,
+                DiagnosticsSummary = diagnostics,
+                AttemptedProviders = source.AttemptedProviders,
+                RejectedCandidates = source.RejectedCandidates,
+                Selection = source.Selection,
+                ElapsedMilliseconds = elapsedMilliseconds,
+                ProviderMetrics = new List<ProviderAttemptMetric>
                 {
-                    result.IconData = cached;
-                    result.Status = FaviconStatus.Success;
-                    result.Provider = "Cache";
-                    return result;
+                    new ProviderAttemptMetric("Coalesced", 0,
+                        source.Status == FaviconStatus.Success ? 1 : 0, "shared")
                 }
+            };
+        }
 
-                // Try direct site provider with primary timeout
-                if (!IsTimeUp(stopwatch))
-                {
-                    try
-                    {
-                        token.ThrowIfCancellationRequested();
-                        var directProvider = new DirectSiteProvider();
-                        int timeout = Math.Min(GetEffectiveTimeout(stopwatch, primaryTimeoutMs, true), 10000);
-                        if (timeout >= 1000)
-                        {
-                            byte[] iconData = await directProvider.GetIconAsync(domain, maxSize, timeout, token).ConfigureAwait(false);
-                            if (iconData != null)
-                            {
-                                byte[] resized = Util.ResizeImage(iconData, maxSize, maxSize);
-                                if (resized != null)
-                                {
-                                    CacheIcon(domain, resized);
-                                    result.IconData = resized;
-                                    result.Status = FaviconStatus.Success;
-                                    result.Provider = directProvider.Name;
-                                    return result;
-                                }
-                            }
-                        }
-                    }
-                    catch (OperationCanceledException) { throw; }
-                    catch (Exception ex) { Logger.Debug("DownloadAndroidIconAsync", ex); }
-                }
-
-                // Try fallback providers with reduced timeout
-                if (config.UseThirdPartyFallbacks && !Util.IsPrivateHost(domain))
-                {
-                    for (int i = 1; i < DefaultProviders.Length; i++)
-                    {
-                        var provider = DefaultProviders[i];
-
-                        if (IsTimeUp(stopwatch)) break;
-                        token.ThrowIfCancellationRequested();
-
-                        int timeout = GetEffectiveTimeout(stopwatch, primaryTimeoutMs, false);
-                        if (timeout < 1000) break;
-
-                        try
-                        {
-                            byte[] iconData = await provider.GetIconAsync(domain, maxSize, timeout, token).ConfigureAwait(false);
-                            if (iconData != null)
-                            {
-                                byte[] resized = Util.ResizeImage(iconData, maxSize, maxSize);
-                                if (resized != null)
-                                {
-                                    CacheIcon(domain, resized);
-                                    result.IconData = resized;
-                                    result.Status = FaviconStatus.Success;
-                                    result.Provider = provider.Name;
-                                    return result;
-                                }
-                            }
-                        }
-                        catch (OperationCanceledException) { throw; }
-                        catch (Exception ex) { Logger.Warn("DownloadAndroidIconAsync", ex); }
-                    }
-                }
+        private sealed class ProviderHealthState
+        {
+            public ProviderHealthState(int consecutiveFailures, DateTime cooldownUntilUtc)
+            {
+                ConsecutiveFailures = consecutiveFailures;
+                CooldownUntilUtc = cooldownUntilUtc;
             }
 
-            // Try Google Play Store icon
-            if (!string.IsNullOrEmpty(packageName) && !IsTimeUp(stopwatch))
+            public int ConsecutiveFailures { get; private set; }
+            public DateTime CooldownUntilUtc { get; private set; }
+        }
+
+        private sealed class CandidateCollectionResult
+        {
+            public CandidateCollectionResult()
             {
-                if (string.IsNullOrEmpty(result.Host))
-                    result.Host = packageName;
-
-                // Check cache for package name
-                byte[] cached = GetCachedIcon(packageName);
-                if (cached != null)
-                {
-                    result.IconData = cached;
-                    result.Status = FaviconStatus.Success;
-                    result.Provider = "Cache";
-                    return result;
-                }
-
-                int timeout = GetEffectiveTimeout(stopwatch, primaryTimeoutMs, false);
-                if (timeout >= 2000) // Google Play needs a bit more time
-                {
-                    try
-                    {
-                        token.ThrowIfCancellationRequested();
-                        byte[] playIcon = await AndroidAppMapper.FetchGooglePlayIconAsync(packageName, timeout, token).ConfigureAwait(false);
-                        if (playIcon != null)
-                        {
-                            byte[] resized = Util.ResizeImage(playIcon, maxSize, maxSize);
-                            if (resized != null)
-                            {
-                                CacheIcon(packageName, resized);
-                                result.IconData = resized;
-                                result.Status = FaviconStatus.Success;
-                                result.Provider = "Google Play";
-                                return result;
-                            }
-                        }
-                    }
-                    catch (OperationCanceledException) { throw; }
-                    catch (Exception ex) { Logger.Warn("DownloadAndroidIconAsync", ex); }
-                }
-
-                // Try guessed domain from package name
-                if (!IsTimeUp(stopwatch))
-                {
-                    string guessedDomain = AndroidAppMapper.TryGuessFromPackage(packageName);
-                    if (!string.IsNullOrEmpty(guessedDomain) &&
-                        !guessedDomain.Equals(domain, StringComparison.OrdinalIgnoreCase) &&
-                        config.UseThirdPartyFallbacks &&
-                        !Util.IsPrivateHost(guessedDomain))
-                    {
-                        byte[] guessedCached = GetCachedIcon(guessedDomain);
-                        if (guessedCached != null)
-                        {
-                            result.IconData = guessedCached;
-                            result.Status = FaviconStatus.Success;
-                            result.Provider = "Cache";
-                            result.Host = guessedDomain;
-                            return result;
-                        }
-
-                        for (int i = 1; i < DefaultProviders.Length; i++)
-                        {
-                            var provider = DefaultProviders[i];
-
-                            if (IsTimeUp(stopwatch)) break;
-                            token.ThrowIfCancellationRequested();
-
-                            timeout = GetEffectiveTimeout(stopwatch, primaryTimeoutMs, false);
-                            if (timeout < 1000) break;
-
-                            try
-                            {
-                                byte[] iconData = await provider.GetIconAsync(guessedDomain, maxSize, timeout, token).ConfigureAwait(false);
-                                if (iconData != null)
-                                {
-                                    byte[] resized = Util.ResizeImage(iconData, maxSize, maxSize);
-                                    if (resized != null)
-                                    {
-                                        CacheIcon(guessedDomain, resized);
-                                        result.IconData = resized;
-                                        result.Status = FaviconStatus.Success;
-                                        result.Provider = provider.Name;
-                                        result.Host = guessedDomain;
-                                        return result;
-                                    }
-                                }
-                            }
-                            catch (OperationCanceledException) { throw; }
-                            catch (Exception ex) { Logger.Warn("DownloadAndroidIconAsync", ex); }
-                        }
-                    }
-                }
+                Candidates = new List<IconCandidate>();
+                AttemptedProviders = new List<string>();
+                ProviderMetrics = new List<ProviderAttemptMetric>();
             }
 
-            result.Status = FaviconStatus.NotFound;
-            return result;
+            public List<IconCandidate> Candidates { get; private set; }
+            public List<string> AttemptedProviders { get; private set; }
+            public List<ProviderAttemptMetric> ProviderMetrics { get; private set; }
+        }
+
+        internal sealed class CachedIconEntry
+        {
+            public byte[] IconData { get; set; }
+            public string Provider { get; set; }
+            public IconTier SelectedTier { get; set; }
+            public bool WasSyntheticFallback { get; set; }
+            public string DiagnosticsSummary { get; set; }
+        }
+
+        private sealed class CachedNegativeEntry
+        {
+            public string DiagnosticsSummary { get; set; }
+            public IReadOnlyList<string> AttemptedProviders { get; set; }
+            public IReadOnlyList<IconCandidate> RejectedCandidates { get; set; }
         }
     }
 
-    /// <summary>Result status of a favicon download attempt.</summary>
     internal enum FaviconStatus
     {
         Success,
         NotFound
     }
 
-    /// <summary>Result of a favicon download attempt.</summary>
     internal sealed class FaviconResult
     {
         public FaviconResult()
         {
             Status = FaviconStatus.NotFound;
+            AttemptedProviders = new List<string>();
+            RejectedCandidates = new List<IconCandidate>();
+            ProviderMetrics = new List<ProviderAttemptMetric>();
         }
 
         public byte[] IconData { get; set; }
         public FaviconStatus Status { get; set; }
         public string Provider { get; set; }
         public string Host { get; set; }
+        public string CacheKey { get; set; }
+        public IconTier SelectedTier { get; set; }
+        public bool WasSyntheticFallback { get; set; }
+        public string DiagnosticsSummary { get; set; }
+        public IReadOnlyList<string> AttemptedProviders { get; set; }
+        public IReadOnlyList<IconCandidate> RejectedCandidates { get; set; }
+        public IReadOnlyList<ProviderAttemptMetric> ProviderMetrics { get; set; }
+        public IconSelectionResult Selection { get; set; }
+        public long ElapsedMilliseconds { get; set; }
+    }
+
+    internal sealed class ProviderAttemptMetric
+    {
+        public ProviderAttemptMetric(string providerName, long elapsedMilliseconds,
+            int candidateCount, string outcome)
+        {
+            ProviderName = providerName ?? string.Empty;
+            ElapsedMilliseconds = elapsedMilliseconds;
+            CandidateCount = candidateCount;
+            Outcome = outcome ?? string.Empty;
+        }
+
+        public string ProviderName { get; private set; }
+        public long ElapsedMilliseconds { get; private set; }
+        public int CandidateCount { get; private set; }
+        public string Outcome { get; private set; }
     }
 }

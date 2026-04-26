@@ -1,6 +1,7 @@
-using System.Net;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using KeeFetch.IconSelection;
 
 namespace KeeFetch.IconProviders
 {
@@ -11,12 +12,12 @@ namespace KeeFetch.IconProviders
     {
         /// <summary>Display name of this provider (used in result reporting).</summary>
         string Name { get; }
+        ProviderCapabilities Capabilities { get; }
 
         /// <summary>
-        /// Attempts to download a favicon for <paramref name="host"/>.
-        /// Returns raw image bytes on success, or null if the icon could not be obtained.
+        /// Attempts to return favicon candidates for the requested target.
         /// </summary>
-        Task<byte[]> GetIconAsync(string host, int size, int timeoutMs,
+        Task<IReadOnlyList<IconCandidate>> GetCandidatesAsync(IconRequest request,
             CancellationToken token = default(CancellationToken));
     }
 }

@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using KeeFetch.IconSelection;
 
 namespace KeeFetch
 {
@@ -332,6 +333,47 @@ namespace KeeFetch
                 Logger.Warn("FetchGooglePlayIconAsync", ex);
                 return null;
             }
+        }
+
+        internal static async Task<IconCandidate> FetchGooglePlayIconCandidateAsync(string packageName,
+            int timeoutMs, CancellationToken token = default(CancellationToken))
+        {
+            byte[] data = await FetchGooglePlayIconAsync(packageName, timeoutMs, token).ConfigureAwait(false);
+            if (data == null)
+                return null;
+
+            byte[] normalized = Util.NormalizeToPng(data);
+            byte[] normalizedPng = normalized ?? data;
+
+            int width;
+            int height;
+            string format;
+            Util.TryGetImageInfo(normalizedPng, out width, out height, out format);
+
+            bool blank = Util.IsProbablyBlankImage(normalizedPng);
+            double score = 0.95;
+            if (Math.Max(width, height) >= 128) score += 0.04;
+            if (blank) score -= 0.30;
+            score = Math.Max(0.0, Math.Min(1.0, score));
+
+            return new IconCandidate
+            {
+                ProviderName = "Google Play",
+                TargetHost = packageName,
+                SourceUrl = "https://play.google.com/store/apps/details?id=" + Uri.EscapeDataString(packageName),
+                Tier = IconTier.SiteCanonical,
+                RawData = data,
+                NormalizedPngData = normalizedPng,
+                OriginalFormat = string.IsNullOrEmpty(format) ? "unknown" : format,
+                Width = width,
+                Height = height,
+                IsSvg = false,
+                IsSynthetic = false,
+                IsPlaceholderSuspected = false,
+                IsBlankSuspected = blank,
+                ConfidenceScore = score,
+                Notes = "Google Play app icon"
+            };
         }
 
         /// <summary>

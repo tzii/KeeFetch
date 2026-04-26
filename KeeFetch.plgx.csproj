@@ -26,6 +26,7 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="FaviconDialog.cs" />
     <Compile Include="FaviconDownloader.cs" />
+    <Compile Include="FaviconDiagnostics.cs" />
     <Compile Include="KeeFetchExt.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="SharedHttp.cs" />
@@ -36,14 +37,25 @@
     <!-- IconProviders folder -->
     <Compile Include="IconProviders\DirectSiteProvider.cs" />
     <Compile Include="IconProviders\DuckDuckGoProvider.cs" />
+    <Compile Include="IconProviders\FaviconeProvider.cs" />
     <Compile Include="IconProviders\GoogleProvider.cs" />
     <Compile Include="IconProviders\IconHorseProvider.cs" />
     <Compile Include="IconProviders\IconProviderBase.cs" />
     <Compile Include="IconProviders\IIconProvider.cs" />
+    <Compile Include="IconProviders\TwentyIconsProvider.cs" />
     <Compile Include="IconProviders\YandexProvider.cs" />
+    <Compile Include="IconSelection\IconCandidate.cs" />
+    <Compile Include="IconSelection\IconRequest.cs" />
+    <Compile Include="IconSelection\IconSelectionResult.cs" />
+    <Compile Include="IconSelection\IconSelector.cs" />
+    <Compile Include="IconSelection\IconTier.cs" />
+    <Compile Include="IconSelection\ProviderCapabilities.cs" />
     <EmbeddedResource Include="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Assets\Icons\keefetch-app.png" />
+    <EmbeddedResource Include="Assets\Icons\keefetch-download.png" />
+    <EmbeddedResource Include="Assets\Icons\keefetch-settings.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

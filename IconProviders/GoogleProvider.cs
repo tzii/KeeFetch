@@ -1,24 +1,27 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
+using KeeFetch.IconSelection;
 
 namespace KeeFetch.IconProviders
 {
     internal sealed class GoogleProvider : IconProviderBase
     {
+        private static readonly ProviderCapabilities capabilities =
+            new ProviderCapabilities("Google", IconTier.StrongResolved,
+                isThirdParty: true, isSyntheticCapable: false, isPlaceholderProne: false,
+                concurrencyCap: 2, baseConfidence: 0.74, allowPrivateHosts: false);
+
         public override string Name { get { return "Google"; } }
+        public override ProviderCapabilities Capabilities { get { return capabilities; } }
 
-        public override Task<byte[]> GetIconAsync(string host, int size, int timeoutMs,
-            CancellationToken token = default(CancellationToken))
+        protected override string BuildRequestUrl(IconRequest request)
         {
-            if (Util.IsPrivateHost(host))
-                return Task.FromResult<byte[]>(null);
+            if (request == null || string.IsNullOrWhiteSpace(request.TargetHost))
+                return null;
 
-            string url = string.Format(
+            int size = Math.Max(16, Math.Min(256, request.MaxIconSize));
+            return string.Format(
                 "https://www.google.com/s2/favicons?domain={0}&sz={1}",
-                Uri.EscapeDataString(host), size);
-
-            return DownloadBytesAsync(url, timeoutMs, token);
+                Uri.EscapeDataString(request.TargetHost), size);
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 using KeePass.Util.Spr;
 using KeePassLib;
 using KeePassLib.Utility;
@@ -113,6 +114,73 @@ namespace KeeFetch
                 Logger.Debug("ExtractScheme", ex);
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Parses an HTTP/HTTPS URL and optionally prefixes https:// when the scheme is missing.
+        /// </summary>
+        public static bool TryParseHttpUri(string url, bool prefixUrls, out Uri uri)
+        {
+            uri = null;
+            if (string.IsNullOrWhiteSpace(url))
+                return false;
+
+            string normalized = url.Trim();
+            bool hasScheme = normalized.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                             normalized.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+
+            if (!hasScheme)
+            {
+                if (!prefixUrls)
+                    return false;
+                normalized = "https://" + normalized;
+            }
+
+            try
+            {
+                Uri parsed = new Uri(normalized, UriKind.Absolute);
+                if (!parsed.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase) &&
+                    !parsed.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
+                    return false;
+
+                uri = parsed;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug("TryParseHttpUri", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Returns a normalized origin cache key in the form scheme://host:port.
+        /// </summary>
+        public static string GetNormalizedOriginKey(Uri uri)
+        {
+            if (uri == null)
+                return null;
+
+            string scheme = (uri.Scheme ?? "https").ToLowerInvariant();
+            string host = (uri.Host ?? string.Empty).ToLowerInvariant();
+            int port = uri.IsDefaultPort ? GetDefaultPort(scheme) : uri.Port;
+            return string.Format("{0}://{1}:{2}", scheme, host, port);
+        }
+
+        /// <summary>
+        /// Returns a normalized origin cache key from a URL string.
+        /// </summary>
+        public static string GetNormalizedOriginKey(string url, bool prefixUrls)
+        {
+            Uri uri;
+            if (!TryParseHttpUri(url, prefixUrls, out uri))
+                return null;
+            return GetNormalizedOriginKey(uri);
+        }
+
+        private static int GetDefaultPort(string scheme)
+        {
+            return string.Equals(scheme, "http", StringComparison.OrdinalIgnoreCase) ? 80 : 443;
         }
 
         /// <summary>
@@ -269,6 +337,149 @@ namespace KeeFetch
                 if (scaled != null) scaled.Dispose();
                 if (image != null) image.Dispose();
             }
+        }
+
+        /// <summary>
+        /// Re-encodes an image as PNG for deterministic downstream handling.
+        /// </summary>
+        public static byte[] NormalizeToPng(byte[] data)
+        {
+            if (data == null || data.Length == 0)
+                return null;
+
+            Image image = null;
+            try
+            {
+                try
+                {
+                    image = GfxUtil.LoadImage(data);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug("NormalizeToPng", ex);
+                    using (var ms = new MemoryStream(data))
+                        image = Image.FromStream(ms);
+                }
+
+                if (image == null)
+                    return null;
+
+                using (var ms = new MemoryStream())
+                {
+                    image.Save(ms, ImageFormat.Png);
+                    return ms.ToArray();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug("NormalizeToPng", ex);
+                return null;
+            }
+            finally
+            {
+                if (image != null) image.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Attempts to extract image dimensions and format.
+        /// </summary>
+        public static bool TryGetImageInfo(byte[] data, out int width, out int height, out string format)
+        {
+            width = 0;
+            height = 0;
+            format = null;
+
+            if (data == null || data.Length == 0)
+                return false;
+
+            try
+            {
+                using (var ms = new MemoryStream(data))
+                using (var image = Image.FromStream(ms))
+                {
+                    width = image.Width;
+                    height = image.Height;
+                    format = GetFormatName(image.RawFormat);
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug("TryGetImageInfo", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Lightweight blank/placeholder suspicion heuristic based on transparency and color diversity.
+        /// </summary>
+        public static bool IsProbablyBlankImage(byte[] data)
+        {
+            if (data == null || data.Length == 0)
+                return false;
+
+            Bitmap bitmap = null;
+            try
+            {
+                using (var ms = new MemoryStream(data))
+                using (var image = Image.FromStream(ms))
+                {
+                    bitmap = new Bitmap(image);
+                }
+
+                if (bitmap.Width <= 2 || bitmap.Height <= 2)
+                    return true;
+
+                int stepX = Math.Max(1, bitmap.Width / 16);
+                int stepY = Math.Max(1, bitmap.Height / 16);
+                int sampled = 0;
+                int visible = 0;
+                var colors = new HashSet<int>();
+
+                for (int y = 0; y < bitmap.Height; y += stepY)
+                {
+                    for (int x = 0; x < bitmap.Width; x += stepX)
+                    {
+                        var c = bitmap.GetPixel(x, y);
+                        sampled++;
+                        if (c.A > 10) visible++;
+                        colors.Add(c.ToArgb());
+
+                        if (colors.Count > 8)
+                            return false;
+                    }
+                }
+
+                if (sampled == 0)
+                    return true;
+
+                if (visible == 0)
+                    return true;
+
+                return colors.Count <= 2;
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug("IsProbablyBlankImage", ex);
+                return false;
+            }
+            finally
+            {
+                if (bitmap != null) bitmap.Dispose();
+            }
+        }
+
+        private static string GetFormatName(ImageFormat format)
+        {
+            if (format == null) return "unknown";
+            if (format.Equals(ImageFormat.Png)) return "png";
+            if (format.Equals(ImageFormat.Jpeg)) return "jpeg";
+            if (format.Equals(ImageFormat.Gif)) return "gif";
+            if (format.Equals(ImageFormat.Bmp)) return "bmp";
+            if (format.Equals(ImageFormat.Icon)) return "ico";
+            if (format.Equals(ImageFormat.Tiff)) return "tiff";
+            return "unknown";
         }
 
         /// <summary>

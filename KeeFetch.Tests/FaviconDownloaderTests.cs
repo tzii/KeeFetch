@@ -1,5 +1,10 @@
 using KeeFetch.IconSelection;
+using KeePass.App.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace KeeFetch.Tests
 {
@@ -35,6 +40,67 @@ namespace KeeFetch.Tests
             Assert.IsTrue(cached.WasSyntheticFallback);
             Assert.AreEqual("selected=Icon Horse", cached.DiagnosticsSummary);
             CollectionAssert.AreEqual(TinyPng, cached.IconData);
+        }
+
+        [TestMethod]
+        public async Task DownloadAsync_ReusesNegativeCacheWhenSameOriginMissesInBatch()
+        {
+            var config = new Configuration(new AceCustomConfig());
+            config.FetchPresetMode = FetchPresetMode.Custom;
+            foreach (string providerName in FaviconDownloader.DefaultProviderOrder)
+                config.SetProviderEnabled(providerName, false);
+
+            FaviconDownloader.ClearCache();
+
+            var downloader = new FaviconDownloader(config);
+            var first = await downloader.DownloadAsync("https://example.invalid/path");
+            var second = await downloader.DownloadAsync("https://example.invalid/other");
+
+            Assert.AreEqual(FaviconStatus.NotFound, first.Status);
+            Assert.AreEqual(FaviconStatus.NotFound, second.Status);
+            Assert.IsFalse(first.DiagnosticsSummary.Contains("negative-cache-hit"));
+            Assert.IsTrue(second.DiagnosticsSummary.Contains("negative-cache-hit"));
+            Assert.IsNotNull(second.ProviderMetrics);
+            Assert.AreEqual("Cache", second.ProviderMetrics[0].ProviderName);
+            Assert.AreEqual("negative-hit", second.ProviderMetrics[0].Outcome);
+        }
+
+        [TestMethod]
+        public void BuildProviderPipeline_UsesPresetProviderSetOnFreshConfig()
+        {
+            var config = new Configuration(new AceCustomConfig());
+            config.FetchPresetMode = FetchPresetMode.Balanced;
+
+            var names = GetPipelineProviderNames(config);
+
+            CollectionAssert.AreEqual(
+                new[] { "Direct Site", "Google", "Favicone" },
+                names);
+        }
+
+        [TestMethod]
+        public void BuildProviderPipeline_UsesFullProviderSetForThoroughPreset()
+        {
+            var config = new Configuration(new AceCustomConfig());
+            config.FetchPresetMode = FetchPresetMode.Thorough;
+
+            var names = GetPipelineProviderNames(config);
+
+            CollectionAssert.AreEqual(FaviconDownloader.DefaultProviderOrder, names);
+        }
+
+        private static string[] GetPipelineProviderNames(Configuration config)
+        {
+            var downloader = new FaviconDownloader(config);
+            var method = typeof(FaviconDownloader).GetMethod(
+                "BuildProviderPipeline",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(method);
+
+            var providers = (IEnumerable)method.Invoke(downloader, new object[] { false });
+            return providers.Cast<object>()
+                .Select(p => (string)p.GetType().GetProperty("Name").GetValue(p, null))
+                .ToArray();
         }
     }
 }

@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,10 +18,29 @@ namespace KeeFetch
         private IPluginHost host;
         internal static Configuration Config;
         private static Image menuIcon;
+        private static Image downloadIcon;
+        private static Image settingsIcon;
         private static int activeDownloadJob;
+
+        private static Image LoadEmbeddedIcon(string fileName)
+        {
+            string resourceName = "KeeFetch.Assets.Icons." + fileName;
+            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
+            {
+                if (stream == null)
+                    return null;
+
+                using (var image = Image.FromStream(stream))
+                    return new Bitmap(image, 16, 16);
+            }
+        }
 
         private static Image GetMenuIcon()
         {
+            if (menuIcon != null)
+                return menuIcon;
+
+            menuIcon = LoadEmbeddedIcon("keefetch-app.png");
             if (menuIcon != null)
                 return menuIcon;
 
@@ -51,6 +72,79 @@ namespace KeeFetch
 
             menuIcon = bmp;
             return menuIcon;
+        }
+
+        private static Image GetDownloadIcon()
+        {
+            if (downloadIcon != null)
+                return downloadIcon;
+
+            downloadIcon = LoadEmbeddedIcon("keefetch-download.png");
+            if (downloadIcon != null)
+                return downloadIcon;
+
+            var bmp = new Bitmap(16, 16);
+            using (var g = Graphics.FromImage(bmp))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.Clear(Color.Transparent);
+
+                using (var brush = new SolidBrush(Color.FromArgb(0, 120, 215)))
+                {
+                    g.FillPolygon(brush, new[]
+                    {
+                        new Point(8, 2),
+                        new Point(13, 7),
+                        new Point(10, 7),
+                        new Point(10, 12),
+                        new Point(6, 12),
+                        new Point(6, 7),
+                        new Point(3, 7)
+                    });
+                }
+
+                using (var pen = new Pen(Color.FromArgb(90, 90, 90), 1.2f))
+                    g.DrawLine(pen, 3, 14, 13, 14);
+            }
+
+            downloadIcon = bmp;
+            return downloadIcon;
+        }
+
+        private static Image GetSettingsIcon()
+        {
+            if (settingsIcon != null)
+                return settingsIcon;
+
+            settingsIcon = LoadEmbeddedIcon("keefetch-settings.png");
+            if (settingsIcon != null)
+                return settingsIcon;
+
+            var bmp = new Bitmap(16, 16);
+            using (var g = Graphics.FromImage(bmp))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.Clear(Color.Transparent);
+
+                using (var pen = new Pen(Color.FromArgb(90, 90, 90), 1.3f))
+                {
+                    g.DrawEllipse(pen, 4, 4, 8, 8);
+                    g.DrawLine(pen, 8, 1, 8, 4);
+                    g.DrawLine(pen, 8, 12, 8, 15);
+                    g.DrawLine(pen, 1, 8, 4, 8);
+                    g.DrawLine(pen, 12, 8, 15, 8);
+                    g.DrawLine(pen, 3, 3, 5, 5);
+                    g.DrawLine(pen, 11, 11, 13, 13);
+                    g.DrawLine(pen, 13, 3, 11, 5);
+                    g.DrawLine(pen, 5, 11, 3, 13);
+                }
+
+                using (var brush = new SolidBrush(Color.FromArgb(0, 120, 215)))
+                    g.FillEllipse(brush, 6, 6, 4, 4);
+            }
+
+            settingsIcon = bmp;
+            return settingsIcon;
         }
 
         public override bool Initialize(IPluginHost pluginHost)
@@ -89,9 +183,11 @@ namespace KeeFetch
                 tsmi.Image = GetMenuIcon();
 
                 var itemAllEntries = new ToolStripMenuItem("Download All Favicons");
+                itemAllEntries.Image = GetDownloadIcon();
                 itemAllEntries.Click += OnDownloadAllEntries;
 
                 var itemSettings = new ToolStripMenuItem("Settings...");
+                itemSettings.Image = GetSettingsIcon();
                 itemSettings.Click += OnOpenSettings;
 
                 var sep = new ToolStripSeparator();

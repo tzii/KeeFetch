@@ -26,6 +26,7 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="FaviconDialog.cs" />
     <Compile Include="FaviconDownloader.cs" />
+    <Compile Include="FaviconDiagnostics.cs" />
     <Compile Include="KeeFetchExt.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="SharedHttp.cs" />
@@ -52,6 +53,9 @@
     <EmbeddedResource Include="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Assets\Icons\keefetch-app.png" />
+    <EmbeddedResource Include="Assets\Icons\keefetch-download.png" />
+    <EmbeddedResource Include="Assets\Icons\keefetch-settings.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

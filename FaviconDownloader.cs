@@ -48,6 +48,9 @@ namespace KeeFetch
         private static readonly ConcurrentDictionary<string, CachedIconEntry> DownloadCache =
             new ConcurrentDictionary<string, CachedIconEntry>(StringComparer.OrdinalIgnoreCase);
 
+        private static readonly ConcurrentDictionary<string, CachedNegativeEntry> NegativeDownloadCache =
+            new ConcurrentDictionary<string, CachedNegativeEntry>(StringComparer.OrdinalIgnoreCase);
+
         private static readonly ConcurrentDictionary<string, Lazy<Task<FaviconResult>>> InFlightDownloads =
             new ConcurrentDictionary<string, Lazy<Task<FaviconResult>>>(StringComparer.OrdinalIgnoreCase);
 
@@ -183,6 +186,7 @@ namespace KeeFetch
         public static void ClearCache()
         {
             DownloadCache.Clear();
+            NegativeDownloadCache.Clear();
             InFlightDownloads.Clear();
         }
 
@@ -225,6 +229,14 @@ namespace KeeFetch
             }
 
             string inFlightKey = BuildInFlightKey(cacheKey, maxSize);
+            CachedNegativeEntry negativeEntry;
+            if (NegativeDownloadCache.TryGetValue(inFlightKey, out negativeEntry))
+            {
+                var negativeResult = BuildNegativeCachedResult(negativeEntry, host, cacheKey);
+                negativeResult.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+                return negativeResult;
+            }
+
             var lazyDownload = new Lazy<Task<FaviconResult>>(
                 () => DownloadParsedHttpAsync(url, normalizedUri, host, cacheKey, isPrivate,
                     maxSize, timeoutMs, token),
@@ -247,6 +259,9 @@ namespace KeeFetch
             }
 
             result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+            if (isOwner && result.Status == FaviconStatus.NotFound)
+                CacheNegativeResult(inFlightKey, result);
+
             return isOwner
                 ? result
                 : BuildCoalescedResult(result, stopwatch.ElapsedMilliseconds);
@@ -447,7 +462,7 @@ namespace KeeFetch
 
         private List<IIconProvider> BuildProviderPipeline(bool isPrivateTarget)
         {
-            var orderedNames = config.GetProviderOrderList();
+            var orderedNames = GetConfiguredProviderOrder();
             var allNames = new List<string>();
 
             if (orderedNames != null)
@@ -470,7 +485,7 @@ namespace KeeFetch
                 if (!ProviderFactories.TryGetValue(providerName, out factory))
                     continue;
 
-                if (!config.IsProviderEnabled(providerName))
+                if (!IsProviderEnabledForCurrentMode(providerName))
                     continue;
 
                 var provider = factory();
@@ -495,6 +510,27 @@ namespace KeeFetch
 
             active.AddRange(cooledDown);
             return active;
+        }
+
+        private List<string> GetConfiguredProviderOrder()
+        {
+            if (config == null || config.FetchPresetMode == FetchPresetMode.Custom)
+                return config != null
+                    ? config.GetProviderOrderList()
+                    : new List<string>(DefaultProviderOrder);
+
+            return Configuration.GetPresetProviderOrderList(config.FetchPresetMode);
+        }
+
+        private bool IsProviderEnabledForCurrentMode(string providerName)
+        {
+            if (config == null)
+                return true;
+
+            if (config.FetchPresetMode == FetchPresetMode.Custom)
+                return config.IsProviderEnabled(providerName);
+
+            return Configuration.IsProviderEnabledByPreset(config.FetchPresetMode, providerName);
         }
 
         private bool IsProviderInCooldown(string providerName)
@@ -705,6 +741,47 @@ namespace KeeFetch
             };
         }
 
+        private static void CacheNegativeResult(string negativeKey, FaviconResult result)
+        {
+            if (string.IsNullOrWhiteSpace(negativeKey) || result == null ||
+                result.Status != FaviconStatus.NotFound)
+                return;
+
+            NegativeDownloadCache[negativeKey] = new CachedNegativeEntry
+            {
+                DiagnosticsSummary = result.DiagnosticsSummary,
+                AttemptedProviders = result.AttemptedProviders != null
+                    ? result.AttemptedProviders.ToList()
+                    : new List<string>(),
+                RejectedCandidates = result.RejectedCandidates != null
+                    ? result.RejectedCandidates.ToList()
+                    : new List<IconCandidate>()
+            };
+        }
+
+        private static FaviconResult BuildNegativeCachedResult(CachedNegativeEntry cached,
+            string host, string cacheKey)
+        {
+            return new FaviconResult
+            {
+                Status = FaviconStatus.NotFound,
+                Provider = null,
+                Host = host,
+                CacheKey = cacheKey,
+                SelectedTier = IconTier.Rejected,
+                WasSyntheticFallback = false,
+                AttemptedProviders = cached.AttemptedProviders,
+                RejectedCandidates = cached.RejectedCandidates,
+                ProviderMetrics = new List<ProviderAttemptMetric>
+                {
+                    new ProviderAttemptMetric("Cache", 0, 0, "negative-hit")
+                },
+                DiagnosticsSummary = string.IsNullOrWhiteSpace(cached.DiagnosticsSummary)
+                    ? "negative-cache-hit"
+                    : "negative-cache-hit; " + cached.DiagnosticsSummary
+            };
+        }
+
         private string BuildInFlightKey(string cacheKey, int maxSize)
         {
             return string.Join("|", new[]
@@ -794,6 +871,13 @@ namespace KeeFetch
             public IconTier SelectedTier { get; set; }
             public bool WasSyntheticFallback { get; set; }
             public string DiagnosticsSummary { get; set; }
+        }
+
+        private sealed class CachedNegativeEntry
+        {
+            public string DiagnosticsSummary { get; set; }
+            public IReadOnlyList<string> AttemptedProviders { get; set; }
+            public IReadOnlyList<IconCandidate> RejectedCandidates { get; set; }
         }
     }
 

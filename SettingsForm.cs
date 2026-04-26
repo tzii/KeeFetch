@@ -186,7 +186,7 @@ namespace KeeFetch
             chkProviderIconHorse.Checked = Configuration.IsProviderEnabledByPreset(mode, "Icon Horse");
 
             lstProviderOrder.Items.Clear();
-            foreach (string provider in Configuration.GetPresetProviderOrderList(mode))
+            foreach (string provider in GetProviderDisplayOrderForMode(mode))
                 lstProviderOrder.Items.Add(provider);
 
             if (lstProviderOrder.Items.Count > 0)
@@ -202,6 +202,9 @@ namespace KeeFetch
             grpProviders.Text = isCustom
                 ? "Provider Controls"
                 : "Provider Controls (preset managed)";
+            lblProviderOrderHint.Text = isCustom
+                ? "Provider order: select one and move it up or down."
+                : "Preset order: checked providers are used; unchecked providers are shown for reference.";
 
             numTimeout.Enabled = isCustom;
             chkUseThirdPartyFallbacks.Enabled = isCustom;
@@ -239,6 +242,24 @@ namespace KeeFetch
                 return new System.Collections.Generic.List<string>(FaviconDownloader.DefaultProviderOrder);
 
             return Configuration.GetPresetProviderOrderList(mode);
+        }
+
+        private System.Collections.Generic.List<string> GetProviderDisplayOrderForMode(FetchPresetMode mode)
+        {
+            var displayOrder = new System.Collections.Generic.List<string>();
+            foreach (string provider in Configuration.GetPresetProviderOrderList(mode))
+            {
+                if (!displayOrder.Contains(provider))
+                    displayOrder.Add(provider);
+            }
+
+            foreach (string provider in FaviconDownloader.DefaultProviderOrder)
+            {
+                if (!displayOrder.Contains(provider))
+                    displayOrder.Add(provider);
+            }
+
+            return displayOrder;
         }
 
         private void cmbFetchPreset_SelectedIndexChanged(object sender, EventArgs e)

@@ -50,6 +50,7 @@ namespace KeeFetch
 
         private readonly List<string> errorLog = new List<string>();
         private readonly List<string> diagnosticsLog = new List<string>();
+        private readonly List<string> diagnosticsCsvRows = new List<string>();
         private readonly object errorLogLock = new object();
         private readonly object diagnosticsLogLock = new object();
 
@@ -90,7 +91,11 @@ namespace KeeFetch
             maxDownloadElapsedMs = 0;
 
             lock (errorLogLock) { errorLog.Clear(); }
-            lock (diagnosticsLogLock) { diagnosticsLog.Clear(); }
+            lock (diagnosticsLogLock)
+            {
+                diagnosticsLog.Clear();
+                diagnosticsCsvRows.Clear();
+            }
             lock (providerMetricsLock) { providerMetricAggregates.Clear(); }
 
             cts = new CancellationTokenSource();
@@ -495,6 +500,16 @@ namespace KeeFetch
                     string diagnosticsPath = Path.Combine(logDir, "KeeFetch_diagnostics.log");
                     File.WriteAllText(diagnosticsPath, string.Join(Environment.NewLine, diagnosticsLog));
                     message += "\n\nDiagnostics log saved to:\n" + diagnosticsPath;
+
+                    if (diagnosticsCsvRows.Count > 0)
+                    {
+                        string diagnosticsCsvPath = Path.Combine(logDir, "KeeFetch_diagnostics.csv");
+                        var csvLines = new List<string>();
+                        csvLines.Add(FaviconDiagnostics.BuildCsvHeader());
+                        csvLines.AddRange(diagnosticsCsvRows);
+                        File.WriteAllText(diagnosticsCsvPath, string.Join(Environment.NewLine, csvLines));
+                        message += "\nDiagnostics CSV saved to:\n" + diagnosticsCsvPath;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -526,54 +541,11 @@ namespace KeeFetch
             try
             {
                 string title = entry != null ? entry.Strings.ReadSafe(PwDefs.TitleField) : string.Empty;
-                string provider = result != null && !string.IsNullOrEmpty(result.Provider)
-                    ? result.Provider : "none";
-                string tier = result != null ? result.SelectedTier.ToString() : "Rejected";
-                string synthetic = (result != null && result.WasSyntheticFallback) ? "true" : "false";
-                string attempted = result != null && result.AttemptedProviders != null
-                    ? string.Join(", ", result.AttemptedProviders)
-                    : string.Empty;
-                string summary = result != null ? result.DiagnosticsSummary : "no-selection";
-                string elapsed = result != null ? result.ElapsedMilliseconds + "ms" : "0ms";
-
-                string providerTimings = string.Empty;
-                if (result != null && result.ProviderMetrics != null && result.ProviderMetrics.Count > 0)
-                {
-                    providerTimings = string.Join(", ", result.ProviderMetrics
-                        .Where(m => m != null)
-                        .Select(m => string.Format("{0}:{1}ms/{2}/{3}",
-                            m.ProviderName, m.ElapsedMilliseconds, m.CandidateCount, m.Outcome))
-                        .ToArray());
-                }
-
-                string rejected = string.Empty;
-                if (result != null && result.RejectedCandidates != null &&
-                    result.RejectedCandidates.Count > 0)
-                {
-                    rejected = string.Join(" || ", result.RejectedCandidates
-                        .Where(c => c != null)
-                        .Select(c => string.Format("{0}:{1}", c.ProviderName, c.Notes)));
-                }
-
-                string line = string.Format(
-                    "[{0}] url={1}; provider={2}; tier={3}; synthetic={4}; elapsed={5}; attempted=[{6}]; summary={7}",
-                    title ?? string.Empty,
-                    resolvedUrl ?? string.Empty,
-                    provider,
-                    tier,
-                    synthetic,
-                    elapsed,
-                    attempted,
-                    summary ?? string.Empty);
-
-                if (!string.IsNullOrWhiteSpace(rejected))
-                    line += "; rejected=" + rejected;
-                if (!string.IsNullOrWhiteSpace(providerTimings))
-                    line += "; providers=" + providerTimings;
 
                 lock (diagnosticsLogLock)
                 {
-                    diagnosticsLog.Add(line);
+                    diagnosticsLog.Add(FaviconDiagnostics.BuildLogLine(title, resolvedUrl, result));
+                    diagnosticsCsvRows.Add(FaviconDiagnostics.BuildCsvRow(title, resolvedUrl, result));
                 }
             }
             catch (Exception ex)

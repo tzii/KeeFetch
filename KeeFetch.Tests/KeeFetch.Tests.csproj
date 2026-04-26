@@ -30,6 +30,8 @@
       <HintPath>$(KeePassPath)\KeePass.exe</HintPath>
       <Private>true</Private>
     </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
 
   <PropertyGroup>

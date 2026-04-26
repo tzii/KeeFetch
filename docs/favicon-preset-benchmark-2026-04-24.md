@@ -68,8 +68,8 @@ The coalescing result confirms that repeated-origin entries can now share active
 
 ## Follow-up work
 
-1. Add optional per-origin result export in diagnostics to identify which URL categories still miss.
-2. Improve Direct Site diagnostics so misses can be grouped by reason: invalid URL, private host, timeout, no candidate, rejected candidate, blank placeholder, SVG-only, or image validation failure.
-3. Consider per-origin negative caching inside a single batch so repeated misses for the same origin do not rerun the same failed lookup after the first one completes.
-4. Evaluate Direct Site candidate fetching next, because it still dominates total provider time even after preset tuning and coalescing.
+1. Add optional per-origin result export in diagnostics to identify which URL categories still miss. Done in the 2026-04-25 continuation: KeeFetch now writes `KeeFetch_diagnostics.csv` next to the human-readable diagnostics log.
+2. Improve Direct Site diagnostics so misses can be grouped by reason: invalid URL, private host, timeout, no candidate, rejected candidate, blank placeholder, SVG-only, or image validation failure. Partially done in the 2026-04-25 continuation: diagnostics now include a coarse `miss_reason` suitable for CSV grouping.
+3. Consider per-origin negative caching inside a single batch so repeated misses for the same origin do not rerun the same failed lookup after the first one completes. Done in the 2026-04-25 continuation: not-found results are cached for the current run using the same preset-aware key as in-flight coalescing.
+4. Evaluate Direct Site candidate fetching next, because it still dominates total provider time even after preset tuning and coalescing. Started in the 2026-04-25 continuation: Direct Site now canonicalizes candidate URLs before de-duplication, avoiding repeated fetches for equivalent default-port or fragment variants.
 5. Keep `Balanced` as the default and reserve `Thorough` for users who explicitly prefer maximum coverage over time.

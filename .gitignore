@@ -30,6 +30,7 @@ KeePass.*.resources
 
 # PLGX build artifacts
 KeeFetch.plgx
+artifacts/
 plgx_staging/
 plgx_staging.plgx
 

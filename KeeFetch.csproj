@@ -49,4 +49,8 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Icons\*.png" />
+  </ItemGroup>
+
 </Project>

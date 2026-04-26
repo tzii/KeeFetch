@@ -107,7 +107,7 @@ namespace KeeFetch
             // 
             this.grpPreset.Text = "Fetch Preset";
             this.grpPreset.Location = new System.Drawing.Point(12, 12);
-            this.grpPreset.Size = new System.Drawing.Size(430, 95);
+            this.grpPreset.Size = new System.Drawing.Size(596, 95);
             this.grpPreset.Controls.Add(this.lblFetchPreset);
             this.grpPreset.Controls.Add(this.cmbFetchPreset);
             this.grpPreset.Controls.Add(this.lblFetchPresetDescription);
@@ -123,13 +123,13 @@ namespace KeeFetch
             // 
             this.cmbFetchPreset.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbFetchPreset.Location = new System.Drawing.Point(145, 25);
-            this.cmbFetchPreset.Size = new System.Drawing.Size(180, 23);
+            this.cmbFetchPreset.Size = new System.Drawing.Size(220, 23);
             this.cmbFetchPreset.SelectedIndexChanged += new System.EventHandler(this.cmbFetchPreset_SelectedIndexChanged);
             // 
             // lblFetchPresetDescription
             // 
             this.lblFetchPresetDescription.Location = new System.Drawing.Point(15, 55);
-            this.lblFetchPresetDescription.Size = new System.Drawing.Size(395, 32);
+            this.lblFetchPresetDescription.Size = new System.Drawing.Size(560, 32);
             this.lblFetchPresetDescription.Text = "Preset description";
             // 
             //
@@ -137,7 +137,7 @@ namespace KeeFetch
             //
             this.grpDownload.Text = "Download Options";
             this.grpDownload.Location = new System.Drawing.Point(12, 115);
-            this.grpDownload.Size = new System.Drawing.Size(430, 100);
+            this.grpDownload.Size = new System.Drawing.Size(596, 100);
             this.grpDownload.Controls.Add(this.chkPrefixUrls);
             this.grpDownload.Controls.Add(this.chkUseTitleField);
             this.grpDownload.Controls.Add(this.chkAutoSave);
@@ -167,7 +167,7 @@ namespace KeeFetch
             //
             this.grpIcons.Text = "Icon Options";
             this.grpIcons.Location = new System.Drawing.Point(12, 223);
-            this.grpIcons.Size = new System.Drawing.Size(430, 118);
+            this.grpIcons.Size = new System.Drawing.Size(596, 118);
             this.grpIcons.Controls.Add(this.chkSkipExistingIcons);
             this.grpIcons.Controls.Add(this.lblMaxIconSize);
             this.grpIcons.Controls.Add(this.numMaxIconSize);
@@ -191,7 +191,7 @@ namespace KeeFetch
             //
             // numMaxIconSize
             //
-            this.numMaxIconSize.Location = new System.Drawing.Point(145, 53);
+            this.numMaxIconSize.Location = new System.Drawing.Point(180, 53);
             this.numMaxIconSize.Size = new System.Drawing.Size(70, 23);
             this.numMaxIconSize.Minimum = 16;
             this.numMaxIconSize.Maximum = 256;
@@ -201,7 +201,7 @@ namespace KeeFetch
             // lblIconSizeUnit
             //
             this.lblIconSizeUnit.Text = "px";
-            this.lblIconSizeUnit.Location = new System.Drawing.Point(220, 55);
+            this.lblIconSizeUnit.Location = new System.Drawing.Point(260, 55);
             this.lblIconSizeUnit.Size = new System.Drawing.Size(30, 20);
             this.lblIconSizeUnit.AutoSize = true;
             //
@@ -214,14 +214,14 @@ namespace KeeFetch
             //
             // txtIconPrefix
             //
-            this.txtIconPrefix.Location = new System.Drawing.Point(145, 88);
-            this.txtIconPrefix.Size = new System.Drawing.Size(180, 23);
+            this.txtIconPrefix.Location = new System.Drawing.Point(180, 88);
+            this.txtIconPrefix.Size = new System.Drawing.Size(260, 23);
             //
             // grpNetwork
             //
             this.grpNetwork.Text = "Network and Fallback Options";
             this.grpNetwork.Location = new System.Drawing.Point(12, 349);
-            this.grpNetwork.Size = new System.Drawing.Size(430, 135);
+            this.grpNetwork.Size = new System.Drawing.Size(596, 135);
             this.grpNetwork.Controls.Add(this.chkAllowSelfSigned);
             this.grpNetwork.Controls.Add(this.lblTimeout);
             this.grpNetwork.Controls.Add(this.numTimeout);
@@ -233,8 +233,8 @@ namespace KeeFetch
             //
             this.chkAllowSelfSigned.Text = "Allow self-signed SSL certificates (weakens TLS validation globally)";
             this.chkAllowSelfSigned.Location = new System.Drawing.Point(15, 25);
-            this.chkAllowSelfSigned.Size = new System.Drawing.Size(400, 22);
-            this.chkAllowSelfSigned.AutoSize = true;
+            this.chkAllowSelfSigned.Size = new System.Drawing.Size(560, 22);
+            this.chkAllowSelfSigned.AutoSize = false;
             //
             // lblTimeout
             //
@@ -245,7 +245,7 @@ namespace KeeFetch
             //
             // numTimeout
             //
-            this.numTimeout.Location = new System.Drawing.Point(145, 56);
+            this.numTimeout.Location = new System.Drawing.Point(180, 56);
             this.numTimeout.Size = new System.Drawing.Size(70, 23);
             this.numTimeout.Minimum = 5;
             this.numTimeout.Maximum = 60;
@@ -254,7 +254,7 @@ namespace KeeFetch
             // lblTimeoutUnit
             //
             this.lblTimeoutUnit.Text = "seconds";
-            this.lblTimeoutUnit.Location = new System.Drawing.Point(220, 58);
+            this.lblTimeoutUnit.Location = new System.Drawing.Point(260, 58);
             this.lblTimeoutUnit.Size = new System.Drawing.Size(60, 20);
             this.lblTimeoutUnit.AutoSize = true;
             //
@@ -276,7 +276,7 @@ namespace KeeFetch
             //
             this.grpProviders.Text = "Provider Controls";
             this.grpProviders.Location = new System.Drawing.Point(12, 492);
-            this.grpProviders.Size = new System.Drawing.Size(430, 228);
+            this.grpProviders.Size = new System.Drawing.Size(596, 328);
             this.grpProviders.Controls.Add(this.chkProviderDirectSite);
             this.grpProviders.Controls.Add(this.chkProviderTwentyIcons);
             this.grpProviders.Controls.Add(this.chkProviderDuckDuckGo);
@@ -300,7 +300,7 @@ namespace KeeFetch
             // chkProviderTwentyIcons
             //
             this.chkProviderTwentyIcons.Text = "Enable Twenty Icons";
-            this.chkProviderTwentyIcons.Location = new System.Drawing.Point(220, 22);
+            this.chkProviderTwentyIcons.Location = new System.Drawing.Point(290, 22);
             this.chkProviderTwentyIcons.Size = new System.Drawing.Size(180, 22);
             this.chkProviderTwentyIcons.AutoSize = true;
             //
@@ -314,7 +314,7 @@ namespace KeeFetch
             // chkProviderGoogle
             //
             this.chkProviderGoogle.Text = "Enable Google";
-            this.chkProviderGoogle.Location = new System.Drawing.Point(220, 47);
+            this.chkProviderGoogle.Location = new System.Drawing.Point(290, 47);
             this.chkProviderGoogle.Size = new System.Drawing.Size(180, 22);
             this.chkProviderGoogle.AutoSize = true;
             //
@@ -328,7 +328,7 @@ namespace KeeFetch
             // chkProviderFavicone
             //
             this.chkProviderFavicone.Text = "Enable Favicone";
-            this.chkProviderFavicone.Location = new System.Drawing.Point(220, 72);
+            this.chkProviderFavicone.Location = new System.Drawing.Point(290, 72);
             this.chkProviderFavicone.Size = new System.Drawing.Size(180, 22);
             this.chkProviderFavicone.AutoSize = true;
             //
@@ -343,41 +343,41 @@ namespace KeeFetch
             //
             this.lblProviderOrderHint.Text = "Provider order: select one and move it up or down.";
             this.lblProviderOrderHint.Location = new System.Drawing.Point(15, 122);
-            this.lblProviderOrderHint.Size = new System.Drawing.Size(310, 20);
+            this.lblProviderOrderHint.Size = new System.Drawing.Size(540, 20);
             this.lblProviderOrderHint.AutoSize = true;
             //
             // lstProviderOrder
             //
             this.lstProviderOrder.Location = new System.Drawing.Point(15, 147);
-            this.lstProviderOrder.Size = new System.Drawing.Size(285, 62);
+            this.lstProviderOrder.Size = new System.Drawing.Size(400, 162);
             this.lstProviderOrder.IntegralHeight = false;
             this.lstProviderOrder.SelectedIndexChanged += new System.EventHandler(this.lstProviderOrder_SelectedIndexChanged);
             //
             // btnProviderUp
             //
             this.btnProviderUp.Text = "Move Up";
-            this.btnProviderUp.Location = new System.Drawing.Point(315, 147);
-            this.btnProviderUp.Size = new System.Drawing.Size(95, 28);
+            this.btnProviderUp.Location = new System.Drawing.Point(430, 147);
+            this.btnProviderUp.Size = new System.Drawing.Size(130, 28);
             this.btnProviderUp.Click += new System.EventHandler(this.btnProviderUp_Click);
             //
             // btnProviderDown
             //
             this.btnProviderDown.Text = "Move Down";
-            this.btnProviderDown.Location = new System.Drawing.Point(315, 179);
-            this.btnProviderDown.Size = new System.Drawing.Size(95, 28);
+            this.btnProviderDown.Location = new System.Drawing.Point(430, 183);
+            this.btnProviderDown.Size = new System.Drawing.Size(130, 28);
             this.btnProviderDown.Click += new System.EventHandler(this.btnProviderDown_Click);
             //
             // btnProviderReset
             //
             this.btnProviderReset.Text = "Reset";
-            this.btnProviderReset.Location = new System.Drawing.Point(315, 199);
-            this.btnProviderReset.Size = new System.Drawing.Size(95, 28);
+            this.btnProviderReset.Location = new System.Drawing.Point(430, 219);
+            this.btnProviderReset.Size = new System.Drawing.Size(130, 28);
             this.btnProviderReset.Click += new System.EventHandler(this.btnProviderReset_Click);
             //
             // btnOK
             //
             this.btnOK.Text = "OK";
-            this.btnOK.Location = new System.Drawing.Point(286, 728);
+            this.btnOK.Location = new System.Drawing.Point(452, 832);
             this.btnOK.Size = new System.Drawing.Size(75, 28);
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
@@ -385,7 +385,7 @@ namespace KeeFetch
             // btnCancel
             //
             this.btnCancel.Text = "Cancel";
-            this.btnCancel.Location = new System.Drawing.Point(367, 728);
+            this.btnCancel.Location = new System.Drawing.Point(533, 832);
             this.btnCancel.Size = new System.Drawing.Size(75, 28);
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
@@ -393,7 +393,8 @@ namespace KeeFetch
             // SettingsForm
             //
             this.Text = "KeeFetch Settings";
-            this.ClientSize = new System.Drawing.Size(454, 768);
+            this.ClientSize = new System.Drawing.Size(620, 872);
+            this.MinimumSize = new System.Drawing.Size(636, 911);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;

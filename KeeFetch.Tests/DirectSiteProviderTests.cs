@@ -145,5 +145,44 @@ namespace KeeFetch.Tests
             Assert.IsTrue(icons.Any(i => i.Url == "https://example.com/pwa/icons/icon-192.png"),
                 "Manifest icon URLs should resolve relative to the manifest location.");
         }
+
+        [TestMethod]
+        public void PrepareCandidateLinks_DeduplicatesEquivalentUrlsAndKeepsBestCandidate()
+        {
+            var links = new[]
+            {
+                new DirectSiteProvider.DiscoveredIconLink
+                {
+                    Url = "https://example.com:443/icon.png#v1",
+                    Priority = 4,
+                    Size = 32,
+                    SourceType = "rel-icon",
+                    Tier = IconTier.SiteCanonical
+                },
+                new DirectSiteProvider.DiscoveredIconLink
+                {
+                    Url = "https://example.com/icon.png",
+                    Priority = 1,
+                    Size = 180,
+                    SourceType = "apple-touch-icon",
+                    Tier = IconTier.SiteCanonical
+                },
+                new DirectSiteProvider.DiscoveredIconLink
+                {
+                    Url = "https://example.com/other.png",
+                    Priority = 3,
+                    Size = 64,
+                    SourceType = "rel-icon",
+                    Tier = IconTier.SiteCanonical
+                }
+            };
+
+            var prepared = provider.PrepareCandidateLinks(links);
+
+            Assert.AreEqual(2, prepared.Count);
+            Assert.AreEqual("apple-touch-icon", prepared[0].SourceType);
+            Assert.AreEqual("https://example.com/icon.png", prepared[0].Url);
+            Assert.AreEqual("https://example.com/other.png", prepared[1].Url);
+        }
     }
 }

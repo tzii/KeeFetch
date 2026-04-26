@@ -83,9 +83,23 @@ namespace KeeFetch.IconProviders
                 }
             }
 
-            discoveredLinks = discoveredLinks
-                .Where(c => !string.IsNullOrWhiteSpace(c.Url))
-                .GroupBy(c => c.Url, StringComparer.OrdinalIgnoreCase)
+            discoveredLinks = PrepareCandidateLinks(discoveredLinks);
+
+            int candidateTimeout = Math.Min(2200, Math.Max(1000, request.TimeoutMs));
+            results.AddRange(await DownloadCandidatesAsync(request.TargetHost, discoveredLinks,
+                candidateTimeout, allowPrivateResponse, token).ConfigureAwait(false));
+
+            return results;
+        }
+
+        internal List<DiscoveredIconLink> PrepareCandidateLinks(IEnumerable<DiscoveredIconLink> links)
+        {
+            if (links == null)
+                return new List<DiscoveredIconLink>();
+
+            return links
+                .Where(c => c != null && !string.IsNullOrWhiteSpace(c.Url))
+                .GroupBy(c => GetCanonicalCandidateUrl(c.Url), StringComparer.OrdinalIgnoreCase)
                 .Select(g => g.OrderBy(c => c.Priority)
                     .ThenByDescending(c => c.Size)
                     .First())
@@ -93,12 +107,6 @@ namespace KeeFetch.IconProviders
                 .ThenByDescending(c => c.Size)
                 .Take(MaxCandidates)
                 .ToList();
-
-            int candidateTimeout = Math.Min(2200, Math.Max(1000, request.TimeoutMs));
-            results.AddRange(await DownloadCandidatesAsync(request.TargetHost, discoveredLinks,
-                candidateTimeout, allowPrivateResponse, token).ConfigureAwait(false));
-
-            return results;
         }
 
         private async Task<List<IconCandidate>> DownloadCandidatesAsync(string targetHost,
@@ -442,6 +450,28 @@ namespace KeeFetch.IconProviders
                 Logger.Debug("ResolveUrl", ex);
                 return null;
             }
+        }
+
+        private static string GetCanonicalCandidateUrl(string url)
+        {
+            Uri uri;
+            if (!Uri.TryCreate(url, UriKind.Absolute, out uri))
+                return url;
+
+            var builder = new UriBuilder(uri)
+            {
+                Fragment = string.Empty
+            };
+
+            if ((builder.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase) &&
+                 builder.Port == 443) ||
+                (builder.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase) &&
+                 builder.Port == 80))
+            {
+                builder.Port = -1;
+            }
+
+            return builder.Uri.AbsoluteUri;
         }
 
         private static int ParseLargestSize(string sizesValue)

@@ -18,7 +18,7 @@ A fast, smart, and modern favicon downloader plugin for KeePass 2.x.
 - **Deduplication** — SHA-256 hashing ensures icons aren't duplicated in your database.
 - **Android Support** — Converts `androidapp://` URLs to web domains with 100+ built-in mappings and Play Store scraping.
 - **Intelligent URL handling** — Resolves KeePass `{REF:...}` placeholders and auto-prefixes schemes.
-- **Modern Standards** — Supports TLS 1.3, respects KeePass proxy settings, and handles self-signed certificates.
+- **Modern Standards** — Supports TLS 1.3, uses the system default proxy configuration, and handles self-signed certificates.
 
 ## 🔒 Privacy
 

@@ -52,6 +52,7 @@ test_db.xml
 
 # Misc junk
 nul
+tmp/
 
 # Local planning/benchmark artifacts
 KeeFetch-repo-plan-spec-package-*.zip

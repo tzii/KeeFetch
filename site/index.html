@@ -3,7 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>KeeFetch - Brutalist Concept</title>
+  <title>KeeFetch - Favicon Fetcher for KeePass</title>
+  <meta name="description" content="KeeFetch is an open-source KeePass 2.x plugin for fetching, ranking, deduplicating, and maintaining favicons.">
+  <link rel="canonical" href="https://tzii.github.io/KeeFetch/">
+  <meta property="og:title" content="KeeFetch">
+  <meta property="og:description" content="Fetch, resolve, and store KeePass favicons with privacy controls and ranked fallbacks.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tzii.github.io/KeeFetch/">
+  <meta property="og:image" content="https://tzii.github.io/KeeFetch/assets/icons/keefetch-app.png">
+  <meta name="theme-color" content="#8150d8">
   <link rel="icon" href="assets/icons/keefetch-app.png">
   <style>
     :root {
@@ -899,7 +907,7 @@
       <div class="section-label" id="workflow-title">Workflow</div>
       <div class="workflow">
         <article class="flow-step"><span class="number">1</span><div><h3>Entry URL detected</h3><p>From URL field, references, or Android package.</p></div></article>
-        <article class="flow-step"><span class="number">2</span><div><h3>Parse target site</h3><p>Extract favicon links, manifest data, and metadata.</p></div></article>
+        <article class="flow-step"><span class="number">2</span><div><h3>Parse target site</h3><p>Extract favicon links, manifest data, and icon declarations.</p></div></article>
         <article class="flow-step"><span class="number">3</span><div><h3>Download icon</h3><p>Compare direct candidates with configured providers.</p></div></article>
         <article class="flow-step"><span class="number">4</span><div><h3>SHA-256 check</h3><p>Deduplicate and store efficiently in the database.</p></div></article>
         <article class="flow-step"><span class="number">5</span><div><h3>Cache and apply</h3><p>Store once, reuse everywhere, keep scans fast.</p></div></article>
@@ -941,7 +949,7 @@
   </footer>
   <script>
     (function () {
-      var storageKey = "keefetch-brutalist-theme";
+      var storageKey = "keefetch-site-theme";
       var button = document.getElementById("themeToggle");
       var savedTheme = localStorage.getItem(storageKey);
       var theme = savedTheme || "light";

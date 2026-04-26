@@ -2,6 +2,7 @@
 
 [![Build Status](https://github.com/tzii/KeeFetch/workflows/Build%20KeeFetch/badge.svg)](https://github.com/tzii/KeeFetch/actions)
 [![GitHub Release](https://img.shields.io/github/v/release/tzii/KeeFetch?include_prereleases)](https://github.com/tzii/KeeFetch/releases)
+[![Website](https://img.shields.io/badge/Website-GitHub%20Pages-8150d8)](https://tzii.github.io/KeeFetch/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A fast, smart, and modern favicon downloader plugin for KeePass 2.x.

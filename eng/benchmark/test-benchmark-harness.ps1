@@ -75,6 +75,78 @@ try {
     catch { $emptyRejected = $_.Exception.Message -match 'Quota mismatch|below minimum_total' }
     if (-not $emptyRejected) { throw 'Empty/small corpus was accepted (minimum_total enforcement missing).' }
 
+    # Test 5: checkpointed row-level benchmark output (Task 4) — fake data, no network
+    $benchRoot = Join-Path $temp 'bench-runs'
+    New-Item -ItemType Directory -Path $benchRoot -Force | Out-Null
+    $run = New-KeeFetchRun -OutputRoot $benchRoot -ExperimentId 'self-test' -CorpusVersion 'v1' -Concurrency 8 -CacheMode 'cold'
+
+    function New-FakeResult {
+        param([string]$FixtureId, [string]$Category, [string]$Url, [string]$Outcome = 'success', [int]$Repetition = 1)
+        return [ordered]@{
+            fixture_id = $FixtureId
+            repetition = $Repetition
+            category = $Category
+            input_url = $Url
+            selected_provider = 'Direct Site'
+            tier = 'SiteCanonical'
+            is_synthetic = $false
+            placeholder_suspected = $false
+            blank_suspected = $false
+            machine_outcome = $Outcome
+            candidate_counts = @{ 'Direct Site' = 2; 'Google' = 1 }
+            per_provider_metrics = @(
+                [ordered]@{ provider = 'Direct Site'; calls = 1; elapsed = 120; elapsed_ms = 120; candidate_count = 2; outcome = 'success'; errors = 0 },
+                [ordered]@{ provider = 'Google'; calls = 1; elapsed = 90; elapsed_ms = 90; candidate_count = 1; outcome = 'success'; errors = 0 }
+            )
+            provider_metrics = @(
+                [ordered]@{ provider = 'Direct Site'; calls = 1; elapsed = 120; elapsed_ms = 120; candidate_count = 2; outcome = 'success'; errors = 0 }
+            )
+            total_elapsed_ms = 210
+            total_elapsed = 210
+            cache_behavior = 'miss'
+            cache_hit = $false
+            coalesced = $false
+            coalescing = $false
+            image_type = 'png'
+            image_width = 16
+            image_height = 16
+            image_byte_size = 1024
+            image_validation = 'ok'
+            artifact_path = 'artifacts/pub-001.png'
+            artifact_hash = 'abc123'
+            experiment_id = 'self-test'
+            profile = 'Fast'
+            network_context = 'default'
+            concurrency = 8
+            cache_mode = 'cold'
+        }
+    }
+
+    $fake1 = New-FakeResult -FixtureId 'pub-001' -Category 'global-brand' -Url 'https://example.com/' -Outcome 'success' -Repetition 1
+    $fake2 = New-FakeResult -FixtureId 'pub-002' -Category 'global-brand' -Url 'https://example.org/' -Outcome 'not-found' -Repetition 1
+
+    Add-KeeFetchResult -RunDirectory $run.Directory -Result $fake1
+    Add-KeeFetchResult -RunDirectory $run.Directory -Result $fake2
+
+    Complete-KeeFetchRun -RunDirectory $run.Directory
+
+    if (-not (Test-Path (Join-Path $run.Directory 'results.ndjson'))) { throw 'Missing NDJSON checkpoint.' }
+    if (-not (Test-Path (Join-Path $run.Directory 'rows.csv'))) { throw 'Missing rows.csv.' }
+    if (-not (Test-Path (Join-Path $run.Directory 'summary.csv'))) { throw 'Missing summary.csv.' }
+    if (-not (Test-Path (Join-Path $run.Directory 'run.json'))) { throw 'Missing run.json.' }
+    if ((Import-Csv (Join-Path $run.Directory 'rows.csv')).Count -ne 2) { throw 'Expected two finalized rows.' }
+
+    # Resume test: second call with same fixture should not duplicate
+    Add-KeeFetchResult -RunDirectory $run.Directory -Result $fake1
+    Complete-KeeFetchRun -RunDirectory $run.Directory
+    if ((Import-Csv (Join-Path $run.Directory 'rows.csv')).Count -ne 2) { throw 'Resume dedup failed: duplicate row was added.' }
+    $ndjsonLines = @(Get-Content -LiteralPath (Join-Path $run.Directory 'results.ndjson') -Encoding UTF8 | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($ndjsonLines.Count -ne 2) { throw "NDJSON dedup failed: expected 2 lines but got $($ndjsonLines.Count)." }
+
+    # Verify final status is complete and interrupted would stay incomplete is implicit: run.json now says complete
+    $finalMeta = Get-Content -Raw -LiteralPath (Join-Path $run.Directory 'run.json') | ConvertFrom-Json
+    if ($finalMeta.status -ne 'complete') { throw "Expected run.json status complete but got '$($finalMeta.status)'." }
+
 } finally {
     Remove-Item -LiteralPath $temp -Recurse -Force
 }

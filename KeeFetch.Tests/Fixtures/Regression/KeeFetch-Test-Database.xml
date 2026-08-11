@@ -1,0 +1,1911 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<KeePassFile>
+  <Meta>
+    <Generator>KeeFetch Test Fixture Generator</Generator>
+    <HeaderHash>uGPnMBCWEjdL/viucq6Rpm85nIknLlQxM8jSZRm8C1I=</HeaderHash>
+    <DatabaseName>KeeFetch Plugin Test Database</DatabaseName>
+    <DatabaseNameChanged>2026-08-11T21:23:00Z</DatabaseNameChanged>
+    <DatabaseDescription>Disposable test vault for KeeFetch favicon downloader. Contains only fake credentials and public URLs.</DatabaseDescription>
+    <DatabaseDescriptionChanged>2026-08-11T21:23:00Z</DatabaseDescriptionChanged>
+    <DefaultUserName>test-user</DefaultUserName>
+    <DefaultUserNameChanged>2026-08-11T21:23:00Z</DefaultUserNameChanged>
+    <MaintenanceHistoryDays>365</MaintenanceHistoryDays>
+    <Color />
+    <MasterKeyChanged>2026-08-11T21:23:00Z</MasterKeyChanged>
+    <MasterKeyChangeRec>-1</MasterKeyChangeRec>
+    <MasterKeyChangeForce>-1</MasterKeyChangeForce>
+    <MemoryProtection>
+      <ProtectTitle>False</ProtectTitle><ProtectUserName>False</ProtectUserName><ProtectPassword>False</ProtectPassword><ProtectURL>False</ProtectURL><ProtectNotes>False</ProtectNotes>
+    </MemoryProtection>
+    <CustomIcons><Icon><UUID>uZ09vZQeTQinPxuiY/Q7kw==</UUID><Data>iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABXUlEQVR4nGP8//8/w0ACFlwS4RZbqeqylSe8GbGJM6KHALUtJuQQJnpajs0OJlwS9HIEEz6F9ABMDAz09T0MwOwcHCEwkABnOYAM5u9xZ0h02cnAwMDAICzOyVDWbcLQXniKYfI6R4Y71z7A1Z099Iphy/J71HcADLCyMTHkNxsyzOm6zPDh7U+GP7//MzRmniDJQnRAUhSklusyHNjymOH2lQ8UWUqWAzzDFBh+//rHsG/TY6pZzsBAZBSwsDIyuIcoMDx98AVDvH66BZw/u+Myw7OHX6nvgH///jNUJh5hKO4wZnANkmfYve4hAwMDA/3SwL+/DAzfv/5hmN58kSE4SYVBWoGHIktJdgAMvH31g2HxpOsM+c2GDKys1ClCGP///z8gRTEDA6RqHvCScNQBow4YdcDgcACuTgMtAczOwRECDAz0DQVku5hwSdDDcgYGLH1DGBiwzim9AQAoYIHRQCPrlAAAAABJRU5ErkJggg==</Data></Icon></CustomIcons>
+    <RecycleBinEnabled>False</RecycleBinEnabled>
+    <RecycleBinUUID>AAAAAAAAAAAAAAAAAAAAAA==</RecycleBinUUID>
+    <RecycleBinChanged>2026-08-11T21:23:00Z</RecycleBinChanged>
+    <EntryTemplatesGroup>AAAAAAAAAAAAAAAAAAAAAA==</EntryTemplatesGroup>
+    <EntryTemplatesGroupChanged>2026-08-11T21:23:00Z</EntryTemplatesGroupChanged>
+    <HistoryMaxItems>10</HistoryMaxItems><HistoryMaxSize>6291456</HistoryMaxSize>
+    <LastSelectedGroup>vxennH5ORQi1Pswf/5/NlQ==</LastSelectedGroup><LastTopVisibleGroup>vxennH5ORQi1Pswf/5/NlQ==</LastTopVisibleGroup>
+    <Binaries /><CustomData />
+  </Meta>
+  <Root>
+    <Group>
+      <UUID>vxennH5ORQi1Pswf/5/NlQ==</UUID><Name>KeeFetch Test Database</Name><Notes>All credentials are fake. Safe to modify/delete.</Notes><IconID>49</IconID>
+      <Times>
+        <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+        <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+        <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+        <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+        <Expires>False</Expires>
+        <UsageCount>0</UsageCount>
+        <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+      </Times>
+      <IsExpanded>True</IsExpanded><DefaultAutoTypeSequence /><EnableAutoType>null</EnableAutoType><EnableSearching>null</EnableSearching><LastTopVisibleEntry>AAAAAAAAAAAAAAAAAAAAAA==</LastTopVisibleEntry>
+      <Group>
+        <UUID>hAHRg+ZvRG2EExgWDl3H3w==</UUID>
+        <Name>01 Happy Paths</Name>
+        <Notes>Ordinary HTTPS sites with recognizable favicons.</Notes>
+        <IconID>48</IconID>
+        <Times>
+          <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+          <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+          <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+          <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+          <Expires>False</Expires>
+          <UsageCount>0</UsageCount>
+          <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+        </Times>
+        <IsExpanded>True</IsExpanded>
+        <DefaultAutoTypeSequence />
+        <EnableAutoType>null</EnableAutoType>
+        <EnableSearching>null</EnableSearching>
+        <LastTopVisibleEntry>AAAAAAAAAAAAAAAAAAAAAA==</LastTopVisibleEntry>
+        <Entry>
+          <UUID>XdTrfA14TnypaxXhgujL4w==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;01 Happy Paths</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>KeePass</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://keepass.info/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>sYg2atFrROC0iOBBe0w7og==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;01 Happy Paths</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>GitHub</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://github.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>uu7AFU0KSS+nofyk4WL/mg==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;01 Happy Paths</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Wikipedia</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.wikipedia.org/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>uGRvYiCCTJiIfnWlZD5uTw==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;01 Happy Paths</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Microsoft</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.microsoft.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>JRBHcGM8QaW9gOpeb54oaw==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;01 Happy Paths</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Mozilla</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.mozilla.org/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>tf6xieqbRo6UuXzALSXZXA==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;01 Happy Paths</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Stack Overflow</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://stackoverflow.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+      </Group>
+      <Group>
+        <UUID>SaTlYa9jTbymkChu1SGczA==</UUID>
+        <Name>02 URL Normalization</Name>
+        <Notes>Scheme-less, deep paths, query strings, ports and mixed URL forms.</Notes>
+        <IconID>48</IconID>
+        <Times>
+          <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+          <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+          <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+          <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+          <Expires>False</Expires>
+          <UsageCount>0</UsageCount>
+          <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+        </Times>
+        <IsExpanded>True</IsExpanded>
+        <DefaultAutoTypeSequence />
+        <EnableAutoType>null</EnableAutoType>
+        <EnableSearching>null</EnableSearching>
+        <LastTopVisibleEntry>AAAAAAAAAAAAAAAAAAAAAA==</LastTopVisibleEntry>
+        <Entry>
+          <UUID>HzodNxu4T92kEo/aeZvs4A==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;02 URL Normalization</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Scheme-less GitHub</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>github.com</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>On2M2NfVR3GxQXxcEgJRTA==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;02 URL Normalization</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Scheme-less www</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>www.google.com</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>uIJVMjP8Tzi2BfCHytZahA==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;02 URL Normalization</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Deep path — GitHub settings</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://github.com/settings/profile?tab=public</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>qRB9Eei5Rsismlxen+QvgA==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;02 URL Normalization</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Fragment + query</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://developer.mozilla.org/en-US/docs/Web/HTML?x=1#content</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>EZNs37p/RdePmiQox+4MKg==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;02 URL Normalization</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>HTTP URL</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>http://example.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>R5JrRITrQH+Bz0SHiUEOzg==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;02 URL Normalization</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Localhost expected failure</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>http://localhost:65534/no-server</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+      </Group>
+      <Group>
+        <UUID>JFd3T2NrSmm96PmS/ipW7g==</UUID>
+        <Name>03 Android App URLs</Name>
+        <Notes>Known Android mappings plus one intentionally nonexistent package.</Notes>
+        <IconID>48</IconID>
+        <Times>
+          <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+          <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+          <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+          <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+          <Expires>False</Expires>
+          <UsageCount>0</UsageCount>
+          <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+        </Times>
+        <IsExpanded>True</IsExpanded>
+        <DefaultAutoTypeSequence />
+        <EnableAutoType>null</EnableAutoType>
+        <EnableSearching>null</EnableSearching>
+        <LastTopVisibleEntry>AAAAAAAAAAAAAAAAAAAAAA==</LastTopVisibleEntry>
+        <Entry>
+          <UUID>uQcOfLtSR0ua+fXNlEieYA==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;03 Android App URLs</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Android — Gmail</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>androidapp://com.google.android.gm</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>clapuWV1TqOh9+t6mUA0Mg==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;03 Android App URLs</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Android — YouTube</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>androidapp://com.google.android.youtube</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>wig4tIqtSWqHRzHLY/R+8Q==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;03 Android App URLs</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Android — Instagram</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>androidapp://com.instagram.android</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>WhcGUhj4RpWYVyLY2T7mZg==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;03 Android App URLs</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Android — WhatsApp</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>androidapp://com.whatsapp</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>UDKosZ1MT325JyLxACpz4g==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;03 Android App URLs</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Android — Spotify</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>androidapp://com.spotify.music</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>w9zq7lz5TbWH7BWSPPxW1w==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;03 Android App URLs</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Android — Bitwarden</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>androidapp://com.bitwarden.android</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>jGPMnJsdQnK2QLxh9WGhNA==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;03 Android App URLs</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Android — Discord</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>androidapp://com.discord</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>jyr21lIcTkyyGxpcqrf1LA==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;03 Android App URLs</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Android — GitHub</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>androidapp://com.github.android</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>UZJPM/xiRKqLl80YXu8L5w==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;03 Android App URLs</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Android — Signal</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>androidapp://org.signal.android</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>lkYAYYDNRliZd7rMXcfV7Q==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;03 Android App URLs</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Android — Unknown / Play Store fallback</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>androidapp://com.example.keefetch.nonexistent</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+      </Group>
+      <Group>
+        <UUID>taWqaZ9dSDiyIw+C8TYbSQ==</UUID>
+        <Name>04 REF &amp; Edge Cases</Name>
+        <Notes>KeePass field references and malformed/missing URLs.</Notes>
+        <IconID>48</IconID>
+        <Times>
+          <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+          <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+          <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+          <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+          <Expires>False</Expires>
+          <UsageCount>0</UsageCount>
+          <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+        </Times>
+        <IsExpanded>True</IsExpanded>
+        <DefaultAutoTypeSequence />
+        <EnableAutoType>null</EnableAutoType>
+        <EnableSearching>null</EnableSearching>
+        <LastTopVisibleEntry>AAAAAAAAAAAAAAAAAAAAAA==</LastTopVisibleEntry>
+        <Entry>
+          <UUID>Rsmx/71KvEu7JgxhkLrSDA==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;REF</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>REF Target — KeePass</Value></String>
+          <String><Key>UserName</Key><Value>ref-user</Value></String>
+          <String><Key>Password</Key><Value>ref-pass-test-only</Value></String>
+          <String><Key>URL</Key><Value>https://keepass.info/</Value></String>
+          <String><Key>Notes</Key><Value>Target for field-reference URL test.</Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>4txdoftjS9yKpqeavC7LZg==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;04 REF &amp; Edge Cases</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>REF URL -&gt; KeePass</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>{REF:A@I:46C9B1FFBD4ABC4BBB260C6190BAD20C}</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>jwupawKDTjCSg4S9oi1fsw==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;04 REF &amp; Edge Cases</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Empty URL</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value></Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>rFCT/uRGRWiiUd1HjibWMA==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;04 REF &amp; Edge Cases</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Whitespace URL</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>   </Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>KIb0UcCNT/+t4f2aUStzbA==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;04 REF &amp; Edge Cases</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Malformed URL</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>not a valid url :// ???</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>1WuthTOATaKVRSeoZbTsxQ==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;04 REF &amp; Edge Cases</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Mailto URL</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>mailto:test@example.com</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>STM0rV4GQvelKkLf9u7czw==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;04 REF &amp; Edge Cases</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>File URL</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>file:///C:/Windows/System32/notepad.exe</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+      </Group>
+      <Group>
+        <UUID>tYjKjlPCSWCK/J7AcxDRbg==</UUID>
+        <Name>05 Deduplication</Name>
+        <Notes>Multiple entries from the same domains; fetched icon payloads should be reused/deduplicated in the KeePass database.</Notes>
+        <IconID>48</IconID>
+        <Times>
+          <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+          <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+          <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+          <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+          <Expires>False</Expires>
+          <UsageCount>0</UsageCount>
+          <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+        </Times>
+        <IsExpanded>True</IsExpanded>
+        <DefaultAutoTypeSequence />
+        <EnableAutoType>null</EnableAutoType>
+        <EnableSearching>null</EnableSearching>
+        <LastTopVisibleEntry>AAAAAAAAAAAAAAAAAAAAAA==</LastTopVisibleEntry>
+        <Entry>
+          <UUID>ZobVKRMhSUmU88E94EEAQw==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;05 Deduplication</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>GitHub — Home</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://github.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>Cd+sN+9QRoWMDUt4R29pEQ==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;05 Deduplication</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>GitHub — Issues</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://github.com/issues</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>37AuC7IlQF67ZPwOsE6C9g==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;05 Deduplication</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>GitHub — Explore</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://github.com/explore</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>xtlcDs1USzKjbgBP7xw+Jw==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;05 Deduplication</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Wikipedia — EN</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://en.wikipedia.org/wiki/Main_Page</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>wUT9Na8FQtWSqBya0bvXIA==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;05 Deduplication</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Wikipedia — IT</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://it.wikipedia.org/wiki/Pagina_principale</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+      </Group>
+      <Group>
+        <UUID>7J7XC9z9SUKlUhokjlO8Sw==</UUID>
+        <Name>06 Issue 1 Regression Corpus</Name>
+        <Notes>Exact URLs from KeeFetch.Tests/Fixtures/Issue1RegressionUrls.txt.</Notes>
+        <IconID>48</IconID>
+        <Times>
+          <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+          <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+          <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+          <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+          <Expires>False</Expires>
+          <UsageCount>0</UsageCount>
+          <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+        </Times>
+        <IsExpanded>True</IsExpanded>
+        <DefaultAutoTypeSequence />
+        <EnableAutoType>null</EnableAutoType>
+        <EnableSearching>null</EnableSearching>
+        <LastTopVisibleEntry>AAAAAAAAAAAAAAAAAAAAAA==</LastTopVisibleEntry>
+        <Entry>
+          <UUID>RELDelnHSHOo8oqXWLlwww==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 01 — hydrogenaudio.org</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://hydrogenaudio.org</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>7sWbQYoYQFmsv8lUj4jWPQ==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 02 — forum.mediathekview.de</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://forum.mediathekview.de</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>0sb+f+5RRgukWR4TjXHxKQ==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 03 — creative.adobe.com</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://creative.adobe.com/redeem</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>b+PfE8jgQ0mKzEPISkv0Ew==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 04 — testingbuddies.de</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://testingbuddies.de/adventskalender</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>XLPFdgmbTNeM8f+Ic2G/4g==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 05 — www.gigacopper.net</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.gigacopper.net</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>hpWe+jfLQoCiRWYrlTsJhg==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 06 — www.mytvshop.de</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.mytvshop.de</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>qE/Vu++5S2yzFLVI+YZWRQ==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 07 — www.nintendo.com</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.nintendo.com/de-de/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>AeRFBBLZRTe7ghZgFrd48g==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 08 — www.phaseone.com</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.phaseone.com</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>0334fNXyRfis06HZcwJkqw==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 09 — simplenote.com</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://simplenote.com</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>Co65y9xjQSmg7dZTHTQwtQ==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 10 — www.gebuhrenfrei.com</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.gebuhrenfrei.com</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>FP+7oIzZRLGSmgFrBPd6qQ==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 11 — filebit.pl</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://filebit.pl</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>pz3KPPdPQ/aXzecEg4rntQ==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 12 — www.waschhelden.de</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.waschhelden.de</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>cxbXMRRtSCqFXeNQOBTrpg==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 13 — www.pcwelt.de</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.pcwelt.de/xmas</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>2D5osEjnSQO/5XNyfztB0Q==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 14 — www.springer.com</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.springer.com/de</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>fTRlE/Y3RMCvGyu7SYSJhw==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 15 — employee-sales.bsh-group.com</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://employee-sales.bsh-group.com/de/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>TMa1gWMuTQCL0ab1gfIZzw==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 16 — www.mitarbeiterservice.bayern.de</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.mitarbeiterservice.bayern.de</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>0ktvFbwUQGurySvvpjBfLw==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 17 — genostore.de</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://genostore.de</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>0IK9ikamSoO92wZKAt7R4w==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 18 — www.fashionschuh.de</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.fashionschuh.de</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>xuGy8THHTaWbKKlOqI1D8g==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 19 — www.stellantis-direktbank.de</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.stellantis-direktbank.de</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>j3V41cr2S6+NCzmDX/MU0w==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 20 — kabeldirekt-store.de</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://kabeldirekt-store.de</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>VFfRByz1RwKCgp0EhMboEQ==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 21 — www.nzb.life</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.nzb.life</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>A3CG+lblRZi5oN6LO4SEMA==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 22 — www.pimkie.de</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.pimkie.de</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>j1IDLWpAQEuiOuc8GGQAhQ==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;06 Issue 1 Regression Corpus</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Regression 23 — www.casio-europe.com</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.casio-europe.com</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+      </Group>
+      <Group>
+        <UUID>vmSRtRaUSQO3xFuy8F8WBw==</UUID>
+        <Name>07 Existing Custom Icon</Name>
+        <Notes>Use with “skip entries that already have custom icons” enabled. The first entry already has a custom icon.</Notes>
+        <IconID>48</IconID>
+        <Times>
+          <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+          <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+          <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+          <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+          <Expires>False</Expires>
+          <UsageCount>0</UsageCount>
+          <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+        </Times>
+        <IsExpanded>True</IsExpanded>
+        <DefaultAutoTypeSequence />
+        <EnableAutoType>null</EnableAutoType>
+        <EnableSearching>null</EnableSearching>
+        <LastTopVisibleEntry>AAAAAAAAAAAAAAAAAAAAAA==</LastTopVisibleEntry>
+        <Entry>
+          <UUID>TNaudNP6ScO3LDBahOyJFw==</UUID>
+          <IconID>0</IconID>
+          <CustomIconUUID>uZ09vZQeTQinPxuiY/Q7kw==</CustomIconUUID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;07 Existing Custom Icon</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>HAS CUSTOM ICON — should skip</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://github.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>j4tWXJkYS9SJ6vmIuJkDMg==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;07 Existing Custom Icon</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>NO CUSTOM ICON — should fetch</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://gitlab.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+      </Group>
+      <Group>
+        <UUID>dXHH1yOHQtiU716JFYhy9Q==</UUID>
+        <Name>08 Bulk / Concurrency</Name>
+        <Notes>Use “Download All Favicons” on this group to exercise concurrent fetches.</Notes>
+        <IconID>48</IconID>
+        <Times>
+          <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+          <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+          <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+          <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+          <Expires>False</Expires>
+          <UsageCount>0</UsageCount>
+          <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+        </Times>
+        <IsExpanded>True</IsExpanded>
+        <DefaultAutoTypeSequence />
+        <EnableAutoType>null</EnableAutoType>
+        <EnableSearching>null</EnableSearching>
+        <LastTopVisibleEntry>AAAAAAAAAAAAAAAAAAAAAA==</LastTopVisibleEntry>
+        <Entry>
+          <UUID>sE6H8WQSTF6kSIx3IMwmqQ==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;08 Bulk / Concurrency</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Bulk — Reddit</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.reddit.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>6+Ag8APzSvaU0soIs4HCSQ==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;08 Bulk / Concurrency</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Bulk — Discord</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://discord.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>C5bG71jDQK+dvK1Ou1gIrw==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;08 Bulk / Concurrency</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Bulk — Spotify</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.spotify.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>9103jE3kS7ycv8fX4uq4Mw==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;08 Bulk / Concurrency</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Bulk — Netflix</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.netflix.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>gef8yVzVQ5K4HGqPKZq0YA==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;08 Bulk / Concurrency</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Bulk — Dropbox</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.dropbox.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>LAju4wtTQQeWbwcr/SPLIg==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;08 Bulk / Concurrency</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Bulk — Slack</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://slack.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>JsJH4Na1Q9CQk03ULjm+rQ==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;08 Bulk / Concurrency</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Bulk — Notion</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.notion.so/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>nwrBBOW6Ruas5VAZqA9cMA==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;08 Bulk / Concurrency</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Bulk — Figma</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.figma.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>xLUqHKZBRK+dsGJxCSAP2A==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;08 Bulk / Concurrency</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Bulk — Trello</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://trello.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>3KDReiR3QTCAeLmASdOOiQ==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;08 Bulk / Concurrency</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Bulk — Canva</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.canva.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>W9udQaBHT8+TyEXcr//QNQ==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;08 Bulk / Concurrency</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Bulk — Duolingo</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://www.duolingo.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+        <Entry>
+          <UUID>IXXdYl+5QRWEqWySqE5GUg==</UUID>
+          <IconID>0</IconID>
+          <ForegroundColor />
+          <BackgroundColor />
+          <OverrideURL />
+          <Tags>KeeFetch-Test;08 Bulk / Concurrency</Tags>
+          <Times>
+            <LastModificationTime>2026-08-11T21:23:00Z</LastModificationTime>
+            <CreationTime>2026-08-11T21:23:00Z</CreationTime>
+            <LastAccessTime>2026-08-11T21:23:00Z</LastAccessTime>
+            <ExpiryTime>2999-12-28T23:59:59Z</ExpiryTime>
+            <Expires>False</Expires>
+            <UsageCount>0</UsageCount>
+            <LocationChanged>2026-08-11T21:23:00Z</LocationChanged>
+          </Times>
+          <String><Key>Title</Key><Value>Bulk — Steam</Value></String>
+          <String><Key>UserName</Key><Value>test-user</Value></String>
+          <String><Key>Password</Key><Value>test-only-not-a-secret</Value></String>
+          <String><Key>URL</Key><Value>https://store.steampowered.com/</Value></String>
+          <String><Key>Notes</Key><Value></Value></String>
+          <AutoType><Enabled>True</Enabled><DataTransferObfuscation>0</DataTransferObfuscation></AutoType>
+          <History />
+        </Entry>
+      </Group>
+    </Group>
+    <DeletedObjects />
+  </Root>
+</KeePassFile>

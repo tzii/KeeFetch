@@ -64,6 +64,15 @@ jobs:
           Copy-Item -Path "$env:KEEPASS_DIR\KeePass.exe" -Destination "KeeFetch.Tests\bin\Release\net48\"
           dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj --configuration Release --no-build
 
+      - name: Validate benchmark harness and corpora
+        shell: pwsh
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File eng/benchmark/test-benchmark-harness.ps1
+          Import-Module .\eng\benchmark\BenchmarkHarness.psm1 -Force
+          Test-KeeFetchCorpus `
+            -CsvPath .\KeeFetch.Tests\Fixtures\ProviderCorpus\v1\public-sites.csv `
+            -VocabularyPath .\KeeFetch.Tests\Fixtures\ProviderCorpus\v1\categories.json | Out-Null
+
       - name: Create PLGX
         shell: pwsh
         run: |

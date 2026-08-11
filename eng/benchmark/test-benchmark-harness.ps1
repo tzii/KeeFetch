@@ -147,6 +147,35 @@ try {
     $finalMeta = Get-Content -Raw -LiteralPath (Join-Path $run.Directory 'run.json') | ConvertFrom-Json
     if ($finalMeta.status -ne 'complete') { throw "Expected run.json status complete but got '$($finalMeta.status)'." }
 
+    # Test 6: experiment-definition parsing (Task 5)
+    $baselineExp = Join-Path $PSScriptRoot 'experiments/baseline-v12.json'
+    $exp = Read-KeeFetchExperiment -ExperimentPath $baselineExp
+    foreach ($field in @('experiment_id','corpus','profiles','repetitions','concurrency','cache_modes','output_root')) {
+        if (-not ($exp.PSObject.Properties.Name -contains $field)) { throw "Experiment missing required property: $field" }
+        $val = $exp.$field
+        if ($null -eq $val) { throw "Experiment property $field is null." }
+        if ($val -is [string] -and [string]::IsNullOrWhiteSpace($val)) { throw "Experiment property $field is empty." }
+        if ($val -is [Array] -and $val.Count -eq 0) { throw "Experiment property $field is empty array." }
+    }
+    # Invalid cache mode must be rejected with message containing "Unknown cache mode"
+    $badExp = Join-Path $temp 'bad-cache-mode.json'
+    $badObj = [ordered]@{
+        experiment_id = 'bad-cache'
+        corpus = 'KeeFetch.Tests/Fixtures/ProviderCorpus/v1/public-sites.csv'
+        profiles = @('Balanced')
+        repetitions = 1
+        concurrency = 1
+        cache_modes = @('hot')
+        output_root = 'eng/benchmark-runs/bad-cache'
+    }
+    $badJson = ConvertTo-Json -InputObject $badObj -Depth 10
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText($badExp, $badJson, $utf8NoBom)
+    $badRejected = $false
+    try { Read-KeeFetchExperiment -ExperimentPath $badExp | Out-Null }
+    catch { $badRejected = $_.Exception.Message -match 'Unknown cache mode' }
+    if (-not $badRejected) { throw 'Invalid cache mode was accepted or error did not contain Unknown cache mode.' }
+
 } finally {
     Remove-Item -LiteralPath $temp -Recurse -Force
 }

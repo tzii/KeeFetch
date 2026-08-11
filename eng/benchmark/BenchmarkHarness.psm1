@@ -641,4 +641,170 @@ function Complete-KeeFetchRun {
     Write-JsonFileUtf8NoBom -Path $runJsonPath -Object $finalMeta -Depth 20
 }
 
-Export-ModuleMember -Function Test-KeeFetchCorpus, New-KeeFetchRun, Add-KeeFetchResult, Complete-KeeFetchRun
+function Read-KeeFetchExperiment {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)][string]$ExperimentPath
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ExperimentPath)) {
+        throw "ExperimentPath must not be empty."
+    }
+
+    $resolvedExperimentPath = $ExperimentPath
+    if (-not [System.IO.Path]::IsPathRooted($ExperimentPath)) {
+        $candidate = Join-Path (Get-Location).Path $ExperimentPath
+        if (Test-Path -LiteralPath $candidate) {
+            $resolvedExperimentPath = (Resolve-Path -LiteralPath $candidate).Path
+        } elseif (Test-Path -LiteralPath $ExperimentPath) {
+            $resolvedExperimentPath = (Resolve-Path -LiteralPath $ExperimentPath).Path
+        }
+    } else {
+        if (Test-Path -LiteralPath $ExperimentPath) {
+            $resolvedExperimentPath = (Resolve-Path -LiteralPath $ExperimentPath).Path
+        }
+    }
+
+    if (-not (Test-Path -LiteralPath $resolvedExperimentPath)) {
+        if (Test-Path -LiteralPath $ExperimentPath) {
+            $resolvedExperimentPath = (Resolve-Path -LiteralPath $ExperimentPath).Path
+        } else {
+            throw "Experiment file not found: $ExperimentPath"
+        }
+    }
+
+    $raw = Get-Content -Raw -LiteralPath $resolvedExperimentPath
+    try {
+        $json = $raw | ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        throw "Invalid experiment JSON: $($_.Exception.Message)"
+    }
+
+    $required = @('experiment_id','corpus','profiles','repetitions','concurrency','cache_modes','output_root')
+    foreach ($field in $required) {
+        if (-not ($json.PSObject.Properties.Name -contains $field)) {
+            throw "Missing required field: $field"
+        }
+        $value = $json.$field
+        if ($null -eq $value) {
+            throw "Missing required field: $field"
+        }
+        if ($value -is [string] -and [string]::IsNullOrWhiteSpace($value)) {
+            throw "Missing required field: $field"
+        }
+    }
+
+    $experimentId = [string]$json.experiment_id
+    $corpus = [string]$json.corpus
+    $profiles = @($json.profiles)
+    $repetitions = 0
+    try { $repetitions = [int]$json.repetitions } catch { throw "repetitions must be an integer." }
+    $concurrency = 0
+    try { $concurrency = [int]$json.concurrency } catch { throw "concurrency must be an integer." }
+    $cacheModes = @($json.cache_modes)
+    $outputRoot = [string]$json.output_root
+
+    if ([string]::IsNullOrWhiteSpace($experimentId)) { throw "Missing required field: experiment_id" }
+    if ([string]::IsNullOrWhiteSpace($corpus)) { throw "Missing required field: corpus" }
+    if ($profiles.Count -eq 0) { throw "profiles must not be empty." }
+    foreach ($p in $profiles) {
+        if ([string]::IsNullOrWhiteSpace([string]$p)) { throw "profiles must not be empty." }
+    }
+    if ($repetitions -lt 1) { throw "repetitions must be >= 1." }
+    if ($concurrency -lt 1) { throw "concurrency must be >= 1." }
+    if ($cacheModes.Count -eq 0) { throw "cache_modes must not be empty." }
+    $allowedCacheModes = @('cold','warm')
+    foreach ($mode in $cacheModes) {
+        $m = [string]$mode
+        if ($allowedCacheModes -notcontains $m) {
+            throw "Unknown cache mode: $m"
+        }
+    }
+    if ([string]::IsNullOrWhiteSpace($outputRoot)) { throw "Missing required field: output_root" }
+
+    # Resolve corpus path: try rooted, then repoRoot relative, then experiment dir relative
+    $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+    # Fallback: if PSSScrioptRoot parent chain not repo, try resolving via known file
+    if (-not (Test-Path -LiteralPath (Join-Path $repoRoot "KeeFetch.Tests"))) {
+        # try alternative: two levels up from PSScriptRoot
+        $alt = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..\..")).Path
+        if (Test-Path -LiteralPath (Join-Path $alt "KeeFetch.Tests")) { $repoRoot = $alt }
+    }
+    $corpusPath = $corpus
+    if (-not [System.IO.Path]::IsPathRooted($corpus)) {
+        $tryRepo = Join-Path $repoRoot $corpus
+        $tryExpDir = Join-Path (Split-Path -Parent $resolvedExperimentPath) $corpus
+        if (Test-Path -LiteralPath $tryRepo) {
+            $corpusPath = (Resolve-Path -LiteralPath $tryRepo).Path
+        } elseif (Test-Path -LiteralPath $tryExpDir) {
+            $corpusPath = (Resolve-Path -LiteralPath $tryExpDir).Path
+        } elseif (Test-Path -LiteralPath $corpus) {
+            $corpusPath = (Resolve-Path -LiteralPath $corpus).Path
+        } else {
+            # keep as repo-joined for error message, but check existence
+            $corpusPath = $tryRepo
+        }
+    } else {
+        if (Test-Path -LiteralPath $corpus) {
+            $corpusPath = (Resolve-Path -LiteralPath $corpus).Path
+        }
+    }
+
+    if (-not (Test-Path -LiteralPath $corpusPath)) {
+        throw "Corpus file not found: $corpus"
+    }
+
+    $fixtureIds = $null
+    if ($json.PSObject.Properties.Name -contains 'fixture_ids') {
+        $fixtureIds = @($json.fixture_ids)
+        # filter out null/empty entries but keep array
+        $filteredIds = @()
+        foreach ($fid in $fixtureIds) {
+            if (-not [string]::IsNullOrWhiteSpace([string]$fid)) { $filteredIds += [string]$fid }
+        }
+        $fixtureIds = $filteredIds
+        if ($fixtureIds.Count -gt 0) {
+            $csvRows = @()
+            try {
+                $csvRows = @(Import-Csv -LiteralPath $corpusPath -ErrorAction Stop)
+            } catch {
+                throw "Failed to read corpus CSV: $($_.Exception.Message)"
+            }
+            $corpusIds = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+            foreach ($r in $csvRows) {
+                if (-not [string]::IsNullOrWhiteSpace($r.fixture_id)) { [void]$corpusIds.Add([string]$r.fixture_id) }
+            }
+            foreach ($fid in $fixtureIds) {
+                if (-not $corpusIds.Contains([string]$fid)) {
+                    throw "Fixture ID not found in corpus: $fid"
+                }
+            }
+        }
+    }
+
+    $result = [PSCustomObject]@{
+        experiment_id = $experimentId
+        corpus = $corpus
+        corpus_path = $corpusPath
+        profiles = $profiles
+        repetitions = $repetitions
+        concurrency = $concurrency
+        cache_modes = $cacheModes
+        output_root = $outputRoot
+    }
+    if ($null -ne $fixtureIds) {
+        $result | Add-Member -NotePropertyName 'fixture_ids' -NotePropertyValue $fixtureIds
+    }
+    # Also add alias properties for convenience
+    $result | Add-Member -NotePropertyName 'ExperimentId' -NotePropertyValue $experimentId -Force
+    $result | Add-Member -NotePropertyName 'Corpus' -NotePropertyValue $corpus -Force
+    $result | Add-Member -NotePropertyName 'Profiles' -NotePropertyValue $profiles -Force
+    $result | Add-Member -NotePropertyName 'Repetitions' -NotePropertyValue $repetitions -Force
+    $result | Add-Member -NotePropertyName 'Concurrency' -NotePropertyValue $concurrency -Force
+    $result | Add-Member -NotePropertyName 'CacheModes' -NotePropertyValue $cacheModes -Force
+    $result | Add-Member -NotePropertyName 'OutputRoot' -NotePropertyValue $outputRoot -Force
+
+    return $result
+}
+
+Export-ModuleMember -Function Test-KeeFetchCorpus, New-KeeFetchRun, Add-KeeFetchResult, Complete-KeeFetchRun, Read-KeeFetchExperiment

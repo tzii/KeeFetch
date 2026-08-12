@@ -1,0 +1,9 @@
+{
+  "experiment_id": "baseline-v12",
+  "corpus": "KeeFetch.Tests/Fixtures/ProviderCorpus/v1/public-sites.csv",
+  "profiles": ["Fast", "Balanced", "Thorough"],
+  "repetitions": 3,
+  "concurrency": 8,
+  "cache_modes": ["cold", "warm"],
+  "output_root": "eng/benchmark-runs/baseline-v12"
+}

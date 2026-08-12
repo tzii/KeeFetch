@@ -1,0 +1,10 @@
+{
+  "experiment_id": "smoke-one-row",
+  "corpus": "KeeFetch.Tests/Fixtures/ProviderCorpus/v1/public-sites.csv",
+  "fixture_ids": ["pub-001"],
+  "profiles": ["Balanced"],
+  "repetitions": 1,
+  "concurrency": 1,
+  "cache_modes": ["cold"],
+  "output_root": "eng/benchmark-runs/smoke-one-row"
+}

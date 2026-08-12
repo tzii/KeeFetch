@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace KeeFetch.FetchProfiles
 {
@@ -40,6 +41,43 @@ namespace KeeFetch.FetchProfiles
             }
 
             return null;
+        }
+
+        public static List<string> DefaultProviderDisplayOrder
+        {
+            get { return Providers.Select(p => p.DisplayName).ToList(); }
+        }
+
+        public static List<string> NormalizeProviderOrder(IEnumerable<string> raw)
+        {
+            List<string> ordered = new List<string>();
+            HashSet<string> seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (raw != null)
+            {
+                foreach (string entry in raw)
+                {
+                    if (entry == null)
+                        continue;
+                    string trimmed = entry.Trim();
+                    if (string.IsNullOrWhiteSpace(trimmed))
+                        continue;
+
+                    ProviderDefinition found = FindProvider(trimmed);
+                    string canonical = found != null ? found.DisplayName : trimmed;
+
+                    if (seen.Add(canonical))
+                        ordered.Add(canonical);
+                }
+            }
+
+            foreach (ProviderDefinition provider in Providers)
+            {
+                if (seen.Add(provider.DisplayName))
+                    ordered.Add(provider.DisplayName);
+            }
+
+            return ordered;
         }
 
         public static IList<FetchProfileDefinition> ManagedProfiles

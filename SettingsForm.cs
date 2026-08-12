@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Windows.Forms;
+using KeeFetch.FetchProfiles;
 
 namespace KeeFetch
 {
@@ -8,6 +9,23 @@ namespace KeeFetch
     {
         private readonly Configuration config;
         private bool isLoadingSettings;
+
+        private sealed class ProfileComboItem
+        {
+            public ProfileComboItem(string id, string displayName)
+            {
+                Id = id;
+                DisplayName = displayName;
+            }
+
+            public string Id { get; private set; }
+            public string DisplayName { get; private set; }
+
+            public override string ToString()
+            {
+                return DisplayName;
+            }
+        }
 
         public SettingsForm(Configuration config)
         {
@@ -29,7 +47,7 @@ namespace KeeFetch
             numMaxIconSize.Value = config.MaxIconSize;
             txtIconPrefix.Text = config.IconNamePrefix;
 
-            cmbFetchPreset.SelectedItem = config.FetchPresetMode.ToString();
+            SelectProfileComboItem(config.FetchProfileId);
             LoadNetworkAndProviderSettings();
             isLoadingSettings = false;
         }
@@ -41,7 +59,7 @@ namespace KeeFetch
             config.SkipExistingIcons = chkSkipExistingIcons.Checked;
             config.AutoSave = chkAutoSave.Checked;
             config.AllowSelfSignedCerts = chkAllowSelfSigned.Checked;
-            config.FetchPresetMode = GetSelectedPresetMode();
+            config.FetchProfileId = GetSelectedProfileId();
             config.UseThirdPartyFallbacks = chkUseThirdPartyFallbacks.Checked;
             config.AllowSyntheticFallbacks = chkAllowSyntheticFallbacks.Checked;
             config.MaxIconSize = (int)numMaxIconSize.Value;
@@ -128,7 +146,7 @@ namespace KeeFetch
         {
             int index = lstProviderOrder.SelectedIndex;
             bool hasSelection = index >= 0;
-            bool canEditOrder = GetSelectedPresetMode() == FetchPresetMode.Custom;
+            bool canEditOrder = GetSelectedProfileId().Equals("custom", StringComparison.OrdinalIgnoreCase);
 
             btnProviderUp.Enabled = canEditOrder && hasSelection && index > 0;
             btnProviderDown.Enabled = canEditOrder && hasSelection && index < lstProviderOrder.Items.Count - 1;
@@ -137,16 +155,72 @@ namespace KeeFetch
         private void LoadPresetOptions()
         {
             cmbFetchPreset.Items.Clear();
-            cmbFetchPreset.Items.Add(FetchPresetMode.Balanced.ToString());
-            cmbFetchPreset.Items.Add(FetchPresetMode.Fast.ToString());
-            cmbFetchPreset.Items.Add(FetchPresetMode.Thorough.ToString());
-            cmbFetchPreset.Items.Add(FetchPresetMode.Custom.ToString());
+            foreach (FetchProfileDefinition profile in FetchProfileCatalog.ManagedProfiles)
+            {
+                if (profile.IsVisible)
+                    cmbFetchPreset.Items.Add(new ProfileComboItem(profile.Id, profile.DisplayName));
+            }
+
+            cmbFetchPreset.Items.Add(new ProfileComboItem("custom", "Custom"));
+        }
+
+        private string GetSelectedProfileId()
+        {
+            ProfileComboItem selected = cmbFetchPreset.SelectedItem as ProfileComboItem;
+            if (selected != null)
+                return selected.Id;
+            return "custom";
+        }
+
+        private FetchPresetMode GetSelectedPresetMode()
+        {
+            string id = GetSelectedProfileId();
+            if (id.Equals("bulk-fast", StringComparison.OrdinalIgnoreCase)) return FetchPresetMode.Fast;
+            if (id.Equals("everyday", StringComparison.OrdinalIgnoreCase)) return FetchPresetMode.Balanced;
+            if (id.Equals("max-coverage", StringComparison.OrdinalIgnoreCase)) return FetchPresetMode.Thorough;
+            return FetchPresetMode.Custom;
+        }
+
+        private void SelectProfileComboItem(string profileId)
+        {
+            string canonical = string.IsNullOrWhiteSpace(profileId) ? "custom" : profileId.Trim();
+            for (int i = 0; i < cmbFetchPreset.Items.Count; i++)
+            {
+                ProfileComboItem item = cmbFetchPreset.Items[i] as ProfileComboItem;
+                if (item != null && item.Id.Equals(canonical, StringComparison.OrdinalIgnoreCase))
+                {
+                    cmbFetchPreset.SelectedIndex = i;
+                    return;
+                }
+            }
+
+            // Fallback: select Custom
+            for (int i = 0; i < cmbFetchPreset.Items.Count; i++)
+            {
+                ProfileComboItem item = cmbFetchPreset.Items[i] as ProfileComboItem;
+                if (item != null && item.Id.Equals("custom", StringComparison.OrdinalIgnoreCase))
+                {
+                    cmbFetchPreset.SelectedIndex = i;
+                    return;
+                }
+            }
+        }
+
+        private FetchProfileDefinition GetSelectedProfile()
+        {
+            string id = GetSelectedProfileId();
+            if (id.Equals("custom", StringComparison.OrdinalIgnoreCase))
+                return null;
+            try { return FetchProfileCatalog.GetRequiredProfile(id); }
+            catch (InvalidOperationException) { return null; }
         }
 
         private void LoadNetworkAndProviderSettings()
         {
-            var mode = GetSelectedPresetMode();
-            if (mode == FetchPresetMode.Custom)
+            FetchProfileDefinition profile = GetSelectedProfile();
+            bool isCustom = profile == null;
+
+            if (isCustom)
             {
                 chkUseThirdPartyFallbacks.Checked = config.UseThirdPartyFallbacks;
                 chkAllowSyntheticFallbacks.Checked = config.AllowSyntheticFallbacks;
@@ -164,29 +238,43 @@ namespace KeeFetch
             }
             else
             {
-                ApplyPresetToControls(mode);
+                ApplyProfileToControls(profile);
             }
 
-            lblFetchPresetDescription.Text = Configuration.GetPresetDescription(mode);
-            UpdatePresetManagedControlStates(mode);
+            FetchPresetMode legacyMode = GetSelectedPresetMode();
+            lblFetchPresetDescription.Text = Configuration.GetPresetDescription(legacyMode);
+            UpdatePresetManagedControlStates(isCustom);
         }
 
-        private void ApplyPresetToControls(FetchPresetMode mode)
+        private void ApplyProfileToControls(FetchProfileDefinition profile)
         {
-            numTimeout.Value = Configuration.GetPresetTimeout(mode);
-            chkUseThirdPartyFallbacks.Checked = Configuration.GetPresetUseThirdPartyFallbacks(mode);
-            chkAllowSyntheticFallbacks.Checked = Configuration.GetPresetAllowSyntheticFallbacks(mode);
+            numTimeout.Value = Math.Max(5, (profile.PrimaryTimeoutMs + 999) / 1000);
+            chkUseThirdPartyFallbacks.Checked = true;
+            chkAllowSyntheticFallbacks.Checked = profile.AllowSyntheticFallbacks;
 
-            chkProviderDirectSite.Checked = Configuration.IsProviderEnabledByPreset(mode, "Direct Site");
-            chkProviderTwentyIcons.Checked = Configuration.IsProviderEnabledByPreset(mode, "Twenty Icons");
-            chkProviderDuckDuckGo.Checked = Configuration.IsProviderEnabledByPreset(mode, "DuckDuckGo");
-            chkProviderGoogle.Checked = Configuration.IsProviderEnabledByPreset(mode, "Google");
-            chkProviderYandex.Checked = Configuration.IsProviderEnabledByPreset(mode, "Yandex");
-            chkProviderFavicone.Checked = Configuration.IsProviderEnabledByPreset(mode, "Favicone");
-            chkProviderIconHorse.Checked = Configuration.IsProviderEnabledByPreset(mode, "Icon Horse");
+            chkProviderDirectSite.Checked = false;
+            chkProviderTwentyIcons.Checked = false;
+            chkProviderDuckDuckGo.Checked = false;
+            chkProviderGoogle.Checked = false;
+            chkProviderYandex.Checked = false;
+            chkProviderFavicone.Checked = false;
+            chkProviderIconHorse.Checked = false;
+
+            foreach (string pid in profile.ProviderIds)
+            {
+                ProviderDefinition p = FetchProfileCatalog.FindProvider(pid);
+                string name = p != null ? p.DisplayName : pid;
+                if (name.Equals("Direct Site", StringComparison.OrdinalIgnoreCase)) chkProviderDirectSite.Checked = true;
+                else if (name.Equals("Twenty Icons", StringComparison.OrdinalIgnoreCase)) chkProviderTwentyIcons.Checked = true;
+                else if (name.Equals("DuckDuckGo", StringComparison.OrdinalIgnoreCase)) chkProviderDuckDuckGo.Checked = true;
+                else if (name.Equals("Google", StringComparison.OrdinalIgnoreCase)) chkProviderGoogle.Checked = true;
+                else if (name.Equals("Yandex", StringComparison.OrdinalIgnoreCase)) chkProviderYandex.Checked = true;
+                else if (name.Equals("Favicone", StringComparison.OrdinalIgnoreCase)) chkProviderFavicone.Checked = true;
+                else if (name.Equals("Icon Horse", StringComparison.OrdinalIgnoreCase)) chkProviderIconHorse.Checked = true;
+            }
 
             lstProviderOrder.Items.Clear();
-            foreach (string provider in GetProviderDisplayOrderForMode(mode))
+            foreach (string provider in GetProviderDisplayOrderForMode(GetSelectedPresetMode()))
                 lstProviderOrder.Items.Add(provider);
 
             if (lstProviderOrder.Items.Count > 0)
@@ -195,10 +283,8 @@ namespace KeeFetch
             UpdateProviderOrderButtons();
         }
 
-        private void UpdatePresetManagedControlStates(FetchPresetMode mode)
+        private void UpdatePresetManagedControlStates(bool isCustom)
         {
-            bool isCustom = mode == FetchPresetMode.Custom;
-
             grpProviders.Text = isCustom
                 ? "Provider Controls"
                 : "Provider Controls (preset managed)";
@@ -223,25 +309,19 @@ namespace KeeFetch
             UpdateProviderOrderButtons();
         }
 
-        private FetchPresetMode GetSelectedPresetMode()
-        {
-            if (cmbFetchPreset.SelectedItem == null)
-                return FetchPresetMode.Custom;
-
-            string selected = cmbFetchPreset.SelectedItem.ToString();
-            FetchPresetMode parsed;
-            if (Enum.TryParse(selected, true, out parsed))
-                return parsed;
-            return FetchPresetMode.Custom;
-        }
-
         private System.Collections.Generic.List<string> GetProviderOrderForSelectedMode()
         {
-            var mode = GetSelectedPresetMode();
-            if (mode == FetchPresetMode.Custom)
-                return new System.Collections.Generic.List<string>(FaviconDownloader.DefaultProviderOrder);
+            FetchProfileDefinition profile = GetSelectedProfile();
+            if (profile == null)
+                return new System.Collections.Generic.List<string>(FetchProfileCatalog.DefaultProviderDisplayOrder);
+            var list = new System.Collections.Generic.List<string>();
+            foreach (string pid in profile.ProviderIds)
+            {
+                ProviderDefinition found = FetchProfileCatalog.FindProvider(pid);
+                list.Add(found != null ? found.DisplayName : pid);
+            }
 
-            return Configuration.GetPresetProviderOrderList(mode);
+            return list;
         }
 
         private System.Collections.Generic.List<string> GetProviderDisplayOrderForMode(FetchPresetMode mode)
@@ -253,7 +333,7 @@ namespace KeeFetch
                     displayOrder.Add(provider);
             }
 
-            foreach (string provider in FaviconDownloader.DefaultProviderOrder)
+            foreach (string provider in FetchProfileCatalog.DefaultProviderDisplayOrder)
             {
                 if (!displayOrder.Contains(provider))
                     displayOrder.Add(provider);

@@ -8,6 +8,7 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using KeeFetch.FetchProfiles;
 using KeeFetch.IconProviders;
 using KeeFetch.IconSelection;
 
@@ -32,13 +33,13 @@ namespace KeeFetch
         private static readonly Dictionary<string, Func<IIconProvider>> ProviderFactories =
             new Dictionary<string, Func<IIconProvider>>(StringComparer.OrdinalIgnoreCase)
             {
-                { "Direct Site", () => new DirectSiteProvider() },
-                { "Twenty Icons", () => new TwentyIconsProvider() },
-                { "DuckDuckGo", () => new DuckDuckGoProvider() },
-                { "Google", () => new GoogleProvider() },
-                { "Yandex", () => new YandexProvider() },
-                { "Favicone", () => new FaviconeProvider() },
-                { "Icon Horse", () => new IconHorseProvider() }
+                { "direct-site", () => new DirectSiteProvider() },
+                { "twenty-icons", () => new TwentyIconsProvider() },
+                { "duckduckgo", () => new DuckDuckGoProvider() },
+                { "google", () => new GoogleProvider() },
+                { "yandex", () => new YandexProvider() },
+                { "favicone", () => new FaviconeProvider() },
+                { "icon-horse", () => new IconHorseProvider() }
             };
 
         private static readonly object certLock = new object();
@@ -462,33 +463,36 @@ namespace KeeFetch
 
         private List<IIconProvider> BuildProviderPipeline(bool isPrivateTarget)
         {
-            var orderedNames = GetConfiguredProviderOrder();
-            var allNames = new List<string>();
+            List<string> orderedNames = GetConfiguredProviderOrder();
+            List<string> allNames = new List<string>();
+            if (orderedNames != null) allNames.AddRange(orderedNames);
+            // Legacy fallback — if no profile is configured, include all catalog providers
+            foreach (ProviderDefinition p in FetchProfileCatalog.Providers)
+                allNames.Add(p.Id);
 
-            if (orderedNames != null)
-                allNames.AddRange(orderedNames);
+            HashSet<string> seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            List<IIconProvider> orderedProviders = new List<IIconProvider>();
 
-            foreach (var provider in DefaultProviderOrder)
-                allNames.Add(provider);
-
-            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var orderedProviders = new List<IIconProvider>();
-
-            foreach (string providerName in allNames)
+            foreach (string entry in allNames)
             {
-                if (string.IsNullOrWhiteSpace(providerName))
+                if (string.IsNullOrWhiteSpace(entry))
                     continue;
-                if (!seen.Add(providerName))
+
+                // Convert display names / ids at boundaries to stable id
+                ProviderDefinition found = FetchProfileCatalog.FindProvider(entry);
+                string id = found != null ? found.Id : entry;
+
+                if (!seen.Add(id))
                     continue;
 
                 Func<IIconProvider> factory;
-                if (!ProviderFactories.TryGetValue(providerName, out factory))
+                if (!ProviderFactories.TryGetValue(id, out factory))
                     continue;
 
-                if (!IsProviderEnabledForCurrentMode(providerName))
+                if (!IsProviderEnabledForCurrentMode(id))
                     continue;
 
-                var provider = factory();
+                IIconProvider provider = factory();
                 if (provider.Capabilities.IsThirdParty && !config.UseThirdPartyFallbacks)
                     continue;
 
@@ -498,9 +502,9 @@ namespace KeeFetch
                 orderedProviders.Add(provider);
             }
 
-            var active = new List<IIconProvider>();
-            var cooledDown = new List<IIconProvider>();
-            foreach (var provider in orderedProviders)
+            List<IIconProvider> active = new List<IIconProvider>();
+            List<IIconProvider> cooledDown = new List<IIconProvider>();
+            foreach (IIconProvider provider in orderedProviders)
             {
                 if (IsProviderInCooldown(provider.Name))
                     cooledDown.Add(provider);
@@ -514,23 +518,62 @@ namespace KeeFetch
 
         private List<string> GetConfiguredProviderOrder()
         {
-            if (config == null || config.FetchPresetMode == FetchPresetMode.Custom)
-                return config != null
-                    ? config.GetProviderOrderList()
-                    : new List<string>(DefaultProviderOrder);
+            if (config == null)
+                return new List<string>(FetchProfileCatalog.DefaultProviderDisplayOrder);
 
-            return Configuration.GetPresetProviderOrderList(config.FetchPresetMode);
+            bool isCustom = string.Equals(config.FetchProfileId, "custom", StringComparison.OrdinalIgnoreCase);
+            if (isCustom)
+                return config.GetProviderOrderList();
+
+            try
+            {
+                FetchProfileDefinition profile = FetchProfileCatalog.GetRequiredProfile(config.FetchProfileId);
+                List<string> order = new List<string>();
+                foreach (string pid in profile.ProviderIds)
+                    order.Add(pid);
+                return order;
+            }
+            catch (InvalidOperationException)
+            {
+                return config != null ? config.GetProviderOrderList() : new List<string>(FetchProfileCatalog.DefaultProviderDisplayOrder);
+            }
         }
 
-        private bool IsProviderEnabledForCurrentMode(string providerName)
+        private bool IsProviderEnabledForCurrentMode(string providerIdOrName)
         {
             if (config == null)
                 return true;
 
-            if (config.FetchPresetMode == FetchPresetMode.Custom)
-                return config.IsProviderEnabled(providerName);
+            bool isCustom = string.Equals(config.FetchProfileId, "custom", StringComparison.OrdinalIgnoreCase);
+            if (isCustom)
+            {
+                ProviderDefinition found = FetchProfileCatalog.FindProvider(providerIdOrName);
+                string displayName = found != null ? found.DisplayName : providerIdOrName;
+                return config.IsProviderEnabled(displayName);
+            }
 
-            return Configuration.IsProviderEnabledByPreset(config.FetchPresetMode, providerName);
+            try
+            {
+                FetchProfileDefinition profile = FetchProfileCatalog.GetRequiredProfile(config.FetchProfileId);
+                foreach (string pid in profile.ProviderIds)
+                    if (pid.Equals(providerIdOrName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+
+                // Also support display-name lookup for backwards compat
+                ProviderDefinition foundLookup = FetchProfileCatalog.FindProvider(providerIdOrName);
+                string canonicalId = foundLookup != null ? foundLookup.Id : providerIdOrName;
+                foreach (string pid in profile.ProviderIds)
+                    if (pid.Equals(canonicalId, StringComparison.OrdinalIgnoreCase))
+                        return true;
+
+                return false;
+            }
+            catch (InvalidOperationException)
+            {
+                ProviderDefinition found2 = FetchProfileCatalog.FindProvider(providerIdOrName);
+                string displayName2 = found2 != null ? found2.DisplayName : providerIdOrName;
+                return config.IsProviderEnabled(displayName2);
+            }
         }
 
         private bool IsProviderInCooldown(string providerName)
@@ -606,10 +649,12 @@ namespace KeeFetch
             if (config == null)
                 return DefaultMaxCumulativeTimeoutMs;
 
-            if (config.FetchPresetMode == FetchPresetMode.Custom)
+            bool isCustom = string.Equals(config.FetchProfileId, "custom", StringComparison.OrdinalIgnoreCase);
+            if (isCustom)
                 return DefaultMaxCumulativeTimeoutMs;
 
-            return Configuration.GetPresetMaxCumulativeTimeoutMs(config.FetchPresetMode);
+            try { return FetchProfileCatalog.GetRequiredProfile(config.FetchProfileId).CumulativeTimeoutMs; }
+            catch (InvalidOperationException) { return DefaultMaxCumulativeTimeoutMs; }
         }
 
         private int GetProviderTimeout(IIconProvider provider, int requestedTimeoutMs, int remainingMs)
@@ -630,10 +675,12 @@ namespace KeeFetch
             if (config == null)
                 return DefaultPrimaryProviderTimeoutMs;
 
-            if (config.FetchPresetMode == FetchPresetMode.Custom)
+            bool isCustom = string.Equals(config.FetchProfileId, "custom", StringComparison.OrdinalIgnoreCase);
+            if (isCustom)
                 return DefaultPrimaryProviderTimeoutMs;
 
-            return Configuration.GetPresetPrimaryProviderTimeoutMs(config.FetchPresetMode);
+            try { return FetchProfileCatalog.GetRequiredProfile(config.FetchProfileId).PrimaryTimeoutMs; }
+            catch (InvalidOperationException) { return DefaultPrimaryProviderTimeoutMs; }
         }
 
         private int GetFallbackProviderTimeoutMs()
@@ -641,10 +688,12 @@ namespace KeeFetch
             if (config == null)
                 return DefaultFallbackProviderTimeoutMs;
 
-            if (config.FetchPresetMode == FetchPresetMode.Custom)
+            bool isCustom = string.Equals(config.FetchProfileId, "custom", StringComparison.OrdinalIgnoreCase);
+            if (isCustom)
                 return DefaultFallbackProviderTimeoutMs;
 
-            return Configuration.GetPresetFallbackProviderTimeoutMs(config.FetchPresetMode);
+            try { return FetchProfileCatalog.GetRequiredProfile(config.FetchProfileId).FallbackTimeoutMs; }
+            catch (InvalidOperationException) { return DefaultFallbackProviderTimeoutMs; }
         }
 
         private static IconRequest CloneRequest(IconRequest source, int timeoutMs)

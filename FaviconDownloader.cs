@@ -196,7 +196,7 @@ namespace KeeFetch
             token.ThrowIfCancellationRequested();
             var stopwatch = Stopwatch.StartNew();
 
-            int timeoutMs = Math.Max(5000, config.Timeout * 1000);
+            int timeoutMs = GetEffectiveTimeoutMs();
             int maxSize = config.MaxIconSize;
 
             if (AndroidAppMapper.IsAndroidUrl(url))
@@ -284,7 +284,7 @@ namespace KeeFetch
 
             var collection = await CollectCandidatesAsync(request, isPrivate, token).ConfigureAwait(false);
             var selection = selector.Select(collection.Candidates, collection.AttemptedProviders,
-                config.AllowSyntheticFallbacks);
+                GetEffectiveAllowSyntheticFallbacks());
             var result = BuildResultFromSelection(selection, host, cacheKey, maxSize);
             result.ProviderMetrics = collection.ProviderMetrics;
             return result;
@@ -366,7 +366,7 @@ namespace KeeFetch
                 cacheKey = "androidapp://" + packageName.ToLowerInvariant();
 
             var selection = selector.Select(combinedCandidates, attemptedProviders,
-                config.AllowSyntheticFallbacks);
+                GetEffectiveAllowSyntheticFallbacks());
             var result = BuildResultFromSelection(selection, hostForResult, cacheKey, maxSize);
             result.ProviderMetrics = providerMetrics;
             return result;
@@ -493,7 +493,8 @@ namespace KeeFetch
                     continue;
 
                 IIconProvider provider = factory();
-                if (provider.Capabilities.IsThirdParty && !config.UseThirdPartyFallbacks)
+                bool isCustomForThirdParty = config != null && string.Equals(config.FetchProfileId, "custom", StringComparison.OrdinalIgnoreCase);
+                if (isCustomForThirdParty && provider.Capabilities.IsThirdParty && !config.UseThirdPartyFallbacks)
                     continue;
 
                 if (isPrivateTarget && !provider.Capabilities.AllowPrivateHosts)
@@ -694,6 +695,28 @@ namespace KeeFetch
 
             try { return FetchProfileCatalog.GetRequiredProfile(config.FetchProfileId).FallbackTimeoutMs; }
             catch (InvalidOperationException) { return DefaultFallbackProviderTimeoutMs; }
+        }
+
+        private int GetEffectiveTimeoutMs()
+        {
+            if (config == null)
+                return DefaultMaxCumulativeTimeoutMs;
+            bool isCustom = string.Equals(config.FetchProfileId, "custom", StringComparison.OrdinalIgnoreCase);
+            if (isCustom)
+                return Math.Max(5000, config.Timeout * 1000);
+            try { return FetchProfileCatalog.GetRequiredProfile(config.FetchProfileId).CumulativeTimeoutMs; }
+            catch (InvalidOperationException) { return Math.Max(5000, config.Timeout * 1000); }
+        }
+
+        private bool GetEffectiveAllowSyntheticFallbacks()
+        {
+            if (config == null)
+                return false;
+            bool isCustom = string.Equals(config.FetchProfileId, "custom", StringComparison.OrdinalIgnoreCase);
+            if (isCustom)
+                return config.AllowSyntheticFallbacks;
+            try { return FetchProfileCatalog.GetRequiredProfile(config.FetchProfileId).AllowSyntheticFallbacks; }
+            catch (InvalidOperationException) { return config.AllowSyntheticFallbacks; }
         }
 
         private static IconRequest CloneRequest(IconRequest source, int timeoutMs)

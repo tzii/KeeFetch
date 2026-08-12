@@ -31,6 +31,23 @@ namespace KeeFetch.Tests
             Assert.IsTrue(groups.Contains("08 Bulk / Concurrency"));
         }
 
+        [TestMethod]
+        public void RegressionFixtures_AllFourFilesPresent()
+        {
+            string[] files = new[]
+            {
+                FixturePath("Regression", "KeeFetch-Test-Database.kdbx"),
+                FixturePath("Regression", "KeeFetch-Test-Database.xml"),
+                FixturePath("Regression", "KeeFetch-Test-Manifest.csv"),
+                FixturePath("Regression", "KeeFetch-Test-README.txt")
+            };
+            foreach (string file in files)
+            {
+                Assert.IsTrue(File.Exists(file), "Missing fixture file: " + file);
+                Assert.IsTrue(new FileInfo(file).Length > 0, "Fixture file is empty: " + file);
+            }
+        }
+
         private static string FixturePath(params string[] parts)
         {
             string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Fixtures");

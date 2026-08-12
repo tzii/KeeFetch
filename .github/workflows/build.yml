@@ -84,6 +84,7 @@ jobs:
           Copy-Item -Path "SettingsForm.resx" -Destination $plgxSrc
           Copy-Item -Path "Properties" -Destination $plgxSrc -Recurse
           Copy-Item -Path "IconProviders" -Destination $plgxSrc -Recurse
+          Copy-Item -Path "FetchProfiles" -Destination $plgxSrc -Recurse
           Copy-Item -Path "IconSelection" -Destination $plgxSrc -Recurse
           Copy-Item -Path "Assets" -Destination $plgxSrc -Recurse
 
@@ -98,7 +99,12 @@ jobs:
             "Properties\AssemblyInfo.cs", "KeeFetch.csproj",
             "IconSelection\IconSelector.cs", "IconSelection\IconCandidate.cs",
             "Assets\Icons\keefetch-app.png", "Assets\Icons\keefetch-download.png",
-            "Assets\Icons\keefetch-settings.png"
+            "Assets\Icons\keefetch-settings.png",
+            "FetchProfiles\ProviderDefinition.cs",
+            "FetchProfiles\FetchProfileCatalog.cs",
+            "FetchProfiles\FetchProfileDefinition.cs",
+            "FetchProfiles\FetchProfileCatalog.Generated.cs",
+            "FetchProfiles\LegacyProfileMigration.cs",
           )
           $missing = $expectedFiles | Where-Object { !(Test-Path (Join-Path $plgxSrc $_)) }
           if ($missing) {

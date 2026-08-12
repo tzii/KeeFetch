@@ -807,4 +807,112 @@ function Read-KeeFetchExperiment {
     return $result
 }
 
-Export-ModuleMember -Function Test-KeeFetchCorpus, New-KeeFetchRun, Add-KeeFetchResult, Complete-KeeFetchRun, Read-KeeFetchExperiment
+function Open-KeeFetchRun {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)][string]$RunDirectory,
+        [Parameter(Mandatory=$false)][string]$ExperimentId = "",
+        [Parameter(Mandatory=$false)][string[]]$Profiles = @(),
+        [Parameter(Mandatory=$false)][string]$CacheMode = "",
+        [Parameter(Mandatory=$false)][int]$Concurrency = -1,
+        [Parameter(Mandatory=$false)][string]$CorpusPath = "",
+        [Parameter(Mandatory=$false)][string[]]$CacheModes = @()
+    )
+
+    $resolvedDir = $RunDirectory
+    if (-not [System.IO.Path]::IsPathRooted($resolvedDir)) {
+        $candidate = Join-Path (Get-Location).Path $resolvedDir
+        if (Test-Path -LiteralPath $candidate) {
+            $resolvedDir = (Resolve-Path -LiteralPath $candidate).Path
+        }
+    } else {
+        if (Test-Path -LiteralPath $resolvedDir) {
+            $itemCheck = Get-Item -LiteralPath $resolvedDir -ErrorAction SilentlyContinue
+            if ($null -ne $itemCheck -and -not $itemCheck.PSIsContainer) {
+                $resolvedDir = Split-Path -Parent $resolvedDir
+            } else {
+                $resolvedDir = (Resolve-Path -LiteralPath $resolvedDir).Path
+            }
+        }
+    }
+    # If still a file path (results.ndjson), resolve to directory
+    if (Test-Path -LiteralPath $resolvedDir) {
+        $item = Get-Item -LiteralPath $resolvedDir -ErrorAction SilentlyContinue
+        if ($null -ne $item -and -not $item.PSIsContainer) {
+            $resolvedDir = Split-Path -Parent $resolvedDir
+        }
+    }
+    if (-not (Test-Path -LiteralPath $resolvedDir)) {
+        throw "RunDirectory does not exist: $RunDirectory"
+    }
+    $runJsonPath = Join-Path $resolvedDir "run.json"
+    if (-not (Test-Path -LiteralPath $runJsonPath)) {
+        throw "run.json not found in run directory: $resolvedDir"
+    }
+    $meta = $null
+    try {
+        $meta = Get-Content -Raw -LiteralPath $runJsonPath | ConvertFrom-Json
+    } catch {
+        throw "Failed to read run.json: $($_.Exception.Message)"
+    }
+    # Validate experiment_id if provided
+    if (-not [string]::IsNullOrWhiteSpace($ExperimentId)) {
+        $metaExp = ""
+        if ($meta.PSObject.Properties.Name -contains 'experiment_id') { $metaExp = [string]$meta.experiment_id }
+        if ($metaExp -ne $ExperimentId) {
+            throw "Resume experiment_id mismatch: expected '$ExperimentId' but run is '$metaExp'."
+        }
+    }
+    # Validate profiles if provided
+    if ($Profiles.Count -gt 0) {
+        $metaProfiles = @()
+        if ($meta.PSObject.Properties.Name -contains 'profiles') { $metaProfiles = @($meta.profiles) }
+        foreach ($p in $Profiles) {
+            $found = $false
+            foreach ($mp in $metaProfiles) { if ([string]$mp -eq [string]$p) { $found = $true; break } }
+            if (-not $found) {
+                throw "Resume profile mismatch: '$p' not found in run profiles ($($metaProfiles -join ',')) . "
+            }
+        }
+    }
+    # Validate cache_mode if provided
+    if (-not [string]::IsNullOrWhiteSpace($CacheMode)) {
+        $metaCache = ""
+        if ($meta.PSObject.Properties.Name -contains 'cache_mode') { $metaCache = [string]$meta.cache_mode }
+        if ($metaCache -ne $CacheMode) {
+            throw "Resume cache_mode mismatch: expected '$CacheMode' but run has '$metaCache'."
+        }
+    }
+    # Validate concurrency if provided
+    if ($Concurrency -ge 0) {
+        $metaConc = -1
+        if ($meta.PSObject.Properties.Name -contains 'concurrency') { try { $metaConc = [int]$meta.concurrency } catch {} }
+        if ($metaConc -ge 0 -and $metaConc -ne $Concurrency) {
+            throw "Resume concurrency mismatch: expected $Concurrency but run has $metaConc."
+        }
+    }
+    # Ensure results.ndjson exists
+    $resultsPath = Join-Path $resolvedDir "results.ndjson"
+    if (-not (Test-Path -LiteralPath $resultsPath)) {
+        $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+        [System.IO.File]::WriteAllText($resultsPath, "", $utf8NoBom)
+    }
+    $runId = ""
+    if ($meta.PSObject.Properties.Name -contains 'run_id') { $runId = [string]$meta.run_id }
+    elseif ($meta.PSObject.Properties.Name -contains 'runId') { $runId = [string]$meta.runId }
+    else { $runId = [System.IO.Path]::GetFileName($resolvedDir) }
+
+    $result = [PSCustomObject]@{
+        RunId = $runId
+        Directory = $resolvedDir
+        RunJsonPath = $runJsonPath
+        ResultsPath = $resultsPath
+        Metadata = $meta
+    }
+    $result | Add-Member -NotePropertyName "run_id" -NotePropertyValue $runId -Force
+    $result | Add-Member -NotePropertyName "directory" -NotePropertyValue $resolvedDir -Force
+    $result | Add-Member -NotePropertyName "OutputRoot" -NotePropertyValue $resolvedDir -ErrorAction SilentlyContinue
+    return $result
+}
+
+Export-ModuleMember -Function Test-KeeFetchCorpus, New-KeeFetchRun, Add-KeeFetchResult, Complete-KeeFetchRun, Read-KeeFetchExperiment, Open-KeeFetchRun

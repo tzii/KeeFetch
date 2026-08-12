@@ -75,7 +75,7 @@ try {
     catch { $emptyRejected = $_.Exception.Message -match 'Quota mismatch|below minimum_total' }
     if (-not $emptyRejected) { throw 'Empty/small corpus was accepted (minimum_total enforcement missing).' }
 
-    # Test 5: checkpointed row-level benchmark output (Task 4) — fake data, no network
+    # Test 5: checkpointed row-level benchmark output (Task 4) â€” fake data, no network
     $benchRoot = Join-Path $temp 'bench-runs'
     New-Item -ItemType Directory -Path $benchRoot -Force | Out-Null
     $run = New-KeeFetchRun -OutputRoot $benchRoot -ExperimentId 'self-test' -CorpusVersion 'v1' -Concurrency 8 -CacheMode 'cold'

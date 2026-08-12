@@ -46,6 +46,9 @@ if (-not [System.IO.Path]::IsPathRooted($experimentPath)) {
 
 $experiment = Read-KeeFetchExperiment -ExperimentPath $experimentPath
 
+# Load candidate map for custom-config authority (profile-candidates-v13 etc.)
+Load-CandidateMap -ExperimentJsonPath $experimentPath
+
 # Resolve corpus and output root
 $corpusPath = $experiment.corpus_path
 if ([string]::IsNullOrWhiteSpace($corpusPath)) {
@@ -196,6 +199,138 @@ $downloadMethod = $downloaderType.GetMethod("DownloadAsync", [Type[]] @([string]
 $clearCacheMethod = $downloaderType.GetMethod("ClearCache",
     [Reflection.BindingFlags] "Static, Public, NonPublic")
 
+#region Candidate Authority
+# All benchmark candidates are CUSTOM configurations with explicit providerIds/order + timeouts + synthetic.
+# Do NOT map candidate ids (cand-*) to managed profile IDs (bulk-fast/everyday/privacy/max-coverage) or FetchPresetMode.
+# New-ConfigForProfile for candidates MUST use the custom path via New-CustomConfigForCandidate.
+# Managed profiles are only winners; candidates are experiment scaffolding.
+#endregion
+
+$script:candidateMap = @{}
+
+function Load-CandidateMap {
+    param([string]$ExperimentJsonPath)
+    $script:candidateMap = @{}
+    try {
+        $raw = Get-Content -Raw -LiteralPath $ExperimentJsonPath | ConvertFrom-Json
+        if ($raw.PSObject.Properties.Name -contains "candidates") {
+            foreach ($c in @($raw.candidates)) {
+                $cid = ""
+                if ($c.PSObject.Properties.Name -contains "id") { $cid = [string]$c.id }
+                if ([string]::IsNullOrWhiteSpace($cid)) { continue }
+                $script:candidateMap[$cid] = $c
+            }
+        }
+    } catch {
+    }
+}
+
+function New-CustomConfigForCandidate {
+    param(
+        [Parameter(Mandatory=$true)][string]$CandidateId,
+        [Parameter(Mandatory=$true)][object]$CandidateDef
+    )
+    # Constructs a CUSTOM Configuration with explicit providerIds/order + timeouts + synthetic.
+    # This is the ONLY path for benchmark candidates. Do not use FetchPresetMode or managed profile lookup.
+
+    $ace = New-Object KeePass.App.Configuration.AceCustomConfig
+    $config = New-Object KeeFetch.Configuration -ArgumentList $ace
+
+    # Force custom mode
+    $config.FetchProfileId = "custom"
+
+    # Resolve provider ids array
+    $ids = @()
+    if ($CandidateDef.PSObject.Properties.Name -contains "providerIds") { $ids = @($CandidateDef.providerIds) }
+    elseif ($CandidateDef.PSObject.Properties.Name -contains "provider_ids") { $ids = @($CandidateDef.provider_ids) }
+    if ($ids.Count -eq 0) { $ids = @("direct-site") }
+
+    # Normalize to display names for Configuration
+    $displayOrder = @()
+    foreach ($rawId in $ids) {
+        $trim = ([string]$rawId).Trim()
+        if ([string]::IsNullOrWhiteSpace($trim)) { continue }
+        # Try to map stable id to display name via catalog if available, else keep as-is
+        $found = $null
+        try {
+            $catalogType = [KeeFetch.FetchProfiles.FetchProfileCatalog]
+            $found = $catalogType::FindProvider($trim)
+        } catch {
+            $found = $null
+        }
+        if ($null -ne $found) {
+            $displayOrder += $found.DisplayName
+        } else {
+            # fallback: title-case mapping for known ids
+            switch ($trim.ToLowerInvariant()) {
+                "direct-site" { $displayOrder += "Direct Site" }
+                "twenty-icons" { $displayOrder += "Twenty Icons" }
+                "duckduckgo" { $displayOrder += "DuckDuckGo" }
+                "google" { $displayOrder += "Google" }
+                "yandex" { $displayOrder += "Yandex" }
+                "favicone" { $displayOrder += "Favicone" }
+                "icon-horse" { $displayOrder += "Icon Horse" }
+                default { $displayOrder += $trim }
+            }
+        }
+    }
+
+    # ProviderOrder is explicit order
+    $config.ProviderOrder = [string]::Join(",", $displayOrder)
+
+    # Enable only candidate providers
+    $enabledSet = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    foreach ($d in $displayOrder) { [void]$enabledSet.Add($d) }
+    foreach ($providerName in $providerNames) {
+        $enabled = $enabledSet.Contains($providerName)
+        $config.SetProviderEnabled($providerName, $enabled)
+    }
+
+    # Synthetic flag explicit
+    $allowSyn = $false
+    if ($CandidateDef.PSObject.Properties.Name -contains "allowSynthetic") {
+        try { $allowSyn = [bool]$CandidateDef.allowSynthetic } catch { $allowSyn = $false }
+    }
+    $config.AllowSyntheticFallbacks = $allowSyn
+
+    # Third-party fallback flag: true if any non-direct provider enabled
+    $hasThird = $false
+    foreach ($d in $displayOrder) {
+        if (-not $d.Equals("Direct Site", [StringComparison]::OrdinalIgnoreCase)) { $hasThird = $true; break }
+    }
+    $config.UseThirdPartyFallbacks = $hasThird
+
+    # Timeouts: map cumulative to Configuration.Timeout (seconds), and store primary/fallback/cumulative
+    # in AceCustomConfig for potential harness use. FaviconDownloader custom defaults are overridden
+    # only via these stored values when FetchProfileId=custom.
+    $primary = 6000
+    $fallback = 3500
+    $cumulative = 22000
+    if ($CandidateDef.PSObject.Properties.Name -contains "primaryTimeout") { try { $primary = [int]$CandidateDef.primaryTimeout } catch {} }
+    if ($CandidateDef.PSObject.Properties.Name -contains "fallbackTimeout") { try { $fallback = [int]$CandidateDef.fallbackTimeout } catch {} }
+    if ($CandidateDef.PSObject.Properties.Name -contains "cumulativeTimeout") { try { $cumulative = [int]$CandidateDef.cumulativeTimeout } catch {} }
+    # Also support Ms-suffixed names
+    if ($CandidateDef.PSObject.Properties.Name -contains "primaryTimeoutMs") { try { $primary = [int]$CandidateDef.primaryTimeoutMs } catch {} }
+    if ($CandidateDef.PSObject.Properties.Name -contains "fallbackTimeoutMs") { try { $fallback = [int]$CandidateDef.fallbackTimeoutMs } catch {} }
+    if ($CandidateDef.PSObject.Properties.Name -contains "cumulativeTimeoutMs") { try { $cumulative = [int]$CandidateDef.cumulativeTimeoutMs } catch {} }
+
+    $config.Timeout = [Math]::Max(5, [Math]::Min(60, [int]([Math]::Ceiling($cumulative / 1000.0))))
+    # Persist explicit budgets for harness inspection (not used by production FaviconDownloader custom defaults yet,
+    # but available for benchmark-presets to honor without guessing)
+    $ace.SetLong("KeeFetch.CustomPrimaryTimeoutMs", $primary)
+    $ace.SetLong("KeeFetch.CustomFallbackTimeoutMs", $fallback)
+    $ace.SetLong("KeeFetch.CustomCumulativeTimeoutMs", $cumulative)
+    $ace.SetString("KeeFetch.CustomCandidateId", $CandidateId)
+
+    return [PSCustomObject]@{
+        Name = $CandidateId
+        Config = $config
+        BaseMode = "Custom"
+        CandidateDef = $CandidateDef
+        IsCandidate = $true
+    }
+}
+
 function Get-ProfileDefinition {
     param([string]$ProfileName)
 
@@ -267,6 +402,20 @@ function Get-ProfileDefinition {
 
 function New-ConfigForProfile {
     param([string]$ProfileName)
+
+    # CANDIDATE AUTHORITY: candidate ids (cand-*) must use custom path with explicit providerIds/timeouts/synthetic, not managed profile mapping.
+    # If caller passes a candidate id, prefer custom candidate path when available in $script:candidateMap.
+    if ($ProfileName.ToLowerInvariant().StartsWith("cand-")) {
+        if ($script:candidateMap.ContainsKey($ProfileName)) {
+            return New-CustomConfigForCandidate -CandidateId $ProfileName -CandidateDef $script:candidateMap[$ProfileName]
+        }
+        # Unknown cand-* id with no map loaded: construct a would-be custom config and throw with guidance
+        throw "Unknown benchmark candidate '$ProfileName'. Candidates must be defined as CUSTOM configs with explicit providerIds/timeouts/synthetic via New-CustomConfigForCandidate, not as managed profile IDs. Ensure Load-CandidateMap was called for the experiment file."
+    }
+    # Also handle candidate ids that are keys in candidateMap even without cand- prefix
+    if ($script:candidateMap.ContainsKey($ProfileName)) {
+        return New-CustomConfigForCandidate -CandidateId $ProfileName -CandidateDef $script:candidateMap[$ProfileName]
+    }
 
     $definition = Get-ProfileDefinition -ProfileName $ProfileName
 

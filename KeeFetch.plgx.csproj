@@ -34,6 +34,12 @@
     <Compile Include="SettingsForm.Designer.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <!-- FetchProfiles folder -->
+    <Compile Include="FetchProfiles\ProviderDefinition.cs" />
+    <Compile Include="FetchProfiles\FetchProfileCatalog.cs" />
+    <Compile Include="FetchProfiles\FetchProfileDefinition.cs" />
+    <Compile Include="FetchProfiles\FetchProfileCatalog.Generated.cs" />
+    <Compile Include="FetchProfiles\LegacyProfileMigration.cs" />
     <!-- IconProviders folder -->
     <Compile Include="IconProviders\DirectSiteProvider.cs" />
     <Compile Include="IconProviders\DuckDuckGoProvider.cs" />

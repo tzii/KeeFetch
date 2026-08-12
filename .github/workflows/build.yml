@@ -52,7 +52,7 @@ jobs:
       - name: Verify C# 5 compatibility
         shell: pwsh
         run: |
-          dotnet build KeeFetch.csproj --configuration Release `
+          dotnet build KeeFetch.csproj --configuration Release --no-restore `
             -p:KeePassPath="$env:KEEPASS_DIR" `
             -p:LangVersion=5 `
             -warnaserror
@@ -63,6 +63,15 @@ jobs:
           dotnet build KeeFetch.Tests/KeeFetch.Tests.csproj --configuration Release --no-restore -p:KeePassPath="$env:KEEPASS_DIR"
           Copy-Item -Path "$env:KEEPASS_DIR\KeePass.exe" -Destination "KeeFetch.Tests\bin\Release\net48\"
           dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj --configuration Release --no-build
+
+      - name: Validate benchmark harness and corpora
+        shell: pwsh
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File eng/benchmark/test-benchmark-harness.ps1
+          Import-Module .\eng\benchmark\BenchmarkHarness.psm1 -Force
+          Test-KeeFetchCorpus `
+            -CsvPath .\KeeFetch.Tests\Fixtures\ProviderCorpus\v1\public-sites.csv `
+            -VocabularyPath .\KeeFetch.Tests\Fixtures\ProviderCorpus\v1\categories.json | Out-Null
 
       - name: Create PLGX
         shell: pwsh
@@ -75,6 +84,7 @@ jobs:
           Copy-Item -Path "SettingsForm.resx" -Destination $plgxSrc
           Copy-Item -Path "Properties" -Destination $plgxSrc -Recurse
           Copy-Item -Path "IconProviders" -Destination $plgxSrc -Recurse
+          Copy-Item -Path "FetchProfiles" -Destination $plgxSrc -Recurse
           Copy-Item -Path "IconSelection" -Destination $plgxSrc -Recurse
           Copy-Item -Path "Assets" -Destination $plgxSrc -Recurse
 
@@ -89,7 +99,12 @@ jobs:
             "Properties\AssemblyInfo.cs", "KeeFetch.csproj",
             "IconSelection\IconSelector.cs", "IconSelection\IconCandidate.cs",
             "Assets\Icons\keefetch-app.png", "Assets\Icons\keefetch-download.png",
-            "Assets\Icons\keefetch-settings.png"
+            "Assets\Icons\keefetch-settings.png",
+            "FetchProfiles\ProviderDefinition.cs",
+            "FetchProfiles\FetchProfileCatalog.cs",
+            "FetchProfiles\FetchProfileDefinition.cs",
+            "FetchProfiles\FetchProfileCatalog.Generated.cs",
+            "FetchProfiles\LegacyProfileMigration.cs"
           )
           $missing = $expectedFiles | Where-Object { !(Test-Path (Join-Path $plgxSrc $_)) }
           if ($missing) {

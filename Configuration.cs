@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using KeeFetch.FetchProfiles;
 using KeePass.App.Configuration;
 
 namespace KeeFetch
@@ -14,6 +15,8 @@ namespace KeeFetch
         private readonly AceCustomConfig config;
 
         private FetchPresetMode? fetchPresetMode;
+        private string fetchProfileId;
+        private int? profileSchemaVersion;
         private bool? prefixUrls;
         private bool? useTitleField;
         private bool? skipExistingIcons;
@@ -57,20 +60,89 @@ namespace KeeFetch
             }
         }
 
+        public string FetchProfileId
+        {
+            get
+            {
+                if (fetchProfileId != null)
+                    return fetchProfileId;
+
+                string stored = config.GetString(Prefix + "FetchProfileId", null);
+                if (stored != null)
+                {
+                    string trimmed = stored.Trim();
+                    if (string.IsNullOrWhiteSpace(trimmed) || !IsKnownProfileId(trimmed))
+                    {
+                        fetchProfileId = "custom";
+                        return fetchProfileId;
+                    }
+
+                    string canonical = GetCanonicalProfileId(trimmed);
+                    fetchProfileId = canonical;
+                    return fetchProfileId;
+                }
+
+                string legacyRaw = config.GetString(Prefix + "FetchPresetMode", null);
+                bool isNewInstall = legacyRaw == null;
+                string mapped = LegacyProfileMigration.MapLegacyValue(legacyRaw, isNewInstall);
+                fetchProfileId = GetCanonicalProfileId(mapped);
+                config.SetString(Prefix + "FetchProfileId", fetchProfileId);
+                config.SetLong(Prefix + "ProfileSchemaVersion", LegacyProfileMigration.CurrentSchemaVersion);
+                profileSchemaVersion = LegacyProfileMigration.CurrentSchemaVersion;
+                fetchPresetMode = MapProfileIdToPresetMode(fetchProfileId);
+                return fetchProfileId;
+            }
+            set
+            {
+                string normalized = string.IsNullOrWhiteSpace(value) ? "custom" : value.Trim();
+                string canonical;
+                if (IsKnownProfileId(normalized))
+                    canonical = GetCanonicalProfileId(normalized);
+                else
+                    canonical = "custom";
+
+                fetchProfileId = canonical;
+                fetchPresetMode = MapProfileIdToPresetMode(canonical);
+                config.SetString(Prefix + "FetchProfileId", canonical);
+                config.SetLong(Prefix + "ProfileSchemaVersion", LegacyProfileMigration.CurrentSchemaVersion);
+                profileSchemaVersion = LegacyProfileMigration.CurrentSchemaVersion;
+            }
+        }
+
+        public int ProfileSchemaVersion
+        {
+            get
+            {
+                if (profileSchemaVersion.HasValue)
+                    return profileSchemaVersion.Value;
+
+                long v = config.GetLong(Prefix + "ProfileSchemaVersion", 0);
+                profileSchemaVersion = (int)v;
+                return profileSchemaVersion.Value;
+            }
+            set
+            {
+                profileSchemaVersion = value;
+                config.SetLong(Prefix + "ProfileSchemaVersion", value);
+            }
+        }
+
         public FetchPresetMode FetchPresetMode
         {
             get
             {
                 if (!fetchPresetMode.HasValue)
                 {
-                    fetchPresetMode = ParseFetchPresetMode(config.GetString(
-                        Prefix + "FetchPresetMode", FetchPresetMode.Balanced.ToString()));
+                    string pid = FetchProfileId;
+                    fetchPresetMode = MapProfileIdToPresetMode(pid);
                 }
                 return fetchPresetMode.Value;
             }
             set
             {
                 fetchPresetMode = value;
+                string profileId = MapPresetModeToProfileId(value);
+                FetchProfileId = profileId;
                 config.SetString(Prefix + "FetchPresetMode", value.ToString());
             }
         }
@@ -234,14 +306,14 @@ namespace KeeFetch
                 if (providerOrder == null)
                 {
                     providerOrder = config.GetString(Prefix + "ProviderOrder",
-                        string.Join(",", FaviconDownloader.DefaultProviderOrder));
+                        string.Join(",", FetchProfileCatalog.DefaultProviderDisplayOrder));
                 }
                 return providerOrder;
             }
             set
             {
                 providerOrder = string.IsNullOrWhiteSpace(value)
-                    ? string.Join(",", FaviconDownloader.DefaultProviderOrder)
+                    ? string.Join(",", FetchProfileCatalog.DefaultProviderDisplayOrder)
                     : value;
                 config.SetString(Prefix + "ProviderOrder", providerOrder);
             }
@@ -416,167 +488,118 @@ namespace KeeFetch
             if (providerName == null)
                 return string.Empty;
 
-            string value = providerName.Trim();
-            if (value.Equals("direct site", StringComparison.OrdinalIgnoreCase)) return "Direct Site";
-            if (value.Equals("twenty icons", StringComparison.OrdinalIgnoreCase)) return "Twenty Icons";
-            if (value.Equals("duckduckgo", StringComparison.OrdinalIgnoreCase)) return "DuckDuckGo";
-            if (value.Equals("google", StringComparison.OrdinalIgnoreCase)) return "Google";
-            if (value.Equals("yandex", StringComparison.OrdinalIgnoreCase)) return "Yandex";
-            if (value.Equals("favicone", StringComparison.OrdinalIgnoreCase)) return "Favicone";
-            if (value.Equals("icon horse", StringComparison.OrdinalIgnoreCase)) return "Icon Horse";
-            return value;
+            string trimmed = providerName.Trim();
+            if (string.IsNullOrWhiteSpace(trimmed))
+                return string.Empty;
+
+            var found = FetchProfileCatalog.FindProvider(trimmed);
+            return found != null ? found.DisplayName : trimmed;
         }
 
         public List<string> GetProviderOrderList()
         {
-            var configured = new List<string>();
-            if (!string.IsNullOrWhiteSpace(ProviderOrder))
-            {
-                configured.AddRange(ProviderOrder
-                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(NormalizeProviderName)
-                    .Where(p => !string.IsNullOrWhiteSpace(p)));
-            }
+            if (string.IsNullOrWhiteSpace(ProviderOrder))
+                return FetchProfileCatalog.DefaultProviderDisplayOrder;
 
-            if (configured.Count == 0)
-                configured.AddRange(FaviconDownloader.DefaultProviderOrder);
-
-            var ordered = new List<string>();
-            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (string provider in configured)
-            {
-                if (string.IsNullOrWhiteSpace(provider))
-                    continue;
-
-                if (seen.Add(provider))
-                    ordered.Add(provider);
-            }
-
-            foreach (string provider in FaviconDownloader.DefaultProviderOrder)
-            {
-                if (seen.Add(provider))
-                    ordered.Add(provider);
-            }
-
-            return ordered;
+            string[] parts = ProviderOrder.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            return FetchProfileCatalog.NormalizeProviderOrder(parts);
         }
 
         public bool ShouldStopAfterStrongResolvedProvider()
         {
-            return FetchPresetMode == FetchPresetMode.Fast ||
-                   FetchPresetMode == FetchPresetMode.Balanced;
+            string pid = FetchProfileId;
+            return pid.Equals("bulk-fast", StringComparison.OrdinalIgnoreCase) ||
+                   pid.Equals("everyday", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool TryGetProfileForMode(FetchPresetMode mode, out FetchProfileDefinition profile)
+        {
+            profile = null;
+            string id = MapPresetModeToProfileId(mode);
+            if (id.Equals("custom", StringComparison.OrdinalIgnoreCase))
+                return false;
+            try { profile = FetchProfileCatalog.GetRequiredProfile(id); return true; }
+            catch (InvalidOperationException) { return false; }
+        }
+
+        private static bool TryGetProfileForId(string profileId, out FetchProfileDefinition profile)
+        {
+            profile = null;
+            if (string.IsNullOrWhiteSpace(profileId))
+                return false;
+            string canonical = GetCanonicalProfileId(profileId);
+            try { profile = FetchProfileCatalog.GetRequiredProfile(canonical); return true; }
+            catch (InvalidOperationException) { return false; }
         }
 
         public static string GetPresetDescription(FetchPresetMode mode)
         {
-            switch (mode)
-            {
-                case FetchPresetMode.Fast:
-                    return "Shortest path. Tries direct site, then a compact strong-resolver chain with reduced time budgets for faster large batches.";
-                case FetchPresetMode.Balanced:
-                    return "Recommended default. Uses direct site, Google, and a lightweight synthetic fallback to balance coverage and batch speed.";
-                case FetchPresetMode.Thorough:
-                    return "Availability-first mode. Uses the full resolver chain with the largest time budgets and synthetic fallbacks for maximum coverage.";
-                default:
-                    return "Manual configuration. KeeFetch will use the exact provider toggles and timeout values shown below.";
-            }
+            FetchProfileDefinition profile;
+            if (TryGetProfileForMode(mode, out profile))
+                return profile.Description;
+            return "Manual configuration. KeeFetch will use the exact provider toggles and timeout values shown below.";
         }
 
         public static int GetPresetTimeout(FetchPresetMode mode)
         {
-            switch (mode)
-            {
-                case FetchPresetMode.Fast:
-                    return 5;
-                case FetchPresetMode.Balanced:
-                    return 7;
-                case FetchPresetMode.Thorough:
-                    return 15;
-                default:
-                    return 15;
-            }
+            FetchProfileDefinition profile;
+            if (TryGetProfileForMode(mode, out profile))
+                return Math.Max(5, (profile.PrimaryTimeoutMs + 999) / 1000);
+            return 15;
         }
 
         public static bool GetPresetUseThirdPartyFallbacks(FetchPresetMode mode)
         {
-            return mode != FetchPresetMode.Custom;
+            if (mode == FetchPresetMode.Custom) return false;
+            return true;
         }
 
         public static bool GetPresetAllowSyntheticFallbacks(FetchPresetMode mode)
         {
-            return mode == FetchPresetMode.Balanced ||
-                   mode == FetchPresetMode.Thorough;
+            FetchProfileDefinition profile;
+            if (TryGetProfileForMode(mode, out profile))
+                return profile.AllowSyntheticFallbacks;
+            return mode == FetchPresetMode.Balanced || mode == FetchPresetMode.Thorough;
         }
 
         public static List<string> GetPresetProviderOrderList(FetchPresetMode mode)
         {
-            switch (mode)
+            FetchProfileDefinition profile;
+            if (TryGetProfileForMode(mode, out profile))
             {
-                case FetchPresetMode.Fast:
-                    return new List<string>
-                    {
-                        "Direct Site",
-                        "Google",
-                        "Twenty Icons"
-                    };
-                case FetchPresetMode.Balanced:
-                    return new List<string>
-                    {
-                        "Direct Site",
-                        "Google",
-                        "Favicone"
-                    };
-                case FetchPresetMode.Thorough:
-                    return new List<string>(FaviconDownloader.DefaultProviderOrder);
-                default:
-                    return new List<string>(FaviconDownloader.DefaultProviderOrder);
+                List<string> list = new List<string>();
+                foreach (string pid in profile.ProviderIds)
+                {
+                    ProviderDefinition found = FetchProfileCatalog.FindProvider(pid);
+                    list.Add(found != null ? found.DisplayName : pid);
+                }
+                return list;
             }
+            return new List<string>(FetchProfileCatalog.DefaultProviderDisplayOrder);
         }
 
         public static int GetPresetMaxCumulativeTimeoutMs(FetchPresetMode mode)
         {
-            switch (mode)
-            {
-                case FetchPresetMode.Fast:
-                    return 15000;
-                case FetchPresetMode.Balanced:
-                    return 22000;
-                case FetchPresetMode.Thorough:
-                    return 45000;
-                default:
-                    return 45000;
-            }
+            FetchProfileDefinition profile;
+            if (TryGetProfileForMode(mode, out profile))
+                return profile.CumulativeTimeoutMs;
+            return 45000;
         }
 
         public static int GetPresetPrimaryProviderTimeoutMs(FetchPresetMode mode)
         {
-            switch (mode)
-            {
-                case FetchPresetMode.Fast:
-                    return 4000;
-                case FetchPresetMode.Balanced:
-                    return 6000;
-                case FetchPresetMode.Thorough:
-                    return 10000;
-                default:
-                    return 10000;
-            }
+            FetchProfileDefinition profile;
+            if (TryGetProfileForMode(mode, out profile))
+                return profile.PrimaryTimeoutMs;
+            return 10000;
         }
 
         public static int GetPresetFallbackProviderTimeoutMs(FetchPresetMode mode)
         {
-            switch (mode)
-            {
-                case FetchPresetMode.Fast:
-                    return 2500;
-                case FetchPresetMode.Balanced:
-                    return 3500;
-                case FetchPresetMode.Thorough:
-                    return 5000;
-                default:
-                    return 5000;
-            }
+            FetchProfileDefinition profile;
+            if (TryGetProfileForMode(mode, out profile))
+                return profile.FallbackTimeoutMs;
+            return 5000;
         }
 
         public static bool IsProviderEnabledByPreset(FetchPresetMode mode, string providerName)
@@ -584,22 +607,19 @@ namespace KeeFetch
             if (string.IsNullOrWhiteSpace(providerName))
                 return false;
 
+            FetchProfileDefinition profile;
+            if (!TryGetProfileForMode(mode, out profile))
+                return true;
+
             string normalized = NormalizeProviderName(providerName);
-            switch (mode)
+            foreach (string pid in profile.ProviderIds)
             {
-                case FetchPresetMode.Fast:
-                    return normalized == "Direct Site" ||
-                           normalized == "Google" ||
-                           normalized == "Twenty Icons";
-                case FetchPresetMode.Balanced:
-                    return normalized == "Direct Site" ||
-                           normalized == "Google" ||
-                           normalized == "Favicone";
-                case FetchPresetMode.Thorough:
-                    return true;
-                default:
+                ProviderDefinition found = FetchProfileCatalog.FindProvider(pid);
+                string name = found != null ? found.DisplayName : pid;
+                if (normalized.Equals(name, StringComparison.OrdinalIgnoreCase))
                     return true;
             }
+            return false;
         }
 
         private static FetchPresetMode ParseFetchPresetMode(string raw)
@@ -615,6 +635,73 @@ namespace KeeFetch
             if (normalized.Equals(FetchPresetMode.Thorough.ToString(), StringComparison.OrdinalIgnoreCase))
                 return FetchPresetMode.Thorough;
             return FetchPresetMode.Custom;
+        }
+
+        private static bool IsKnownProfileId(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                return false;
+            string trimmed = id.Trim();
+            if (trimmed.Equals("custom", StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (trimmed.Equals("bulk-fast", StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (trimmed.Equals("everyday", StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (trimmed.Equals("privacy", StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (trimmed.Equals("max-coverage", StringComparison.OrdinalIgnoreCase))
+                return true;
+            return false;
+        }
+
+        private static string GetCanonicalProfileId(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                return "custom";
+            string trimmed = id.Trim();
+            if (trimmed.Equals("custom", StringComparison.OrdinalIgnoreCase))
+                return "custom";
+            if (trimmed.Equals("bulk-fast", StringComparison.OrdinalIgnoreCase))
+                return "bulk-fast";
+            if (trimmed.Equals("everyday", StringComparison.OrdinalIgnoreCase))
+                return "everyday";
+            if (trimmed.Equals("privacy", StringComparison.OrdinalIgnoreCase))
+                return "privacy";
+            if (trimmed.Equals("max-coverage", StringComparison.OrdinalIgnoreCase))
+                return "max-coverage";
+            return "custom";
+        }
+
+        private static FetchPresetMode MapProfileIdToPresetMode(string profileId)
+        {
+            if (string.IsNullOrWhiteSpace(profileId))
+                return FetchPresetMode.Custom;
+            string trimmed = profileId.Trim();
+            if (trimmed.Equals("bulk-fast", StringComparison.OrdinalIgnoreCase))
+                return FetchPresetMode.Fast;
+            if (trimmed.Equals("everyday", StringComparison.OrdinalIgnoreCase))
+                return FetchPresetMode.Balanced;
+            if (trimmed.Equals("max-coverage", StringComparison.OrdinalIgnoreCase))
+                return FetchPresetMode.Thorough;
+            if (trimmed.Equals("privacy", StringComparison.OrdinalIgnoreCase))
+                return FetchPresetMode.Custom;
+            return FetchPresetMode.Custom;
+        }
+
+        private static string MapPresetModeToProfileId(FetchPresetMode mode)
+        {
+            switch (mode)
+            {
+                case FetchPresetMode.Fast:
+                    return "bulk-fast";
+                case FetchPresetMode.Balanced:
+                    return "everyday";
+                case FetchPresetMode.Thorough:
+                    return "max-coverage";
+                default:
+                    return "custom";
+            }
         }
     }
 

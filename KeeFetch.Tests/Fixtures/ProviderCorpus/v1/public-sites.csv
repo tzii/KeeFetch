@@ -1,0 +1,301 @@
+fixture_id,category,input_url,expected_class,expected_host,review_required,notes
+pub-001,global-brand,https://www.google.com/,usable-site-icon,google.com,false,global-brand: google search high-traffic reference
+pub-002,global-brand,https://www.youtube.com/,usable-site-icon,youtube.com,false,global-brand: youtube video platform
+pub-003,global-brand,https://www.amazon.com/,usable-site-icon,amazon.com,false,global-brand: amazon us marketplace
+pub-004,global-brand,https://www.facebook.com/,usable-site-icon,facebook.com,false,global-brand: facebook social network
+pub-005,global-brand,https://www.instagram.com/,usable-site-icon,instagram.com,false,global-brand: instagram social photo
+pub-006,global-brand,https://x.com/,usable-site-icon,x.com,false,global-brand: x formerly twitter
+pub-007,global-brand,https://www.linkedin.com/,usable-site-icon,linkedin.com,false,global-brand: linkedin professional network
+pub-008,global-brand,https://www.netflix.com/,usable-site-icon,netflix.com,false,global-brand: netflix streaming
+pub-009,global-brand,https://www.microsoft.com/,usable-site-icon,microsoft.com,false,global-brand: microsoft corporate
+pub-010,global-brand,https://www.apple.com/,usable-site-icon,apple.com,false,global-brand: apple consumer electronics
+pub-011,global-brand,https://www.yahoo.com/,usable-site-icon,yahoo.com,false,global-brand: yahoo portal
+pub-012,global-brand,https://www.wikipedia.org/,usable-site-icon,wikipedia.org,false,global-brand: wikipedia encyclopedia
+pub-013,global-brand,https://www.whatsapp.com/,usable-site-icon,whatsapp.com,false,global-brand: whatsapp messaging
+pub-014,global-brand,https://www.tiktok.com/,usable-site-icon,tiktok.com,false,global-brand: tiktok short video
+pub-015,global-brand,https://www.reddit.com/,usable-site-icon,reddit.com,false,global-brand: reddit forum
+pub-016,global-brand,https://zoom.us/,usable-site-icon,zoom.us,false,global-brand: zoom video conferencing
+pub-017,global-brand,https://www.spotify.com/,usable-site-icon,spotify.com,false,global-brand: spotify audio streaming
+pub-018,global-brand,https://www.adobe.com/,usable-site-icon,adobe.com,false,global-brand: adobe creative software
+pub-019,global-brand,https://www.paypal.com/,usable-site-icon,paypal.com,false,global-brand: paypal payments
+pub-020,global-brand,https://www.ebay.com/,usable-site-icon,ebay.com,false,global-brand: ebay marketplace
+pub-021,global-brand,https://www.twitch.tv/,usable-site-icon,twitch.tv,false,global-brand: twitch live streaming
+pub-022,global-brand,https://www.amazon.co.uk/,usable-site-icon,amazon.co.uk,false,global-brand: amazon uk variant
+pub-023,global-brand,https://www.amazon.de/,usable-site-icon,amazon.de,false,global-brand: amazon de variant
+pub-024,global-brand,https://www.google.co.uk/,usable-site-icon,google.co.uk,false,global-brand: google uk regional domain
+pub-025,global-brand,https://www.google.de/,usable-site-icon,google.de,false,global-brand: google de regional domain
+pub-026,global-brand,https://www.bbc.com/,usable-site-icon,bbc.com,false,global-brand: bbc news
+pub-027,global-brand,https://www.cnn.com/,usable-site-icon,cnn.com,false,global-brand: cnn news
+pub-028,global-brand,https://www.nytimes.com/,usable-site-icon,nytimes.com,false,global-brand: nytimes news
+pub-029,global-brand,https://www.office.com/,usable-site-icon,office.com,false,global-brand: microsoft office portal
+pub-030,global-brand,https://outlook.live.com/,usable-site-icon,outlook.live.com,false,global-brand: outlook webmail
+pub-031,global-brand,https://github.com/,usable-site-icon,github.com,false,global-brand: github code hosting
+pub-032,global-brand,https://stackoverflow.com/,usable-site-icon,stackoverflow.com,false,global-brand: stackoverflow developer qa
+pub-033,global-brand,https://www.cloudflare.com/,usable-site-icon,cloudflare.com,false,global-brand: cloudflare cdn
+pub-034,global-brand,https://www.salesforce.com/,usable-site-icon,salesforce.com,false,global-brand: salesforce crm
+pub-035,global-brand,https://www.dropbox.com/,usable-site-icon,dropbox.com,false,global-brand: dropbox storage
+pub-036,global-brand,https://slack.com/,usable-site-icon,slack.com,false,global-brand: slack team chat
+pub-037,global-brand,https://www.notion.so/,usable-site-icon,notion.so,false,global-brand: notion productivity
+pub-038,global-brand,https://www.figma.com/,usable-site-icon,figma.com,false,global-brand: figma design
+pub-039,global-brand,https://www.canva.com/,usable-site-icon,canva.com,false,global-brand: canva design
+pub-040,global-brand,https://www.booking.com/,usable-site-icon,booking.com,false,global-brand: booking travel
+pub-041,global-brand,https://www.airbnb.com/,usable-site-icon,airbnb.com,false,global-brand: airbnb lodging
+pub-042,global-brand,https://www.uber.com/,usable-site-icon,uber.com,false,global-brand: uber ride hailing
+pub-043,global-brand,https://www.disneyplus.com/,usable-site-icon,disneyplus.com,false,global-brand: disney plus streaming
+pub-044,global-brand,https://www.hulu.com/,usable-site-icon,hulu.com,false,global-brand: hulu streaming
+pub-045,global-brand,https://www.primevideo.com/,usable-site-icon,primevideo.com,false,global-brand: prime video streaming
+pub-046,global-brand,https://vimeo.com/,usable-site-icon,vimeo.com,false,global-brand: vimeo video
+pub-047,global-brand,https://discord.com/,usable-site-icon,discord.com,false,global-brand: discord chat
+pub-048,global-brand,https://telegram.org/,usable-site-icon,telegram.org,false,global-brand: telegram messaging
+pub-049,global-brand,https://openai.com/,usable-site-icon,openai.com,false,global-brand: openai ai services
+pub-050,global-brand,https://www.anthropic.com/,usable-site-icon,anthropic.com,false,global-brand: anthropic ai
+pub-051,global-brand,https://www.bing.com/,usable-site-icon,bing.com,false,global-brand: bing search
+pub-052,global-brand,https://www.yandex.com/,usable-site-icon,yandex.com,false,global-brand: yandex search
+pub-053,global-brand,https://www.baidu.com/,usable-site-icon,baidu.com,false,global-brand: baidu search
+pub-054,global-brand,https://www.alibaba.com/,usable-site-icon,alibaba.com,false,global-brand: alibaba commerce
+pub-055,global-brand,https://www.aliexpress.com/,usable-site-icon,aliexpress.com,false,global-brand: aliexpress retail
+pub-056,global-brand,https://www.etsy.com/,usable-site-icon,etsy.com,false,global-brand: etsy handmade market
+pub-057,global-brand,https://www.shopify.com/,usable-site-icon,shopify.com,false,global-brand: shopify ecommerce
+pub-058,global-brand,https://www.tripadvisor.com/,usable-site-icon,tripadvisor.com,false,global-brand: tripadvisor travel
+pub-059,global-brand,https://www.expedia.com/,usable-site-icon,expedia.com,false,global-brand: expedia travel
+pub-060,global-brand,https://www.shazam.com/,usable-site-icon,shazam.com,false,global-brand: shazam music id
+pub-061,regional-service,https://www.bbc.co.uk/,usable-site-icon,bbc.co.uk,false,regional-service UK: bbc co uk
+pub-062,regional-service,https://www.deliveroo.co.uk/,usable-site-icon,deliveroo.co.uk,false,regional-service UK: deliveroo food delivery
+pub-063,regional-service,https://www.argos.co.uk/,usable-site-icon,argos.co.uk,false,regional-service UK: argos retail
+pub-064,regional-service,https://www.rightmove.co.uk/,usable-site-icon,rightmove.co.uk,false,regional-service UK: rightmove property
+pub-065,regional-service,https://www.tesco.com/,usable-site-icon,tesco.com,false,regional-service UK: tesco grocery
+pub-066,regional-service,https://www.zalando.de/,usable-site-icon,zalando.de,false,regional-service DE: zalando fashion
+pub-067,regional-service,https://www.otto.de/,usable-site-icon,otto.de,false,regional-service DE: otto retail
+pub-068,regional-service,https://www.spiegel.de/,usable-site-icon,spiegel.de,false,regional-service DE: spiegel news
+pub-069,regional-service,https://www.bahn.de/,usable-site-icon,bahn.de,false,regional-service DE: deutsche bahn rail
+pub-070,regional-service,https://www.s-bahn-berlin.de/,usable-site-icon,s-bahn-berlin.de,false,regional-service DE: s-bahn berlin transit
+pub-071,regional-service,https://www.leboncoin.fr/,usable-site-icon,leboncoin.fr,false,regional-service FR: leboncoin classifieds
+pub-072,regional-service,https://www.lemonde.fr/,usable-site-icon,lemonde.fr,false,regional-service FR: lemonde news
+pub-073,regional-service,https://www.sfr.fr/,usable-site-icon,sfr.fr,false,regional-service FR: sfr telecom
+pub-074,regional-service,https://www.orange.fr/,usable-site-icon,orange.fr,false,regional-service FR: orange telecom
+pub-075,regional-service,https://www.carrefour.fr/,usable-site-icon,carrefour.fr,false,regional-service FR: carrefour retail
+pub-076,regional-service,https://www.rakuten.co.jp/,usable-site-icon,rakuten.co.jp,false,regional-service JP: rakuten ecommerce
+pub-077,regional-service,https://www.mercari.com/,usable-site-icon,mercari.com,false,regional-service JP/US: mercari marketplace
+pub-078,regional-service,https://www.yahoo.co.jp/,usable-site-icon,yahoo.co.jp,false,regional-service JP: yahoo japan
+pub-079,regional-service,https://www.naver.com/,usable-site-icon,naver.com,false,regional-service KR: naver portal
+pub-080,regional-service,https://www.coupang.com/,usable-site-icon,coupang.com,false,regional-service KR: coupang ecommerce
+pub-081,regional-service,https://www.flipkart.com/,usable-site-icon,flipkart.com,false,regional-service IN: flipkart ecommerce
+pub-082,regional-service,https://www.olacabs.com/,usable-site-icon,olacabs.com,false,regional-service IN: ola cabs transport
+pub-083,regional-service,https://www.zomato.com/,usable-site-icon,zomato.com,false,regional-service IN: zomato food
+pub-084,regional-service,https://www.jio.com/,usable-site-icon,jio.com,false,regional-service IN: jio telecom
+pub-085,regional-service,https://www.mercadolibre.com.ar/,usable-site-icon,mercadolibre.com.ar,false,regional-service AR: mercadolibre
+pub-086,regional-service,https://www.mercadolivre.com.br/,usable-site-icon,mercadolivre.com.br,false,regional-service BR: mercadolivre
+pub-087,regional-service,https://www.globo.com/,usable-site-icon,globo.com,false,regional-service BR: globo media
+pub-088,regional-service,https://www.americanas.com.br/,usable-site-icon,americanas.com.br,false,regional-service BR: americanas retail
+pub-089,regional-service,https://www.magazineluiza.com.br/,usable-site-icon,magazineluiza.com.br,false,regional-service BR: magazine luiza retail
+pub-090,regional-service,https://www.yandex.ru/,usable-site-icon,yandex.ru,false,regional-service RU: yandex ru
+pub-091,regional-service,https://www.wildberries.ru/,usable-site-icon,wildberries.ru,false,regional-service RU: wildberries retail
+pub-092,regional-service,https://www.ozon.ru/,usable-site-icon,ozon.ru,false,regional-service RU: ozon ecommerce
+pub-093,regional-service,https://www.avito.ru/,usable-site-icon,avito.ru,false,regional-service RU: avito classifieds
+pub-094,regional-service,https://www.trendyol.com/,usable-site-icon,trendyol.com,false,regional-service TR: trendyol ecommerce
+pub-095,regional-service,https://www.hepsiburada.com/,usable-site-icon,hepsiburada.com,false,regional-service TR: hepsiburada ecommerce
+pub-096,regional-service,https://www.woolworths.com.au/,usable-site-icon,woolworths.com.au,false,regional-service AU: woolworths grocery
+pub-097,regional-service,https://www.commbank.com.au/,usable-site-icon,commbank.com.au,false,regional-service AU: commbank banking
+pub-098,regional-service,https://www.abc.net.au/,usable-site-icon,abc.net.au,false,regional-service AU: abc national broadcaster
+pub-099,regional-service,https://www.qantas.com.au/,usable-site-icon,qantas.com.au,false,regional-service AU: qantas airline
+pub-100,regional-service,https://www.aircanada.com/,usable-site-icon,aircanada.com,false,regional-service CA: air canada airline
+pub-101,regional-service,https://www.shop.ca/,usable-site-icon,shop.ca,false,regional-service CA: shop ca ecommerce
+pub-102,regional-service,https://www.timhortons.ca/,usable-site-icon,timhortons.ca,false,regional-service CA: tim hortons food
+pub-103,regional-service,https://www.cbc.ca/,usable-site-icon,cbc.ca,false,regional-service CA: cbc broadcaster
+pub-104,regional-service,https://www.loblaws.ca/,usable-site-icon,loblaws.ca,false,regional-service CA: loblaws grocery
+pub-105,regional-service,https://www.coop.se/,usable-site-icon,coop.se,false,regional-service SE: coop grocery
+pub-106,regional-service,https://www.ikea.se/,usable-site-icon,ikea.se,false,regional-service SE: ikea furniture se
+pub-107,regional-service,https://www.nrk.no/,usable-site-icon,nrk.no,false,regional-service NO: nrk broadcaster
+pub-108,regional-service,https://www.finn.no/,usable-site-icon,finn.no,false,regional-service NO: finn classifieds
+pub-109,regional-service,https://www.bol.com/,usable-site-icon,bol.com,false,regional-service NL: bol retail
+pub-110,regional-service,https://www.ah.nl/,usable-site-icon,ah.nl,false,regional-service NL: albert heijn grocery
+pub-111,regional-service,https://www.nu.nl/,usable-site-icon,nu.nl,false,regional-service NL: nu news
+pub-112,regional-service,https://www.olx.pl/,usable-site-icon,olx.pl,false,regional-service PL: olx classifieds
+pub-113,regional-service,https://www.allegro.pl/,usable-site-icon,allegro.pl,false,regional-service PL: allegro marketplace
+pub-114,regional-service,https://www.wp.pl/,usable-site-icon,wp.pl,false,regional-service PL: wirtualna polska portal
+pub-115,regional-service,https://www.emag.ro/,usable-site-icon,emag.ro,false,regional-service RO: emag retail
+pub-116,regional-service,https://www.olx.ro/,usable-site-icon,olx.ro,false,regional-service RO: olx romania
+pub-117,regional-service,https://www.takealot.com/,usable-site-icon,takealot.com,false,regional-service ZA: takealot ecommerce
+pub-118,regional-service,https://www.news24.com/,usable-site-icon,news24.com,false,regional-service ZA: news24 media
+pub-119,regional-service,https://www.daum.net/,usable-site-icon,daum.net,false,regional-service KR: daum portal
+pub-120,regional-service,https://www.kakao.com/,usable-site-icon,kakao.com,false,regional-service KR: kakao messenger portal
+pub-121,small-site,https://daringfireball.net/,usable-icon,daringfireball.net,false,small-site: daringfireball tech blog
+pub-122,small-site,https://kottke.org/,usable-icon,kottke.org,false,small-site: kottke blog
+pub-123,small-site,https://www.jwz.org/,usable-icon,jwz.org,false,small-site: jwz personal site
+pub-124,small-site,https://www.tbray.org/,usable-icon,tbray.org,false,small-site: tbray blog
+pub-125,small-site,https://www.joelonsoftware.com/,usable-icon,joelonsoftware.com,false,small-site: joel on software blog
+pub-126,small-site,https://www.manton.org/,usable-icon,manton.org,false,small-site: manton blog
+pub-127,small-site,https://micro.blog/,usable-icon,micro.blog,false,small-site: micro.blog indie service
+pub-128,small-site,https://www.bunniestudios.com/,usable-icon,bunniestudios.com,false,small-site: bunnie studios hardware blog
+pub-129,small-site,https://www.eevblog.com/,usable-icon,eevblog.com,false,small-site: eevblog electronics
+pub-130,small-site,https://hackaday.com/,usable-icon,hackaday.com,false,small-site: hackaday maker blog
+pub-131,small-site,https://www.theregister.com/,usable-icon,theregister.com,false,small-site: theregister tech news
+pub-132,small-site,https://lobste.rs/,usable-icon,lobste.rs,false,small-site: lobsters community
+pub-133,small-site,https://www.metafilter.com/,usable-icon,metafilter.com,false,small-site: metafilter community
+pub-134,small-site,https://www.craigmod.com/,usable-icon,craigmod.com,false,small-site: craig mod essays
+pub-135,small-site,https://www.neilgaiman.com/,usable-icon,neilgaiman.com,false,small-site: neil gaiman author site
+pub-136,small-site,https://www.paulgraham.com/,usable-icon,paulgraham.com,false,small-site: paul graham essays
+pub-137,small-site,https://www.ben-evans.com/,usable-icon,ben-evans.com,false,small-site: benedict evans newsletter
+pub-138,small-site,https://stratechery.com/,usable-icon,stratechery.com,false,small-site: stratechery analysis
+pub-139,small-site,https://www.troyhunt.com/,usable-icon,troyhunt.com,false,small-site: troy hunt security blog
+pub-140,small-site,https://krebsonsecurity.com/,usable-icon,krebsonsecurity.com,false,small-site: krebs security blog
+pub-141,small-site,https://www.schneier.com/,usable-icon,schneier.com,false,small-site: schneier security blog
+pub-142,small-site,https://danluu.com/,usable-icon,danluu.com,false,small-site: dan luu blog
+pub-143,small-site,https://www.mattcutts.com/,usable-icon,mattcutts.com,false,small-site: matt cutts blog
+pub-144,small-site,https://www.aaronsw.com/,usable-icon,aaronsw.com,false,small-site: aaron swartz archive
+pub-145,small-site,https://www.raspberrypi.org/,usable-icon,raspberrypi.org,false,small-site: raspberry pi foundation
+pub-146,small-site,https://www.arduino.cc/,usable-icon,arduino.cc,false,small-site: arduino hardware community
+pub-147,small-site,https://www.adafruit.com/,usable-icon,adafruit.com,false,small-site: adafruit maker retail
+pub-148,small-site,https://www.sparkfun.com/,usable-icon,sparkfun.com,false,small-site: sparkfun electronics
+pub-149,small-site,https://www.thingiverse.com/,usable-icon,thingiverse.com,false,small-site: thingiverse 3d models
+pub-150,small-site,https://www.instructables.com/,usable-icon,instructables.com,false,small-site: instructables diy
+pub-151,small-site,https://www.etsy.com/shop/TinyWorkshop,usable-icon,etsy.com,false,small-site: tiny etsy shop deep link
+pub-152,small-site,https://www.behance.net/,usable-icon,behance.net,false,small-site: behance portfolio network
+pub-153,small-site,https://dribbble.com/,usable-icon,dribbble.com,false,small-site: dribbble design community
+pub-154,small-site,https://www.producthunt.com/,usable-icon,producthunt.com,false,small-site: product hunt launch site
+pub-155,small-site,https://news.ycombinator.com/,usable-icon,news.ycombinator.com,false,small-site: hacker news
+pub-156,small-site,https://www.indiehackers.com/,usable-icon,indiehackers.com,false,small-site: indie hackers community
+pub-157,small-site,https://www.cultofmac.com/,usable-icon,cultofmac.com,false,small-site: cult of mac blog
+pub-158,small-site,https://www.macstories.net/,usable-icon,macstories.net,false,small-site: macstories blog
+pub-159,small-site,https://www.imore.com/,usable-icon,imore.com,false,small-site: imore apple blog
+pub-160,small-site,https://www.androidpolice.com/,usable-icon,androidpolice.com,false,small-site: android police blog
+pub-161,small-site,https://9to5mac.com/,usable-icon,9to5mac.com,false,small-site: 9to5mac news
+pub-162,small-site,https://www.theverge.com/,usable-icon,theverge.com,false,small-site: the verge tech media
+pub-163,small-site,https://arstechnica.com/,usable-icon,arstechnica.com,false,small-site: ars technica tech journalism
+pub-164,small-site,https://www.wired.com/,usable-icon,wired.com,false,small-site: wired magazine
+pub-165,small-site,https://www.seriouseats.com/,usable-icon,seriouseats.com,false,small-site: serious eats food blog
+pub-166,self-hosted-software,https://nextcloud.com/,usable-site-icon,nextcloud.com,false,self-hosted-software: nextcloud file sync
+pub-167,self-hosted-software,https://www.home-assistant.io/,usable-site-icon,home-assistant.io,false,self-hosted-software: home assistant automation
+pub-168,self-hosted-software,https://joinmastodon.org/,usable-site-icon,joinmastodon.org,false,self-hosted-software: mastodon federated social
+pub-169,self-hosted-software,https://ghost.org/,usable-site-icon,ghost.org,false,self-hosted-software: ghost publishing
+pub-170,self-hosted-software,https://wordpress.org/,usable-site-icon,wordpress.org,false,self-hosted-software: wordpress cms
+pub-171,self-hosted-software,https://www.discourse.org/,usable-site-icon,discourse.org,false,self-hosted-software: discourse forum
+pub-172,self-hosted-software,https://matrix.org/,usable-site-icon,matrix.org,false,self-hosted-software: matrix chat protocol
+pub-173,self-hosted-software,https://element.io/,usable-site-icon,element.io,false,self-hosted-software: element matrix client
+pub-174,self-hosted-software,https://jellyfin.org/,usable-site-icon,jellyfin.org,false,self-hosted-software: jellyfin media server
+pub-175,self-hosted-software,https://plex.tv/,usable-site-icon,plex.tv,false,self-hosted-software: plex media server
+pub-176,self-hosted-software,https://www.plex.tv/,usable-site-icon,plex.tv,false,self-hosted-software: plex www variant
+pub-177,self-hosted-software,https://bitwarden.com/,usable-site-icon,bitwarden.com,false,self-hosted-software: bitwarden password manager
+pub-178,self-hosted-software,https://vaultwarden.org/,usable-site-icon,vaultwarden.org,false,self-hosted-software: vaultwarden bitwarden fork
+pub-179,self-hosted-software,https://www.photoprism.org/,usable-site-icon,photoprism.org,false,self-hosted-software: photoprism photo management
+pub-180,self-hosted-software,https://immich.app/,usable-site-icon,immich.app,false,self-hosted-software: immich photo backup
+pub-181,self-hosted-software,https://www.gitea.io/,usable-site-icon,gitea.io,false,self-hosted-software: gitea git hosting
+pub-182,self-hosted-software,https://gitea.com/,usable-site-icon,gitea.com,false,self-hosted-software: gitea com portal
+pub-183,self-hosted-software,https://forgejo.org/,usable-site-icon,forgejo.org,false,self-hosted-software: forgejo git forge
+pub-184,self-hosted-software,https://pi-hole.net/,usable-site-icon,pi-hole.net,false,self-hosted-software: pi-hole dns adblock
+pub-185,self-hosted-software,https://adguard.com/,usable-site-icon,adguard.com,false,self-hosted-software: adguard dns filter
+pub-186,self-hosted-software,https://www.openmediavault.org/,usable-site-icon,openmediavault.org,false,self-hosted-software: openmediavault nas
+pub-187,self-hosted-software,https://www.freenas.org/,usable-site-icon,freenas.org,false,self-hosted-software: truenas freenas storage
+pub-188,self-hosted-software,https://www.portainer.io/,usable-site-icon,portainer.io,false,self-hosted-software: portainer container ui
+pub-189,self-hosted-software,https://www.n8n.io/,usable-site-icon,n8n.io,false,self-hosted-software: n8n workflow automation
+pub-190,self-hosted-software,https://www.grafana.com/,usable-site-icon,grafana.com,false,self-hosted-software: grafana observability
+pub-191,self-hosted-software,https://prometheus.io/,usable-site-icon,prometheus.io,false,self-hosted-software: prometheus monitoring
+pub-192,self-hosted-software,https://hedgedoc.org/,usable-site-icon,hedgedoc.org,false,self-hosted-software: hedgedoc markdown collab
+pub-193,self-hosted-software,https://www.bookstackapp.com/,usable-site-icon,bookstackapp.com,false,self-hosted-software: bookstack wiki
+pub-194,self-hosted-software,https://docs.paperless-ngx.com/,usable-site-icon,paperless-ngx.com,false,self-hosted-software: paperless-ngx docs
+pub-195,self-hosted-software,https://paperless-ngx.com/,usable-site-icon,paperless-ngx.com,false,self-hosted-software: paperless-ngx home
+pub-196,url-variant,https://github.com/KeePass/KeePass,resolve-reference,github.com,false,url-variant: deep path github keepass project
+pub-197,url-variant,https://github.com/keepassxreboot/keepassxc/wiki,usable-icon,keepassxreboot.github.io,false,url-variant: deep path keepassxc wiki
+pub-198,url-variant,https://www.amazon.com/s?k=keepass,concurrency-success,amazon.com,false,url-variant: query string search keepass
+pub-199,url-variant,https://www.google.com/search?q=keepass,skip-existing,google.com,false,url-variant: query string google search
+pub-200,url-variant,https://en.wikipedia.org/wiki/KeePass,usable-site-icon,wikipedia.org,false,url-variant: deep wiki path keepass
+pub-201,url-variant,https://stackoverflow.com/questions/tagged/keepass,resolve-reference,stackoverflow.com,false,url-variant: deep path stackoverflow tag
+pub-202,url-variant,https://www.reddit.com/r/KeePass/,usable-icon,reddit.com,false,url-variant: deep path subreddit trailing slash
+pub-203,url-variant,https://www.reddit.com/r/KeePass,concurrency-success,reddit.com,false,url-variant: same subreddit without trailing slash
+pub-204,url-variant,https://www.bbc.com/news/technology,skip-existing,bbc.com,false,url-variant: deep section path bbc technology
+pub-205,url-variant,https://www.nytimes.com/section/technology,usable-site-icon,nytimes.com,false,url-variant: deep section nytimes technology
+pub-206,url-variant,https://www.microsoft.com/en-us/store/apps,resolve-reference,microsoft.com,false,url-variant: locale deep path microsoft
+pub-207,url-variant,https://www.apple.com/shop/buy-mac,usable-icon,apple.com,false,url-variant: deep shop path apple
+pub-208,url-variant,https://www.youtube.com/watch?v=dQw4w9WgXcQ,concurrency-success,youtube.com,false,url-variant: watch page with query param
+pub-209,url-variant,https://www.youtube.com/c/GoogleDevelopers,skip-existing,youtube.com,false,url-variant: channel path youtube
+pub-210,url-variant,https://httpstat.us/301,usable-site-icon,httpstat.us,false,url-variant: 301 redirect test httpstat
+pub-211,url-variant,https://httpstat.us/302,resolve-reference,httpstat.us,false,url-variant: 302 redirect test httpstat
+pub-212,url-variant,https://bit.ly/3testkeep,usable-icon,bit.ly,false,url-variant: short-url redirect bitly placeholder
+pub-213,url-variant,https://tinyurl.com/testkeep,concurrency-success,tinyurl.com,false,url-variant: short-url redirect tinyurl placeholder
+pub-214,url-variant,https://www.google.com:443/,skip-existing,google.com,false,url-variant: explicit https port 443
+pub-215,url-variant,http://example.com/,usable-site-icon,example.com,false,url-variant: http scheme non-tls example
+pub-216,url-variant,http://neverssl.com/,resolve-reference,neverssl.com,false,url-variant: http only neverssl test site
+pub-217,url-variant,https://example.com/,usable-icon,example.com,false,url-variant: https example domain canonical
+pub-218,url-variant,https://example.com:443/path?q=1#frag,concurrency-success,example.com,false,url-variant: port query fragment variant
+pub-219,url-variant,https://www.cloudflare.com/case-studies/,skip-existing,cloudflare.com,false,url-variant: deep case-studies path
+pub-220,url-variant,https://www.dropbox.com/scl/fi/example,usable-site-icon,dropbox.com,false,url-variant: deep share link path
+pub-221,svg-or-manifest,https://www.wikipedia.org/,usable-icon,wikipedia.org,true,svg-or-manifest: wikipedia svg favicon study
+pub-222,svg-or-manifest,https://commons.wikimedia.org/,usable-icon,commons.wikimedia.org,true,svg-or-manifest: wikimedia commons svg icon
+pub-223,svg-or-manifest,https://www.mozilla.org/,usable-icon,mozilla.org,true,svg-or-manifest: mozilla svg-heavy
+pub-224,svg-or-manifest,https://developer.mozilla.org/,usable-icon,developer.mozilla.org,true,svg-or-manifest: mdn manifest and svg
+pub-225,svg-or-manifest,https://www.google.com/,usable-icon,google.com,true,svg-or-manifest: google svg manifest study - duplicate for review
+pub-226,svg-or-manifest,https://www.github.com/,usable-icon,github.com,true,svg-or-manifest: github svg icon review
+pub-227,svg-or-manifest,https://www.figma.com/,usable-icon,figma.com,true,svg-or-manifest: figma svg manifest-heavy
+pub-228,svg-or-manifest,https://www.notion.so/,usable-icon,notion.so,true,svg-or-manifest: notion svg placeholder prone
+pub-229,svg-or-manifest,https://web.dev/,usable-icon,web.dev,true,svg-or-manifest: web.dev pwa manifest study
+pub-230,svg-or-manifest,https://developer.chrome.com/,usable-icon,developer.chrome.com,true,svg-or-manifest: chrome dev manifest
+pub-231,svg-or-manifest,https://www.w3.org/,usable-icon,w3.org,true,svg-or-manifest: w3 svg spec site
+pub-232,svg-or-manifest,https://svgjs.dev/,usable-icon,svgjs.dev,true,svg-or-manifest: svgjs svg-only docs
+pub-233,svg-or-manifest,https://www.canva.com/,usable-icon,canva.com,true,svg-or-manifest: canva pwa manifest
+pub-234,svg-or-manifest,https://www.spotify.com/,usable-icon,spotify.com,true,svg-or-manifest: spotify manifest study
+pub-235,svg-or-manifest,https://www.twitter.com/,usable-icon,twitter.com,true,svg-or-manifest: twitter x svg redirect study
+pub-236,svg-or-manifest,https://about.gitlab.com/,usable-icon,about.gitlab.com,true,svg-or-manifest: gitlab svg manifest
+pub-237,svg-or-manifest,https://www.gnome.org/,usable-icon,gnome.org,true,svg-or-manifest: gnome svg icons
+pub-238,svg-or-manifest,https://www.kde.org/,usable-icon,kde.org,true,svg-or-manifest: kde svg icons
+pub-239,svg-or-manifest,https://www.ubuntu.com/,usable-icon,ubuntu.com,true,svg-or-manifest: ubuntu manifest
+pub-240,svg-or-manifest,https://www.debian.org/,usable-icon,debian.org,true,svg-or-manifest: debian svg small icon
+pub-241,svg-or-manifest,https://angular.io/,usable-icon,angular.io,true,svg-or-manifest: angular pwa manifest
+pub-242,svg-or-manifest,https://react.dev/,usable-icon,react.dev,true,svg-or-manifest: react dev manifest
+pub-243,svg-or-manifest,https://vuejs.org/,usable-icon,vuejs.org,true,svg-or-manifest: vuejs svg favicon
+pub-244,svg-or-manifest,https://svelte.dev/,usable-icon,svelte.dev,true,svg-or-manifest: svelte manifest svg
+pub-245,svg-or-manifest,https://www.electronjs.org/,usable-icon,electronjs.org,true,svg-or-manifest: electron manifest svg
+pub-246,missing-or-invalid,https://example.invalid/,graceful-not-found,example.invalid,true,missing-or-invalid: iana reserved invalid tld graceful reject
+pub-247,missing-or-invalid,https://httpstat.us/404,graceful-reject,httpstat.us,true,missing-or-invalid: 404 not-found httpstat
+pub-248,missing-or-invalid,https://httpstat.us/500,graceful-not-found,httpstat.us,true,missing-or-invalid: 500 error httpstat graceful
+pub-249,missing-or-invalid,https://httpstat.us/204,graceful-reject,httpstat.us,true,missing-or-invalid: 204 no content empty response
+pub-250,missing-or-invalid,https://example.com/nonexistent-favicon-xyz123,graceful-not-found,example.com,true,missing-or-invalid: deep missing path example
+pub-251,missing-or-invalid,https://www.google.com/nonexistentpage12345,graceful-reject,google.com,true,missing-or-invalid: google missing deep page
+pub-252,missing-or-invalid,https://github.com/nonexistentuser123456/nonexistentrepo999,graceful-not-found,github.com,true,missing-or-invalid: github 404 repo
+pub-253,missing-or-invalid,https://expired.badssl.com/,graceful-reject,expired.badssl.com,true,missing-or-invalid: expired cert badssl
+pub-254,missing-or-invalid,https://self-signed.badssl.com/,graceful-not-found,self-signed.badssl.com,true,missing-or-invalid: self-signed cert badssl
+pub-255,missing-or-invalid,https://untrusted-root.badssl.com/,graceful-reject,untrusted-root.badssl.com,true,missing-or-invalid: untrusted root badssl
+pub-256,missing-or-invalid,https://httpstat.us/502,graceful-not-found,httpstat.us,true,missing-or-invalid: 502 bad gateway httpstat
+pub-257,missing-or-invalid,https://httpstat.us/503,graceful-reject,httpstat.us,true,missing-or-invalid: 503 service unavailable
+pub-258,missing-or-invalid,https://thissitedoesnotexist12345abc.com/,graceful-not-found,thissitedoesnotexist12345abc.com,true,missing-or-invalid: nonexistent domain graceful
+pub-259,missing-or-invalid,https://nonexistentdomain99999example.org/,graceful-reject,nonexistentdomain99999example.org,true,missing-or-invalid: nonexistent org graceful
+pub-260,missing-or-invalid,https://www.wikipedia.org/nonexistentpage99999,graceful-not-found,wikipedia.org,true,missing-or-invalid: wikipedia missing page
+pub-261,missing-or-invalid,https://www.bing.com/nonexistent12345,graceful-reject,bing.com,true,missing-or-invalid: bing missing path
+pub-262,missing-or-invalid,https://www.yahoo.com/nonexistent12345,graceful-not-found,yahoo.com,true,missing-or-invalid: yahoo missing path
+pub-263,missing-or-invalid,https://www.reddit.com/r/nonexistent_sub_99999/,graceful-reject,reddit.com,true,missing-or-invalid: reddit missing subreddit
+pub-264,missing-or-invalid,https://www.amazon.com/nonexistent12345product,graceful-not-found,amazon.com,true,missing-or-invalid: amazon missing product
+pub-265,missing-or-invalid,https://www.cloudflare.com/nonexistent12345,graceful-reject,cloudflare.com,true,missing-or-invalid: cloudflare missing path
+pub-266,android-app,androidapp://com.google.android.gm,android-map,gmail.com,false,android-app: gmail mapped via KnownMappings
+pub-267,android-app,androidapp://com.google.android.youtube,android-map,youtube.com,false,android-app: youtube mapped
+pub-268,android-app,androidapp://com.whatsapp,android-map,whatsapp.com,false,android-app: whatsapp mapped
+pub-269,android-app,androidapp://com.facebook.katana,android-map,facebook.com,false,android-app: facebook katana mapped
+pub-270,android-app,androidapp://com.instagram.android,android-map,instagram.com,false,android-app: instagram mapped
+pub-271,android-app,androidapp://com.spotify.music,android-map,spotify.com,false,android-app: spotify mapped
+pub-272,android-app,androidapp://com.twitter.android,android-map,x.com,false,android-app: twitter android mapped to x.com
+pub-273,android-app,androidapp://com.snapchat.android,android-map,snapchat.com,false,android-app: snapchat mapped
+pub-274,android-app,androidapp://com.microsoft.office.outlook,android-map,outlook.com,false,android-app: outlook mapped
+pub-275,android-app,androidapp://com.dropbox.android,android-map,dropbox.com,false,android-app: dropbox mapped
+pub-276,android-app,androidapp://com.slack,android-map,slack.com,false,android-app: slack mapped
+pub-277,android-app,androidapp://com.github.android,android-map,github.com,false,android-app: github android mapped
+pub-278,android-app,androidapp://org.telegram.messenger,android-map,telegram.org,false,android-app: telegram mapped
+pub-279,android-app,androidapp://com.discord,android-map,discord.com,false,android-app: discord mapped
+pub-280,android-app,androidapp://com.reddit.frontpage,android-map,reddit.com,false,android-app: reddit mapped
+pub-281,android-app,androidapp://com.amazon.mShop.android.shopping,android-map,amazon.com,false,android-app: amazon shopping mapped
+pub-282,android-app,androidapp://com.netflix.mediaclient,android-map,netflix.com,false,android-app: netflix mapped
+pub-283,android-app,androidapp://com.google.android.apps.maps,android-map,maps.google.com,false,android-app: maps mapped
+pub-284,android-app,androidapp://com.example.app,android-map,example.com,false,android-app: generic example guess via package reverse
+pub-285,android-app,androidapp://io.example.todo,android-map,example.io,false,android-app: io prefix guess test
+pub-286,deduplication,https://github.com/,deduplicate,github.com,false,deduplication: github canonical
+pub-287,deduplication,https://www.github.com/,deduplicate,github.com,false,deduplication: github www variant same origin
+pub-288,deduplication,https://github.com:443/,deduplicate,github.com,false,deduplication: github explicit port variant
+pub-289,deduplication,https://stackoverflow.com/,deduplicate,stackoverflow.com,false,deduplication: stackoverflow canonical
+pub-290,deduplication,https://www.stackoverflow.com/,deduplicate,stackoverflow.com,false,deduplication: stackoverflow www variant
+pub-291,deduplication,https://en.wikipedia.org/wiki/Main_Page,deduplicate,wikipedia.org,false,deduplication: wikipedia deep path canonical
+pub-292,deduplication,https://en.wikipedia.org/wiki/Main_Page?variant=1,deduplicate,wikipedia.org,false,deduplication: same wiki page with query variant
+pub-293,deduplication,https://www.google.com/,deduplicate,google.com,false,deduplication: google canonical
+pub-294,deduplication,https://www.google.com:443/,deduplicate,google.com,false,deduplication: google explicit port
+pub-295,deduplication,https://www.google.com/search?q=test,deduplicate,google.com,false,deduplication: google search deep path same host
+pub-296,deduplication,https://www.amazon.com/,deduplicate,amazon.com,false,deduplication: amazon canonical
+pub-297,deduplication,https://amazon.com/,deduplicate,amazon.com,false,deduplication: amazon without www
+pub-298,deduplication,https://www.microsoft.com/,concurrency-success,microsoft.com,false,deduplication: microsoft canonical
+pub-299,deduplication,https://microsoft.com/,concurrency-success,microsoft.com,false,deduplication: microsoft without www
+pub-300,deduplication,https://www.cloudflare.com/,concurrency-success,cloudflare.com,false,deduplication: cloudflare canonical vs www.cloudflare.com alt already covered but distinct for hash compare

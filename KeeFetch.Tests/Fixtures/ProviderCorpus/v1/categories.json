@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "expected_classes": [
+    "usable-site-icon", "usable-icon", "graceful-not-found",
+    "graceful-reject", "android-map", "resolve-reference",
+    "skip-existing", "deduplicate", "concurrency-success"
+  ],
+  "categories": {
+    "global-brand": 60,
+    "regional-service": 60,
+    "small-site": 45,
+    "self-hosted-software": 30,
+    "url-variant": 25,
+    "svg-or-manifest": 25,
+    "missing-or-invalid": 20,
+    "android-app": 20,
+    "deduplication": 15
+  },
+  "minimum_total": 300
+}

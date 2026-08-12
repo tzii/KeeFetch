@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using KeeFetch.FetchProfiles;
 using KeePass.App.Configuration;
 
 namespace KeeFetch
@@ -14,6 +15,8 @@ namespace KeeFetch
         private readonly AceCustomConfig config;
 
         private FetchPresetMode? fetchPresetMode;
+        private string fetchProfileId;
+        private int? profileSchemaVersion;
         private bool? prefixUrls;
         private bool? useTitleField;
         private bool? skipExistingIcons;
@@ -57,20 +60,89 @@ namespace KeeFetch
             }
         }
 
+        public string FetchProfileId
+        {
+            get
+            {
+                if (fetchProfileId != null)
+                    return fetchProfileId;
+
+                string stored = config.GetString(Prefix + "FetchProfileId", null);
+                if (stored != null)
+                {
+                    string trimmed = stored.Trim();
+                    if (string.IsNullOrWhiteSpace(trimmed) || !IsKnownProfileId(trimmed))
+                    {
+                        fetchProfileId = "custom";
+                        return fetchProfileId;
+                    }
+
+                    string canonical = GetCanonicalProfileId(trimmed);
+                    fetchProfileId = canonical;
+                    return fetchProfileId;
+                }
+
+                string legacyRaw = config.GetString(Prefix + "FetchPresetMode", null);
+                bool isNewInstall = legacyRaw == null;
+                string mapped = LegacyProfileMigration.MapLegacyValue(legacyRaw, isNewInstall);
+                fetchProfileId = GetCanonicalProfileId(mapped);
+                config.SetString(Prefix + "FetchProfileId", fetchProfileId);
+                config.SetLong(Prefix + "ProfileSchemaVersion", LegacyProfileMigration.CurrentSchemaVersion);
+                profileSchemaVersion = LegacyProfileMigration.CurrentSchemaVersion;
+                fetchPresetMode = MapProfileIdToPresetMode(fetchProfileId);
+                return fetchProfileId;
+            }
+            set
+            {
+                string normalized = string.IsNullOrWhiteSpace(value) ? "custom" : value.Trim();
+                string canonical;
+                if (IsKnownProfileId(normalized))
+                    canonical = GetCanonicalProfileId(normalized);
+                else
+                    canonical = "custom";
+
+                fetchProfileId = canonical;
+                fetchPresetMode = MapProfileIdToPresetMode(canonical);
+                config.SetString(Prefix + "FetchProfileId", canonical);
+                config.SetLong(Prefix + "ProfileSchemaVersion", LegacyProfileMigration.CurrentSchemaVersion);
+                profileSchemaVersion = LegacyProfileMigration.CurrentSchemaVersion;
+            }
+        }
+
+        public int ProfileSchemaVersion
+        {
+            get
+            {
+                if (profileSchemaVersion.HasValue)
+                    return profileSchemaVersion.Value;
+
+                long v = config.GetLong(Prefix + "ProfileSchemaVersion", 0);
+                profileSchemaVersion = (int)v;
+                return profileSchemaVersion.Value;
+            }
+            set
+            {
+                profileSchemaVersion = value;
+                config.SetLong(Prefix + "ProfileSchemaVersion", value);
+            }
+        }
+
         public FetchPresetMode FetchPresetMode
         {
             get
             {
                 if (!fetchPresetMode.HasValue)
                 {
-                    fetchPresetMode = ParseFetchPresetMode(config.GetString(
-                        Prefix + "FetchPresetMode", FetchPresetMode.Balanced.ToString()));
+                    string pid = FetchProfileId;
+                    fetchPresetMode = MapProfileIdToPresetMode(pid);
                 }
                 return fetchPresetMode.Value;
             }
             set
             {
                 fetchPresetMode = value;
+                string profileId = MapPresetModeToProfileId(value);
+                FetchProfileId = profileId;
                 config.SetString(Prefix + "FetchPresetMode", value.ToString());
             }
         }
@@ -615,6 +687,73 @@ namespace KeeFetch
             if (normalized.Equals(FetchPresetMode.Thorough.ToString(), StringComparison.OrdinalIgnoreCase))
                 return FetchPresetMode.Thorough;
             return FetchPresetMode.Custom;
+        }
+
+        private static bool IsKnownProfileId(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                return false;
+            string trimmed = id.Trim();
+            if (trimmed.Equals("custom", StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (trimmed.Equals("bulk-fast", StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (trimmed.Equals("everyday", StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (trimmed.Equals("privacy", StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (trimmed.Equals("max-coverage", StringComparison.OrdinalIgnoreCase))
+                return true;
+            return false;
+        }
+
+        private static string GetCanonicalProfileId(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                return "custom";
+            string trimmed = id.Trim();
+            if (trimmed.Equals("custom", StringComparison.OrdinalIgnoreCase))
+                return "custom";
+            if (trimmed.Equals("bulk-fast", StringComparison.OrdinalIgnoreCase))
+                return "bulk-fast";
+            if (trimmed.Equals("everyday", StringComparison.OrdinalIgnoreCase))
+                return "everyday";
+            if (trimmed.Equals("privacy", StringComparison.OrdinalIgnoreCase))
+                return "privacy";
+            if (trimmed.Equals("max-coverage", StringComparison.OrdinalIgnoreCase))
+                return "max-coverage";
+            return "custom";
+        }
+
+        private static FetchPresetMode MapProfileIdToPresetMode(string profileId)
+        {
+            if (string.IsNullOrWhiteSpace(profileId))
+                return FetchPresetMode.Custom;
+            string trimmed = profileId.Trim();
+            if (trimmed.Equals("bulk-fast", StringComparison.OrdinalIgnoreCase))
+                return FetchPresetMode.Fast;
+            if (trimmed.Equals("everyday", StringComparison.OrdinalIgnoreCase))
+                return FetchPresetMode.Balanced;
+            if (trimmed.Equals("max-coverage", StringComparison.OrdinalIgnoreCase))
+                return FetchPresetMode.Thorough;
+            if (trimmed.Equals("privacy", StringComparison.OrdinalIgnoreCase))
+                return FetchPresetMode.Custom;
+            return FetchPresetMode.Custom;
+        }
+
+        private static string MapPresetModeToProfileId(FetchPresetMode mode)
+        {
+            switch (mode)
+            {
+                case FetchPresetMode.Fast:
+                    return "bulk-fast";
+                case FetchPresetMode.Balanced:
+                    return "everyday";
+                case FetchPresetMode.Thorough:
+                    return "max-coverage";
+                default:
+                    return "custom";
+            }
         }
     }
 

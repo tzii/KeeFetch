@@ -515,6 +515,14 @@ if ($null -ne $resumeRunInfo) {
     $config = $profile.Config
     $cacheMode = $resumeCacheMode
     $repetition = 1
+    if ($resumeMeta.PSObject.Properties.Name -contains 'repetitions') {
+        try { $repetition = [int]$resumeMeta.repetitions } catch {}
+    }
+    # If run has explicit repetition field, prefer it (covers per-repetition runs)
+    if ($resumeMeta.PSObject.Properties.Name -contains 'repetition') {
+        try { $repetition = [int]$resumeMeta.repetition } catch {}
+    }
+    if ($repetition -lt 1) { $repetition = 1 }
     # Use existing run directory
     $runDir = $resumeRunInfo.Directory
     $runId = $resumeRunInfo.RunId

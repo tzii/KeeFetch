@@ -241,15 +241,26 @@ namespace KeeFetch
                 ApplyProfileToControls(profile);
             }
 
-            FetchPresetMode legacyMode = GetSelectedPresetMode();
-            lblFetchPresetDescription.Text = Configuration.GetPresetDescription(legacyMode);
+            if (profile != null)
+                lblFetchPresetDescription.Text = profile.Description;
+            else
+            {
+                FetchPresetMode legacyMode = GetSelectedPresetMode();
+                lblFetchPresetDescription.Text = Configuration.GetPresetDescription(legacyMode);
+            }
             UpdatePresetManagedControlStates(isCustom);
         }
 
         private void ApplyProfileToControls(FetchProfileDefinition profile)
         {
             numTimeout.Value = Math.Max(5, (profile.PrimaryTimeoutMs + 999) / 1000);
-            chkUseThirdPartyFallbacks.Checked = true;
+            bool hasThirdParty = false;
+            foreach (string pid in profile.ProviderIds)
+            {
+                ProviderDefinition pd = FetchProfileCatalog.FindProvider(pid);
+                if (pd != null && pd.IsThirdParty) { hasThirdParty = true; break; }
+            }
+            chkUseThirdPartyFallbacks.Checked = hasThirdParty;
             chkAllowSyntheticFallbacks.Checked = profile.AllowSyntheticFallbacks;
 
             chkProviderDirectSite.Checked = false;

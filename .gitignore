@@ -59,3 +59,10 @@ KeeFetch-repo-plan-spec-package-*.zip
 eng/benchmark-*.csv
 eng/benchmark-db-*.txt
 eng/benchmark-runs/
+
+# Local agent state and generated design previews
+.commandcode/
+.superpowers/
+
+# Separate external tooling checkout (not a KeeFetch submodule)
+better-harness/

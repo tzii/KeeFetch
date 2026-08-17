@@ -21,6 +21,7 @@
     "cand-full-minus-favicone-thorough-synth",
     "cand-full-minus-iconhorse-thorough-synth"
   ],
+  "schedule_seed": 20260817,
   "repetitions": 3,
   "concurrency": 8,
   "cache_modes": ["cold", "warm"],
@@ -33,6 +34,7 @@
       "fallbackTimeout": 3500,
       "cumulativeTimeout": 22000,
       "allowSynthetic": false,
+      "stopAfterStrongResolved": true,
       "notes": "direct-site only. Privacy baseline. Balanced timeout."
     },
     {
@@ -42,6 +44,7 @@
       "fallbackTimeout": 3500,
       "cumulativeTimeout": 22000,
       "allowSynthetic": false,
+      "stopAfterStrongResolved": true,
       "notes": "direct plus one resolver: Google. Balanced."
     },
     {
@@ -51,6 +54,7 @@
       "fallbackTimeout": 3500,
       "cumulativeTimeout": 22000,
       "allowSynthetic": false,
+      "stopAfterStrongResolved": true,
       "notes": "direct plus one resolver: Twenty Icons. Balanced."
     },
     {
@@ -60,6 +64,7 @@
       "fallbackTimeout": 3500,
       "cumulativeTimeout": 22000,
       "allowSynthetic": false,
+      "stopAfterStrongResolved": true,
       "notes": "direct plus one resolver: DuckDuckGo. Balanced."
     },
     {
@@ -69,6 +74,7 @@
       "fallbackTimeout": 3500,
       "cumulativeTimeout": 22000,
       "allowSynthetic": false,
+      "stopAfterStrongResolved": true,
       "notes": "direct plus one resolver: Yandex. Balanced."
     },
     {
@@ -78,6 +84,7 @@
       "fallbackTimeout": 3500,
       "cumulativeTimeout": 22000,
       "allowSynthetic": true,
+      "stopAfterStrongResolved": true,
       "notes": "direct plus one fallback (synthetic-capable): Favicone. Balanced with synthetic."
     },
     {
@@ -87,6 +94,7 @@
       "fallbackTimeout": 2500,
       "cumulativeTimeout": 15000,
       "allowSynthetic": true,
+      "stopAfterStrongResolved": true,
       "notes": "direct plus one resolver plus one fallback: Google + Favicone. Fast budget (4000/2500/15000)."
     },
     {
@@ -96,6 +104,7 @@
       "fallbackTimeout": 3500,
       "cumulativeTimeout": 22000,
       "allowSynthetic": true,
+      "stopAfterStrongResolved": true,
       "notes": "direct plus resolver plus fallback: Google + Favicone. Balanced budget. v1.2 everyday baseline chain with custom timeouts/synthetic."
     },
     {
@@ -105,6 +114,7 @@
       "fallbackTimeout": 3500,
       "cumulativeTimeout": 22000,
       "allowSynthetic": true,
+      "stopAfterStrongResolved": true,
       "notes": "direct plus resolver plus fallback: Twenty Icons + Favicone. Balanced."
     },
     {
@@ -114,6 +124,7 @@
       "fallbackTimeout": 3500,
       "cumulativeTimeout": 22000,
       "allowSynthetic": true,
+      "stopAfterStrongResolved": true,
       "notes": "direct plus resolver plus fallback: DuckDuckGo + Favicone. Balanced."
     },
     {
@@ -123,6 +134,7 @@
       "fallbackTimeout": 3500,
       "cumulativeTimeout": 22000,
       "allowSynthetic": true,
+      "stopAfterStrongResolved": true,
       "notes": "direct plus resolver plus fallback: Yandex + Favicone. Balanced."
     },
     {
@@ -132,6 +144,7 @@
       "fallbackTimeout": 2500,
       "cumulativeTimeout": 15000,
       "allowSynthetic": false,
+      "stopAfterStrongResolved": true,
       "notes": "direct plus resolver plus fallback: Google + Twenty Icons. Fast budget. v1.2 bulk-fast baseline chain with custom timeouts, no synthetic."
     },
     {
@@ -141,6 +154,7 @@
       "fallbackTimeout": 5000,
       "cumulativeTimeout": 45000,
       "allowSynthetic": true,
+      "stopAfterStrongResolved": false,
       "notes": "full chain (7 providers). Thorough budget (10000/5000/45000). v1.2 max-coverage baseline with custom synthetic flag."
     },
     {
@@ -150,6 +164,7 @@
       "fallbackTimeout": 5000,
       "cumulativeTimeout": 45000,
       "allowSynthetic": true,
+      "stopAfterStrongResolved": false,
       "notes": "full chain minus Twenty Icons. Thorough."
     },
     {
@@ -159,6 +174,7 @@
       "fallbackTimeout": 5000,
       "cumulativeTimeout": 45000,
       "allowSynthetic": true,
+      "stopAfterStrongResolved": false,
       "notes": "full chain minus DuckDuckGo. Thorough."
     },
     {
@@ -168,6 +184,7 @@
       "fallbackTimeout": 5000,
       "cumulativeTimeout": 45000,
       "allowSynthetic": true,
+      "stopAfterStrongResolved": false,
       "notes": "full chain minus Google. Thorough."
     },
     {
@@ -177,6 +194,7 @@
       "fallbackTimeout": 5000,
       "cumulativeTimeout": 45000,
       "allowSynthetic": true,
+      "stopAfterStrongResolved": false,
       "notes": "full chain minus Favicone. Thorough."
     },
     {
@@ -186,6 +204,7 @@
       "fallbackTimeout": 5000,
       "cumulativeTimeout": 45000,
       "allowSynthetic": true,
+      "stopAfterStrongResolved": false,
       "notes": "full chain minus Icon Horse. Thorough."
     }
   ],

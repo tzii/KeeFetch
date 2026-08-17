@@ -5,6 +5,13 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# Executes a benchmark experiment with explicit matrix-cell identity,
+# fingerprinted provenance, a deterministic interleaved schedule, warm-up
+# methodology, and experiment-level resume. Every run directory records the
+# experiment/corpus/binary fingerprints plus the per-candidate effective
+# policy fingerprint resolved through the real FaviconDownloader path, so the
+# selector can fail closed on any mismatch.
+
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $keepassPath = "C:\Program Files\KeePass Password Safe 2\KeePass.exe"
 $keepassPathEnv = [Environment]::GetEnvironmentVariable('KEEFETCH_KEEPASS_PATH')
@@ -28,6 +35,53 @@ if (-not (Test-Path -LiteralPath $harnessPath)) {
 }
 Import-Module $harnessPath -Force
 
+function Get-Sha256HexFile {
+    param([Parameter(Mandatory=$true)][string]$Path)
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $stream = [System.IO.File]::OpenRead($Path)
+        try {
+            $hash = $sha.ComputeHash($stream)
+        } finally {
+            $stream.Dispose()
+        }
+        return [BitConverter]::ToString($hash).Replace("-","").ToLowerInvariant()
+    } finally {
+        $sha.Dispose()
+    }
+}
+
+function Assert-CandidateDefinition {
+    param([Parameter(Mandatory=$true)][object]$Candidate)
+
+    $id = [string]$Candidate.id
+    if ([string]::IsNullOrWhiteSpace($id)) { throw "Candidate definition missing id." }
+
+    $providerIds = @()
+    if ($Candidate.PSObject.Properties.Name -contains 'providerIds') { $providerIds = @($Candidate.providerIds) }
+    if ($providerIds.Count -eq 0) { throw "Candidate '$id' must declare at least one providerId." }
+    foreach ($providerId in $providerIds) {
+        if ([string]::IsNullOrWhiteSpace([string]$providerId)) { throw "Candidate '$id' has an empty providerId." }
+    }
+
+    foreach ($field in @('primaryTimeout','fallbackTimeout','cumulativeTimeout')) {
+        $value = 0
+        if ($Candidate.PSObject.Properties.Name -contains $field) {
+            try { $value = [int]$Candidate.$field } catch { $value = 0 }
+        }
+        if ($value -le 0) { throw "Candidate '$id' must declare a positive $field." }
+    }
+
+    foreach ($field in @('allowSynthetic','stopAfterStrongResolved')) {
+        if (-not ($Candidate.PSObject.Properties.Name -contains $field)) {
+            throw "Candidate '$id' must declare $field explicitly; behavior is never inferred from the candidate name."
+        }
+        try { [void][bool]$Candidate.$field } catch {
+            throw "Candidate '$id' has a non-boolean $field."
+        }
+    }
+}
+
 # Resolve experiment path
 $experimentPath = $Experiment
 if (-not [System.IO.Path]::IsPathRooted($experimentPath)) {
@@ -50,6 +104,34 @@ if (-not [System.IO.Path]::IsPathRooted($experimentPath)) {
 
 $experimentConfig = Read-KeeFetchExperiment -ExperimentPath $experimentPath
 
+# Candidate authority: every candidate is a CUSTOM configuration with the
+# full execution policy recorded in the experiment definition. Managed
+# profile lookups are never used for candidates.
+$script:candidateMap = @{}
+$rawExperiment = Get-Content -Raw -LiteralPath $experimentPath | ConvertFrom-Json
+if ($rawExperiment.PSObject.Properties.Name -contains 'candidates') {
+    foreach ($c in @($rawExperiment.candidates)) {
+        Assert-CandidateDefinition -Candidate $c
+        $script:candidateMap[[string]$c.id] = $c
+    }
+}
+$profileOrder = @()
+foreach ($p in @($experimentConfig.profiles)) {
+    $name = [string]$p
+    if ($profileOrder -notcontains $name) { $profileOrder += $name }
+}
+# Profiles are executed through New-ConfigForProfile: cand-* ids resolve to
+# their candidate definition, anything else is a managed baseline preset.
+foreach ($name in $profileOrder) {
+    if ($name.ToLowerInvariant().StartsWith('cand-') -and -not $script:candidateMap.ContainsKey($name)) {
+        throw "Unknown benchmark candidate '$name'. Candidates must be defined in the experiment file."
+    }
+}
+$scheduleSeed = 0
+if ($rawExperiment.PSObject.Properties.Name -contains 'schedule_seed') {
+    try { $scheduleSeed = [int]$rawExperiment.schedule_seed } catch { $scheduleSeed = 0 }
+}
+
 # Resolve corpus and output root
 $corpusPath = $experimentConfig.corpus_path
 if ([string]::IsNullOrWhiteSpace($corpusPath)) {
@@ -66,7 +148,7 @@ if (-not [System.IO.Path]::IsPathRooted($outputRoot)) {
 # Validate corpus
 $vocabPath = Join-Path $repoRoot "KeeFetch.Tests\Fixtures\ProviderCorpus\v1\categories.json"
 $hasFixtureFilter = $false
-if ($experimentConfig.PSObject.Properties.Name -contains 'fixture_ids' -and $null -ne $experimentConfig.fixture_ids -and $experimentConfig.fixture_ids.Count -gt 0) {
+if ($experimentConfig.PSObject.Properties.Name -contains 'fixture_ids' -and $null -ne $experimentConfig.fixture_ids -and @($experimentConfig.fixture_ids).Count -gt 0) {
     $hasFixtureFilter = $true
 }
 
@@ -79,7 +161,6 @@ if ($hasFixtureFilter) {
     if ($filteredRows.Count -eq 0) {
         throw "Filtered corpus is empty. No rows matched fixture_ids."
     }
-    # Lenient validation for filtered corpus: check required fields and URL validity
     foreach ($row in $filteredRows) {
         if ([string]::IsNullOrWhiteSpace($row.fixture_id)) { throw "Missing fixture_id in filtered corpus." }
         if ([string]::IsNullOrWhiteSpace($row.category)) { throw "Missing category for fixture $($row.fixture_id)" }
@@ -92,100 +173,22 @@ if ($hasFixtureFilter) {
         if (-not [string]::IsNullOrWhiteSpace($uri.UserInfo)) { throw "Fixture contains credentials: $($row.fixture_id)" }
     }
 } else {
-    # Full corpus validation with quotas
     if (Test-Path -LiteralPath $vocabPath) {
         Test-KeeFetchCorpus -CsvPath $corpusPath -VocabularyPath $vocabPath | Out-Null
     }
     $filteredRows = @(Import-Csv -LiteralPath $corpusPath)
 }
-
-# Load resume keys if ResumeRun provided and resolve resume run directory for reopen
-$resumeKeys = New-Object 'System.Collections.Generic.HashSet[string]'
-$resumeRunDir = $null
-$resumeRunInfo = $null
-if (-not [string]::IsNullOrWhiteSpace($ResumeRun)) {
-    $resumePath = $ResumeRun
-    if (-not [System.IO.Path]::IsPathRooted($resumePath)) {
-        $candidateResume = Join-Path $repoRoot $resumePath
-        if (Test-Path -LiteralPath $candidateResume) {
-            $resumePath = (Resolve-Path -LiteralPath $candidateResume).Path
-        } elseif (Test-Path -LiteralPath $resumePath) {
-            $resumePath = (Resolve-Path -LiteralPath $resumePath).Path
-        }
-    } else {
-        if (Test-Path -LiteralPath $resumePath) {
-            $resumePath = (Resolve-Path -LiteralPath $resumePath).Path
-        }
-    }
-    # If resumePath is a file (results.ndjson), resolve to its directory; if directory, use directly
-    $resumeDirCandidate = $resumePath
-    if (Test-Path -LiteralPath $resumePath) {
-        $item = Get-Item -LiteralPath $resumePath -ErrorAction SilentlyContinue
-        if ($null -ne $item -and -not $item.PSIsContainer) {
-            $resumeDirCandidate = Split-Path -Parent $resumePath
-        }
-    }
-    $resumeRunDir = $resumeDirCandidate
-    # Try to open existing run for validation (experiment/profile/cache metadata will be validated per-run)
-    if (Test-Path -LiteralPath $resumeRunDir) {
-        $runJsonCandidate = Join-Path $resumeRunDir "run.json"
-        if (Test-Path -LiteralPath $runJsonCandidate) {
-            try {
-                $resumeRunInfo = Open-KeeFetchRun -RunDirectory $resumeRunDir -ExperimentId $experimentConfig.experiment_id -Concurrency $experimentConfig.concurrency
-            } catch {
-                throw "Failed to open resume run '$resumeRunDir': $($_.Exception.Message)"
-            }
-        }
-    }
-    # If resumePath is a directory, look for results.ndjson inside; if file, use directly
-    $resumeNdjson = $null
-    if (Test-Path -LiteralPath $resumePath) {
-        $item2 = Get-Item -LiteralPath $resumePath -ErrorAction SilentlyContinue
-        if ($null -ne $item2 -and $item2.PSIsContainer) {
-            $candidateNdjson = Join-Path $resumePath "results.ndjson"
-            if (Test-Path -LiteralPath $candidateNdjson) { $resumeNdjson = $candidateNdjson }
-        } else {
-            $resumeNdjson = $resumePath
-            # if it was a directory file path (results.ndjson), we already have dir; ensure ndjson path is correct
-            if (-not $resumeNdjson.ToLowerInvariant().EndsWith(".ndjson")) {
-                $candidateNdjson2 = Join-Path $resumeRunDir "results.ndjson"
-                if (Test-Path -LiteralPath $candidateNdjson2) { $resumeNdjson = $candidateNdjson2 }
-            }
-        }
-    }
-    if ($null -ne $resumeNdjson -and (Test-Path -LiteralPath $resumeNdjson)) {
-        $lines = @()
-        try { $lines = Get-Content -LiteralPath $resumeNdjson -Encoding UTF8 -ErrorAction SilentlyContinue } catch { $lines = @() }
-        foreach ($line in $lines) {
-            if ([string]::IsNullOrWhiteSpace($line)) { continue }
-            try {
-                $obj = ConvertFrom-Json -InputObject $line -ErrorAction Stop
-                $fid = ""
-                if ($obj.PSObject.Properties.Name -contains 'fixture_id') { $fid = [string]$obj.fixture_id }
-                $rep = "1"
-                if ($obj.PSObject.Properties.Name -contains 'repetition') { $rep = [string]$obj.repetition }
-                $prof = ""
-                if ($obj.PSObject.Properties.Name -contains 'profile') { $prof = [string]$obj.profile }
-                $cm = ""
-                if ($obj.PSObject.Properties.Name -contains 'cache_mode') { $cm = [string]$obj.cache_mode }
-                $key = "$prof|$cm|$fid|$rep"
-                [void]$resumeKeys.Add($key)
-                $simpleKey = "$fid|$rep"
-                [void]$resumeKeys.Add($simpleKey)
-            } catch { continue }
-        }
-    }
-}
+$expectedRowCount = $filteredRows.Count
+if ($expectedRowCount -eq 0) { throw "Corpus is empty." }
 
 if (-not (Test-Path -LiteralPath $keepassPath)) {
-    throw "KeePass.exe not found at $keepassPath"
+    throw "KeePass.exe not found at $keepassPath (set KEEFETCH_KEEPASS_PATH to override)."
 }
-
 if (-not (Test-Path -LiteralPath $assemblyPath)) {
     throw "Build KeeFetch first. Missing $assemblyPath"
 }
 
-[Reflection.Assembly]::LoadFrom($keepassPath) | Out-Null
+[void][Reflection.Assembly]::LoadFrom($keepassPath)
 $keefetchAssembly = [Reflection.Assembly]::LoadFrom($assemblyPath)
 
 $configType = $keefetchAssembly.GetType("KeeFetch.Configuration", $true)
@@ -199,31 +202,10 @@ $downloaderCtor = $downloaderType.GetConstructor(
 $downloadMethod = $downloaderType.GetMethod("DownloadAsync", [Type[]] @([string], [Threading.CancellationToken]))
 $clearCacheMethod = $downloaderType.GetMethod("ClearCache",
     [Reflection.BindingFlags] "Static, Public, NonPublic")
-
-#region Candidate Authority
-# All benchmark candidates are CUSTOM configurations with explicit providerIds/order + timeouts + synthetic.
-# Do NOT map candidate ids (cand-*) to managed profile IDs (bulk-fast/everyday/privacy/max-coverage) or FetchPresetMode.
-# New-ConfigForProfile for candidates MUST use the custom path via New-CustomConfigForCandidate.
-# Managed profiles are only winners; candidates are experiment scaffolding.
-#endregion
-
-$script:candidateMap = @{}
-
-function Load-CandidateMap {
-    param([string]$ExperimentJsonPath)
-    $script:candidateMap = @{}
-    try {
-        $raw = Get-Content -Raw -LiteralPath $ExperimentJsonPath | ConvertFrom-Json
-        if ($raw.PSObject.Properties.Name -contains "candidates") {
-            foreach ($c in @($raw.candidates)) {
-                $cid = ""
-                if ($c.PSObject.Properties.Name -contains "id") { $cid = [string]$c.id }
-                if ([string]::IsNullOrWhiteSpace($cid)) { continue }
-                $script:candidateMap[$cid] = $c
-            }
-        }
-    } catch {
-    }
+$resolvedPolicyProperty = $downloaderType.GetProperty("ResolvedPolicy",
+    [Reflection.BindingFlags] "Instance, Public, NonPublic")
+if ($null -eq $resolvedPolicyProperty) {
+    throw "FaviconDownloader.ResolvedPolicy not found; rebuild required for policy fingerprints."
 }
 
 function New-CustomConfigForCandidate {
@@ -231,27 +213,24 @@ function New-CustomConfigForCandidate {
         [Parameter(Mandatory=$true)][string]$CandidateId,
         [Parameter(Mandatory=$true)][object]$CandidateDef
     )
-    # Constructs a CUSTOM Configuration with explicit providerIds/order + timeouts + synthetic.
-    # This is the ONLY path for benchmark candidates. Do not use FetchPresetMode or managed profile lookup.
+    # Constructs a CUSTOM Configuration carrying the candidate's exact
+    # execution policy via the benchmark override keys. The policy is resolved
+    # and fingerprinted through the real FaviconDownloader path.
 
     $ace = New-Object KeePass.App.Configuration.AceCustomConfig
     $config = New-Object KeeFetch.Configuration -ArgumentList $ace
 
-    # Force custom mode
     $config.FetchProfileId = "custom"
 
-    # Resolve provider ids array
     $ids = @()
     if ($CandidateDef.PSObject.Properties.Name -contains "providerIds") { $ids = @($CandidateDef.providerIds) }
     elseif ($CandidateDef.PSObject.Properties.Name -contains "provider_ids") { $ids = @($CandidateDef.provider_ids) }
     if ($ids.Count -eq 0) { $ids = @("direct-site") }
 
-    # Normalize to display names for Configuration
     $displayOrder = @()
     foreach ($rawId in $ids) {
         $trim = ([string]$rawId).Trim()
         if ([string]::IsNullOrWhiteSpace($trim)) { continue }
-        # Try to map stable id to display name via catalog if available, else keep as-is
         $found = $null
         try {
             $catalogType = [KeeFetch.FetchProfiles.FetchProfileCatalog]
@@ -262,7 +241,6 @@ function New-CustomConfigForCandidate {
         if ($null -ne $found) {
             $displayOrder += $found.DisplayName
         } else {
-            # fallback: title-case mapping for known ids
             switch ($trim.ToLowerInvariant()) {
                 "direct-site" { $displayOrder += "Direct Site" }
                 "twenty-icons" { $displayOrder += "Twenty Icons" }
@@ -276,51 +254,43 @@ function New-CustomConfigForCandidate {
         }
     }
 
-    # ProviderOrder is explicit order
     $config.ProviderOrder = [string]::Join(",", $displayOrder)
 
-    # Enable only candidate providers
     $enabledSet = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
     foreach ($d in $displayOrder) { [void]$enabledSet.Add($d) }
     foreach ($providerName in $providerNames) {
-        $enabled = $enabledSet.Contains($providerName)
-        $config.SetProviderEnabled($providerName, $enabled)
+        $config.SetProviderEnabled($providerName, $enabledSet.Contains($providerName))
     }
 
-    # Synthetic flag explicit
     $allowSyn = $false
     if ($CandidateDef.PSObject.Properties.Name -contains "allowSynthetic") {
         try { $allowSyn = [bool]$CandidateDef.allowSynthetic } catch { $allowSyn = $false }
     }
     $config.AllowSyntheticFallbacks = $allowSyn
 
-    # Third-party fallback flag: true if any non-direct provider enabled
     $hasThird = $false
     foreach ($d in $displayOrder) {
         if (-not $d.Equals("Direct Site", [StringComparison]::OrdinalIgnoreCase)) { $hasThird = $true; break }
     }
     $config.UseThirdPartyFallbacks = $hasThird
 
-    # Timeouts: map cumulative to Configuration.Timeout (seconds), and store primary/fallback/cumulative
-    # in AceCustomConfig for potential harness use. FaviconDownloader custom defaults are overridden
-    # only via these stored values when FetchProfileId=custom.
     $primary = 6000
     $fallback = 3500
     $cumulative = 22000
     if ($CandidateDef.PSObject.Properties.Name -contains "primaryTimeout") { try { $primary = [int]$CandidateDef.primaryTimeout } catch {} }
     if ($CandidateDef.PSObject.Properties.Name -contains "fallbackTimeout") { try { $fallback = [int]$CandidateDef.fallbackTimeout } catch {} }
     if ($CandidateDef.PSObject.Properties.Name -contains "cumulativeTimeout") { try { $cumulative = [int]$CandidateDef.cumulativeTimeout } catch {} }
-    # Also support Ms-suffixed names
-    if ($CandidateDef.PSObject.Properties.Name -contains "primaryTimeoutMs") { try { $primary = [int]$CandidateDef.primaryTimeoutMs } catch {} }
-    if ($CandidateDef.PSObject.Properties.Name -contains "fallbackTimeoutMs") { try { $fallback = [int]$CandidateDef.fallbackTimeoutMs } catch {} }
-    if ($CandidateDef.PSObject.Properties.Name -contains "cumulativeTimeoutMs") { try { $cumulative = [int]$CandidateDef.cumulativeTimeoutMs } catch {} }
+
+    $stop = $false
+    if ($CandidateDef.PSObject.Properties.Name -contains "stopAfterStrongResolved") {
+        try { $stop = [bool]$CandidateDef.stopAfterStrongResolved } catch { $stop = $false }
+    }
 
     $config.Timeout = [Math]::Max(5, [Math]::Min(60, [int]([Math]::Ceiling($cumulative / 1000.0))))
-    # Persist explicit budgets for harness inspection (not used by production FaviconDownloader custom defaults yet,
-    # but available for benchmark-presets to honor without guessing)
     $ace.SetLong("KeeFetch.CustomPrimaryTimeoutMs", $primary)
     $ace.SetLong("KeeFetch.CustomFallbackTimeoutMs", $fallback)
     $ace.SetLong("KeeFetch.CustomCumulativeTimeoutMs", $cumulative)
+    $ace.SetLong("KeeFetch.CustomStopAfterStrongResolved", [int]$stop)
     $ace.SetString("KeeFetch.CustomCandidateId", $CandidateId)
 
     return [PSCustomObject]@{
@@ -337,63 +307,13 @@ function Get-ProfileDefinition {
 
     switch ($ProfileName.ToLowerInvariant()) {
         "fast" {
-            return @{
-                Name = "Fast"
-                BaseMode = "Fast"
-            }
+            return @{ Name = "Fast"; BaseMode = "Fast" }
         }
         "balanced" {
-            return @{
-                Name = "Balanced"
-                BaseMode = "Balanced"
-            }
+            return @{ Name = "Balanced"; BaseMode = "Balanced" }
         }
         "thorough" {
-            return @{
-                Name = "Thorough"
-                BaseMode = "Thorough"
-            }
-        }
-        "balanced-nosynth" {
-            return @{
-                Name = "Balanced-NoSynth"
-                BaseMode = "Balanced"
-                AllowSyntheticFallbacks = $false
-                EnabledProviders = @("Direct Site", "Google", "Twenty Icons", "DuckDuckGo", "Yandex")
-                ProviderOrder = @("Direct Site", "Google", "Twenty Icons", "DuckDuckGo", "Yandex")
-            }
-        }
-        "balanced-noduckduckgo" {
-            return @{
-                Name = "Balanced-NoDuckDuckGo"
-                BaseMode = "Balanced"
-                EnabledProviders = @("Direct Site", "Google", "Twenty Icons", "Yandex", "Favicone")
-                ProviderOrder = @("Direct Site", "Google", "Twenty Icons", "Yandex", "Favicone")
-            }
-        }
-        "balanced-notwenty" {
-            return @{
-                Name = "Balanced-NoTwentyIcons"
-                BaseMode = "Balanced"
-                EnabledProviders = @("Direct Site", "Google", "DuckDuckGo", "Yandex", "Favicone")
-                ProviderOrder = @("Direct Site", "Google", "DuckDuckGo", "Yandex", "Favicone")
-            }
-        }
-        "balanced-googlefavicone" {
-            return @{
-                Name = "Balanced-GoogleFavicone"
-                BaseMode = "Balanced"
-                EnabledProviders = @("Direct Site", "Google", "Favicone")
-                ProviderOrder = @("Direct Site", "Google", "Favicone")
-            }
-        }
-        "thorough-noiconhorse" {
-            return @{
-                Name = "Thorough-NoIconHorse"
-                BaseMode = "Thorough"
-                EnabledProviders = @("Direct Site", "Twenty Icons", "DuckDuckGo", "Google", "Yandex", "Favicone")
-                ProviderOrder = @("Direct Site", "Twenty Icons", "DuckDuckGo", "Google", "Yandex", "Favicone")
-            }
+            return @{ Name = "Thorough"; BaseMode = "Thorough" }
         }
         default {
             throw "Unknown profile '$ProfileName'"
@@ -404,16 +324,12 @@ function Get-ProfileDefinition {
 function New-ConfigForProfile {
     param([string]$ProfileName)
 
-    # CANDIDATE AUTHORITY: candidate ids (cand-*) must use custom path with explicit providerIds/timeouts/synthetic, not managed profile mapping.
-    # If caller passes a candidate id, prefer custom candidate path when available in $script:candidateMap.
     if ($ProfileName.ToLowerInvariant().StartsWith("cand-")) {
         if ($script:candidateMap.ContainsKey($ProfileName)) {
             return New-CustomConfigForCandidate -CandidateId $ProfileName -CandidateDef $script:candidateMap[$ProfileName]
         }
-        # Unknown cand-* id with no map loaded: construct a would-be custom config and throw with guidance
-        throw "Unknown benchmark candidate '$ProfileName'. Candidates must be defined as CUSTOM configs with explicit providerIds/timeouts/synthetic via New-CustomConfigForCandidate, not as managed profile IDs. Ensure Load-CandidateMap was called for the experiment file."
+        throw "Unknown benchmark candidate '$ProfileName'. Candidates must be defined in the experiment file."
     }
-    # Also handle candidate ids that are keys in candidateMap even without cand- prefix
     if ($script:candidateMap.ContainsKey($ProfileName)) {
         return New-CustomConfigForCandidate -CandidateId $ProfileName -CandidateDef $script:candidateMap[$ProfileName]
     }
@@ -435,26 +351,6 @@ function New-ConfigForProfile {
     }
 
     $providerOrder = [KeeFetch.Configuration]::GetPresetProviderOrderList($presetValue)
-
-    if ($definition.ContainsKey("UseThirdPartyFallbacks")) {
-        $config.UseThirdPartyFallbacks = [bool]$definition.UseThirdPartyFallbacks
-    }
-
-    if ($definition.ContainsKey("AllowSyntheticFallbacks")) {
-        $config.AllowSyntheticFallbacks = [bool]$definition.AllowSyntheticFallbacks
-    }
-
-    if ($definition.ContainsKey("EnabledProviders")) {
-        foreach ($providerName in $providerNames) {
-            $enabled = $definition.EnabledProviders -contains $providerName
-            $config.SetProviderEnabled($providerName, $enabled)
-        }
-    }
-
-    if ($definition.ContainsKey("ProviderOrder")) {
-        $providerOrder = $definition.ProviderOrder
-    }
-
     $config.ProviderOrder = [string]::Join(",", $providerOrder)
 
     return [PSCustomObject]@{
@@ -464,15 +360,29 @@ function New-ConfigForProfile {
     }
 }
 
-function Invoke-Download {
-    param(
-        [object]$Config,
-        [string]$Url
-    )
+# Provenance fingerprints, computed once for the whole experiment.
+$experimentFingerprint = Get-Sha256HexFile -Path $experimentPath
+$corpusFingerprint = Get-Sha256HexFile -Path $corpusPath
+$binaryHash = Get-Sha256HexFile -Path $assemblyPath
 
-    $downloader = $downloaderCtor.Invoke([object[]] @($Config.PSObject.BaseObject))
-    $task = $downloadMethod.Invoke($downloader, @($Url, [Threading.CancellationToken]::None))
-    return $task.GetAwaiter().GetResult()
+# Resolve every profile's effective policy through the real downloader path.
+$profileConfigs = @{}
+$profilePolicyFingerprints = @{}
+foreach ($profileName in $profileOrder) {
+    $profile = New-ConfigForProfile -ProfileName $profileName
+    $profileConfigs[$profileName] = $profile.Config
+    $probeDownloader = $downloaderCtor.Invoke([object[]] @($profile.Config.PSObject.BaseObject))
+    $policy = $resolvedPolicyProperty.GetValue($probeDownloader, $null)
+    $fingerprintMethod = $policy.GetType().GetMethod("Fingerprint")
+    $profilePolicyFingerprints[$profileName] = [string]$fingerprintMethod.Invoke($policy, $null)
+}
+
+Write-Host "Experiment fingerprint: $experimentFingerprint"
+Write-Host "Corpus fingerprint:     $corpusFingerprint"
+Write-Host "Binary hash:            $binaryHash"
+Write-Host "Schedule seed:          $scheduleSeed"
+foreach ($profileName in $profileOrder) {
+    Write-Host ("Policy fingerprint {0}: {1}" -f $profileName, $profilePolicyFingerprints[$profileName])
 }
 
 function Start-DownloadTask {
@@ -609,7 +519,6 @@ function Get-ArtifactExtension {
     return $ext
 }
 
-# Helper to map FaviconResult to benchmark record
 function Get-MachineOutcome {
     param([object]$FaviconResult)
 
@@ -618,7 +527,6 @@ function Get-MachineOutcome {
     if ($statusName -eq "Success") {
         return "success"
     }
-    # Check provider metrics for timeout/error
     $hasTimeout = $false
     $hasError = $false
     $hasCancel = $false
@@ -634,7 +542,6 @@ function Get-MachineOutcome {
     if ($hasTimeout) { return "timeout" }
     if ($hasCancel) { return "harness-error" }
     if ($hasError) { return "provider-error" }
-    # Check diagnostics for invalid image
     try {
         $diag = [string]$FaviconResult.DiagnosticsSummary
         if ($diag -match "invalid") { return "invalid-image" }
@@ -642,269 +549,246 @@ function Get-MachineOutcome {
     return "not-found"
 }
 
-# Load candidate map for custom-config authority (profile-candidates-v13 etc.)
-Load-CandidateMap -ExperimentJsonPath $experimentPath
+function ConvertAndAdd-Result {
+    param(
+        [object]$Wrapped,
+        [string]$RunDirectory,
+        [string]$RunId,
+        [string]$ProfileName,
+        [int]$Repetition,
+        [string]$CacheMode,
+        [int]$Concurrency
+    )
 
-# Resume single-run path: if ResumeRun points to an existing run, reopen it instead of creating new runs
-if ($null -ne $resumeRunInfo) {
-    $resumeMeta = $resumeRunInfo.Metadata
-    $resumeProfileName = ""
-    if ($resumeMeta.PSObject.Properties.Name -contains 'profiles' -and $null -ne $resumeMeta.profiles -and @($resumeMeta.profiles).Count -gt 0) {
-        $resumeProfileName = [string]@($resumeMeta.profiles)[0]
+    if ($null -ne $Wrapped.PSObject.Properties['IsHarnessError'] -and [bool]$Wrapped.IsHarnessError) {
+        $msg = ""
+        if ($null -ne $Wrapped.PSObject.Properties['HarnessError']) { $msg = [string]$Wrapped.HarnessError }
+        Convert-HarnessError -RunDirectory $RunDirectory -FixtureId ([string]$Wrapped.FixtureId) -Category ([string]$Wrapped.Category) -InputUrl ([string]$Wrapped.InputUrl) -ExceptionMessage $msg -ExperimentId $experimentConfig.experiment_id -Profile $ProfileName -Repetition $Repetition -RunId $RunId -CacheMode $CacheMode -Concurrency $Concurrency
+        return
     }
-    elseif ($resumeMeta.PSObject.Properties.Name -contains 'profile') {
-        $resumeProfileName = [string]$resumeMeta.profile
+    $result = $Wrapped.Result
+    $fixtureId = [string]$Wrapped.FixtureId
+    $category = [string]$Wrapped.Category
+    $inputUrl = [string]$Wrapped.InputUrl
+    $statusName = ""
+    try { $statusName = $result.Status.ToString() } catch { $statusName = [string]$result.Status }
+    $selectedProvider = ""
+    try { $selectedProvider = [string]$result.Provider } catch {}
+    $tierName = "Rejected"
+    try {
+        $tierName = $result.SelectedTier.ToString()
+        if ([string]::IsNullOrWhiteSpace($tierName)) { $tierName = "Rejected" }
+    } catch {
+        try { $tierName = [string]$result.SelectedTier } catch { $tierName = "Rejected" }
     }
-    $resumeCacheMode = ""
-    if ($resumeMeta.PSObject.Properties.Name -contains 'cache_mode') { $resumeCacheMode = [string]$resumeMeta.cache_mode }
-    # Validate profile and cache_mode are in experiment
-    $foundProfile = $false
-    foreach ($p in $experimentConfig.profiles) { if ([string]$p -eq $resumeProfileName) { $foundProfile = $true; break } }
-    if (-not $foundProfile) { throw "Resume profile '$resumeProfileName' not found in experiment profiles." }
-    $foundCache = $false
-    foreach ($m in $experimentConfig.cache_modes) { if ([string]$m -eq $resumeCacheMode) { $foundCache = $true; break } }
-    if (-not $foundCache) { throw "Resume cache_mode '$resumeCacheMode' not found in experiment cache_modes." }
-    $profile = New-ConfigForProfile -ProfileName $resumeProfileName
-    $config = $profile.Config
-    $cacheMode = $resumeCacheMode
-    $repetition = 1
-    if ($resumeMeta.PSObject.Properties.Name -contains 'repetitions') {
-        try { $repetition = [int]$resumeMeta.repetitions } catch {}
+    $isSynthetic = $false
+    try { $isSynthetic = [bool]$result.WasSyntheticFallback } catch { $isSynthetic = $false }
+    $placeholderSuspected = $false
+    $blankSuspected = $false
+    try {
+        if ($null -ne $result.Selection -and $null -ne $result.Selection.SelectedCandidate) {
+            $cand = $result.Selection.SelectedCandidate
+            $placeholderSuspected = [bool]$cand.IsPlaceholderSuspected
+            $blankSuspected = [bool]$cand.IsBlankSuspected
+            if ($cand.IsSynthetic) { $isSynthetic = $true }
+        }
+    } catch {}
+    $machineOutcome = Get-MachineOutcome -FaviconResult $result
+    $perProviderMetrics = @()
+    try {
+        foreach ($m in $result.ProviderMetrics) {
+            if ($null -eq $m) { continue }
+            $entry = [ordered]@{
+                provider = [string]$m.ProviderName
+                calls = 1
+                elapsed = [int]$m.ElapsedMilliseconds
+                elapsed_ms = [int]$m.ElapsedMilliseconds
+                candidate_count = [int]$m.CandidateCount
+                outcome = [string]$m.Outcome
+                errors = 0
+            }
+            if ([string]$m.Outcome -match "error") { $entry.errors = 1 }
+            $perProviderMetrics += [PSCustomObject]$entry
+        }
+    } catch {}
+    $candidateCounts = @{}
+    try {
+        foreach ($m in $result.ProviderMetrics) {
+            if ($null -eq $m) { continue }
+            $candidateCounts[[string]$m.ProviderName] = [int]$m.CandidateCount
+        }
+    } catch {}
+    $totalElapsed = 0
+    try { $totalElapsed = [int]$result.ElapsedMilliseconds } catch {}
+    $cacheBehavior = "miss"
+    $cacheHit = $false
+    $coalesced = $false
+    try {
+        $diag = [string]$result.DiagnosticsSummary
+        if (-not [string]::IsNullOrWhiteSpace($diag)) {
+            if ($diag.IndexOf("cache-hit", [StringComparison]::OrdinalIgnoreCase) -ge 0 -or $diag.IndexOf("negative-cache-hit", [StringComparison]::OrdinalIgnoreCase) -ge 0) {
+                $cacheBehavior = "hit"
+                $cacheHit = $true
+            }
+            if ($diag.IndexOf("coalesced", [StringComparison]::OrdinalIgnoreCase) -ge 0) {
+                $coalesced = $true
+            }
+        }
+        foreach ($m in $result.ProviderMetrics) {
+            if ($null -eq $m) { continue }
+            if ([string]$m.ProviderName -eq "Cache" -and [string]$m.Outcome -eq "hit") {
+                $cacheBehavior = "hit"
+                $cacheHit = $true
+            }
+            if ([string]$m.ProviderName -eq "Coalesced") {
+                $coalesced = $true
+            }
+        }
+    } catch {}
+    $imageType = ""
+    $imageWidth = 0
+    $imageHeight = 0
+    $imageByteSize = 0
+    $imageValidation = ""
+    try {
+        if ($null -ne $result.IconData -and $result.IconData.Length -gt 0) {
+            $imageByteSize = $result.IconData.Length
+            try {
+                $ms = New-Object System.IO.MemoryStream -ArgumentList @(,$result.IconData)
+                $img = [System.Drawing.Image]::FromStream($ms)
+                $imageWidth = $img.Width
+                $imageHeight = $img.Height
+                $fmt = $img.RawFormat
+                if ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Png)) { $imageType = "png" }
+                elseif ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Jpeg)) { $imageType = "jpeg" }
+                elseif ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Gif)) { $imageType = "gif" }
+                elseif ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Bmp)) { $imageType = "bmp" }
+                elseif ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Icon)) { $imageType = "ico" }
+                elseif ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Tiff)) { $imageType = "tiff" }
+                else { $imageType = "unknown" }
+                $imageValidation = "ok"
+                $img.Dispose()
+                $ms.Dispose()
+            } catch {
+                $imageValidation = "invalid"
+            }
+        } else {
+            $imageValidation = "no-image"
+            $imageByteSize = 0
+        }
+    } catch {
+        $imageValidation = "unknown"
     }
-    # If run has explicit repetition field, prefer it (covers per-repetition runs)
-    if ($resumeMeta.PSObject.Properties.Name -contains 'repetition') {
-        try { $repetition = [int]$resumeMeta.repetition } catch {}
+    $artifactPath = ""
+    $artifactHash = ""
+    $isSuccessForArtifact = ($machineOutcome -eq "success") -or ($statusName -eq "Success")
+    if ($isSuccessForArtifact) {
+        $bytesForArtifact = $null
+        try { $bytesForArtifact = $result.IconData } catch { $bytesForArtifact = $null }
+        if ($null -ne $bytesForArtifact -and $bytesForArtifact.Length -gt 0) {
+            $artifactsDir = Join-Path $RunDirectory "artifacts"
+            if (-not (Test-Path -LiteralPath $artifactsDir)) {
+                New-Item -ItemType Directory -Path $artifactsDir -Force | Out-Null
+            }
+            $ext = Get-ArtifactExtension -ImageType $imageType
+            $fileName = "$fixtureId-r$Repetition.$ext"
+            $fullPath = Join-Path $artifactsDir $fileName
+            try {
+                [System.IO.File]::WriteAllBytes($fullPath, $bytesForArtifact)
+                $artifactPath = "artifacts/$fileName"
+                $sha = [System.Security.Cryptography.SHA256]::Create()
+                try {
+                    $hashBytes = $sha.ComputeHash($bytesForArtifact)
+                    $artifactHash = [BitConverter]::ToString($hashBytes).Replace("-","").ToLowerInvariant()
+                } finally {
+                    if ($null -ne $sha) { $sha.Dispose() }
+                }
+            } catch {
+                $artifactPath = ""
+                $artifactHash = ""
+            }
+        }
     }
-    if ($repetition -lt 1) { $repetition = 1 }
-    # Use existing run directory
-    $runDir = $resumeRunInfo.Directory
-    $runId = $resumeRunInfo.RunId
-    Write-Host ""
-    Write-Host "=== Resuming Experiment $($experimentConfig.experiment_id) | Profile $resumeProfileName | Cache $cacheMode | Run $runId ==="
-    # Build pending list excluding already completed fixtures (resumeKeys already loaded, but also check run's ndjson via Add-KeeFetchResult dedup)
+    $addParams = @{
+        RunDirectory = $RunDirectory
+        FixtureId = $fixtureId
+        Category = $category
+        InputUrl = $inputUrl
+        SelectedProvider = $selectedProvider
+        Tier = $tierName
+        IsSynthetic = $isSynthetic
+        PlaceholderSuspected = $placeholderSuspected
+        BlankSuspected = $blankSuspected
+        MachineOutcome = $machineOutcome
+        PerProviderMetrics = $perProviderMetrics
+        ProviderMetrics = $perProviderMetrics
+        TotalElapsedMs = $totalElapsed
+        TotalElapsed = $totalElapsed
+        CacheBehavior = $cacheBehavior
+        CacheHit = $cacheHit
+        Coalesced = $coalesced
+        Coalescing = $coalesced
+        ImageType = $imageType
+        ImageWidth = $imageWidth
+        ImageHeight = $imageHeight
+        ImageByteSize = $imageByteSize
+        ImageValidation = $imageValidation
+        ArtifactPath = $artifactPath
+        ArtifactHash = $artifactHash
+        ExperimentId = $experimentConfig.experiment_id
+        Profile = $ProfileName
+        Repetition = $Repetition
+        RunId = $RunId
+        CacheMode = $CacheMode
+        Concurrency = $Concurrency
+    }
+    if ($candidateCounts.Count -gt 0) {
+        $addParams['CandidateCounts'] = $candidateCounts
+        $addParams['CandidateCount'] = $candidateCounts.Count
+    }
+    Add-KeeFetchResult @addParams
+}
+
+function Invoke-RunDirectoryWork {
+    param(
+        [Parameter(Mandatory=$true)][string]$RunDirectory,
+        [Parameter(Mandatory=$true)][string]$RunId,
+        [Parameter(Mandatory=$true)][string]$ProfileName,
+        [Parameter(Mandatory=$true)][int]$Repetition,
+        [Parameter(Mandatory=$true)][string]$CacheMode,
+        [Parameter(Mandatory=$true)][object]$Config,
+        [Parameter(Mandatory=$true)][long]$ActiveElapsedSeed,
+        [Parameter(Mandatory=$true)][bool]$Resumed
+    )
+
+    # Already-completed fixtures in this run directory are skipped; the
+    # harness deduplicates by (fixture_id, repetition) as a second guard.
+    $completedFids = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    $resultsNdjson = Join-Path $RunDirectory "results.ndjson"
+    if (Test-Path -LiteralPath $resultsNdjson) {
+        foreach ($line in @(Get-Content -LiteralPath $resultsNdjson -Encoding UTF8 -ErrorAction SilentlyContinue)) {
+            if ([string]::IsNullOrWhiteSpace($line)) { continue }
+            try {
+                $obj = ConvertFrom-Json -InputObject $line -ErrorAction Stop
+                [void]$completedFids.Add([string]$obj.fixture_id)
+            } catch { continue }
+        }
+    }
+
     $pendingRows = @()
     foreach ($row in $filteredRows) {
-        $fid = [string]$row.fixture_id
-        $keySimple = "$fid|$repetition"
-        $keyFull = "$resumeProfileName|$cacheMode|$fid|$repetition"
-        if ($resumeKeys.Contains($keySimple) -or $resumeKeys.Contains($keyFull)) {
-            Write-Host "Skipping $fid (resume)"
-            continue
-        }
+        if ($completedFids.Contains([string]$row.fixture_id)) { continue }
         $pendingRows += $row
     }
+
     $concurrencyLimit = [int]$experimentConfig.concurrency
     if ($concurrencyLimit -lt 1) { $concurrencyLimit = 1 }
     $pending = New-Object System.Collections.ArrayList
     $nextIndex = 0
     $completedCount = 0
     $totalPending = $pendingRows.Count
-    # Helper to process completed result into benchmark record and append
-    function ConvertAndAdd-Result {
-        param([object]$Wrapped)
-        if ($null -ne $Wrapped.PSObject.Properties['IsHarnessError'] -and [bool]$Wrapped.IsHarnessError) {
-            $msg = ""
-            if ($null -ne $Wrapped.PSObject.Properties['HarnessError']) { $msg = [string]$Wrapped.HarnessError }
-            Convert-HarnessError -RunDirectory $runDir -FixtureId ([string]$Wrapped.FixtureId) -Category ([string]$Wrapped.Category) -InputUrl ([string]$Wrapped.InputUrl) -ExceptionMessage $msg -ExperimentId $experimentConfig.experiment_id -Profile $resumeProfileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experimentConfig.concurrency
-            return
-        }
-        $result = $Wrapped.Result
-        $fixtureId = [string]$Wrapped.FixtureId
-        $category = [string]$Wrapped.Category
-        $inputUrl = [string]$Wrapped.InputUrl
-        $statusName = ""
-        try { $statusName = $result.Status.ToString() } catch { $statusName = [string]$result.Status }
-        if ([string]::IsNullOrWhiteSpace($statusName) -and $result.PSObject.Properties.Name -contains 'Status') {
-            $statusName = [string]$result.Status
-            if ($statusName -match "NotFound") { $statusName = "NotFound" } elseif ($statusName -match "Success") { $statusName = "Success" }
-        }
-        $selectedProvider = ""
-        try { $selectedProvider = [string]$result.Provider } catch {}
-        if ([string]::IsNullOrWhiteSpace($selectedProvider)) { $selectedProvider = "" }
-        $tierName = "Rejected"
-        try {
-            $tierName = $result.SelectedTier.ToString()
-            if ([string]::IsNullOrWhiteSpace($tierName)) { $tierName = "Rejected" }
-        } catch {
-            try { $tierName = [string]$result.SelectedTier } catch { $tierName = "Rejected" }
-        }
-        $isSynthetic = $false
-        try { $isSynthetic = [bool]$result.WasSyntheticFallback } catch { $isSynthetic = $false }
-        $placeholderSuspected = $false
-        $blankSuspected = $false
-        try {
-            if ($null -ne $result.Selection -and $null -ne $result.Selection.SelectedCandidate) {
-                $cand = $result.Selection.SelectedCandidate
-                $placeholderSuspected = [bool]$cand.IsPlaceholderSuspected
-                $blankSuspected = [bool]$cand.IsBlankSuspected
-                if ($cand.IsSynthetic) { $isSynthetic = $true }
-            }
-        } catch {}
-        $machineOutcome = Get-MachineOutcome -FaviconResult $result
-        $perProviderMetrics = @()
-        try {
-            foreach ($m in $result.ProviderMetrics) {
-                if ($null -eq $m) { continue }
-                $entry = [ordered]@{
-                    provider = [string]$m.ProviderName
-                    calls = 1
-                    elapsed = [int]$m.ElapsedMilliseconds
-                    elapsed_ms = [int]$m.ElapsedMilliseconds
-                    candidate_count = [int]$m.CandidateCount
-                    outcome = [string]$m.Outcome
-                    errors = 0
-                }
-                if ([string]$m.Outcome -match "error") { $entry.errors = 1 }
-                $perProviderMetrics += [PSCustomObject]$entry
-            }
-        } catch {}
-        $candidateCounts = @{}
-        try {
-            foreach ($m in $result.ProviderMetrics) {
-                if ($null -eq $m) { continue }
-                $candidateCounts[[string]$m.ProviderName] = [int]$m.CandidateCount
-            }
-        } catch {}
-        $totalElapsed = 0
-        try { $totalElapsed = [int]$result.ElapsedMilliseconds } catch {}
-        $cacheBehavior = "miss"
-        $cacheHit = $false
-        $coalesced = $false
-        try {
-            $diag = [string]$result.DiagnosticsSummary
-            if (-not [string]::IsNullOrWhiteSpace($diag)) {
-                if ($diag.IndexOf("cache-hit", [StringComparison]::OrdinalIgnoreCase) -ge 0 -or $diag.IndexOf("negative-cache-hit", [StringComparison]::OrdinalIgnoreCase) -ge 0) {
-                    $cacheBehavior = "hit"
-                    $cacheHit = $true
-                }
-                if ($diag.IndexOf("coalesced", [StringComparison]::OrdinalIgnoreCase) -ge 0) {
-                    $coalesced = $true
-                }
-            }
-            foreach ($m in $result.ProviderMetrics) {
-                if ($null -eq $m) { continue }
-                if ([string]$m.ProviderName -eq "Cache" -and [string]$m.Outcome -eq "hit") {
-                    $cacheBehavior = "hit"
-                    $cacheHit = $true
-                }
-                if ([string]$m.ProviderName -eq "Coalesced") {
-                    $coalesced = $true
-                }
-            }
-        } catch {}
-        $imageType = ""
-        $imageWidth = 0
-        $imageHeight = 0
-        $imageByteSize = 0
-        $imageValidation = ""
-        try {
-            if ($null -ne $result.IconData -and $result.IconData.Length -gt 0) {
-                $imageByteSize = $result.IconData.Length
-                try {
-                    $ms = New-Object System.IO.MemoryStream -ArgumentList @(,$result.IconData)
-                    $img = [System.Drawing.Image]::FromStream($ms)
-                    $imageWidth = $img.Width
-                    $imageHeight = $img.Height
-                    $fmt = $img.RawFormat
-                    if ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Png)) { $imageType = "png" }
-                    elseif ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Jpeg)) { $imageType = "jpeg" }
-                    elseif ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Gif)) { $imageType = "gif" }
-                    elseif ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Bmp)) { $imageType = "bmp" }
-                    elseif ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Icon)) { $imageType = "ico" }
-                    elseif ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Tiff)) { $imageType = "tiff" }
-                    else { $imageType = "unknown" }
-                    $imageValidation = "ok"
-                    $img.Dispose()
-                    $ms.Dispose()
-                } catch {
-                    $imageValidation = "invalid"
-                }
-            } else {
-                $imageValidation = "no-image"
-                $imageByteSize = 0
-            }
-        } catch {
-            $imageValidation = "unknown"
-        }
-        $artifactPath = ""
-        $artifactHash = ""
-        $isSuccessForArtifact = $false
-        if ($machineOutcome -eq "success") {
-            $isSuccessForArtifact = $true
-        } else {
-            try {
-                $sName = $result.Status.ToString()
-                if ($sName -eq "Success") { $isSuccessForArtifact = $true }
-            } catch {
-                if ($statusName -eq "Success") { $isSuccessForArtifact = $true }
-            }
-        }
-        if ($isSuccessForArtifact) {
-            $bytesForArtifact = $null
-            try { $bytesForArtifact = $result.IconData } catch { $bytesForArtifact = $null }
-            if ($null -ne $bytesForArtifact -and $bytesForArtifact.Length -gt 0) {
-                $artifactsDir = Join-Path $runDir "artifacts"
-                if (-not (Test-Path -LiteralPath $artifactsDir)) {
-                    New-Item -ItemType Directory -Path $artifactsDir -Force | Out-Null
-                }
-                $ext = Get-ArtifactExtension -ImageType $imageType
-                $fileName = "$fixtureId-r$repetition.$ext"
-                $fullPath = Join-Path $artifactsDir $fileName
-                try {
-                    [System.IO.File]::WriteAllBytes($fullPath, $bytesForArtifact)
-                    $artifactPath = "artifacts/$fileName"
-                    $sha = [System.Security.Cryptography.SHA256]::Create()
-                    try {
-                        $hashBytes = $sha.ComputeHash($bytesForArtifact)
-                        $artifactHash = [BitConverter]::ToString($hashBytes).Replace("-","").ToLowerInvariant()
-                    } finally {
-                        if ($null -ne $sha) { $sha.Dispose() }
-                    }
-                } catch {
-                    $artifactPath = ""
-                    $artifactHash = ""
-                }
-            }
-        }
-        $addParams = @{
-            RunDirectory = $runDir
-            FixtureId = $fixtureId
-            Category = $category
-            InputUrl = $inputUrl
-            SelectedProvider = $selectedProvider
-            Tier = $tierName
-            IsSynthetic = $isSynthetic
-            PlaceholderSuspected = $placeholderSuspected
-            BlankSuspected = $blankSuspected
-            MachineOutcome = $machineOutcome
-            PerProviderMetrics = $perProviderMetrics
-            ProviderMetrics = $perProviderMetrics
-            TotalElapsedMs = $totalElapsed
-            TotalElapsed = $totalElapsed
-            CacheBehavior = $cacheBehavior
-            CacheHit = $cacheHit
-            Coalesced = $coalesced
-            Coalescing = $coalesced
-            ImageType = $imageType
-            ImageWidth = $imageWidth
-            ImageHeight = $imageHeight
-            ImageByteSize = $imageByteSize
-            ImageValidation = $imageValidation
-            ArtifactPath = $artifactPath
-            ArtifactHash = $artifactHash
-            ExperimentId = $experimentConfig.experiment_id
-            Profile = $resumeProfileName
-            Repetition = $repetition
-            RunId = $runId
-            CacheMode = $cacheMode
-            Concurrency = $experimentConfig.concurrency
-        }
-        if ($candidateCounts.Count -gt 0) {
-            $addParams['CandidateCounts'] = $candidateCounts
-            $addParams['CandidateCount'] = $candidateCounts.Count
-        }
-        Add-KeeFetchResult @addParams
-    }
+    $cellStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
     while ($nextIndex -lt $pendingRows.Count -or $pending.Count -gt 0) {
         while ($nextIndex -lt $pendingRows.Count -and $pending.Count -lt $concurrencyLimit) {
             $row = $pendingRows[$nextIndex]
@@ -912,21 +796,18 @@ if ($null -ne $resumeRunInfo) {
             $enqueueFailed = $false
             $enqueueMsg = ""
             try {
-                $taskObj = Start-DownloadTask -Config $config -Url $row.input_url -FixtureId $row.fixture_id -Category $row.category -InputUrl $row.input_url
+                $taskObj = Start-DownloadTask -Config $Config -Url $row.input_url -FixtureId $row.fixture_id -Category $row.category -InputUrl $row.input_url
             } catch {
                 $enqueueFailed = $true
                 $enqueueMsg = $_.Exception.Message
                 if ([string]::IsNullOrWhiteSpace($enqueueMsg) -and $null -ne $_.Exception.InnerException) { $enqueueMsg = $_.Exception.InnerException.Message }
             }
             if ($enqueueFailed) {
-                $fidEnq = [string]$row.fixture_id
-                $catEnq = [string]$row.category
-                $urlEnq = [string]$row.input_url
-                Convert-HarnessError -RunDirectory $runDir -FixtureId $fidEnq -Category $catEnq -InputUrl $urlEnq -ExceptionMessage $enqueueMsg -ExperimentId $experimentConfig.experiment_id -Profile $resumeProfileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experimentConfig.concurrency
+                Convert-HarnessError -RunDirectory $RunDirectory -FixtureId ([string]$row.fixture_id) -Category ([string]$row.category) -InputUrl ([string]$row.input_url) -ExceptionMessage $enqueueMsg -ExperimentId $experimentConfig.experiment_id -Profile $ProfileName -Repetition $Repetition -RunId $RunId -CacheMode $CacheMode -Concurrency $experimentConfig.concurrency
                 $nextIndex++
                 $completedCount++
                 if (($completedCount % 25) -eq 0 -or $completedCount -eq $totalPending) {
-                    Write-Host "Completed $completedCount/$totalPending for $resumeProfileName/$cacheMode rep $repetition"
+                    Write-Host "Completed $completedCount/$totalPending for $ProfileName/$CacheMode rep $Repetition"
                 }
                 continue
             }
@@ -936,7 +817,7 @@ if ($null -ne $resumeRunInfo) {
         if ($pending.Count -eq 0) { break }
         $wrapped = Wait-OneDownloadTask -Pending $pending
         try {
-            ConvertAndAdd-Result -Wrapped $wrapped
+            ConvertAndAdd-Result -Wrapped $wrapped -RunDirectory $RunDirectory -RunId $RunId -ProfileName $ProfileName -Repetition $Repetition -CacheMode $CacheMode -Concurrency $experimentConfig.concurrency
         } catch {
             $msgOuter = $_.Exception.Message
             if ([string]::IsNullOrWhiteSpace($msgOuter) -and $null -ne $_.Exception.InnerException) { $msgOuter = $_.Exception.InnerException.Message }
@@ -947,322 +828,272 @@ if ($null -ne $resumeRunInfo) {
             try { $catOuter = [string]$wrapped.Category } catch {}
             try { $urlOuter = [string]$wrapped.InputUrl } catch {}
             if (-not [string]::IsNullOrWhiteSpace($fidOuter)) {
-                Convert-HarnessError -RunDirectory $runDir -FixtureId $fidOuter -Category $catOuter -InputUrl $urlOuter -ExceptionMessage $msgOuter -ExperimentId $experimentConfig.experiment_id -Profile $resumeProfileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experimentConfig.concurrency
+                Convert-HarnessError -RunDirectory $RunDirectory -FixtureId $fidOuter -Category $catOuter -InputUrl $urlOuter -ExceptionMessage $msgOuter -ExperimentId $experimentConfig.experiment_id -Profile $ProfileName -Repetition $Repetition -RunId $RunId -CacheMode $CacheMode -Concurrency $experimentConfig.concurrency
             } else {
                 throw
             }
         }
         $completedCount++
         if (($completedCount % 25) -eq 0 -or $completedCount -eq $totalPending) {
-            Write-Host "Completed $completedCount/$totalPending for $resumeProfileName/$cacheMode rep $repetition"
+            Write-Host "Completed $completedCount/$totalPending for $ProfileName/$CacheMode rep $Repetition"
         }
     }
-    Complete-KeeFetchRun -RunDirectory $runDir
-    Write-Host "Run completed (resumed): $runDir"
-} else {
-    foreach ($profileName in $experimentConfig.profiles) {
-        $profile = New-ConfigForProfile -ProfileName $profileName
-        $config = $profile.Config
 
-        foreach ($cacheMode in $experimentConfig.cache_modes) {
-            for ($repetition = 1; $repetition -le $experimentConfig.repetitions; $repetition++) {
+    $cellStopwatch.Stop()
+    $activeElapsedMs = $ActiveElapsedSeed + $cellStopwatch.ElapsedMilliseconds
+    Complete-KeeFetchRun -RunDirectory $RunDirectory -ActiveElapsedMs $activeElapsedMs -Resumed $Resumed
 
-                if ($cacheMode -eq "cold") {
-                    $clearCacheMethod.Invoke($null, @()) | Out-Null
-                } elseif ($repetition -eq 1) {
-                    $clearCacheMethod.Invoke($null, @()) | Out-Null
-                }
+    # Fail closed on incomplete cells: a run that completes with the wrong
+    # number of records is invalid evidence, not a partial success.
+    $rowsCsv = Join-Path $RunDirectory "rows.csv"
+    $recordCount = 0
+    if (Test-Path -LiteralPath $rowsCsv) {
+        $recordCount = @(@(Import-Csv -LiteralPath $rowsCsv)).Count
+    }
+    if ($recordCount -ne $expectedRowCount) {
+        throw "Row count mismatch for run $RunId : expected $expectedRowCount but recorded $recordCount. Evidence is invalid; inspect the run directory."
+    }
 
-                $run = New-KeeFetchRun -OutputRoot $outputRoot -ExperimentId $experimentConfig.experiment_id -CorpusPath $corpusPath -CorpusVersion "v1" -Concurrency $experimentConfig.concurrency -CacheMode $cacheMode -Profiles @($profileName) -Repetitions $experimentConfig.repetitions -CacheModes $experimentConfig.cache_modes
-                $runDir = $run.Directory
-                $runId = $run.RunId
-                Write-Host ""
-                Write-Host "=== Experiment $($experimentConfig.experiment_id) | Profile $profileName | Cache $cacheMode | Repetition $repetition | Run $runId ==="
+    Write-Host "Run completed: $RunDirectory"
+}
 
-                $pendingRows = @()
-                foreach ($row in $filteredRows) {
-                    $fid = [string]$row.fixture_id
-                    $keyFull = "$profileName|$cacheMode|$fid|$repetition"
-                    $keySimple = "$fid|$repetition"
-                    if ($resumeKeys.Contains($keyFull) -or $resumeKeys.Contains($keySimple)) {
-                        Write-Host "Skipping $fid (resume)"
-                        continue
-                    }
-                    $pendingRows += $row
-                }
+function Invoke-RunCell {
+    param(
+        [Parameter(Mandatory=$true)][string]$CandidateId,
+        [Parameter(Mandatory=$true)][string]$CacheMode,
+        [Parameter(Mandatory=$true)][int]$Repetition,
+        [Parameter(Mandatory=$true)][string]$RunKind
+    )
 
-                $concurrencyLimit = [int]$experimentConfig.concurrency
-                if ($concurrencyLimit -lt 1) { $concurrencyLimit = 1 }
-                $pending = New-Object System.Collections.ArrayList
-                $nextIndex = 0
-                $completedCount = 0
-                $totalPending = $pendingRows.Count
+    $config = $profileConfigs[$CandidateId]
 
-                function ConvertAndAdd-ResultInner {
-                    param([object]$Wrapped)
-                    if ($null -ne $Wrapped.PSObject.Properties['IsHarnessError'] -and [bool]$Wrapped.IsHarnessError) {
-                        $msgInner = ""
-                        if ($null -ne $Wrapped.PSObject.Properties['HarnessError']) { $msgInner = [string]$Wrapped.HarnessError }
-                        Convert-HarnessError -RunDirectory $runDir -FixtureId ([string]$Wrapped.FixtureId) -Category ([string]$Wrapped.Category) -InputUrl ([string]$Wrapped.InputUrl) -ExceptionMessage $msgInner -ExperimentId $experimentConfig.experiment_id -Profile $profileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experimentConfig.concurrency
-                        return
-                    }
-                    $result = $Wrapped.Result
-                    $fixtureId = [string]$Wrapped.FixtureId
-                    $category = [string]$Wrapped.Category
-                    $inputUrl = [string]$Wrapped.InputUrl
-                    $statusName = ""
-                    try { $statusName = $result.Status.ToString() } catch { $statusName = [string]$result.Status }
-                    if ([string]::IsNullOrWhiteSpace($statusName) -and $result.PSObject.Properties.Name -contains 'Status') {
-                        $statusName = [string]$result.Status
-                        if ($statusName -match "NotFound") { $statusName = "NotFound" } elseif ($statusName -match "Success") { $statusName = "Success" }
-                    }
-                    $selectedProvider = ""
-                    try { $selectedProvider = [string]$result.Provider } catch {}
-                    if ([string]::IsNullOrWhiteSpace($selectedProvider)) { $selectedProvider = "" }
-                    $tierName = "Rejected"
-                    try {
-                        $tierName = $result.SelectedTier.ToString()
-                        if ([string]::IsNullOrWhiteSpace($tierName)) { $tierName = "Rejected" }
-                    } catch {
-                        try { $tierName = [string]$result.SelectedTier } catch { $tierName = "Rejected" }
-                    }
-                    $isSynthetic = $false
-                    try { $isSynthetic = [bool]$result.WasSyntheticFallback } catch { $isSynthetic = $false }
-                    $placeholderSuspected = $false
-                    $blankSuspected = $false
-                    try {
-                        if ($null -ne $result.Selection -and $null -ne $result.Selection.SelectedCandidate) {
-                            $cand = $result.Selection.SelectedCandidate
-                            $placeholderSuspected = [bool]$cand.IsPlaceholderSuspected
-                            $blankSuspected = [bool]$cand.IsBlankSuspected
-                            if ($cand.IsSynthetic) { $isSynthetic = $true }
-                        }
-                    } catch {}
-                    $machineOutcome = Get-MachineOutcome -FaviconResult $result
-                    $perProviderMetrics = @()
-                    try {
-                        foreach ($m in $result.ProviderMetrics) {
-                            if ($null -eq $m) { continue }
-                            $entry = [ordered]@{
-                                provider = [string]$m.ProviderName
-                                calls = 1
-                                elapsed = [int]$m.ElapsedMilliseconds
-                                elapsed_ms = [int]$m.ElapsedMilliseconds
-                                candidate_count = [int]$m.CandidateCount
-                                outcome = [string]$m.Outcome
-                                errors = 0
-                            }
-                            if ([string]$m.Outcome -match "error") { $entry.errors = 1 }
-                            $perProviderMetrics += [PSCustomObject]$entry
-                        }
-                    } catch {}
-                    $candidateCounts = @{}
-                    try {
-                        foreach ($m in $result.ProviderMetrics) {
-                            if ($null -eq $m) { continue }
-                            $candidateCounts[[string]$m.ProviderName] = [int]$m.CandidateCount
-                        }
-                    } catch {}
-                    $totalElapsed = 0
-                    try { $totalElapsed = [int]$result.ElapsedMilliseconds } catch {}
-                    $cacheBehavior = "miss"
-                    $cacheHit = $false
-                    $coalesced = $false
-                    try {
-                        $diag = [string]$result.DiagnosticsSummary
-                        if (-not [string]::IsNullOrWhiteSpace($diag)) {
-                            if ($diag.IndexOf("cache-hit", [StringComparison]::OrdinalIgnoreCase) -ge 0 -or $diag.IndexOf("negative-cache-hit", [StringComparison]::OrdinalIgnoreCase) -ge 0) {
-                                $cacheBehavior = "hit"
-                                $cacheHit = $true
-                            }
-                            if ($diag.IndexOf("coalesced", [StringComparison]::OrdinalIgnoreCase) -ge 0) {
-                                $coalesced = $true
-                            }
-                        }
-                        foreach ($m in $result.ProviderMetrics) {
-                            if ($null -eq $m) { continue }
-                            if ([string]$m.ProviderName -eq "Cache" -and [string]$m.Outcome -eq "hit") {
-                                $cacheBehavior = "hit"
-                                $cacheHit = $true
-                            }
-                            if ([string]$m.ProviderName -eq "Coalesced") {
-                                $coalesced = $true
-                            }
-                        }
-                    } catch {}
-                    $imageType = ""
-                    $imageWidth = 0
-                    $imageHeight = 0
-                    $imageByteSize = 0
-                    $imageValidation = ""
-                    try {
-                        if ($null -ne $result.IconData -and $result.IconData.Length -gt 0) {
-                            $imageByteSize = $result.IconData.Length
-                            try {
-                                $ms = New-Object System.IO.MemoryStream -ArgumentList @(,$result.IconData)
-                                $img = [System.Drawing.Image]::FromStream($ms)
-                                $imageWidth = $img.Width
-                                $imageHeight = $img.Height
-                                $fmt = $img.RawFormat
-                                if ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Png)) { $imageType = "png" }
-                                elseif ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Jpeg)) { $imageType = "jpeg" }
-                                elseif ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Gif)) { $imageType = "gif" }
-                                elseif ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Bmp)) { $imageType = "bmp" }
-                                elseif ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Icon)) { $imageType = "ico" }
-                                elseif ($fmt.Equals([System.Drawing.Imaging.ImageFormat]::Tiff)) { $imageType = "tiff" }
-                                else { $imageType = "unknown" }
-                                $imageValidation = "ok"
-                                $img.Dispose()
-                                $ms.Dispose()
-                            } catch {
-                                $imageValidation = "invalid"
-                            }
-                        } else {
-                            $imageValidation = "no-image"
-                            $imageByteSize = 0
-                        }
-                    } catch {
-                        $imageValidation = "unknown"
-                    }
-                    $artifactPath = ""
-                    $artifactHash = ""
-                    $isSuccessForArtifactInner = $false
-                    if ($machineOutcome -eq "success") {
-                        $isSuccessForArtifactInner = $true
-                    } else {
-                        try {
-                            $sN = $result.Status.ToString()
-                            if ($sN -eq "Success") { $isSuccessForArtifactInner = $true }
-                        } catch {
-                            if ($statusName -eq "Success") { $isSuccessForArtifactInner = $true }
-                        }
-                    }
-                    if ($isSuccessForArtifactInner) {
-                        $bytesInner = $null
-                        try { $bytesInner = $result.IconData } catch { $bytesInner = $null }
-                        if ($null -ne $bytesInner -and $bytesInner.Length -gt 0) {
-                            $artifactsDirInner = Join-Path $runDir "artifacts"
-                            if (-not (Test-Path -LiteralPath $artifactsDirInner)) {
-                                New-Item -ItemType Directory -Path $artifactsDirInner -Force | Out-Null
-                            }
-                            $extInner = Get-ArtifactExtension -ImageType $imageType
-                            $fileNameInner = "$fixtureId-r$repetition.$extInner"
-                            $fullPathInner = Join-Path $artifactsDirInner $fileNameInner
-                            try {
-                                [System.IO.File]::WriteAllBytes($fullPathInner, $bytesInner)
-                                $artifactPath = "artifacts/$fileNameInner"
-                                $shaInner = [System.Security.Cryptography.SHA256]::Create()
-                                try {
-                                    $hashInner = $shaInner.ComputeHash($bytesInner)
-                                    $artifactHash = [BitConverter]::ToString($hashInner).Replace("-","").ToLowerInvariant()
-                                } finally {
-                                    if ($null -ne $shaInner) { $shaInner.Dispose() }
-                                }
-                            } catch {
-                                $artifactPath = ""
-                                $artifactHash = ""
-                            }
-                        }
-                    }
-                    $addParams = @{
-                        RunDirectory = $runDir
-                        FixtureId = $fixtureId
-                        Category = $category
-                        InputUrl = $inputUrl
-                        SelectedProvider = $selectedProvider
-                        Tier = $tierName
-                        IsSynthetic = $isSynthetic
-                        PlaceholderSuspected = $placeholderSuspected
-                        BlankSuspected = $blankSuspected
-                        MachineOutcome = $machineOutcome
-                        PerProviderMetrics = $perProviderMetrics
-                        ProviderMetrics = $perProviderMetrics
-                        TotalElapsedMs = $totalElapsed
-                        TotalElapsed = $totalElapsed
-                        CacheBehavior = $cacheBehavior
-                        CacheHit = $cacheHit
-                        Coalesced = $coalesced
-                        Coalescing = $coalesced
-                        ImageType = $imageType
-                        ImageWidth = $imageWidth
-                        ImageHeight = $imageHeight
-                        ImageByteSize = $imageByteSize
-                        ImageValidation = $imageValidation
-                        ArtifactPath = $artifactPath
-                        ArtifactHash = $artifactHash
-                        ExperimentId = $experimentConfig.experiment_id
-                        Profile = $profileName
-                        Repetition = $repetition
-                        RunId = $runId
-                        CacheMode = $cacheMode
-                        Concurrency = $experimentConfig.concurrency
-                    }
-                    if ($candidateCounts.Count -gt 0) {
-                        $addParams['CandidateCounts'] = $candidateCounts
-                        $addParams['CandidateCount'] = $candidateCounts.Count
-                    }
-                    Add-KeeFetchResult @addParams
-                }
+    $run = New-KeeFetchRun -OutputRoot $outputRoot -ExperimentId $experimentConfig.experiment_id -CorpusPath $corpusPath -CorpusVersion "v1" -Concurrency $experimentConfig.concurrency -CacheMode $CacheMode -Profiles @($CandidateId) -Repetitions $experimentConfig.repetitions -CacheModes $experimentConfig.cache_modes -ExtraMetadata @{
+        candidate_id = $CandidateId
+        repetition = $Repetition
+        run_kind = $RunKind
+        policy_fingerprint = $profilePolicyFingerprints[$CandidateId]
+        experiment_fingerprint = $experimentFingerprint
+        corpus_fingerprint = $corpusFingerprint
+        binary_hash = $binaryHash
+        schedule_seed = $scheduleSeed
+    }
+    $runDir = $run.Directory
+    $runId = $run.RunId
 
-                while ($nextIndex -lt $pendingRows.Count -or $pending.Count -gt 0) {
-                    while ($nextIndex -lt $pendingRows.Count -and $pending.Count -lt $concurrencyLimit) {
-                        $row = $pendingRows[$nextIndex]
-                        $taskObjInner = $null
-                        $enqueueInnerFailed = $false
-                        $enqueueInnerMsg = ""
-                        try {
-                            $taskObjInner = Start-DownloadTask -Config $config -Url $row.input_url -FixtureId $row.fixture_id -Category $row.category -InputUrl $row.input_url
-                        } catch {
-                            $enqueueInnerFailed = $true
-                            $enqueueInnerMsg = $_.Exception.Message
-                            if ([string]::IsNullOrWhiteSpace($enqueueInnerMsg) -and $null -ne $_.Exception.InnerException) { $enqueueInnerMsg = $_.Exception.InnerException.Message }
-                        }
-                        if ($enqueueInnerFailed) {
-                            $fidInnerEnq = [string]$row.fixture_id
-                            $catInnerEnq = [string]$row.category
-                            $urlInnerEnq = [string]$row.input_url
-                            Convert-HarnessError -RunDirectory $runDir -FixtureId $fidInnerEnq -Category $catInnerEnq -InputUrl $urlInnerEnq -ExceptionMessage $enqueueInnerMsg -ExperimentId $experimentConfig.experiment_id -Profile $profileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experimentConfig.concurrency
-                            $nextIndex++
-                            $completedCount++
-                            if (($completedCount % 25) -eq 0 -or $completedCount -eq $totalPending) {
-                                Write-Host "Completed $completedCount/$totalPending for $profileName/$cacheMode rep $repetition"
-                            }
-                            continue
-                        }
-                        [void]$pending.Add($taskObjInner)
-                        $nextIndex++
-                    }
-                    if ($pending.Count -eq 0) { break }
-                    $wrapped = Wait-OneDownloadTask -Pending $pending
-                    try {
-                        ConvertAndAdd-ResultInner -Wrapped $wrapped
-                    } catch {
-                        $msgInnerOuter = $_.Exception.Message
-                        if ([string]::IsNullOrWhiteSpace($msgInnerOuter) -and $null -ne $_.Exception.InnerException) { $msgInnerOuter = $_.Exception.InnerException.Message }
-                        $fidIO = ""
-                        $catIO = ""
-                        $urlIO = ""
-                        try { $fidIO = [string]$wrapped.FixtureId } catch {}
-                        try { $catIO = [string]$wrapped.Category } catch {}
-                        try { $urlIO = [string]$wrapped.InputUrl } catch {}
-                        if (-not [string]::IsNullOrWhiteSpace($fidIO)) {
-                            Convert-HarnessError -RunDirectory $runDir -FixtureId $fidIO -Category $catIO -InputUrl $urlIO -ExceptionMessage $msgInnerOuter -ExperimentId $experimentConfig.experiment_id -Profile $profileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experimentConfig.concurrency
-                        } else {
-                            throw
-                        }
-                    }
-                    $completedCount++
-                    if (($completedCount % 25) -eq 0 -or $completedCount -eq $totalPending) {
-                        Write-Host "Completed $completedCount/$totalPending for $profileName/$cacheMode rep $repetition"
-                    }
-                }
+    Write-Host ""
+    Write-Host ("=== Experiment {0} | {1} | {2} | rep {3} | {4} | Run {5} ===" -f `
+        $experimentConfig.experiment_id, $CandidateId, $CacheMode, $Repetition, $RunKind, $runId)
 
-                Complete-KeeFetchRun -RunDirectory $runDir
-                Write-Host "Run completed: $runDir"
+    Invoke-RunDirectoryWork -RunDirectory $runDir -RunId $runId -ProfileName $CandidateId `
+        -Repetition $Repetition -CacheMode $CacheMode -Config $config -ActiveElapsedSeed 0 -Resumed $false
+}
+
+function Invoke-ResumeCell {
+    param(
+        [Parameter(Mandatory=$true)][string]$RunDirectory,
+        [Parameter(Mandatory=$true)][string]$CandidateId
+    )
+
+    $runJsonPath = Join-Path $RunDirectory "run.json"
+    $meta = Get-Content -Raw -LiteralPath $runJsonPath | ConvertFrom-Json
+    $runId = [string]$meta.run_id
+    $cacheMode = [string]$meta.cache_mode
+    $repetition = 1
+    try { $repetition = [int]$meta.repetition } catch { $repetition = 1 }
+    $priorActiveMs = 0
+    try { $priorActiveMs = [long]$meta.active_elapsed_ms } catch { $priorActiveMs = 0 }
+
+    Write-Host ""
+    Write-Host ("=== Resuming {0} | {1} | {2} | rep {3} | Run {4} ===" -f `
+        $experimentConfig.experiment_id, $CandidateId, $cacheMode, $repetition, $runId)
+
+    Invoke-RunDirectoryWork -RunDirectory $RunDirectory -RunId $runId -ProfileName $CandidateId `
+        -Repetition $repetition -CacheMode $cacheMode -Config $profileConfigs[$CandidateId] `
+        -ActiveElapsedSeed $priorActiveMs -Resumed $true
+}
+
+# --- Experiment-level pre-scan: matrix identity, fingerprints, resume -------
+
+$cacheModes = @($experimentConfig.cache_modes)
+$repetitions = [int]$experimentConfig.repetitions
+$hasWarm = $cacheModes -contains "warm"
+$hasCold = $cacheModes -contains "cold"
+
+$existingRuns = @()
+if (Test-Path -LiteralPath $outputRoot) {
+    $existingRuns = @(Get-ChildItem -LiteralPath $outputRoot -Directory -ErrorAction SilentlyContinue)
+}
+
+$completedMeasured = @{}
+$completedWarmups = @{}
+$incompleteCells = @{}
+$cellsSeen = New-Object 'System.Collections.Generic.HashSet[string]'
+
+foreach ($dir in $existingRuns) {
+    $runJsonPath = Join-Path $dir.FullName "run.json"
+    if (-not (Test-Path -LiteralPath $runJsonPath)) {
+        throw "Unidentified run directory without run.json: $($dir.FullName). Remove or quarantine it before relaunching."
+    }
+    $meta = $null
+    try { $meta = Get-Content -Raw -LiteralPath $runJsonPath | ConvertFrom-Json } catch { $meta = $null }
+    if ($null -eq $meta) {
+        throw "Unreadable run.json: $runJsonPath"
+    }
+
+    foreach ($fpField in @('experiment_fingerprint','corpus_fingerprint','binary_hash')) {
+        $value = ""
+        if ($meta.PSObject.Properties.Name -contains $fpField) { $value = [string]$meta.$fpField }
+        if ([string]::IsNullOrWhiteSpace($value)) {
+            throw "Run $($dir.Name) predates fingerprint provenance (missing $fpField). Pre-repair evidence must not be combined; quarantine it."
+        }
+        $expectedValue = $experimentFingerprint
+        if ($fpField -eq 'corpus_fingerprint') { $expectedValue = $corpusFingerprint }
+        if ($fpField -eq 'binary_hash') { $expectedValue = $binaryHash }
+        if ($value -ne $expectedValue) {
+            throw "Run $($dir.Name) has a stale $fpField (found $value). Do not combine evidence across experiment/corpus/binary revisions."
+        }
+    }
+
+    $candidateId = ""
+    if ($meta.PSObject.Properties.Name -contains 'candidate_id') { $candidateId = [string]$meta.candidate_id }
+    if ($profileOrder -notcontains $candidateId) {
+        throw "Run $($dir.Name) references unknown candidate '$candidateId'."
+    }
+    $policyFp = ""
+    if ($meta.PSObject.Properties.Name -contains 'policy_fingerprint') { $policyFp = [string]$meta.policy_fingerprint }
+    if ($policyFp -ne $profilePolicyFingerprints[$candidateId]) {
+        throw "Run $($dir.Name) policy fingerprint does not match candidate '$candidateId' definition (found $policyFp)."
+    }
+
+    $runKind = "measured"
+    if ($meta.PSObject.Properties.Name -contains 'run_kind') { $runKind = [string]$meta.run_kind }
+    $status = ""
+    if ($meta.PSObject.Properties.Name -contains 'status') { $status = [string]$meta.status }
+    $cacheMode = ""
+    if ($meta.PSObject.Properties.Name -contains 'cache_mode') { $cacheMode = [string]$meta.cache_mode }
+    $repetition = 0
+    if ($meta.PSObject.Properties.Name -contains 'repetition') { try { $repetition = [int]$meta.repetition } catch { $repetition = 0 } }
+
+    if ($runKind -eq "warmup") {
+        if ($status -eq "complete") {
+            if ($completedWarmups.ContainsKey($candidateId)) {
+                throw "Duplicate completed warmup runs for candidate '$candidateId'."
             }
+            $completedWarmups[$candidateId] = $dir.FullName
+        }
+        continue
+    }
+
+    if ($cacheModes -notcontains $cacheMode) {
+        throw "Run $($dir.Name) has cache mode '$cacheMode' outside the experiment definition."
+    }
+    if ($repetition -lt 1 -or $repetition -gt $repetitions) {
+        throw "Run $($dir.Name) has repetition $repetition outside 1..$repetitions."
+    }
+
+    $cellKey = "$candidateId|$cacheMode|$repetition"
+    if ($cellsSeen.Contains($cellKey)) {
+        throw "Duplicate matrix cell $cellKey in output root. Evidence must come from exactly one run per cell."
+    }
+    [void]$cellsSeen.Add($cellKey)
+
+    if ($status -eq "complete") {
+        $rowsCsvCheck = Join-Path $dir.FullName "rows.csv"
+        $rowCountCheck = 0
+        if (Test-Path -LiteralPath $rowsCsvCheck) {
+            $rowCountCheck = @(@(Import-Csv -LiteralPath $rowsCsvCheck)).Count
+        }
+        if ($rowCountCheck -ne $expectedRowCount) {
+            throw "Completed run $($dir.Name) has $rowCountCheck rows, expected $expectedRowCount."
+        }
+        $completedMeasured[$cellKey] = $dir.FullName
+    } elseif ($status -eq "incomplete") {
+        $incompleteCells[$cellKey] = $dir.FullName
+    } else {
+        throw "Run $($dir.Name) has unrecognized status '$status'."
+    }
+}
+
+# --- Deterministic schedule --------------------------------------------------
+# Cold cells interleave across candidates per repetition with a rotation so
+# candidate ordering cannot systematically favor early or late execution.
+# Warm blocks are contiguous per candidate: the production cache is keyed by
+# origin, so a candidate's measured warm repetitions must follow its own
+# warm-up without any other candidate's runs (or a cache clear) in between.
+
+function Get-RotatedOrder {
+    param([string[]]$Items, [int]$Offset)
+    $count = $Items.Count
+    $rotated = @()
+    for ($i = 0; $i -lt $count; $i++) {
+        $rotated += $Items[($i + $Offset) % $count]
+    }
+    return $rotated
+}
+
+$scheduledCells = @()
+for ($rep = 1; $rep -le $repetitions; $rep++) {
+    $rotated = Get-RotatedOrder -Items $profileOrder -Offset (($rep - 1) % $profileOrder.Count)
+    foreach ($cid in $rotated) {
+        if ($hasCold) {
+            $scheduledCells += [PSCustomObject]@{ CandidateId = $cid; CacheMode = "cold"; Repetition = $rep; Kind = "measured" }
+        }
+    }
+}
+if ($hasWarm) {
+    $warmOrder = Get-RotatedOrder -Items $profileOrder -Offset 0
+    foreach ($cid in $warmOrder) {
+        $scheduledCells += [PSCustomObject]@{ CandidateId = $cid; CacheMode = "warm"; Repetition = 0; Kind = "warmup" }
+        for ($rep = 1; $rep -le $repetitions; $rep++) {
+            $scheduledCells += [PSCustomObject]@{ CandidateId = $cid; CacheMode = "warm"; Repetition = $rep; Kind = "measured" }
         }
     }
 }
 
+$totalCells = $scheduledCells.Count
+$skippedCells = 0
+$resumedCells = 0
+$executedCells = 0
+$cellIndex = 0
+
+foreach ($cell in $scheduledCells) {
+    $cellIndex++
+
+    if ($cell.Kind -eq "warmup") {
+        if ($completedWarmups.ContainsKey($cell.CandidateId)) {
+            Write-Host "[$cellIndex/$totalCells] Skipping warmup for $($cell.CandidateId) (already complete)"
+            $skippedCells++
+            continue
+        }
+        # Warm methodology: clear once, warm up over the full corpus unmeasured,
+        # then the measured warm repetitions follow without clearing.
+        $clearCacheMethod.Invoke($null, @()) | Out-Null
+        Invoke-RunCell -CandidateId $cell.CandidateId -CacheMode "warm" -Repetition 0 -RunKind "warmup"
+        $executedCells++
+        continue
+    }
+
+    $cellKey = "$($cell.CandidateId)|$($cell.CacheMode)|$($cell.Repetition)"
+
+    if ($completedMeasured.ContainsKey($cellKey)) {
+        Write-Host "[$cellIndex/$totalCells] Skipping $cellKey (already complete)"
+        $skippedCells++
+        continue
+    }
+
+    if ($cell.CacheMode -eq "cold") {
+        $clearCacheMethod.Invoke($null, @()) | Out-Null
+    }
+
+    if ($incompleteCells.ContainsKey($cellKey)) {
+        Invoke-ResumeCell -RunDirectory $incompleteCells[$cellKey] -CandidateId $cell.CandidateId
+        $resumedCells++
+    } else {
+        Invoke-RunCell -CandidateId $cell.CandidateId -CacheMode $cell.CacheMode -Repetition $cell.Repetition -RunKind "measured"
+        $executedCells++
+    }
+}
+
 Write-Host ""
-Write-Host "Experiment $($experimentConfig.experiment_id) completed."
+Write-Host ("Experiment {0} completed: {1} executed, {2} resumed, {3} skipped (already complete)." -f `
+    $experimentConfig.experiment_id, $executedCells, $resumedCells, $skippedCells)

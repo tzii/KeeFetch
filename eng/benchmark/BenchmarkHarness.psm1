@@ -419,7 +419,9 @@ function Add-KeeFetchResult {
 function Complete-KeeFetchRun {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)][string]$RunDirectory
+        [Parameter(Mandatory=$true)][string]$RunDirectory,
+        [long]$ActiveElapsedMs = -1,
+        [bool]$Resumed = $false
     )
 
     if (-not (Test-Path -LiteralPath $RunDirectory)) {
@@ -635,6 +637,10 @@ function Complete-KeeFetchRun {
     $finalMeta['status'] = "complete"
     $finalMeta['completed_at'] = (Get-Date).ToUniversalTime().ToString("o")
     $finalMeta['total_records'] = $sorted.Count
+    if ($ActiveElapsedMs -ge 0) {
+        $finalMeta['active_elapsed_ms'] = $ActiveElapsedMs
+    }
+    $finalMeta['resumed'] = $Resumed
     # Ensure directory field present
     $finalMeta['directory'] = $RunDirectory
 

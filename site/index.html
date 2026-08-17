@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>KeeFetch — Give every KeePass entry a face</title>
-  <meta name="description" content="KeeFetch is a fast, privacy-aware KeePass 2.x plugin that discovers, ranks, deduplicates, and maintains favicons.">
+  <title>KeeFetch — Give every login a face</title>
+  <meta name="description" content="KeeFetch is an open-source KeePass 2.x plugin that discovers, ranks, deduplicates, and maintains favicons with configurable privacy controls.">
   <link rel="canonical" href="https://tzii.github.io/KeeFetch/">
   <meta property="og:title" content="KeeFetch">
   <meta property="og:description" content="A fast, smart favicon fetcher for KeePass 2.x.">
@@ -15,1633 +15,426 @@
   <link rel="icon" href="assets/icons/keefetch-app.png">
   <style>
     :root {
-      --ink: #0c0b0d;
-      --paper: #f2efe6;
-      --paper-2: #e7e0d2;
-      --violet: #8353dd;
-      --violet-2: #5f35b4;
-      --violet-soft: #cab8ef;
-      --acid: #d9ff62;
-      --white: #fffaf0;
-      --muted: #655f68;
-      --line: #121014;
-      --shadow: #27163a;
-      --grid: rgba(12,11,13,.085);
-      --glass: rgba(242,239,230,.82);
-      --easing: cubic-bezier(.16,1,.3,1);
-      --display: "Arial Narrow", "Roboto Condensed", "Segoe UI", sans-serif;
-      --mono: "Cascadia Mono", "JetBrains Mono", "Consolas", monospace;
+      --ink:#0b0a0c;
+      --paper:#f3f0e8;
+      --paper-2:#e8e2d5;
+      --paper-3:#d8cfbf;
+      --violet:#8150d8;
+      --violet-hi:#a77af0;
+      --violet-deep:#5a31a8;
+      --cream:#fffaf0;
+      --muted:#5b5560;
+      --line:#141116;
+      --grid:rgba(11,10,12,.085);
+      --glass:rgba(243,240,232,.88);
+      --shadow:#2d1b42;
+      --ease:cubic-bezier(.16,1,.3,1);
     }
-
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; background: var(--ink); }
-    body {
-      margin: 0;
-      overflow-x: hidden;
-      color: var(--ink);
-      background:
-        radial-gradient(circle at 74% -10%, rgba(131,83,221,.23), transparent 30rem),
-        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
-        linear-gradient(var(--grid) 1px, transparent 1px),
-        var(--paper);
-      background-size: auto, 32px 32px, 32px 32px, auto;
-      font-family: var(--display);
-      font-weight: 780;
-      text-rendering: geometricPrecision;
-    }
-
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: 999;
-      pointer-events: none;
-      opacity: .035;
-      background-image:
-        linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%),
-        linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%);
-      background-size: 4px 4px;
-      background-position: 0 0, 2px 2px;
-      mix-blend-mode: multiply;
-    }
-
     body[data-theme="dark"] {
-      --ink: #f4eee4;
-      --paper: #100f12;
-      --paper-2: #1d1724;
-      --violet: #9b6aef;
-      --violet-2: #7345c9;
-      --violet-soft: #3d2a57;
-      --acid: #d9ff62;
-      --white: #fffaf0;
-      --muted: #bdb3c4;
-      --line: #efe7dc;
-      --shadow: #522d87;
-      --grid: rgba(244,238,228,.07);
-      --glass: rgba(16,15,18,.84);
-      color: var(--ink);
-    }
-
-    body[data-theme="dark"]::after {
-      opacity: .025;
-      mix-blend-mode: screen;
-    }
-
-    a { color: inherit; text-decoration: none; }
-    button, input { font: inherit; }
-    img { max-width: 100%; display: block; }
-
-    .skip {
-      position: fixed;
-      top: 12px;
-      left: 12px;
-      z-index: 1000;
-      padding: 10px 14px;
-      transform: translateY(-150%);
-      color: var(--white);
-      background: #000;
-      border: 2px solid var(--white);
-    }
-    .skip:focus { transform: none; }
-
-    .progress {
-      position: fixed;
-      inset: 0 auto auto 0;
-      z-index: 80;
-      width: var(--progress, 0%);
-      height: 4px;
-      background: var(--acid);
-      box-shadow: 0 0 0 1px rgba(0,0,0,.08);
-    }
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 70;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 24px;
-      align-items: center;
-      min-height: 76px;
-      padding: 14px clamp(16px, 2.6vw, 42px);
-      background: var(--glass);
-      border-bottom: 3px solid var(--line);
-      backdrop-filter: blur(14px);
-    }
-
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      min-width: max-content;
-      font-size: 28px;
-      font-weight: 1000;
-      letter-spacing: -.04em;
-      text-transform: uppercase;
-    }
-
-    .brand-mark {
-      width: 42px;
-      height: 42px;
-      display: grid;
-      place-items: center;
-      background: var(--white);
-      border: 2px solid var(--line);
-      box-shadow: 5px 5px 0 var(--violet);
-      transform: rotate(-2deg);
-    }
-
-    .brand-mark img {
-      width: 34px;
-      height: 34px;
-      object-fit: contain;
-      transform: scale(1.35);
-    }
-
-    .nav {
-      display: flex;
-      justify-content: center;
-      gap: clamp(16px, 3vw, 42px);
-      font-family: var(--mono);
-      font-size: 12px;
-      font-weight: 850;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-    }
-
-    .nav a {
-      position: relative;
-      padding: 8px 0;
-    }
-
-    .nav a::after {
-      content: "";
-      position: absolute;
-      right: 0;
-      bottom: 3px;
-      left: 0;
-      height: 3px;
-      background: var(--violet);
-      transform: scaleX(0);
-      transform-origin: right;
-      transition: transform .24s var(--easing);
-    }
-    .nav a:hover::after, .nav a:focus-visible::after {
-      transform: scaleX(1);
-      transform-origin: left;
-    }
-
-    .top-actions {
-      display: flex;
-      align-items: center;
-      justify-content: end;
-      gap: 10px;
-    }
-
-    .button, .ghost, .theme-toggle {
-      min-height: 46px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 9px;
-      padding: 0 16px;
-      border: 2px solid var(--line);
-      font-size: 13px;
-      font-weight: 1000;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: transform .2s var(--easing), box-shadow .2s var(--easing), background .2s var(--easing);
-    }
-
-    .button {
-      color: #0c0b0d;
-      background: var(--violet);
-      border-color: var(--violet-2);
-      box-shadow: 5px 5px 0 var(--shadow);
-    }
-
-    .button:hover, .button:focus-visible {
-      transform: translate(-2px,-2px);
-      box-shadow: 8px 8px 0 var(--shadow);
-    }
-
-    .button:active {
-      transform: translate(1px,1px);
-      box-shadow: 2px 2px 0 var(--shadow);
-    }
-
-    .ghost, .theme-toggle {
-      color: var(--ink);
-      background: transparent;
-      box-shadow: 4px 4px 0 var(--violet);
-    }
-
-    .ghost:hover, .theme-toggle:hover,
-    .ghost:focus-visible, .theme-toggle:focus-visible {
-      background: color-mix(in srgb, var(--violet) 18%, transparent);
-      transform: translate(-2px,-2px);
-      box-shadow: 6px 6px 0 var(--violet);
-    }
-
-    .shell {
-      margin: 0;
-      border-inline: clamp(8px, 1.2vw, 18px) solid var(--line);
-    }
-
-    .hero {
-      position: relative;
-      min-height: calc(100svh - 76px);
-      display: grid;
-      grid-template-columns: minmax(0, 1.08fr) minmax(440px, .92fr);
-      align-items: stretch;
-      isolation: isolate;
-      border-bottom: 3px solid var(--line);
-    }
-
-    .hero-copy {
-      position: relative;
-      z-index: 3;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: clamp(48px, 7vw, 106px) clamp(24px, 5vw, 78px);
-      border-right: 3px solid var(--line);
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      width: fit-content;
-      margin: 0 0 18px;
-      padding: 7px 10px;
-      color: var(--white);
-      background: var(--line);
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 850;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-    }
-
-    .eyebrow i {
-      width: 8px;
-      height: 8px;
-      background: var(--acid);
-      border-radius: 50%;
-      box-shadow: 0 0 0 4px rgba(217,255,98,.18);
-      animation: blink 1.8s steps(2,end) infinite;
-    }
-
-    h1, h2, h3, p { margin-top: 0; }
-
-    h1 {
-      max-width: 9.2ch;
-      margin-bottom: 24px;
-      font-size: clamp(68px, 8.7vw, 150px);
-      line-height: .79;
-      letter-spacing: -.075em;
-      font-weight: 1000;
-      text-transform: uppercase;
-    }
-
-    .hero-highlight {
-      position: relative;
-      display: inline-block;
-      padding: 0 .06em;
-      color: var(--white);
-      background: var(--violet);
-      transform: rotate(-1.5deg);
-      box-shadow: .08em .08em 0 var(--line);
-    }
-
-    .lede {
-      max-width: 660px;
-      margin-bottom: 28px;
-      font-size: clamp(18px, 1.7vw, 26px);
-      line-height: 1.08;
-      font-weight: 850;
-      text-transform: uppercase;
-    }
-
-    .lede strong { color: var(--violet-2); }
-
-    body[data-theme="dark"] .lede strong { color: var(--violet); }
-
-    .cta-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 13px;
-    }
-
-    .micro {
-      margin: 20px 0 0;
-      max-width: 580px;
-      color: var(--muted);
-      font-family: var(--mono);
-      font-size: 11px;
-      line-height: 1.55;
-      letter-spacing: .025em;
-      text-transform: uppercase;
-    }
-
-    .hero-lab {
-      position: relative;
-      overflow: hidden;
-      min-height: 620px;
-      background:
-        linear-gradient(90deg, rgba(12,11,13,.09) 1px, transparent 1px),
-        linear-gradient(rgba(12,11,13,.09) 1px, transparent 1px),
-        var(--violet-soft);
-      background-size: 40px 40px;
-    }
-
-    body[data-theme="dark"] .hero-lab {
-      background:
-        linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px),
-        linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px),
-        var(--paper-2);
-      background-size: 40px 40px;
-    }
-
-    .orbit {
-      position: absolute;
-      inset: 50% auto auto 50%;
-      width: min(62vw, 620px);
-      aspect-ratio: 1;
-      transform: translate(-50%,-50%);
-      border: 3px solid var(--line);
-      border-radius: 50%;
-    }
-    .orbit::before, .orbit::after {
-      content: "";
-      position: absolute;
-      inset: 11%;
-      border: 2px dashed var(--line);
-      border-radius: inherit;
-      opacity: .55;
-    }
-    .orbit::after { inset: 27%; border-style: solid; opacity: .22; }
-
-    .app-core {
-      position: absolute;
-      z-index: 5;
-      inset: 50% auto auto 50%;
-      width: clamp(170px, 20vw, 300px);
-      aspect-ratio: 1;
-      display: grid;
-      place-items: center;
-      transform: translate(-50%,-50%) rotate(1deg);
-      background: var(--paper);
-      border: 4px solid var(--line);
-      box-shadow: 16px 16px 0 var(--violet-2);
-    }
-
-    .app-core img {
-      width: 82%;
-      transform: scale(1.04);
-      filter: drop-shadow(0 14px 20px rgba(0,0,0,.16));
-    }
-
-    .core-tag {
-      position: absolute;
-      right: -14px;
-      bottom: -14px;
-      padding: 9px 11px;
-      color: var(--ink);
-      background: var(--acid);
-      border: 2px solid var(--line);
-      font-family: var(--mono);
-      font-size: 10px;
-      font-weight: 900;
-      text-transform: uppercase;
-      transform: rotate(-3deg);
-    }
-
-    .specimen {
-      --x: 0px;
-      --y: 0px;
-      position: absolute;
-      z-index: 4;
-      min-width: 110px;
-      padding: 10px 12px;
-      display: grid;
-      grid-template-columns: 32px 1fr;
-      align-items: center;
-      gap: 9px;
-      color: var(--ink);
-      background: var(--paper);
-      border: 2px solid var(--line);
-      box-shadow: 6px 6px 0 var(--line);
-      transform: translate3d(var(--x),var(--y),0) rotate(var(--r,0deg));
-      transition: transform .35s var(--easing), box-shadow .2s var(--easing);
-      will-change: transform;
-    }
-
-    .specimen:hover {
-      z-index: 8;
-      box-shadow: 9px 9px 0 var(--violet-2);
-    }
-
-    .specimen .ico {
-      width: 32px;
-      height: 32px;
-      display: grid;
-      place-items: center;
-      color: var(--white);
-      background: var(--ico, var(--violet));
-      border: 2px solid var(--line);
-      font-weight: 1000;
-      font-size: 16px;
-    }
-
-    .specimen b {
-      display: block;
-      font-size: 12px;
-      line-height: 1;
-      text-transform: uppercase;
-    }
-
-    .specimen small {
-      display: block;
-      margin-top: 3px;
-      font-family: var(--mono);
-      font-size: 8px;
-      text-transform: uppercase;
-    }
-
-    .s1 { left: 7%; top: 13%; --r: -4deg; }
-    .s2 { right: 7%; top: 15%; --r: 3deg; }
-    .s3 { right: 3%; top: 42%; --r: -3deg; }
-    .s4 { right: 12%; bottom: 9%; --r: 5deg; }
-    .s5 { left: 8%; bottom: 12%; --r: -5deg; }
-    .s6 { left: 3%; top: 45%; --r: 3deg; }
-
-    .scanline {
-      position: absolute;
-      z-index: 2;
-      top: -8%;
-      left: 0;
-      width: 100%;
-      height: 12%;
-      background: linear-gradient(180deg, transparent, rgba(217,255,98,.16), rgba(217,255,98,.46), transparent);
-      animation: scan 6s linear infinite;
-      mix-blend-mode: multiply;
-    }
-
-    .lab-label {
-      position: absolute;
-      z-index: 10;
-      top: 18px;
-      left: 18px;
-      padding: 7px 10px;
-      color: var(--white);
-      background: var(--line);
-      border: 2px solid var(--line);
-      font-family: var(--mono);
-      font-size: 10px;
-      font-weight: 850;
-      text-transform: uppercase;
-    }
-
-    .lab-readout {
-      position: absolute;
-      z-index: 10;
-      right: 18px;
-      bottom: 18px;
-      max-width: 290px;
-      padding: 10px 12px;
-      color: var(--ink);
-      background: var(--acid);
-      border: 2px solid var(--line);
-      box-shadow: 5px 5px 0 var(--line);
-      font-family: var(--mono);
-      font-size: 9px;
-      line-height: 1.45;
-      font-weight: 850;
-      text-transform: uppercase;
-    }
-
-    .ticker {
-      overflow: hidden;
-      color: var(--white);
-      background: var(--line);
-      border-bottom: 3px solid var(--line);
-    }
-
-    .ticker-track {
-      width: max-content;
-      display: flex;
-      align-items: center;
-      gap: 28px;
-      padding: 13px 0;
-      font-family: var(--mono);
-      font-size: 12px;
-      font-weight: 850;
-      text-transform: uppercase;
-      animation: marquee 24s linear infinite;
-    }
-
-    .ticker-track span { display: inline-flex; align-items: center; gap: 28px; }
-    .ticker-track span::after { content: "◆"; color: var(--violet); }
-
-    .section {
-      padding: clamp(70px, 9vw, 136px) clamp(24px, 5vw, 76px);
-      border-bottom: 3px solid var(--line);
-    }
-
-    .section-head {
-      display: grid;
-      grid-template-columns: minmax(0, .9fr) minmax(280px, .48fr);
-      gap: 44px;
-      align-items: end;
-      margin-bottom: 52px;
-    }
-
-    .kicker {
-      margin-bottom: 12px;
-      color: var(--violet-2);
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-    }
-    body[data-theme="dark"] .kicker { color: var(--violet); }
-
-    h2 {
-      max-width: 12ch;
-      margin-bottom: 0;
-      font-size: clamp(54px, 7vw, 108px);
-      line-height: .82;
-      letter-spacing: -.065em;
-      font-weight: 1000;
-      text-transform: uppercase;
-    }
-
-    .section-intro {
-      margin: 0;
-      color: var(--muted);
-      font-size: clamp(17px, 1.5vw, 23px);
-      line-height: 1.18;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    .pipeline-wrap {
-      position: relative;
-      padding: clamp(18px, 2.4vw, 32px);
-      background: var(--paper-2);
-      border: 3px solid var(--line);
-      box-shadow: 12px 12px 0 var(--violet);
-      overflow: hidden;
-    }
-
-    .pipeline {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(150px, 1fr));
-      gap: 0;
-      min-width: 790px;
-      border: 2px solid var(--line);
-    }
-
-    .pipe-step {
-      position: relative;
-      min-height: 190px;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      background: var(--paper);
-      border-right: 2px solid var(--line);
-      overflow: hidden;
-    }
-
-    .pipe-step:last-child { border-right: 0; }
-
-    .pipe-step::after {
-      content: "→";
-      position: absolute;
-      z-index: 4;
-      top: 50%;
-      right: -18px;
-      width: 36px;
-      height: 36px;
-      display: grid;
-      place-items: center;
-      transform: translateY(-50%);
-      color: var(--white);
-      background: var(--line);
-      border: 2px solid var(--line);
-      font-size: 20px;
-    }
-    .pipe-step:last-child::after { display: none; }
-
-    .pipe-n {
-      color: var(--violet-2);
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 900;
-    }
-
-    .pipe-step h3 {
-      margin: 0;
-      font-size: clamp(24px, 2vw, 34px);
-      line-height: .92;
-      font-weight: 1000;
-      text-transform: uppercase;
-    }
-
-    .pipe-step p {
-      margin: 10px 0 0;
-      color: var(--muted);
-      font-family: var(--mono);
-      font-size: 10px;
-      line-height: 1.45;
-      text-transform: uppercase;
-    }
-
-    .pipe-step:nth-child(4) {
-      color: var(--white);
-      background: var(--violet);
-    }
-    .pipe-step:nth-child(4) .pipe-n,
-    .pipe-step:nth-child(4) p { color: var(--white); }
-
-    .pipeline-scan {
-      position: absolute;
-      z-index: 8;
-      top: 0;
-      left: -20%;
-      width: 12%;
-      height: 100%;
-      pointer-events: none;
-      background: linear-gradient(90deg, transparent, rgba(217,255,98,.72), transparent);
-      transform: skewX(-15deg);
-      animation: pipeline 5.5s ease-in-out infinite;
-      mix-blend-mode: multiply;
-    }
-
-    .note-strip {
-      margin-top: 18px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .note-strip span {
-      padding: 7px 9px;
-      color: var(--white);
-      background: var(--line);
-      font-family: var(--mono);
-      font-size: 9px;
-      font-weight: 850;
-      text-transform: uppercase;
-    }
-    .note-strip span:nth-child(3n+2) { background: var(--violet-2); }
-    .note-strip span:nth-child(3n) { color: var(--ink); background: var(--acid); }
-
-    .features {
-      padding-top: clamp(80px, 10vw, 150px);
-      background: var(--line);
-      color: var(--white);
-    }
-
-    .features .kicker { color: var(--acid); }
-    .features .section-intro { color: #c8becd; }
-
-    .feature-stage {
-      display: grid;
-      grid-template-columns: 1.35fr .65fr;
-      gap: 18px;
-    }
-
-    .feature-main, .feature-card {
-      position: relative;
-      overflow: hidden;
-      border: 3px solid var(--white);
-    }
-
-    .feature-main {
-      min-height: 540px;
-      display: grid;
-      grid-template-columns: 1fr .78fr;
-      background: var(--paper);
-      color: var(--ink);
-    }
-
-    .feature-copy {
-      padding: clamp(28px, 4vw, 56px);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .feature-copy h3 {
-      max-width: 8ch;
-      margin-bottom: 22px;
-      font-size: clamp(44px, 5.4vw, 82px);
-      line-height: .84;
-      letter-spacing: -.055em;
-      font-weight: 1000;
-      text-transform: uppercase;
-    }
-
-    .feature-copy p {
-      max-width: 520px;
-      margin: 0;
-      color: var(--muted);
-      font-size: 18px;
-      line-height: 1.15;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    .rank-board {
-      min-height: 100%;
-      padding: 24px;
-      display: grid;
-      align-content: center;
-      gap: 10px;
-      background: var(--violet-soft);
-      border-left: 3px solid var(--line);
-    }
-
-    .rank {
-      display: grid;
-      grid-template-columns: 44px 1fr auto;
-      gap: 10px;
-      align-items: center;
-      min-height: 68px;
-      padding: 10px;
-      background: var(--paper);
-      border: 2px solid var(--line);
-      box-shadow: 4px 4px 0 var(--line);
-      transform: translateX(var(--push,0));
-    }
-
-    .rank:nth-child(1) { --push: -10px; }
-    .rank:nth-child(2) { --push: 12px; }
-    .rank:nth-child(3) { --push: -3px; opacity: .72; }
-
-    .rank .num {
-      width: 38px;
-      height: 38px;
-      display: grid;
-      place-items: center;
-      color: var(--white);
-      background: var(--line);
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 900;
-    }
-
-    .rank b { display:block; text-transform:uppercase; font-size:14px; }
-    .rank small { color:var(--muted); font-family:var(--mono); font-size:9px; text-transform:uppercase; }
-    .rank em {
-      padding: 5px 7px;
-      color: var(--ink);
-      background: var(--acid);
-      border: 1px solid var(--line);
-      font-family: var(--mono);
-      font-size: 8px;
-      font-style: normal;
-      font-weight: 900;
-      text-transform: uppercase;
-    }
-
-    .feature-side {
-      display: grid;
-      grid-template-rows: repeat(3, 1fr);
-      gap: 18px;
-    }
-
-    .feature-card {
-      min-height: 168px;
-      padding: 24px;
-      color: var(--white);
-      background: #171419;
-      transition: transform .24s var(--easing), background .24s var(--easing);
-    }
-
-    .feature-card:hover { transform: translate(-4px,-4px); background: #211a2b; }
-
-    .feature-card .n {
-      margin-bottom: 18px;
-      color: var(--violet);
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 900;
-    }
-
-    .feature-card h3 {
-      margin-bottom: 10px;
-      font-size: 28px;
-      line-height: .95;
-      font-weight: 1000;
-      text-transform: uppercase;
-    }
-
-    .feature-card p {
-      margin: 0;
-      color: #c8becd;
-      font-family: var(--mono);
-      font-size: 10px;
-      line-height: 1.5;
-      text-transform: uppercase;
-    }
-
-    .privacy {
-      background:
-        linear-gradient(90deg, transparent 0 58%, rgba(131,83,221,.12) 58% 100%),
-        var(--paper);
-    }
-
-    .privacy-grid {
-      display: grid;
-      grid-template-columns: .72fr 1.28fr;
-      gap: 20px;
-      align-items: stretch;
-    }
-
-    .privacy-poster {
-      position: relative;
-      min-height: 520px;
-      padding: 32px;
-      overflow: hidden;
-      color: var(--white);
-      background: var(--violet);
-      border: 3px solid var(--line);
-      box-shadow: 12px 12px 0 var(--line);
-    }
-
-    .privacy-poster::before {
-      content: "PRIVACY";
-      position: absolute;
-      left: -40px;
-      bottom: 72px;
-      font-size: clamp(90px, 11vw, 180px);
-      line-height: .8;
-      font-weight: 1000;
-      letter-spacing: -.08em;
-      opacity: .13;
-      transform: rotate(-90deg);
-      transform-origin: left bottom;
-    }
-
-    .privacy-poster h3 {
-      max-width: 7ch;
-      margin-bottom: 24px;
-      font-size: clamp(48px, 6vw, 88px);
-      line-height: .84;
-      letter-spacing: -.06em;
-      font-weight: 1000;
-      text-transform: uppercase;
-    }
-
-    .privacy-poster p {
-      max-width: 410px;
-      font-size: 17px;
-      line-height: 1.2;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    .privacy-poster .mini {
-      position: absolute;
-      right: 22px;
-      bottom: 20px;
-      left: 22px;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding-top: 13px;
-      border-top: 2px solid rgba(255,255,255,.6);
-      font-family: var(--mono);
-      font-size: 9px;
-      text-transform: uppercase;
-    }
-
-    .privacy-controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      border: 3px solid var(--line);
-      background: var(--paper);
-    }
-
-    .control {
-      min-height: 250px;
-      padding: 28px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      border-right: 2px solid var(--line);
-      border-bottom: 2px solid var(--line);
-    }
-
-    .control:nth-child(2n) { border-right: 0; }
-    .control:nth-last-child(-n+2) { border-bottom: 0; }
-
-    .switch {
-      width: 72px;
-      height: 34px;
-      padding: 4px;
-      background: var(--line);
-      border: 2px solid var(--line);
-    }
-    .switch::before {
-      content: "";
-      display: block;
-      width: 24px;
-      height: 22px;
-      margin-left: auto;
-      background: var(--acid);
-      border: 1px solid var(--line);
-    }
-
-    .control h3 {
-      margin-bottom: 8px;
-      font-size: 28px;
-      font-weight: 1000;
-      text-transform: uppercase;
-    }
-    .control p {
-      margin: 0;
-      color: var(--muted);
-      font-family: var(--mono);
-      font-size: 10px;
-      line-height: 1.5;
-      text-transform: uppercase;
-    }
-
-    .install {
-      padding-bottom: clamp(80px, 10vw, 150px);
-    }
-
-    .install-stage {
-      display: grid;
-      grid-template-columns: minmax(0, 1.08fr) minmax(320px, .72fr);
-      border: 3px solid var(--line);
-      background: var(--paper);
-      box-shadow: 14px 14px 0 var(--violet);
-    }
-
-    .install-copy {
-      padding: clamp(32px, 5vw, 74px);
-      border-right: 3px solid var(--line);
-    }
-
-    .install-copy h2 { max-width: 9ch; }
-
-    .steps {
-      margin-top: 44px;
-      display: grid;
-      gap: 0;
-      border-top: 2px solid var(--line);
-    }
-
-    .step {
-      display: grid;
-      grid-template-columns: 54px minmax(0,1fr);
-      gap: 20px;
-      padding: 22px 0;
-      border-bottom: 2px solid var(--line);
-    }
-
-    .step b {
-      width: 44px;
-      height: 44px;
-      display: grid;
-      place-items: center;
-      color: var(--white);
-      background: var(--line);
-      font-family: var(--mono);
-      font-size: 12px;
-    }
-
-    .step h3 {
-      margin: 0 0 6px;
-      font-size: 24px;
-      font-weight: 1000;
-      text-transform: uppercase;
-    }
-    .step p {
-      margin: 0;
-      color: var(--muted);
-      font-family: var(--mono);
-      font-size: 10px;
-      line-height: 1.5;
-      text-transform: uppercase;
-    }
-
-    .download-poster {
-      position: relative;
-      min-height: 620px;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      color: var(--white);
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.08) 25%, transparent 25%) 0 0/28px 28px,
-        var(--line);
-    }
-
-    .download-poster img {
-      position: relative;
-      z-index: 2;
-      width: min(72%, 340px);
-      filter: drop-shadow(14px 14px 0 var(--violet-2));
-      transform: rotate(2deg);
-    }
-
-    .download-poster .halo {
-      position: absolute;
-      width: 72%;
-      aspect-ratio: 1;
-      border: 3px solid var(--violet);
-      border-radius: 50%;
-      box-shadow:
-        0 0 0 24px rgba(131,83,221,.14),
-        0 0 0 54px rgba(131,83,221,.09),
-        0 0 0 88px rgba(131,83,221,.05);
-    }
-
-    .download-poster .sticker {
-      position: absolute;
-      z-index: 4;
-      right: 26px;
-      bottom: 26px;
-      max-width: 200px;
-      padding: 13px;
-      color: var(--ink);
-      background: var(--acid);
-      border: 2px solid var(--white);
-      box-shadow: 7px 7px 0 var(--violet);
-      font-family: var(--mono);
-      font-size: 10px;
-      line-height: 1.4;
-      font-weight: 900;
-      text-transform: uppercase;
-      transform: rotate(-3deg);
-    }
-
-    .closing {
-      padding: clamp(74px, 9vw, 130px) clamp(24px, 5vw, 76px);
-      color: var(--white);
-      background: var(--violet);
-      border-bottom: 3px solid var(--line);
-      text-align: center;
-    }
-
-    .closing h2 {
-      max-width: 10ch;
-      margin: 0 auto 26px;
-      font-size: clamp(64px, 10vw, 160px);
-    }
-
-    .closing p {
-      max-width: 650px;
-      margin: 0 auto 28px;
-      font-size: 20px;
-      line-height: 1.1;
-      font-weight: 850;
-      text-transform: uppercase;
-    }
-
-    .closing .cta-row { justify-content: center; }
-    .closing .button {
-      background: var(--acid);
-      border-color: var(--line);
-      box-shadow: 7px 7px 0 var(--line);
-    }
-    .closing .ghost {
-      color: var(--white);
-      border-color: var(--white);
-      box-shadow: 5px 5px 0 var(--line);
-    }
-
-    footer {
-      display: grid;
-      grid-template-columns: 1.2fr .8fr auto;
-      gap: 24px;
-      align-items: center;
-      padding: 28px clamp(20px, 4vw, 58px);
-      color: var(--white);
-      background: #0b0a0c;
-      font-family: var(--mono);
-      font-size: 10px;
-      line-height: 1.5;
-      text-transform: uppercase;
-    }
-
-    .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 18px;
-    }
-
-    .footer-links a { border-bottom: 1px solid rgba(255,255,255,.4); }
-    .footer-links a:hover { color: var(--acid); }
-
-    .footer-mark {
-      display: inline-flex;
-      align-items: center;
-      gap: 9px;
-      white-space: nowrap;
-    }
-    .footer-mark img { width: 32px; height: 32px; object-fit: contain; }
-
-    .reveal {
-      opacity: 0;
-      transform: translateY(24px);
-      transition: opacity .8s var(--easing), transform .8s var(--easing);
-    }
-    .reveal.is-visible { opacity: 1; transform: none; }
-
-    @keyframes blink { 50% { opacity:.35; } }
-    @keyframes scan {
-      from { transform: translateY(-30%); }
-      to { transform: translateY(960%); }
-    }
-    @keyframes pipeline {
-      0%, 12% { transform: translateX(0) skewX(-15deg); opacity:0; }
-      28% { opacity:1; }
-      72% { opacity:1; }
-      88%, 100% { transform: translateX(980%) skewX(-15deg); opacity:0; }
-    }
-    @keyframes marquee { to { transform: translateX(-50%); } }
-
-    @media (max-width: 1120px) {
-      .nav { display:none; }
-      .topbar { grid-template-columns: 1fr auto; }
-      .hero { grid-template-columns: 1fr; }
-      .hero-copy { min-height: 690px; border-right: 0; border-bottom: 3px solid var(--line); }
-      .hero-lab { min-height: 650px; }
-      .section-head { grid-template-columns: 1fr; }
-      .feature-stage { grid-template-columns: 1fr; }
-      .feature-side { grid-template-columns: repeat(3,1fr); grid-template-rows: none; }
-      .privacy-grid { grid-template-columns: 1fr; }
-      .install-stage { grid-template-columns: 1fr; }
-      .install-copy { border-right: 0; border-bottom: 3px solid var(--line); }
-      .download-poster { min-height: 540px; }
-    }
-
-    @media (max-width: 760px) {
-      .topbar { min-height: 66px; padding: 10px 12px; }
-      .brand { font-size: 23px; }
-      .brand-mark { width:38px; height:38px; }
-      .top-actions .ghost { display:none; }
-      .theme-toggle { width: 46px; padding: 0; font-size: 0; }
-      .theme-toggle::before { content:"◐"; font-size:18px; }
-      .shell { border-inline-width: 6px; }
-      .hero { min-height: auto; }
-      .hero-copy { min-height: auto; padding: 62px 20px 54px; }
-      h1 { font-size: clamp(58px, 19vw, 94px); }
-      .lede { font-size: 17px; }
-      .button, .ghost { width:100%; }
-      .hero-lab { min-height: 520px; }
-      .orbit { width: 430px; }
-      .app-core { width: 180px; box-shadow: 10px 10px 0 var(--violet-2); }
-      .specimen { min-width: 96px; grid-template-columns: 27px 1fr; padding: 8px; }
-      .specimen .ico { width:27px; height:27px; font-size:13px; }
-      .specimen b { font-size:10px; }
-      .specimen small { font-size:7px; }
-      .s1 { left: 3%; top: 12%; }
-      .s2 { right: 2%; top: 17%; }
-      .s3 { right: -4%; top: 43%; }
-      .s4 { right: 4%; bottom: 11%; }
-      .s5 { left: 3%; bottom: 13%; }
-      .s6 { left: -6%; top: 45%; }
-      .lab-readout { right:12px; bottom:12px; max-width:230px; font-size:8px; }
-      .ticker-track { font-size: 10px; }
-      .section { padding: 74px 18px; }
-      h2 { font-size: clamp(50px, 16vw, 84px); }
-      .pipeline-wrap { overflow-x:auto; box-shadow: 8px 8px 0 var(--violet); }
-      .feature-main { grid-template-columns: 1fr; min-height: auto; }
-      .rank-board { min-height: 390px; border-left: 0; border-top: 3px solid var(--line); }
-      .feature-side { grid-template-columns: 1fr; }
-      .privacy { background: var(--paper); }
-      .privacy-poster { min-height: 460px; box-shadow: 8px 8px 0 var(--line); }
-      .privacy-controls { grid-template-columns: 1fr; }
-      .control, .control:nth-child(2n), .control:nth-last-child(-n+2) {
-        min-height: 200px;
-        border-right: 0;
-        border-bottom: 2px solid var(--line);
-      }
-      .control:last-child { border-bottom:0; }
-      .install-stage { box-shadow: 8px 8px 0 var(--violet); }
-      .download-poster { min-height: 440px; }
-      .closing { padding-inline:18px; }
-      footer { grid-template-columns:1fr; text-align:center; }
-      .footer-links { justify-content:center; }
-      .footer-mark { justify-content:center; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        scroll-behavior: auto !important;
-        animation-duration: .001ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: .001ms !important;
-      }
-      .reveal { opacity:1; transform:none; }
-    }
+      --ink:#f4efe5;
+      --paper:#111014;
+      --paper-2:#1b1621;
+      --paper-3:#2a2034;
+      --violet:#9b6cf0;
+      --violet-hi:#b996f6;
+      --violet-deep:#663ab8;
+      --cream:#0b0a0c;
+      --muted:#b7adbf;
+      --line:#eee5d7;
+      --grid:rgba(244,239,229,.07);
+      --glass:rgba(17,16,20,.88);
+      --shadow:#4a2a79;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;background:var(--paper)}
+    body{margin:0;overflow-x:hidden;color:var(--ink);background:
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px),
+      linear-gradient(var(--grid) 1px,transparent 1px),var(--paper);background-size:30px 30px;font-family:"Arial Narrow","Roboto Condensed","Segoe UI",sans-serif}
+    body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:200;opacity:.045;background-image:radial-gradient(currentColor .65px,transparent .65px);background-size:4px 4px;mix-blend-mode:multiply}
+    body[data-theme="dark"]::after{mix-blend-mode:screen;opacity:.035}
+    a{color:inherit;text-decoration:none}
+    button{font:inherit}
+    img{display:block;max-width:100%}
+    ::selection{background:var(--violet);color:#fff}
+    .mono{font-family:"JetBrains Mono","Cascadia Mono","Consolas",monospace}
+    .skip{position:fixed;left:12px;top:-80px;z-index:999;background:var(--ink);color:var(--cream);padding:12px 16px;border:2px solid var(--violet)}
+    .skip:focus{top:12px}
+    .progress{position:fixed;left:0;top:0;height:4px;width:0;background:var(--violet);z-index:500;box-shadow:0 0 18px var(--violet)}
+    .cursor-halo{position:fixed;left:0;top:0;width:34px;height:34px;border:1px solid var(--violet);border-radius:50%;pointer-events:none;z-index:350;opacity:0;transform:translate(-50%,-50%);transition:width .18s var(--ease),height .18s var(--ease),opacity .2s}
+    .cursor-halo.hot{width:58px;height:58px;background:color-mix(in srgb,var(--violet) 12%,transparent)}
+    .capture-trail{position:fixed;left:0;top:0;z-index:340;pointer-events:none;width:22px;height:22px;display:grid;place-items:center;border:2px solid var(--line);background:var(--paper);box-shadow:3px 3px 0 var(--violet);font:900 10px/1 monospace;animation:trail-out 720ms var(--ease) forwards}
+    @keyframes trail-out{0%{opacity:.95;transform:translate(-50%,-50%) scale(.65) rotate(-7deg)}55%{opacity:.8}100%{opacity:0;transform:translate(-50%,-78px) scale(1.08) rotate(8deg)}}
+
+    .topbar{position:sticky;top:0;z-index:120;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:24px;min-height:72px;padding:12px 18px;background:var(--glass);backdrop-filter:blur(14px);border-bottom:3px solid var(--line)}
+    .brand{display:flex;align-items:center;gap:12px;font-size:28px;font-weight:1000;text-transform:uppercase;letter-spacing:-.035em}
+    .brand-mark{width:42px;height:42px;display:grid;place-items:center;background:#fffaf0;border:2px solid var(--line);box-shadow:5px 5px 0 var(--violet);overflow:hidden}
+    .brand-mark img{width:35px;transform:scale(1.3)}
+    .nav{display:flex;justify-content:center;gap:30px;font-size:13px;font-weight:950;text-transform:uppercase}
+    .nav a{position:relative;padding:10px 0}
+    .nav a::after{content:"";position:absolute;left:0;right:100%;bottom:4px;height:3px;background:var(--violet);transition:right .24s var(--ease)}
+    .nav a:hover::after,.nav a:focus-visible::after{right:0}
+    .top-actions{display:flex;align-items:center;gap:10px}
+    .button,.theme{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:46px;padding:0 16px;border:2px solid var(--line);font-weight:1000;text-transform:uppercase;cursor:pointer;transition:transform .18s var(--ease),box-shadow .18s var(--ease),background .18s}
+    .button{background:var(--violet);color:#fff;box-shadow:4px 4px 0 var(--shadow)}
+    .button.secondary{background:var(--paper);color:var(--ink);box-shadow:4px 4px 0 var(--violet)}
+    .theme{background:transparent;color:var(--ink);box-shadow:4px 4px 0 var(--violet)}
+    .button:hover,.button:focus-visible,.theme:hover,.theme:focus-visible{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--shadow)}
+    .magnetic{will-change:transform}
+
+    main{border-left:14px solid var(--line);border-right:14px solid var(--line)}
+    .hero{position:relative;min-height:calc(100vh - 72px);display:grid;grid-template-columns:minmax(0,1.08fr) minmax(500px,.92fr);overflow:hidden;border-bottom:4px solid var(--line)}
+    .hero-copy{position:relative;z-index:5;display:flex;flex-direction:column;justify-content:center;padding:clamp(44px,6vw,96px) clamp(28px,5vw,82px)}
+    .kicker{display:flex;align-items:center;gap:12px;margin-bottom:22px;font:900 12px/1.2 monospace;text-transform:uppercase;letter-spacing:.08em}
+    .kicker::before{content:"";width:44px;height:8px;background:var(--violet);border:2px solid var(--line)}
+    h1{margin:0;max-width:7.4ch;font-size:clamp(78px,9.7vw,158px);line-height:.78;letter-spacing:-.07em;text-transform:uppercase;font-weight:1000}
+    h1 .face{position:relative;display:inline-block;color:#fff;background:var(--violet);padding:0 .07em .08em;transform:rotate(-1.5deg);box-shadow:.07em .07em 0 var(--shadow)}
+    h1 .face::after{content:"";position:absolute;width:.11em;height:.11em;border-radius:50%;right:.15em;top:.12em;background:#fff;box-shadow:-.22em 0 0 #fff}
+    .lede{max-width:660px;margin:28px 0 26px;font-size:clamp(18px,1.45vw,23px);line-height:1.22;font-weight:800;text-transform:uppercase}
+    .hero-actions{display:flex;flex-wrap:wrap;gap:13px;align-items:center}
+    .tiny-note{max-width:290px;font:800 11px/1.4 monospace;text-transform:uppercase;color:var(--muted)}
+    .hero-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));max-width:680px;margin-top:42px;border:3px solid var(--line);background:var(--paper)}
+    .hero-stat{padding:14px;border-right:2px solid var(--line)}
+    .hero-stat:last-child{border-right:0}
+    .hero-stat strong{display:block;font-size:13px;text-transform:uppercase}
+    .hero-stat span{display:block;margin-top:4px;font:700 10px/1.3 monospace;color:var(--muted);text-transform:uppercase}
+
+    .resolver-field{position:relative;min-height:690px;background:var(--paper-2);border-left:4px solid var(--line);overflow:hidden;isolation:isolate}
+    .resolver-field::before{content:"";position:absolute;inset:7%;border:2px solid var(--line);border-radius:50%;opacity:.3}
+    .resolver-field::after{content:"";position:absolute;inset:20%;border:2px dashed var(--violet);border-radius:50%;opacity:.7;animation:orbit 24s linear infinite}
+    @keyframes orbit{to{transform:rotate(360deg)}}
+    .field-label{position:absolute;left:22px;top:20px;z-index:9;padding:8px 10px;background:var(--ink);color:var(--cream);font:900 11px/1 monospace;text-transform:uppercase;border:2px solid var(--line)}
+    .field-readout{position:absolute;right:18px;bottom:16px;z-index:9;width:min(330px,72%);background:var(--paper);border:3px solid var(--line);box-shadow:8px 8px 0 var(--violet)}
+    .readout-head{display:flex;justify-content:space-between;padding:9px 11px;background:var(--ink);color:var(--cream);font:900 10px/1 monospace;text-transform:uppercase}
+    .readout-row{display:grid;grid-template-columns:86px 1fr auto;gap:10px;align-items:center;padding:9px 11px;border-top:2px solid var(--line);font:800 10px/1.1 monospace;text-transform:uppercase}
+    .meter{height:7px;border:1px solid var(--line);background:linear-gradient(90deg,var(--violet) var(--fill),transparent var(--fill))}
+    .core{position:absolute;left:50%;top:49%;z-index:6;width:214px;aspect-ratio:1;transform:translate(-50%,-50%);display:grid;place-items:center;background:#fffaf0;border:4px solid var(--line);box-shadow:15px 15px 0 var(--violet-deep);clip-path:polygon(8% 0,92% 0,100% 8%,100% 92%,92% 100%,8% 100%,0 92%,0 8%)}
+    .core::before,.core::after{content:"";position:absolute;inset:-34px;border:3px solid var(--line);clip-path:inherit;opacity:.25;animation:pulse 2.8s ease-in-out infinite}
+    .core::after{inset:-68px;animation-delay:-1.4s}
+    @keyframes pulse{50%{opacity:.05;transform:scale(1.04)}}
+    .core img{width:156px;filter:drop-shadow(7px 7px 0 rgba(90,49,168,.28))}
+    .core-tag{position:absolute;left:50%;bottom:-20px;transform:translateX(-50%);white-space:nowrap;padding:8px 12px;background:var(--ink);color:var(--cream);border:2px solid var(--line);font:900 10px/1 monospace;text-transform:uppercase}
+    .specimen{--x:0px;--y:0px;position:absolute;z-index:7;width:66px;height:66px;display:grid;place-items:center;border:3px solid var(--line);background:var(--paper);box-shadow:7px 7px 0 var(--violet);font:1000 22px/1 sans-serif;transform:translate3d(var(--x),var(--y),0) rotate(var(--r,0deg));transition:box-shadow .2s var(--ease),background .2s}
+    .specimen::after{content:attr(data-label);position:absolute;left:-3px;top:calc(100% + 3px);padding:5px 7px;background:var(--ink);color:var(--cream);font:800 8px/1 monospace;text-transform:uppercase;white-space:nowrap;border:2px solid var(--line)}
+    .specimen:hover{z-index:12;background:var(--violet);color:#fff;box-shadow:12px 12px 0 var(--shadow)}
+    .s1{left:11%;top:18%;--r:-9deg}.s2{right:12%;top:13%;--r:7deg}.s3{left:8%;bottom:20%;--r:5deg}.s4{right:9%;bottom:28%;--r:-7deg}.s5{left:43%;top:7%;--r:3deg}.s6{right:33%;bottom:10%;--r:9deg}
+    .scan-beam{position:absolute;left:0;right:0;top:0;height:3px;z-index:4;background:var(--violet);box-shadow:0 0 18px 5px color-mix(in srgb,var(--violet) 40%,transparent);animation:scan 5s ease-in-out infinite alternate}
+    @keyframes scan{to{transform:translateY(686px)}}
+
+    .ticker{overflow:hidden;border-bottom:4px solid var(--line);background:var(--ink);color:var(--cream)}
+    .ticker-track{display:flex;width:max-content;animation:ticker 26s linear infinite}
+    .ticker span{display:block;padding:12px 22px;font:900 12px/1 monospace;text-transform:uppercase;border-right:2px solid var(--violet)}
+    .ticker b{color:var(--violet-hi)}
+    @keyframes ticker{to{transform:translateX(-50%)}}
+
+    .section{position:relative;padding:clamp(70px,9vw,140px) clamp(24px,6vw,96px);border-bottom:4px solid var(--line)}
+    .section-number{position:absolute;right:22px;top:18px;font:1000 clamp(44px,6vw,88px)/.8 monospace;color:transparent;-webkit-text-stroke:2px var(--line);opacity:.22}
+    .eyebrow{margin:0 0 16px;font:900 11px/1.2 monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+    h2{margin:0;font-size:clamp(55px,8vw,126px);line-height:.82;letter-spacing:-.06em;text-transform:uppercase;font-weight:1000}
+    .section-intro{max-width:820px;margin:26px 0 0;font-size:clamp(18px,2vw,27px);line-height:1.14;font-weight:850;text-transform:uppercase}
+
+    .pipeline{background:var(--paper-3);padding-bottom:100px}
+    .pipeline-stage{margin-top:60px;display:grid;grid-template-columns:minmax(240px,.38fr) minmax(0,1fr);gap:clamp(28px,6vw,90px);align-items:start}
+    .stage-index{position:sticky;top:110px;border:3px solid var(--line);background:var(--paper);box-shadow:10px 10px 0 var(--violet)}
+    .stage-index button{width:100%;display:grid;grid-template-columns:38px 1fr auto;gap:12px;align-items:center;padding:15px 14px;border:0;border-bottom:2px solid var(--line);background:transparent;color:var(--ink);text-align:left;font-weight:950;text-transform:uppercase;cursor:pointer}
+    .stage-index button:last-child{border-bottom:0}
+    .stage-index button.active{background:var(--ink);color:var(--cream)}
+    .stage-index .num{font:900 10px monospace;color:var(--violet)}
+    .stage-index .ping{width:9px;height:9px;border:2px solid currentColor;border-radius:50%}
+    .stage-index button.active .ping{background:var(--violet);box-shadow:0 0 0 5px color-mix(in srgb,var(--violet) 22%,transparent)}
+    .stage-scenes{display:grid;gap:26px}
+    .scene{min-height:500px;display:grid;grid-template-columns:minmax(0,.86fr) minmax(300px,1.14fr);border:4px solid var(--line);background:var(--paper);overflow:hidden;opacity:.56;transform:scale(.975);transition:opacity .45s var(--ease),transform .45s var(--ease),box-shadow .45s var(--ease)}
+    .scene.active{opacity:1;transform:scale(1);box-shadow:14px 14px 0 var(--shadow)}
+    .scene-copy{padding:clamp(28px,4vw,56px);display:flex;flex-direction:column;justify-content:space-between;border-right:3px solid var(--line)}
+    .scene-copy small{font:900 11px monospace;text-transform:uppercase;color:var(--violet-deep)}
+    .scene-copy h3{margin:12px 0;font-size:clamp(38px,4.4vw,70px);line-height:.84;text-transform:uppercase;letter-spacing:-.05em}
+    .scene-copy p{max-width:440px;margin:0;font-size:16px;line-height:1.32;font-weight:750}
+    .scene-visual{position:relative;display:grid;place-items:center;min-height:420px;background:
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px),linear-gradient(var(--grid) 1px,transparent 1px),var(--paper-2);background-size:22px 22px}
+    .url-card{width:min(82%,520px);border:4px solid var(--line);background:var(--paper);box-shadow:12px 12px 0 var(--violet);transform:rotate(-2deg)}
+    .url-bar{padding:12px 14px;background:var(--ink);color:var(--cream);font:900 11px monospace;text-transform:uppercase}
+    .url-body{display:grid;grid-template-columns:74px 1fr;gap:16px;padding:18px;align-items:center}
+    .url-icon{height:74px;display:grid;place-items:center;border:3px solid var(--line);background:#fff;font-size:32px;color:#111}
+    .url-lines i{display:block;height:10px;margin:8px 0;background:var(--line);opacity:.88}.url-lines i:nth-child(2){width:76%;background:var(--violet)}.url-lines i:nth-child(3){width:52%}
+    .candidate-cloud{position:absolute;inset:0}.candidate{position:absolute;width:78px;aspect-ratio:1;display:grid;place-items:center;border:3px solid var(--line);background:var(--paper);font-size:27px;font-weight:1000;box-shadow:6px 6px 0 var(--violet);animation:float 4s ease-in-out infinite}.candidate:nth-child(1){left:12%;top:14%}.candidate:nth-child(2){right:14%;top:19%;animation-delay:-1s}.candidate:nth-child(3){left:20%;bottom:16%;animation-delay:-2s}.candidate:nth-child(4){right:21%;bottom:13%;animation-delay:-3s}.candidate:nth-child(5){left:45%;top:40%;animation-delay:-.5s;background:var(--violet);color:#fff}
+    @keyframes float{50%{transform:translateY(-10px) rotate(2deg)}}
+    .trust-ladder{width:min(84%,560px);display:grid;gap:10px;align-self:center}.trust-row{display:grid;grid-template-columns:46px 1fr auto;gap:14px;align-items:center;padding:14px;border:3px solid var(--line);background:var(--paper);transform:translateX(var(--shift));box-shadow:7px 7px 0 var(--shadow)}.trust-row:nth-child(1){--shift:-4%}.trust-row:nth-child(2){--shift:3%}.trust-row:nth-child(3){--shift:9%;opacity:.72}.trust-row strong{font-size:13px;text-transform:uppercase}.trust-row span{font:900 10px monospace;text-transform:uppercase;color:var(--muted)}.trust-badge{width:38px;height:38px;display:grid;place-items:center;background:var(--violet);color:#fff;border:2px solid var(--line);font-weight:1000}
+    .hash-machine{width:min(86%,610px);border:4px solid var(--line);background:var(--ink);color:var(--cream);box-shadow:12px 12px 0 var(--violet)}.hash-head{padding:12px;border-bottom:2px solid var(--cream);font:900 11px monospace;text-transform:uppercase}.hash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:18px}.hash-cell{aspect-ratio:1;display:grid;place-items:center;background:var(--cream);color:#111;border:2px solid var(--cream);font-size:22px;font-weight:1000}.hash-cell.duplicate{opacity:.28;filter:grayscale(1);position:relative}.hash-cell.duplicate::after{content:"DUP";position:absolute;inset:auto 3px 3px;background:#111;color:#fff;padding:3px;font:900 8px monospace;text-align:center}.hash-foot{padding:12px;border-top:2px solid var(--cream);font:800 10px/1.5 monospace;color:var(--violet-hi)}
+
+    .selector{background:var(--ink);color:var(--cream);overflow:hidden}
+    .selector .eyebrow{color:#c7bdca}.selector h2{max-width:10ch}.selector-board{position:relative;margin-top:60px;display:grid;grid-template-columns:minmax(280px,.72fr) minmax(0,1.28fr);min-height:650px;border:4px solid var(--cream);background:#0b0a0c}
+    .selector-copy{padding:clamp(30px,5vw,66px);border-right:3px solid var(--cream);display:flex;flex-direction:column;justify-content:space-between}.selector-copy p{max-width:460px;font-size:18px;line-height:1.35;font-weight:700}.selector-copy .quote{font-size:clamp(34px,4.2vw,68px);line-height:.9;font-weight:1000;text-transform:uppercase;letter-spacing:-.04em}.selector-copy .quote em{font-style:normal;color:var(--violet-hi)}
+    .rank-visual{position:relative;overflow:hidden;background:radial-gradient(circle at 50% 45%,rgba(129,80,216,.24),transparent 30%),#141116}.rank-axis{position:absolute;left:9%;right:9%;top:50%;height:3px;background:#fff}.rank-axis::before,.rank-axis::after{content:"";position:absolute;top:-7px;width:16px;height:16px;border-radius:50%;background:var(--violet);border:2px solid #fff}.rank-axis::before{left:0}.rank-axis::after{right:0}.rank-card{position:absolute;width:180px;padding:16px;border:3px solid #fff;background:#0b0a0c;color:#fff;box-shadow:8px 8px 0 var(--violet);transform:translate(-50%,-50%) rotate(var(--rot));transition:transform .35s var(--ease)}.rank-card:hover{transform:translate(-50%,-50%) rotate(0) scale(1.08);z-index:5}.rank-card strong{display:block;font-size:17px;text-transform:uppercase}.rank-card span{display:block;margin-top:8px;font:800 9px/1.35 monospace;text-transform:uppercase;color:#bcb1c4}.rank-card.site{left:24%;top:34%;--rot:-6deg}.rank-card.resolver{left:51%;top:61%;--rot:5deg}.rank-card.synthetic{left:78%;top:39%;--rot:-4deg;opacity:.74}.rank-card .tier{display:inline-block;margin-bottom:12px;padding:5px 7px;background:var(--violet);font:900 9px monospace;text-transform:uppercase}
+    .rank-sweep{position:absolute;top:0;bottom:0;width:18%;background:linear-gradient(90deg,transparent,rgba(167,122,240,.28),transparent);animation:sweep 5.8s ease-in-out infinite}
+    @keyframes sweep{from{left:-20%}to{left:110%}}
+
+    .privacy{background:var(--paper)}
+    .privacy-grid{margin-top:55px;display:grid;grid-template-columns:minmax(0,.86fr) minmax(420px,1.14fr);gap:24px}
+    .privacy-copy{border:4px solid var(--line);background:var(--violet);color:#fff;padding:clamp(28px,4vw,52px);box-shadow:12px 12px 0 var(--shadow)}
+    .privacy-copy h3{margin:0;font-size:clamp(42px,5vw,76px);line-height:.88;text-transform:uppercase;letter-spacing:-.05em}.privacy-copy p{max-width:520px;margin:24px 0 0;font-size:17px;line-height:1.4;font-weight:750}.privacy-copy .mono{display:block;margin-top:30px;font-size:11px;line-height:1.55;text-transform:uppercase}
+    .control-panel{border:4px solid var(--line);background:var(--paper-2);box-shadow:12px 12px 0 var(--violet)}
+    .control-head{display:flex;justify-content:space-between;gap:18px;padding:14px 16px;background:var(--ink);color:var(--cream);font:900 11px monospace;text-transform:uppercase}
+    .control-row{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;padding:18px;border-top:2px solid var(--line)}.control-row:first-of-type{border-top:0}.control-row strong{display:block;font-size:15px;text-transform:uppercase}.control-row p{margin:5px 0 0;font:700 10px/1.4 monospace;color:var(--muted);text-transform:uppercase}.switch{width:58px;height:32px;padding:3px;border:3px solid var(--line);background:var(--paper);box-shadow:4px 4px 0 var(--shadow)}.switch i{display:block;width:20px;height:20px;background:var(--violet);border:2px solid var(--line);transform:translateX(24px)}.switch.off i{transform:none;background:var(--paper-3)}
+
+    .install{background:var(--paper-2)}
+    .install-grid{margin-top:58px;display:grid;grid-template-columns:repeat(3,1fr);border:4px solid var(--line);box-shadow:14px 14px 0 var(--violet)}
+    .install-step{position:relative;min-height:360px;padding:28px;background:var(--paper);border-right:3px solid var(--line);overflow:hidden}.install-step:last-child{border-right:0}.install-step .big{position:absolute;right:-8px;top:-20px;font:1000 130px/.8 monospace;color:transparent;-webkit-text-stroke:3px var(--line);opacity:.12}.install-step .icon{width:64px;height:64px;display:grid;place-items:center;border:3px solid var(--line);background:var(--violet);color:#fff;box-shadow:7px 7px 0 var(--shadow);font-size:27px}.install-step h3{margin:48px 0 12px;font-size:31px;line-height:.95;text-transform:uppercase}.install-step p{margin:0;max-width:330px;font-size:15px;line-height:1.4;font-weight:700}.install-step code{display:block;margin-top:20px;padding:10px;background:var(--ink);color:var(--cream);font-size:11px;overflow:auto}
+
+    .finale{position:relative;min-height:78vh;display:grid;place-items:center;text-align:center;background:var(--violet);color:#fff;overflow:hidden;padding:80px 24px;border-bottom:0}.finale::before{content:"";position:absolute;width:780px;aspect-ratio:1;border:3px solid rgba(255,255,255,.4);border-radius:50%;box-shadow:0 0 0 90px rgba(255,255,255,.05),0 0 0 180px rgba(255,255,255,.035);animation:orbit 28s linear infinite}.finale-inner{position:relative;z-index:3}.finale img{width:120px;margin:0 auto 28px;background:#fffaf0;border:4px solid var(--line);box-shadow:12px 12px 0 var(--shadow)}.finale h2{max-width:8ch;margin:auto;color:#fff}.finale p{max-width:620px;margin:28px auto;font-size:19px;line-height:1.35;font-weight:800;text-transform:uppercase}.finale-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}.finale .button{background:#fff;color:#111}.finale .button.secondary{background:#0b0a0c;color:#fff;box-shadow:5px 5px 0 rgba(255,255,255,.55)}
+    footer{display:flex;justify-content:space-between;gap:20px;align-items:center;padding:22px 28px;background:#0b0a0c;color:#fffaf0;border-top:4px solid #0b0a0c;font:800 10px/1.4 monospace;text-transform:uppercase}.footer-links{display:flex;gap:20px;flex-wrap:wrap}.footer-links a:hover{text-decoration:underline;text-decoration-thickness:2px;text-decoration-color:var(--violet-hi)}
+
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s var(--ease),transform .7s var(--ease)}.reveal.visible{opacity:1;transform:none}
+    :focus-visible{outline:4px solid var(--violet-hi);outline-offset:4px}
+
+    @media(max-width:1100px){
+      .nav{display:none}.hero{grid-template-columns:1fr}.resolver-field{border-left:0;border-top:4px solid var(--line);min-height:620px}.hero-copy{min-height:690px}.pipeline-stage{grid-template-columns:1fr}.stage-index{position:relative;top:auto;display:grid;grid-template-columns:repeat(5,1fr)}.stage-index button{grid-template-columns:auto 1fr;border-bottom:0;border-right:2px solid var(--line)}.stage-index button:last-child{border-right:0}.stage-index .ping{display:none}.selector-board,.privacy-grid{grid-template-columns:1fr}.selector-copy{border-right:0;border-bottom:3px solid var(--cream)}.rank-visual{min-height:560px}.install-grid{grid-template-columns:1fr}.install-step{border-right:0;border-bottom:3px solid var(--line)}.install-step:last-child{border-bottom:0}}
+    @media(max-width:760px){
+      main{border-left:7px solid var(--line);border-right:7px solid var(--line)}.topbar{grid-template-columns:1fr auto;min-height:62px;padding:9px 11px}.brand{font-size:23px}.brand-mark{width:36px;height:36px}.top-actions .button{display:none}.theme{min-height:40px;padding:0 11px}.hero-copy{min-height:620px;padding:52px 22px}h1{font-size:clamp(66px,19vw,105px)}.lede{font-size:17px}.hero-stats{grid-template-columns:1fr;margin-top:30px}.hero-stat{border-right:0;border-bottom:2px solid var(--line)}.hero-stat:last-child{border-bottom:0}.resolver-field{min-height:520px}.core{width:152px}.core img{width:112px}.specimen{width:50px;height:50px;font-size:17px}.s5{left:40%}.field-readout{display:none}.scan-beam{animation:none}.section{padding:74px 20px}.section-number{font-size:50px}.pipeline-stage{margin-top:38px}.stage-index{grid-template-columns:1fr 1fr}.stage-index button{border-right:2px solid var(--line);border-bottom:2px solid var(--line)}.stage-index button:nth-child(2n){border-right:0}.stage-index button:last-child{grid-column:1/-1;border-right:0;border-bottom:0}.scene{grid-template-columns:1fr;min-height:auto}.scene-copy{border-right:0;border-bottom:3px solid var(--line)}.scene-visual{min-height:360px}.rank-card{width:132px;padding:11px}.rank-card.site{left:28%}.rank-card.synthetic{left:74%}.privacy-grid{grid-template-columns:1fr}.install-step{min-height:300px}.finale{min-height:70vh}footer{align-items:flex-start;flex-direction:column}.cursor-halo{display:none}}
+    @media(hover:none){.cursor-halo{display:none}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.ticker-track,.resolver-field::after,.scan-beam,.core::before,.core::after,.candidate,.rank-sweep,.finale::before{animation:none!important}.reveal{opacity:1;transform:none;transition:none}.specimen,.magnetic{transform:none!important}.capture-trail{display:none}.scene{opacity:1;transform:none;transition:none}}
   </style>
 </head>
 <body>
-  <a class="skip" href="#main">Skip to content</a>
+  <a class="skip" href="#content">Skip to content</a>
   <div class="progress" aria-hidden="true"></div>
+  <div class="cursor-halo" aria-hidden="true"></div>
 
   <header class="topbar">
     <a class="brand" href="#top" aria-label="KeeFetch home">
       <span class="brand-mark"><img src="assets/icons/keefetch-app.png" alt=""></span>
-      KeeFetch
+      <span>KeeFetch</span>
     </a>
-
-    <nav class="nav" aria-label="Primary">
-      <a href="#how">How it works</a>
-      <a href="#features">Features</a>
+    <nav class="nav" aria-label="Primary navigation">
+      <a href="#pipeline">How it fetches</a>
+      <a href="#selector">Selector</a>
       <a href="#privacy">Privacy</a>
       <a href="#install">Install</a>
     </nav>
-
     <div class="top-actions">
-      <button class="theme-toggle" type="button" aria-label="Toggle color theme">Dark</button>
-      <a class="ghost" href="https://github.com/tzii/KeeFetch">GitHub ↗</a>
-      <a class="button" href="https://github.com/tzii/KeeFetch/releases/latest">Get KeeFetch ↓</a>
+      <button class="theme" type="button" aria-label="Toggle color theme">Theme</button>
+      <a class="button magnetic" href="https://github.com/tzii/KeeFetch" target="_blank" rel="noreferrer">GitHub ↗</a>
     </div>
   </header>
 
-  <main id="main" class="shell">
+  <main id="content">
     <section class="hero" id="top">
       <div class="hero-copy">
-        <div class="eyebrow"><i aria-hidden="true"></i> KeePass 2.x favicon fetcher</div>
-        <h1>Give every login <span class="hero-highlight">a face.</span></h1>
-        <p class="lede">KeeFetch hunts down the <strong>best available icon</strong>, ranks the candidates, removes duplicates, and drops the winner into your KeePass vault.</p>
-        <div class="cta-row">
-          <a class="button" href="https://github.com/tzii/KeeFetch/releases/latest">Download latest release ↓</a>
-          <a class="ghost" href="#how">Watch the resolver flow →</a>
+        <div class="kicker reveal">KeePass 2.x · open source · favicon retrieval</div>
+        <h1 class="reveal">Give every login a <span class="face">face</span>.</h1>
+        <p class="lede reveal">KeeFetch hunts down the strongest favicon it can find, ranks competing candidates, removes duplicates, and stores the winner in your KeePass database.</p>
+        <div class="hero-actions reveal">
+          <a class="button magnetic" href="https://github.com/tzii/KeeFetch/releases/latest">Download latest ↘</a>
+          <a class="button secondary magnetic" href="#pipeline">Watch the fetch</a>
+          <span class="tiny-note">No account. No dashboard. Just a KeePass plugin doing the annoying icon work.</span>
         </div>
-        <p class="micro">Open source · MIT · .NET Framework 4.8 · one-click entries · bulk groups · database-wide maintenance · Android app URLs</p>
+        <div class="hero-stats reveal" aria-label="KeeFetch capabilities">
+          <div class="hero-stat"><strong>Direct first</strong><span>Site-backed candidates compete before fallbacks</span></div>
+          <div class="hero-stat"><strong>Ranked fallbacks</strong><span>Resolver candidates are compared by trust tier</span></div>
+          <div class="hero-stat"><strong>SHA-256 dedupe</strong><span>Repeated icon payloads do not multiply in your vault</span></div>
+        </div>
       </div>
 
-      <div class="hero-lab" aria-label="Visual representation of KeeFetch resolver candidates">
-        <div class="scanline" aria-hidden="true"></div>
-        <div class="lab-label">Resolver field / live specimen view</div>
-        <div class="orbit" aria-hidden="true"></div>
-
-        <div class="app-core">
-          <img src="assets/icons/keefetch-app.png" alt="KeeFetch app icon">
-          <span class="core-tag">best candidate → vault</span>
-        </div>
-
-        <div class="specimen s1" data-depth=".8">
-          <span class="ico" style="--ico:#252329">S</span>
-          <span><b>Site</b><small>canonical</small></span>
-        </div>
-        <div class="specimen s2" data-depth=".55">
-          <span class="ico" style="--ico:#7357e8">20</span>
-          <span><b>Twenty</b><small>resolver</small></span>
-        </div>
-        <div class="specimen s3" data-depth=".95">
-          <span class="ico" style="--ico:#de5833">D</span>
-          <span><b>Duck</b><small>resolver</small></span>
-        </div>
-        <div class="specimen s4" data-depth=".7">
-          <span class="ico" style="--ico:#3d7ee8">G</span>
-          <span><b>Google</b><small>resolver</small></span>
-        </div>
-        <div class="specimen s5" data-depth=".65">
-          <span class="ico" style="--ico:#ea3d4e">Y</span>
-          <span><b>Yandex</b><small>resolver</small></span>
-        </div>
-        <div class="specimen s6" data-depth=".9">
-          <span class="ico" style="--ico:#8353dd">F</span>
-          <span><b>Fallback</b><small>synthetic</small></span>
-        </div>
-
-        <div class="lab-readout">Availability first / trust tiered / SHA-256 dedupe / direct site before synthetic fallback</div>
-      </div>
-    </section>
-
-    <div class="ticker" aria-hidden="true">
-      <div class="ticker-track">
-        <span>Rel=icon</span><span>Apple touch icon</span><span>Web manifest</span><span>SVG-aware</span><span>Androidapp://</span><span>TLS 1.3</span><span>System proxy</span><span>Concurrent fetch</span>
-        <span>Rel=icon</span><span>Apple touch icon</span><span>Web manifest</span><span>SVG-aware</span><span>Androidapp://</span><span>TLS 1.3</span><span>System proxy</span><span>Concurrent fetch</span>
-      </div>
-    </div>
-
-    <section class="section" id="how">
-      <div class="section-head reveal">
-        <div>
-          <div class="kicker">01 / Availability-first selection</div>
-          <h2>Not the first icon. The right icon.</h2>
-        </div>
-        <p class="section-intro">KeeFetch collects candidates first, then ranks what survived. Strong site-backed icons stay ahead of placeholder-prone fallbacks instead of losing a race to whichever request happened to finish first.</p>
-      </div>
-
-      <div class="pipeline-wrap reveal">
-        <div class="pipeline-scan" aria-hidden="true"></div>
-        <div class="pipeline">
-          <article class="pipe-step">
-            <span class="pipe-n">01 / INPUT</span>
-            <div>
-              <h3>Read the entry</h3>
-              <p>Resolve URL placeholders, normalize schemes, map Android packages when needed.</p>
-            </div>
-          </article>
-          <article class="pipe-step">
-            <span class="pipe-n">02 / DISCOVER</span>
-            <div>
-              <h3>Collect candidates</h3>
-              <p>Site icons, Apple touch icons, manifests, resolvers, then fallbacks.</p>
-            </div>
-          </article>
-          <article class="pipe-step">
-            <span class="pipe-n">03 / VERIFY</span>
-            <div>
-              <h3>Keep survivors</h3>
-              <p>Reject broken responses and unusable candidates before selection.</p>
-            </div>
-          </article>
-          <article class="pipe-step">
-            <span class="pipe-n">04 / RANK</span>
-            <div>
-              <h3>Trust beats luck</h3>
-              <p>Site canonical → strong resolver → synthetic fallback.</p>
-            </div>
-          </article>
-          <article class="pipe-step">
-            <span class="pipe-n">05 / STORE</span>
-            <div>
-              <h3>Dedupe + apply</h3>
-              <p>SHA-256 keeps duplicate images out of the database.</p>
-            </div>
-          </article>
-        </div>
-        <div class="note-strip">
-          <span>Direct site</span>
-          <span>Twenty Icons</span>
-          <span>DuckDuckGo</span>
-          <span>Google</span>
-          <span>Yandex</span>
-          <span>Favicone</span>
-          <span>Icon Horse</span>
+      <div class="resolver-field" aria-label="Animated illustration of KeeFetch resolving favicon candidates">
+        <div class="field-label">Resolver field / live specimen view</div>
+        <div class="scan-beam" aria-hidden="true"></div>
+        <div class="core" data-depth="1.2"><img src="assets/icons/keefetch-app.png" alt="KeeFetch icon"><span class="core-tag">best candidate → vault</span></div>
+        <div class="specimen s1" data-depth=".65" data-label="site icon">S</div>
+        <div class="specimen s2" data-depth=".9" data-label="apple touch">A</div>
+        <div class="specimen s3" data-depth=".55" data-label="manifest">M</div>
+        <div class="specimen s4" data-depth="1" data-label="resolver">R</div>
+        <div class="specimen s5" data-depth=".72" data-label="svg">V</div>
+        <div class="specimen s6" data-depth=".82" data-label="fallback">F</div>
+        <div class="field-readout">
+          <div class="readout-head"><span>candidate queue</span><span>rank →</span></div>
+          <div class="readout-row"><span>site</span><div class="meter" style="--fill:92%"></div><b>A</b></div>
+          <div class="readout-row"><span>resolver</span><div class="meter" style="--fill:74%"></div><b>B</b></div>
+          <div class="readout-row"><span>synthetic</span><div class="meter" style="--fill:38%"></div><b>C</b></div>
         </div>
       </div>
     </section>
 
-    <section class="section features" id="features">
-      <div class="section-head reveal">
-        <div>
-          <div class="kicker">02 / Built for messy real vaults</div>
-          <h2>Fast when it matters. Fussy when it should be.</h2>
+    <div class="ticker" aria-hidden="true"><div class="ticker-track">
+      <span><b>01</b> parse rel=icon</span><span><b>02</b> apple-touch-icon</span><span><b>03</b> manifest icons</span><span><b>04</b> resolver competition</span><span><b>05</b> trust-tier ranking</span><span><b>06</b> SHA-256 dedupe</span><span><b>07</b> store winner</span>
+      <span><b>01</b> parse rel=icon</span><span><b>02</b> apple-touch-icon</span><span><b>03</b> manifest icons</span><span><b>04</b> resolver competition</span><span><b>05</b> trust-tier ranking</span><span><b>06</b> SHA-256 dedupe</span><span><b>07</b> store winner</span>
+    </div></div>
+
+    <section class="section pipeline" id="pipeline">
+      <div class="section-number">01</div>
+      <p class="eyebrow reveal">The retrieval machine</p>
+      <h2 class="reveal">From messy URL to useful icon.</h2>
+      <p class="section-intro reveal">One click starts a small investigation. KeeFetch collects evidence, lets candidates compete, then keeps the strongest surviving result.</p>
+
+      <div class="pipeline-stage">
+        <div class="stage-index" aria-label="Retrieval stages">
+          <button class="active" data-target="scene-1"><span class="num">01</span><span>Normalize</span><i class="ping"></i></button>
+          <button data-target="scene-2"><span class="num">02</span><span>Discover</span><i class="ping"></i></button>
+          <button data-target="scene-3"><span class="num">03</span><span>Rank</span><i class="ping"></i></button>
+          <button data-target="scene-4"><span class="num">04</span><span>Dedupe</span><i class="ping"></i></button>
+          <button data-target="scene-5"><span class="num">05</span><span>Store</span><i class="ping"></i></button>
         </div>
-        <p class="section-intro">One entry or a whole database, KeeFetch is built to do the tedious icon maintenance without turning your password manager into a waiting room.</p>
+        <div class="stage-scenes">
+          <article class="scene active" id="scene-1" data-scene="scene-1">
+            <div class="scene-copy"><div><small>Stage 01 / Normalize</small><h3>Make the entry fetchable.</h3></div><p>KeeFetch handles schemes, KeePass references, and Android-style URLs before it starts asking the web for icon candidates.</p></div>
+            <div class="scene-visual"><div class="url-card"><div class="url-bar">entry:// raw target</div><div class="url-body"><div class="url-icon">↗</div><div class="url-lines"><i></i><i></i><i></i></div></div></div></div>
+          </article>
+          <article class="scene" id="scene-2" data-scene="scene-2">
+            <div class="scene-copy"><div><small>Stage 02 / Discover</small><h3>Collect before choosing.</h3></div><p>Direct site icons, Apple touch icons, manifest entries, and resolver candidates can all enter the same competition.</p></div>
+            <div class="scene-visual"><div class="candidate-cloud"><div class="candidate">S</div><div class="candidate">A</div><div class="candidate">M</div><div class="candidate">R</div><div class="candidate">★</div></div></div>
+          </article>
+          <article class="scene" id="scene-3" data-scene="scene-3">
+            <div class="scene-copy"><div><small>Stage 03 / Rank</small><h3>Trust beats convenience.</h3></div><p>The availability-first selector ranks candidates by trust tier so a placeholder-prone fallback cannot casually beat stronger site-backed evidence.</p></div>
+            <div class="scene-visual"><div class="trust-ladder"><div class="trust-row"><div class="trust-badge">A</div><strong>Site canonical</strong><span>strongest tier</span></div><div class="trust-row"><div class="trust-badge">B</div><strong>Strong resolver</strong><span>competitive fallback</span></div><div class="trust-row"><div class="trust-badge">C</div><strong>Synthetic fallback</strong><span>last resort</span></div></div></div>
+          </article>
+          <article class="scene" id="scene-4" data-scene="scene-4">
+            <div class="scene-copy"><div><small>Stage 04 / Dedupe</small><h3>No icon clone army.</h3></div><p>SHA-256 hashing keeps repeated payloads from multiplying as separate custom icons inside the database.</p></div>
+            <div class="scene-visual"><div class="hash-machine"><div class="hash-head">payload fingerprint matrix</div><div class="hash-grid"><div class="hash-cell">K</div><div class="hash-cell">F</div><div class="hash-cell duplicate">K</div><div class="hash-cell">P</div><div class="hash-cell">A</div><div class="hash-cell duplicate">F</div><div class="hash-cell">S</div><div class="hash-cell">R</div></div><div class="hash-foot">sha256 → compare existing → reuse where identical → store only what is needed</div></div></div>
+          </article>
+          <article class="scene" id="scene-5" data-scene="scene-5">
+            <div class="scene-copy"><div><small>Stage 05 / Store</small><h3>Winner gets the square.</h3></div><p>The selected icon lands back in KeePass — one entry, a group, or a broader maintenance pass depending on what you asked KeeFetch to process.</p></div>
+            <div class="scene-visual"><div class="url-card" style="transform:rotate(2deg)"><div class="url-bar">KeePass / custom icon assigned ✓</div><div class="url-body"><div class="url-icon"><img src="assets/icons/keefetch-app.png" alt="" style="width:62px"></div><div class="url-lines"><i style="width:62%"></i><i style="width:88%"></i><i style="width:44%"></i></div></div></div></div>
+          </article>
+        </div>
       </div>
+    </section>
 
-      <div class="feature-stage">
-        <article class="feature-main reveal">
-          <div class="feature-copy">
-            <div>
-              <div class="kicker">Selector engine</div>
-              <h3>Quality has an order.</h3>
-            </div>
-            <p>Provider candidates carry tier and confidence information so a weak synthetic answer cannot casually outrank a stronger site-backed result.</p>
-          </div>
-          <div class="rank-board" aria-label="Candidate ranking example">
-            <div class="rank">
-              <span class="num">01</span>
-              <span><b>Site canonical</b><small>site-backed source</small></span>
-              <em>preferred</em>
-            </div>
-            <div class="rank">
-              <span class="num">02</span>
-              <span><b>Strong resolver</b><small>fallback competition</small></span>
-              <em>eligible</em>
-            </div>
-            <div class="rank">
-              <span class="num">03</span>
-              <span><b>Synthetic fallback</b><small>last resort tier</small></span>
-              <em>guarded</em>
-            </div>
-          </div>
-        </article>
-
-        <div class="feature-side">
-          <article class="feature-card reveal">
-            <div class="n">A / CONCURRENT</div>
-            <div>
-              <h3>Bulk without the slog.</h3>
-              <p>Parallel fetching keeps group and database-wide runs moving while KeePass stays responsive.</p>
-            </div>
-          </article>
-          <article class="feature-card reveal">
-            <div class="n">B / ANDROID</div>
-            <div>
-              <h3>Android URLs, civilized.</h3>
-              <p>Maps androidapp:// package names to web domains using built-in mappings plus Play Store fallback.</p>
-            </div>
-          </article>
-          <article class="feature-card reveal">
-            <div class="n">C / DEDUPE</div>
-            <div>
-              <h3>No icon clone army.</h3>
-              <p>SHA-256 deduplication avoids stuffing the same artwork into your database again and again.</p>
-            </div>
-          </article>
+    <section class="section selector" id="selector">
+      <div class="section-number">02</div>
+      <p class="eyebrow reveal">Availability-first selector</p>
+      <h2 class="reveal">The first answer is not always the best answer.</h2>
+      <div class="selector-board reveal">
+        <div class="selector-copy"><p>Instead of treating every provider equally, KeeFetch lets candidates survive discovery and then compares them with explicit trust tiers.</p><div class="quote">Strong evidence moves <em>forward.</em><br>Placeholders move back.</div></div>
+        <div class="rank-visual">
+          <div class="rank-sweep" aria-hidden="true"></div><div class="rank-axis" aria-hidden="true"></div>
+          <div class="rank-card site"><span class="tier">Tier A</span><strong>Site-backed</strong><span>Canonical / direct evidence from the target site</span></div>
+          <div class="rank-card resolver"><span class="tier">Tier B</span><strong>Resolver</strong><span>Strong third-party resolver candidate</span></div>
+          <div class="rank-card synthetic"><span class="tier">Tier C</span><strong>Synthetic</strong><span>Fallback only when stronger evidence does not survive</span></div>
         </div>
       </div>
     </section>
 
     <section class="section privacy" id="privacy">
-      <div class="section-head reveal">
-        <div>
-          <div class="kicker">03 / Privacy is a control surface</div>
-          <h2>Know where your domains can go.</h2>
-        </div>
-        <p class="section-intro">Third-party favicon resolvers can receive domain names from your entries when direct fetching is not enough. KeeFetch discloses that behavior on first run and gives you switches to narrow it down.</p>
-      </div>
-
-      <div class="privacy-grid">
-        <article class="privacy-poster reveal">
-          <h3>Visible defaults. Real controls.</h3>
-          <p>Availability-first defaults keep resolver fallbacks enabled, but you decide whether third-party providers, synthetic fallbacks, or individual resolvers belong in your setup.</p>
-          <div class="mini">
-            <span>Tools → KeeFetch → Settings…</span>
-            <span>No account required</span>
-          </div>
-        </article>
-
-        <div class="privacy-controls reveal">
-          <article class="control">
-            <div class="switch" aria-hidden="true"></div>
-            <div>
-              <h3>Third-party providers</h3>
-              <p>Disable external favicon services if you prefer direct-site fetching only.</p>
-            </div>
-          </article>
-          <article class="control">
-            <div class="switch" aria-hidden="true"></div>
-            <div>
-              <h3>Synthetic fallbacks</h3>
-              <p>Keep generated or placeholder-style sources out of the candidate pool.</p>
-            </div>
-          </article>
-          <article class="control">
-            <div class="switch" aria-hidden="true"></div>
-            <div>
-              <h3>Specific resolvers</h3>
-              <p>Turn individual services on or off instead of accepting one all-or-nothing bundle.</p>
-            </div>
-          </article>
-          <article class="control">
-            <div class="switch" aria-hidden="true"></div>
-            <div>
-              <h3>Existing custom icons</h3>
-              <p>Skip entries that already have custom icons when doing maintenance passes.</p>
-            </div>
-          </article>
+      <div class="section-number">03</div>
+      <p class="eyebrow reveal">Privacy is a setting, not fine print</p>
+      <h2 class="reveal">You decide how far KeeFetch may look.</h2>
+      <p class="section-intro reveal">Third-party favicon services improve availability, but they can receive domains from entries. KeeFetch discloses that tradeoff and lets you narrow the resolver surface.</p>
+      <div class="privacy-grid reveal">
+        <div class="privacy-copy"><h3>More reach, or less exposure.</h3><p>The default configuration keeps the availability-first resolver chain enabled. You can disable third-party providers, synthetic fallbacks, or individual resolvers from KeeFetch settings.</p><span class="mono">Tools → KeeFetch → Settings…<br>First-run disclosure included.</span></div>
+        <div class="control-panel">
+          <div class="control-head"><span>resolver policy / illustrative control surface</span><span>local settings</span></div>
+          <div class="control-row"><div><strong>Direct site fetching</strong><p>Look at the target site for canonical icon evidence.</p></div><span class="switch"><i></i></span></div>
+          <div class="control-row"><div><strong>Third-party resolvers</strong><p>Use configured fallback services when direct discovery is insufficient.</p></div><span class="switch"><i></i></span></div>
+          <div class="control-row"><div><strong>Synthetic fallbacks</strong><p>Permit lowest-tier candidates when stronger sources do not survive.</p></div><span class="switch"><i></i></span></div>
+          <div class="control-row"><div><strong>Provider-by-provider control</strong><p>Disable individual resolver services from plugin settings.</p></div><span class="switch"><i></i></span></div>
         </div>
       </div>
     </section>
 
     <section class="section install" id="install">
-      <div class="install-stage reveal">
-        <div class="install-copy">
-          <div class="kicker">04 / Three steps</div>
-          <h2>Drop it in. Restart. Fetch.</h2>
-
-          <div class="steps">
-            <article class="step">
-              <b>01</b>
-              <div>
-                <h3>Download KeeFetch.plgx</h3>
-                <p>Grab the plugin from the latest GitHub release.</p>
-              </div>
-            </article>
-            <article class="step">
-              <b>02</b>
-              <div>
-                <h3>Copy it to Plugins</h3>
-                <p>Portable: KeePass/Plugins/ · Installed: %ProgramFiles%/KeePass Password Safe 2/Plugins/</p>
-              </div>
-            </article>
-            <article class="step">
-              <b>03</b>
-              <div>
-                <h3>Restart KeePass</h3>
-                <p>Right-click an entry → KeeFetch - Download Favicons, or use the Tools menu for bulk maintenance.</p>
-              </div>
-            </article>
-          </div>
-
-          <div class="cta-row" style="margin-top:34px">
-            <a class="button" href="https://github.com/tzii/KeeFetch/releases/latest">Download latest release ↓</a>
-            <a class="ghost" href="https://github.com/tzii/KeeFetch#-usage--demo">Usage guide ↗</a>
-          </div>
-        </div>
-
-        <div class="download-poster">
-          <div class="halo" aria-hidden="true"></div>
-          <img src="assets/icons/keefetch-download.png" alt="KeeFetch download icon">
-          <div class="sticker">KeePass 2.x<br>.NET Framework 4.8<br>MIT licensed<br>Open source</div>
-        </div>
+      <div class="section-number">04</div>
+      <p class="eyebrow reveal">Three-step install</p>
+      <h2 class="reveal">Drop it in. Restart. Fetch.</h2>
+      <div class="install-grid reveal">
+        <article class="install-step"><span class="big">1</span><div class="icon">↓</div><h3>Download the PLGX.</h3><p>Grab <strong>KeeFetch.plgx</strong> from the latest GitHub release.</p><a class="button magnetic" style="margin-top:24px" href="https://github.com/tzii/KeeFetch/releases/latest">Latest release ↗</a></article>
+        <article class="install-step"><span class="big">2</span><div class="icon">□</div><h3>Move it to Plugins.</h3><p>Place the plugin inside your KeePass 2.x Plugins directory.</p><code>Portable: KeePass/Plugins/<br>Installed: %ProgramFiles%/KeePass Password Safe 2/Plugins/</code></article>
+        <article class="install-step"><span class="big">3</span><div class="icon">↻</div><h3>Restart KeePass.</h3><p>Then right-click an entry and choose <strong>KeeFetch — Download Favicons</strong>, or use the Tools menu for broader maintenance.</p></article>
       </div>
     </section>
 
-    <section class="closing">
-      <div class="kicker">Your vault has enough grey squares.</div>
-      <h2>Go fetch something better.</h2>
-      <p>One click for a single entry. One pass for a whole group. A smarter resolver chain when the obvious favicon is nowhere to be found.</p>
-      <div class="cta-row">
-        <a class="button" href="https://github.com/tzii/KeeFetch/releases/latest">Get KeeFetch ↓</a>
-        <a class="ghost" href="https://github.com/tzii/KeeFetch">Browse the source ↗</a>
-      </div>
+    <section class="finale">
+      <div class="finale-inner reveal"><img src="assets/icons/keefetch-app.png" alt="KeeFetch"><h2>Your vault has enough grey squares.</h2><p>Give KeePass entries recognizable icons without babysitting favicon URLs one by one.</p><div class="finale-actions"><a class="button magnetic" href="https://github.com/tzii/KeeFetch/releases/latest">Get KeeFetch ↘</a><a class="button secondary magnetic" href="https://github.com/tzii/KeeFetch">Explore source ↗</a></div></div>
     </section>
   </main>
 
-  <footer>
-    <div>KeeFetch — fast, smart favicon maintenance for KeePass 2.x.<br>Independent open-source project; not affiliated with the KeePass project.</div>
-    <div class="footer-links">
-      <a href="https://github.com/tzii/KeeFetch">Source</a>
-      <a href="https://github.com/tzii/KeeFetch/releases">Releases</a>
-      <a href="https://github.com/tzii/KeeFetch/blob/master/README.md#-privacy">Privacy</a>
-      <a href="https://github.com/tzii/KeeFetch/blob/master/LICENSE">MIT</a>
-    </div>
-    <div class="footer-mark">
-      <img src="assets/icons/keefetch-app.png" alt="">
-      <span>Made for tidy vaults.</span>
-    </div>
-  </footer>
+  <footer><span>KeeFetch · MIT licensed · KeePass 2.x plugin</span><div class="footer-links"><a href="https://github.com/tzii/KeeFetch">GitHub</a><a href="https://github.com/tzii/KeeFetch/releases">Releases</a><a href="https://github.com/tzii/KeeFetch/blob/master/README.md">Docs</a><a href="https://github.com/tzii/KeeFetch/blob/master/LICENSE">License</a></div></footer>
 
   <script>
     (() => {
-      const root = document.body;
-      const toggle = document.querySelector('.theme-toggle');
-      const progress = document.querySelector('.progress');
-      const lab = document.querySelector('.hero-lab');
-      const specimens = [...document.querySelectorAll('.specimen')];
-      const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      const saved = localStorage.getItem('keefetch-theme');
-      const systemDark = matchMedia('(prefers-color-scheme: dark)').matches;
-      if (saved === 'dark' || (!saved && systemDark)) root.dataset.theme = 'dark';
-
-      const syncToggle = () => {
-        const dark = root.dataset.theme === 'dark';
-        toggle.textContent = dark ? 'Light' : 'Dark';
-        toggle.setAttribute('aria-label', `Switch to ${dark ? 'light' : 'dark'} theme`);
-      };
-      syncToggle();
-
-      toggle.addEventListener('click', () => {
-        root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
-        localStorage.setItem('keefetch-theme', root.dataset.theme);
-        syncToggle();
+      const body = document.body;
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const themeButton = document.querySelector('.theme');
+      const savedTheme = localStorage.getItem('keefetch-theme');
+      if (savedTheme) body.dataset.theme = savedTheme;
+      themeButton.addEventListener('click', () => {
+        const next = body.dataset.theme === 'dark' ? 'light' : 'dark';
+        body.dataset.theme = next;
+        localStorage.setItem('keefetch-theme', next);
       });
 
+      const progress = document.querySelector('.progress');
       const updateProgress = () => {
         const max = document.documentElement.scrollHeight - innerHeight;
-        const pct = max > 0 ? (scrollY / max) * 100 : 0;
-        progress.style.setProperty('--progress', `${pct}%`);
+        progress.style.width = (max > 0 ? scrollY / max * 100 : 0) + '%';
       };
-      updateProgress();
       addEventListener('scroll', updateProgress, { passive: true });
-
-      if (!reduceMotion && lab) {
-        lab.addEventListener('pointermove', (event) => {
-          const rect = lab.getBoundingClientRect();
-          const dx = (event.clientX - (rect.left + rect.width / 2)) / rect.width;
-          const dy = (event.clientY - (rect.top + rect.height / 2)) / rect.height;
-          specimens.forEach((item) => {
-            const depth = Number(item.dataset.depth || .5);
-            item.style.setProperty('--x', `${dx * 22 * depth}px`);
-            item.style.setProperty('--y', `${dy * 22 * depth}px`);
-          });
-        });
-        lab.addEventListener('pointerleave', () => {
-          specimens.forEach((item) => {
-            item.style.setProperty('--x', '0px');
-            item.style.setProperty('--y', '0px');
-          });
-        });
-      }
+      updateProgress();
 
       const reveals = document.querySelectorAll('.reveal');
-      if (reduceMotion || !('IntersectionObserver' in window)) {
-        reveals.forEach(el => el.classList.add('is-visible'));
-      } else {
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('is-visible');
-              observer.unobserve(entry.target);
-            }
+      if (reduced) reveals.forEach(el => el.classList.add('visible'));
+      else {
+        const revealObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+          if (entry.isIntersecting) { entry.target.classList.add('visible'); revealObserver.unobserve(entry.target); }
+        }), { threshold: .15 });
+        reveals.forEach(el => revealObserver.observe(el));
+      }
+
+      const scenes = [...document.querySelectorAll('.scene')];
+      const stageButtons = [...document.querySelectorAll('.stage-index button')];
+      const activateScene = id => {
+        scenes.forEach(scene => scene.classList.toggle('active', scene.dataset.scene === id));
+        stageButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.target === id));
+      };
+      stageButtons.forEach(btn => btn.addEventListener('click', () => document.getElementById(btn.dataset.target).scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' })));
+      const sceneObserver = new IntersectionObserver(entries => {
+        const visible = entries.filter(e => e.isIntersecting).sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) activateScene(visible.target.dataset.scene);
+      }, { rootMargin: '-25% 0px -45% 0px', threshold: [0,.2,.5,.8] });
+      scenes.forEach(scene => sceneObserver.observe(scene));
+
+      if (!reduced && matchMedia('(pointer:fine)').matches) {
+        const field = document.querySelector('.resolver-field');
+        const depthEls = [...field.querySelectorAll('[data-depth]')];
+        field.addEventListener('pointermove', e => {
+          const r = field.getBoundingClientRect();
+          const nx = (e.clientX - r.left) / r.width - .5;
+          const ny = (e.clientY - r.top) / r.height - .5;
+          depthEls.forEach(el => {
+            const depth = Number(el.dataset.depth || 1);
+            el.style.setProperty('--x', `${nx * depth * 28}px`);
+            el.style.setProperty('--y', `${ny * depth * 28}px`);
+            if (el.classList.contains('core')) el.style.transform = `translate(calc(-50% + ${nx * depth * 18}px), calc(-50% + ${ny * depth * 18}px))`;
           });
-        }, { threshold: .12, rootMargin: '0px 0px -6% 0px' });
-        reveals.forEach(el => observer.observe(el));
+        });
+        field.addEventListener('pointerleave', () => {
+          depthEls.forEach(el => { el.style.setProperty('--x','0px'); el.style.setProperty('--y','0px'); if(el.classList.contains('core')) el.style.transform='translate(-50%,-50%)'; });
+        });
+
+        const halo = document.querySelector('.cursor-halo');
+        let lastTrail = 0;
+        const trailGlyphs = ['K','F','↗','★','S','R'];
+        addEventListener('pointermove', e => {
+          halo.style.opacity = '1'; halo.style.left = e.clientX + 'px'; halo.style.top = e.clientY + 'px';
+          const hot = e.target.closest('a,button,.specimen,.rank-card');
+          halo.classList.toggle('hot', !!hot);
+          const overField = e.target.closest('.resolver-field');
+          const now = performance.now();
+          if (overField && now - lastTrail > 105) {
+            lastTrail = now;
+            const trail = document.createElement('i');
+            trail.className = 'capture-trail'; trail.textContent = trailGlyphs[Math.floor(Math.random()*trailGlyphs.length)];
+            trail.style.left = e.clientX + 'px'; trail.style.top = e.clientY + 'px';
+            document.body.appendChild(trail); setTimeout(() => trail.remove(), 760);
+          }
+        }, { passive:true });
+        document.documentElement.addEventListener('mouseleave', () => halo.style.opacity='0');
+
+        document.querySelectorAll('.magnetic').forEach(el => {
+          el.addEventListener('pointermove', e => {
+            const r = el.getBoundingClientRect();
+            const x = (e.clientX - r.left - r.width/2) * .12;
+            const y = (e.clientY - r.top - r.height/2) * .12;
+            el.style.transform = `translate(${x}px,${y}px)`;
+          });
+          el.addEventListener('pointerleave', () => el.style.transform='');
+        });
       }
     })();
   </script>

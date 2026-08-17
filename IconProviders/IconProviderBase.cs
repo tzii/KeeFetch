@@ -97,6 +97,14 @@ namespace KeeFetch.IconProviders
                                 return null;
 
                             byte[] data;
+                            // .NET Framework response streams ignore the cancellation token on
+                            // ReadAsync; disposing the response when the deadline fires is the
+                            // only reliable way to abort a stalled socket read.
+                            using (cts.Token.Register(delegate
+                            {
+                                try { response.Dispose(); }
+                                catch (Exception) { }
+                            }))
                             using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
                             using (var ms = new MemoryStream())
                             {

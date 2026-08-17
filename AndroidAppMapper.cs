@@ -255,6 +255,14 @@ namespace KeeFetch
                         var response = await SharedHttp.Instance.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
                         if (!response.IsSuccessStatusCode) return null;
 
+                        // .NET Framework response streams ignore the cancellation token on
+                        // ReadAsync; disposing the response when the deadline fires is the
+                        // only reliable way to abort a stalled socket read.
+                        using (cts.Token.Register(delegate
+                        {
+                            try { response.Dispose(); }
+                            catch (Exception) { }
+                        }))
                         using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
                         using (var ms = new MemoryStream())
                         {
@@ -308,6 +316,14 @@ namespace KeeFetch
                         var response = await SharedHttp.Instance.SendAsync(iconRequest, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
                         if (!response.IsSuccessStatusCode) return null;
 
+                        // .NET Framework response streams ignore the cancellation token on
+                        // ReadAsync; disposing the response when the deadline fires is the
+                        // only reliable way to abort a stalled socket read.
+                        using (cts.Token.Register(delegate
+                        {
+                            try { response.Dispose(); }
+                            catch (Exception) { }
+                        }))
                         using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
                         using (var ms = new MemoryStream())
                         {

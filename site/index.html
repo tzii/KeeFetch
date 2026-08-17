@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>KeeFetch - Favicon Fetcher for KeePass</title>
-  <meta name="description" content="KeeFetch is an open-source KeePass 2.x plugin for fetching, ranking, deduplicating, and maintaining favicons.">
+  <title>KeeFetch — Favicon Fetcher for KeePass</title>
+  <meta name="description" content="KeeFetch is a fast, privacy-aware KeePass 2.x plugin for discovering, ranking, deduplicating, and maintaining favicons.">
   <link rel="canonical" href="https://tzii.github.io/KeeFetch/">
   <meta property="og:title" content="KeeFetch">
-  <meta property="og:description" content="Fetch, resolve, and store KeePass favicons with privacy controls and ranked fallbacks.">
+  <meta property="og:description" content="A fast, smart, modern favicon fetcher for KeePass 2.x.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://tzii.github.io/KeeFetch/">
   <meta property="og:image" content="https://tzii.github.io/KeeFetch/assets/icons/keefetch-app.png">
@@ -15,955 +15,976 @@
   <link rel="icon" href="assets/icons/keefetch-app.png">
   <style>
     :root {
+      color-scheme: light;
       --ink: #0b0a0c;
       --paper: #f3f0e8;
-      --paper-dim: #e5e1d6;
+      --paper-2: #e9e4d9;
+      --paper-3: #ded8cb;
       --text: #0b0a0c;
+      --muted: #625c66;
       --violet: #8150d8;
+      --violet-2: #a878f6;
       --violet-dark: #5f35b2;
-      --line: #17131a;
-      --muted: #5a5460;
+      --acid: #d6ff52;
       --white: #fffaf0;
-      --topbar-bg: rgba(243, 240, 232, 0.96);
-      --topbar-text: #0b0a0c;
-      --grid-line: rgba(11, 10, 12, 0.08);
-      --grain: rgba(11, 10, 12, 0.8);
-      --card-shadow: #2b193f;
-      --panel-bg: #f3f0e8;
-      --panel-text: #0b0a0c;
-      --panel-border: rgba(11, 10, 12, 0.28);
-      --section-fill: #f3f0e8;
-      --section-fill-alt: #e7dfd0;
-      --section-text: #0b0a0c;
-      --section-muted: #5a5460;
-      --rule-color: #0b0a0c;
-      --poster-bg: #f3f0e8;
+      --line: #151217;
+      --grid: rgba(11,10,12,.075);
+      --glass: rgba(243,240,232,.92);
+      --shadow: #2d1843;
+      --success: #2aa56b;
+      --danger: #d74949;
+      --radius: 0px;
     }
 
     * { box-sizing: border-box; }
-
-    html {
-      scroll-behavior: smooth;
-      background: var(--ink);
-    }
-
+    html { scroll-behavior: smooth; background: var(--ink); }
     body {
       margin: 0;
       color: var(--text);
-      overflow-x: hidden;
       background:
-        radial-gradient(circle at 60% 0%, rgba(129, 80, 216, 0.2), transparent 28rem),
-        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
-        linear-gradient(180deg, var(--grid-line) 1px, transparent 1px),
+        radial-gradient(circle at 84% 8%, rgba(129,80,216,.24), transparent 27rem),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        linear-gradient(180deg, var(--grid) 1px, transparent 1px),
         var(--paper);
       background-size: auto, 28px 28px, 28px 28px, auto;
-      font-family: "Arial Narrow", "Roboto Condensed", "Segoe UI", sans-serif;
-      letter-spacing: 0;
+      font-family: "Arial Narrow", "Roboto Condensed", "Segoe UI", Arial, sans-serif;
+      overflow-x: hidden;
     }
 
     body::after {
       content: "";
       position: fixed;
       inset: 0;
+      z-index: 100;
       pointer-events: none;
-      opacity: 0.08;
+      opacity: .055;
       background-image:
-        linear-gradient(45deg, var(--grain) 25%, transparent 25%),
-        linear-gradient(-45deg, var(--grain) 25%, transparent 25%);
+        linear-gradient(45deg, currentColor 25%, transparent 25%),
+        linear-gradient(-45deg, currentColor 25%, transparent 25%);
       background-size: 3px 3px;
       mix-blend-mode: multiply;
     }
 
     body[data-theme="dark"] {
-      --ink: #0b0a0c;
-      --paper: #111014;
-      --paper-dim: #201a28;
-      --text: #f3f0e8;
+      color-scheme: dark;
+      --ink: #070609;
+      --paper: #121015;
+      --paper-2: #1c1722;
+      --paper-3: #292031;
+      --text: #f4eee6;
+      --muted: #b8afbf;
       --violet: #9a66f0;
+      --violet-2: #bc90ff;
       --violet-dark: #6b3fc3;
-      --line: #e8dfcf;
-      --muted: #b8adc5;
+      --acid: #c8fa44;
       --white: #fffaf0;
-      --topbar-bg: rgba(11, 10, 12, 0.96);
-      --topbar-text: #fffaf0;
-      --grid-line: rgba(243, 240, 232, 0.075);
-      --grain: rgba(243, 240, 232, 0.58);
-      --card-shadow: #4e2d89;
-      --panel-bg: #0b0a0c;
-      --panel-text: #fffaf0;
-      --panel-border: rgba(255, 250, 240, 0.32);
-      --section-fill: #1b1424;
-      --section-fill-alt: #261b34;
-      --section-text: #f3f0e8;
-      --section-muted: #d7c9ea;
-      --rule-color: #f3f0e8;
-      --poster-bg: #f3f0e8;
-      color: var(--text);
+      --line: #eee7de;
+      --grid: rgba(243,240,232,.07);
+      --glass: rgba(18,16,21,.92);
+      --shadow: #4e2d89;
     }
 
-    body[data-theme="dark"]::after {
-      opacity: 0.06;
-      mix-blend-mode: screen;
-    }
-
+    body[data-theme="dark"]::after { mix-blend-mode: screen; opacity: .035; }
     a { color: inherit; text-decoration: none; }
+    button { color: inherit; }
+    img, svg { display: block; }
+    .mono { font-family: "Cascadia Mono", "JetBrains Mono", Consolas, monospace; }
 
-    .mono {
-      font-family: "JetBrains Mono", "Cascadia Mono", "Consolas", monospace;
-      letter-spacing: 0;
+    .skip-link {
+      position: fixed;
+      top: 8px;
+      left: 8px;
+      z-index: 999;
+      padding: 10px 14px;
+      transform: translateY(-160%);
+      background: var(--acid);
+      color: #111;
+      border: 2px solid #111;
+      font-weight: 900;
     }
+    .skip-link:focus { transform: translateY(0); }
 
     .topbar {
       position: sticky;
       top: 0;
-      z-index: 20;
+      z-index: 40;
       display: grid;
       grid-template-columns: auto 1fr auto;
       gap: 24px;
       align-items: center;
       min-height: 72px;
-      padding: 14px 22px;
-      color: var(--topbar-text);
-      background: var(--topbar-bg);
+      padding: 12px 20px;
       border-bottom: 3px solid var(--line);
+      background: var(--glass);
+      backdrop-filter: blur(14px);
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      font-weight: 950;
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-word {
       font-size: 29px;
+      line-height: 1;
+      font-weight: 1000;
       text-transform: uppercase;
+      letter-spacing: -.035em;
     }
-
     .mark {
-      width: 38px;
-      height: 38px;
-      display: grid;
-      place-items: center;
-      background: var(--white);
-      border: 2px solid var(--line);
-      box-shadow: 5px 5px 0 var(--violet);
-    }
-
-    .mark img {
-      width: 32px;
-      height: 32px;
-      object-fit: contain;
-      transform: scale(1.42);
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      min-height: 30px;
-      padding: 0 12px;
-      color: var(--ink);
-      background: var(--violet);
-      border: 2px solid var(--violet-dark);
-      font-size: 13px;
-      font-weight: 950;
-      text-transform: uppercase;
-    }
-
-    .nav {
-      display: flex;
-      justify-content: flex-end;
-      gap: 34px;
-      font-size: 14px;
-      font-weight: 900;
-      text-transform: uppercase;
-    }
-
-    .star {
-      display: inline-flex;
-      align-items: center;
-      gap: 9px;
-      padding: 14px 20px;
-      color: var(--ink);
-      background: var(--violet);
-      border: 2px solid var(--violet-dark);
-      box-shadow: 4px 4px 0 var(--card-shadow);
-      font-size: 14px;
-      font-weight: 950;
-      text-transform: uppercase;
-      transition: transform 180ms cubic-bezier(.16, 1, .3, 1), box-shadow 180ms cubic-bezier(.16, 1, .3, 1);
-    }
-
-    .star:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--card-shadow); }
-    .star:active { transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--card-shadow); }
-
-    .header-actions {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .theme-toggle {
-      min-height: 48px;
-      padding: 0 16px;
-      color: var(--topbar-text);
-      background: transparent;
-      border: 2px solid currentColor;
-      box-shadow: 4px 4px 0 var(--violet);
-      font: inherit;
-      font-size: 13px;
-      font-weight: 950;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: transform 180ms cubic-bezier(.16, 1, .3, 1), box-shadow 180ms cubic-bezier(.16, 1, .3, 1), background 180ms cubic-bezier(.16, 1, .3, 1);
-    }
-
-    .theme-toggle:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: 6px 6px 0 var(--violet);
-      background: color-mix(in srgb, var(--violet) 22%, transparent);
-    }
-
-    .theme-toggle:active {
-      transform: translate(1px, 1px);
-      box-shadow: 2px 2px 0 var(--violet);
-    }
-
-    .page {
-      padding: 16px;
-      border-left: 16px solid var(--ink);
-      border-right: 16px solid var(--ink);
-    }
-
-    .hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(560px, 0.78fr);
-      gap: 18px;
-      min-height: auto;
-      margin-bottom: 18px;
-    }
-
-    .hero-copy {
-      padding: 18px 10px 16px 12px;
-      min-width: 0;
-      overflow: hidden;
-    }
-
-    h1 {
-      margin: 0;
-      max-width: 11ch;
-      font-size: clamp(72px, 8.4vw, 136px);
-      line-height: 0.82;
-      font-weight: 1000;
-      text-transform: uppercase;
-      letter-spacing: 0;
-      transform: scaleX(1.02);
-      transform-origin: left center;
-    }
-
-    .subline {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin: 16px 0 20px;
-      font-size: clamp(24px, 2.7vw, 42px);
-      line-height: 1;
-      font-weight: 950;
-      text-transform: uppercase;
-    }
-
-    .subline .stripe {
-      color: var(--white);
-      background: var(--violet);
-      padding: 3px 12px 5px;
-    }
-
-    .rule {
-      width: 150px;
-      height: 8px;
-      margin: 12px 0 18px;
-      background: var(--rule-color);
-    }
-
-    .intro {
-      max-width: 660px;
-      margin: 0 0 22px;
-      font-size: 19px;
-      line-height: 1.22;
-      font-weight: 850;
-      text-transform: uppercase;
-    }
-
-    .ribbon {
-      display: flex;
-      flex-wrap: wrap;
-      max-width: 820px;
-      color: var(--white);
-      background: var(--violet);
-      border: 2px solid var(--violet-dark);
-      font-weight: 950;
-      text-transform: uppercase;
-    }
-
-    .ribbon span {
-      padding: 8px 28px;
-      border-right: 2px solid rgba(255, 250, 240, 0.65);
-    }
-
-    .hero-console {
-      display: grid;
-      grid-template-columns: minmax(260px, 0.78fr) minmax(320px, 1fr);
-      gap: 14px;
-      max-width: 860px;
-      margin-top: 18px;
-    }
-
-    .console-panel {
-      border: 3px solid var(--line);
-      background: color-mix(in srgb, var(--paper) 82%, var(--violet) 18%);
-    }
-
-    .console-title {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 10px 12px;
-      color: var(--white);
-      background: var(--ink);
-      border-bottom: 3px solid var(--line);
-      font-weight: 950;
-      text-transform: uppercase;
-    }
-
-    .preset-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .preset {
-      min-height: 64px;
-      padding: 12px;
-      border-right: 2px solid var(--line);
-      border-bottom: 2px solid var(--line);
-      font-weight: 950;
-      text-transform: uppercase;
-    }
-
-    .preset:nth-child(2n) { border-right: 0; }
-    .preset:nth-last-child(-n + 2) { border-bottom: 0; }
-
-    .preset span {
-      display: block;
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.25;
-      font-weight: 800;
-    }
-
-    .trace-list {
-      padding: 0;
-    }
-
-    .trace-row {
-      display: grid;
-      grid-template-columns: 112px 1fr auto;
-      gap: 12px;
-      align-items: center;
-      min-height: 45px;
-      padding: 8px 12px;
-      border-bottom: 2px solid var(--line);
-      font-size: 12px;
-      font-weight: 850;
-      text-transform: uppercase;
-    }
-
-    .trace-row:last-child { border-bottom: 0; }
-
-    .trace-bar {
-      height: 9px;
-      background: linear-gradient(90deg, var(--violet) var(--fill), transparent var(--fill));
-      border: 1px solid var(--line);
-    }
-
-    .hero-side {
-      display: grid;
-      grid-template-columns: 1fr minmax(245px, 0.8fr);
-      gap: 18px;
-      align-content: start;
-    }
-
-    .icon-poster,
-    .install-card,
-    .release-card {
-      border: 3px solid var(--line);
-      background: var(--ink);
-      color: var(--white);
-    }
-
-    .icon-poster {
-      min-height: 312px;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      background: var(--poster-bg);
-    }
-
-    .icon-poster img {
-      width: min(88%, 360px);
-      height: auto;
-      object-fit: contain;
-      filter: drop-shadow(10px 10px 0 var(--violet-dark));
-    }
-
-    .glyph {
       position: relative;
-      width: min(70%, 280px);
-      aspect-ratio: 1;
-      background: var(--paper);
-      clip-path: polygon(15% 14%, 79% 14%, 79% 32%, 88% 32%, 88% 48%, 72% 48%, 72% 67%, 42% 67%, 42% 84%, 15% 84%);
-    }
-
-    .glyph::before {
-      content: "";
-      position: absolute;
-      width: 44%;
-      aspect-ratio: 1;
-      right: -8%;
-      bottom: -3%;
-      background: linear-gradient(135deg, var(--violet), #4e29a3);
-      box-shadow: -72px -55px 0 8px var(--ink), -135px 8px 0 -16px var(--paper);
-    }
-
-    .install-card {
-      min-height: 312px;
-      padding: 20px 20px;
-      color: var(--panel-text);
-      background: var(--panel-bg);
-    }
-
-    .panel-title {
-      margin: 0 0 18px;
-      font-size: 30px;
-      font-weight: 950;
-      text-transform: uppercase;
-    }
-
-    .tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-
-    .tab {
-      padding: 11px 8px;
-      text-align: center;
-      border: 2px solid var(--panel-border);
-      font-size: 12px;
-      font-weight: 950;
-      text-transform: uppercase;
-    }
-
-    .tab.active {
-      color: var(--ink);
-      background: var(--violet);
-      border-color: var(--violet);
-    }
-
-    .steps {
-      margin: 12px 0 20px;
-      padding: 16px 18px;
-      border: 1px solid var(--panel-border);
-      color: var(--panel-text);
-      font-size: 14px;
-      line-height: 1.58;
-    }
-
-    .install-card code {
-      display: block;
-      margin-top: 12px;
-      color: var(--panel-text);
-      font-size: 13px;
-      white-space: normal;
-    }
-
-    .outline-button {
-      display: flex;
-      justify-content: center;
-      margin-top: 22px;
-      padding: 17px 20px;
-      border: 3px solid var(--violet);
-      color: var(--violet);
-      font-weight: 950;
-      text-transform: uppercase;
-      transition: background 180ms cubic-bezier(.16, 1, .3, 1), color 180ms cubic-bezier(.16, 1, .3, 1);
-    }
-
-    .outline-button:hover { color: var(--ink); background: var(--violet); }
-
-    .release-card {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1fr);
-      gap: 22px;
-      padding: 18px 22px;
-      background: linear-gradient(135deg, #7b4bd8, #6538be 55%, #8a57e5);
-      color: var(--white);
-    }
-
-    .version {
-      margin: 0;
-      font-size: clamp(52px, 4.7vw, 70px);
-      line-height: 0.85;
-      font-weight: 1000;
-    }
-
-    .downloads {
-      display: grid;
-      gap: 9px;
-      align-content: center;
-    }
-
-    .download-row {
-      display: grid;
-      grid-template-columns: 34px minmax(0, 1fr) auto;
-      gap: 14px;
-      align-items: center;
-      padding: 10px 12px;
-      border: 1px solid rgba(255, 250, 240, 0.5);
-      background: rgba(255, 250, 240, 0.08);
-      font-size: 11px;
-      font-weight: 900;
-      text-transform: uppercase;
-    }
-
-    .download-row span {
-      min-width: 0;
-      overflow-wrap: anywhere;
-    }
-
-    .section-label {
-      padding: 9px 12px;
-      color: var(--white);
-      background: var(--ink);
-      border: 3px solid var(--line);
-      font-size: 22px;
-      font-weight: 950;
-      text-transform: uppercase;
-    }
-
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      border-left: 3px solid var(--line);
-      border-bottom: 3px solid var(--line);
-    }
-
-    .feature {
-      min-height: 215px;
-      padding: 20px 18px;
-      border-top: 3px solid var(--line);
-      border-right: 3px solid var(--line);
-      color: var(--section-text);
-      background: var(--section-fill-alt);
-    }
-
-    .feature svg {
-      width: 43px;
-      height: 43px;
-      color: var(--violet);
-      margin-bottom: 18px;
-    }
-
-    .feature h3 {
-      margin: 0 0 10px;
-      font-size: 21px;
-      line-height: 1;
-      text-transform: uppercase;
-    }
-
-    .feature p {
-      margin: 0;
-      color: var(--section-muted);
-      font-size: 14px;
-      line-height: 1.35;
-      font-family: "Cascadia Mono", "Consolas", monospace;
-    }
-
-    .workflow {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      border: 3px solid var(--line);
-      border-top: 0;
-      color: var(--section-text);
-      background: var(--section-fill-alt);
-    }
-
-    .flow-step {
-      position: relative;
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 16px;
-      min-height: 112px;
-      padding: 20px;
-      border-right: 3px solid var(--line);
-      align-items: center;
-    }
-
-    .flow-step:last-child { border-right: 0; }
-
-    .number {
-      display: grid;
-      place-items: center;
-      width: 38px;
-      height: 38px;
-      color: var(--white);
-      background: var(--ink);
-      font-size: 22px;
-      font-weight: 950;
-    }
-
-    .flow-step h3 {
-      margin: 0 0 4px;
-      font-size: 15px;
-      text-transform: uppercase;
-    }
-
-    .flow-step p {
-      margin: 0;
-      color: var(--section-muted);
-      font-size: 12px;
-      line-height: 1.25;
-    }
-
-    .bottom-grid {
-      display: grid;
-      grid-template-columns: 1.15fr 1fr;
-      gap: 18px;
-      margin-top: 18px;
-    }
-
-    .bottom-grid > * {
-      min-width: 0;
-    }
-
-    .chain,
-    .community {
-      border: 3px solid var(--line);
-      color: var(--section-text);
-      background: var(--section-fill-alt);
-    }
-
-    .chain-body {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-      padding: 20px;
-    }
-
-    .chain-node {
-      min-height: 90px;
-      padding: 12px;
-      border: 2px solid var(--line);
-      background: var(--section-fill);
-      font-size: 12px;
-      line-height: 1.3;
-      min-width: 0;
-      overflow-wrap: anywhere;
-    }
-
-    .chain-node strong {
-      display: block;
-      margin-bottom: 7px;
-      text-transform: uppercase;
-    }
-
-    .privacy-strip {
-      padding: 20px;
-      color: var(--violet);
-      background: var(--ink);
-      font-weight: 900;
-      text-transform: uppercase;
-    }
-
-    .community-row {
-      display: grid;
-      grid-template-columns: 64px 1fr auto;
-      gap: 16px;
-      align-items: center;
-      min-height: 74px;
-      padding: 0 18px;
-      border-top: 2px solid var(--line);
-    }
-
-    .community-row:first-of-type { border-top: 0; }
-
-    .community-icon {
       display: grid;
       place-items: center;
       width: 42px;
       height: 42px;
-      color: var(--white);
+      flex: 0 0 42px;
+      border: 2px solid var(--line);
+      background: var(--white);
+      box-shadow: 5px 5px 0 var(--violet);
+      overflow: hidden;
+    }
+    .mark img { width: 35px; height: 35px; object-fit: contain; transform: scale(1.36); }
+    .mark::after {
+      content: "";
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      right: -4px;
+      top: -4px;
+      background: var(--acid);
+      border: 2px solid var(--line);
+    }
+
+    .tiny-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 27px;
+      padding: 0 10px;
+      border: 2px solid var(--line);
       background: var(--violet);
+      color: var(--white);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .nav { display: flex; justify-content: flex-end; gap: 26px; font-size: 12px; font-weight: 900; text-transform: uppercase; }
+    .nav a { position: relative; padding: 9px 0; }
+    .nav a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 4px;
+      width: 100%;
+      height: 3px;
+      background: var(--violet);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 180ms cubic-bezier(.16,1,.3,1);
+    }
+    .nav a:hover::after { transform: scaleX(1); transform-origin: left; }
+
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .button,
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 46px;
+      padding: 0 15px;
+      border: 2px solid var(--line);
+      background: var(--paper);
+      box-shadow: 4px 4px 0 var(--violet);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 950;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 160ms cubic-bezier(.16,1,.3,1), box-shadow 160ms cubic-bezier(.16,1,.3,1), background 160ms ease;
+    }
+    .button:hover,
+    .theme-toggle:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--violet); }
+    .button:active,
+    .theme-toggle:active { transform: translate(1px,1px); box-shadow: 2px 2px 0 var(--violet); }
+    .button.primary { background: var(--violet); color: var(--white); }
+    .button.acid { background: var(--acid); color: #111; box-shadow-color: var(--ink); }
+
+    .ticker {
+      overflow: hidden;
+      border-bottom: 3px solid var(--line);
+      background: var(--ink);
+      color: var(--white);
+    }
+    .ticker-track {
+      display: flex;
+      width: max-content;
+      animation: ticker 24s linear infinite;
+    }
+    .ticker span {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      min-height: 34px;
+      padding: 0 18px;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .ticker b { color: var(--violet-2); }
+    .ticker i { width: 6px; height: 6px; background: var(--acid); transform: rotate(45deg); }
+    @keyframes ticker { to { transform: translateX(-50%); } }
+
+    .page { border-left: 16px solid var(--ink); border-right: 16px solid var(--ink); padding: 16px; }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(420px, .85fr);
+      gap: 16px;
+      min-height: calc(100vh - 142px);
+      max-height: 920px;
+      margin-bottom: 16px;
+    }
+
+    .hero-copy {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+      padding: clamp(24px, 4vw, 62px) clamp(18px, 3vw, 44px) 26px;
+      border: 3px solid var(--line);
+      background: color-mix(in srgb, var(--paper) 90%, var(--violet) 10%);
+      overflow: hidden;
+    }
+    .hero-copy::before {
+      content: "KF / ICON UTILITY 01";
+      position: absolute;
+      top: 16px;
+      right: 18px;
+      color: var(--muted);
+      font: 800 10px/1 "Cascadia Mono", Consolas, monospace;
+      letter-spacing: .14em;
+    }
+
+    .eyebrow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .eyebrow span {
+      padding: 7px 10px;
+      border: 2px solid var(--line);
+      background: var(--paper-2);
+      font-size: 10px;
+      line-height: 1;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .eyebrow span:first-child { background: var(--acid); color: #111; }
+
+    h1 {
+      margin: 0;
+      max-width: 9.5ch;
+      font-size: clamp(72px, 10vw, 154px);
+      line-height: .76;
+      font-weight: 1000;
+      text-transform: uppercase;
+      letter-spacing: -.065em;
+    }
+    h1 .dot { color: var(--violet); }
+
+    .hero-kicker {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+      font-size: clamp(21px, 2.3vw, 35px);
+      line-height: 1;
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+    .hero-kicker strong { background: var(--violet); color: var(--white); padding: 4px 10px 6px; transform: rotate(-1.5deg); }
+    .hero-intro {
+      max-width: 700px;
+      margin: 20px 0 0;
+      font-size: 17px;
+      line-height: 1.38;
+      font-weight: 780;
+    }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+
+    .hero-meta {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      margin-top: 30px;
+      border-top: 3px solid var(--line);
+      border-left: 3px solid var(--line);
+    }
+    .meta-cell {
+      min-height: 82px;
+      padding: 13px 14px;
+      border-right: 3px solid var(--line);
+      border-bottom: 3px solid var(--line);
+      background: var(--paper-2);
+    }
+    .meta-cell strong { display: block; margin-bottom: 8px; font-size: 17px; text-transform: uppercase; }
+    .meta-cell span { color: var(--muted); font-size: 10px; line-height: 1.35; text-transform: uppercase; }
+
+    .lab {
+      position: relative;
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      min-width: 0;
+      border: 3px solid var(--line);
+      background: var(--ink);
+      color: var(--white);
+      overflow: hidden;
+    }
+    .lab-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 58px;
+      padding: 0 16px;
+      border-bottom: 2px solid rgba(255,250,240,.35);
+      text-transform: uppercase;
+    }
+    .lab-title { font-size: 14px; font-weight: 950; }
+    .status { display: inline-flex; align-items: center; gap: 7px; color: var(--acid); font-size: 10px; font-weight: 900; }
+    .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 4px rgba(214,255,82,.12); }
+
+    .browser {
+      margin: 14px;
+      border: 2px solid rgba(255,250,240,.42);
+      background: #111015;
+    }
+    .browser-bar {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 44px;
+      padding: 0 11px;
+      border-bottom: 2px solid rgba(255,250,240,.25);
+    }
+    .dots { display: flex; gap: 5px; }
+    .dots i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgba(255,250,240,.8); }
+    .urlbar {
+      min-width: 0;
+      overflow: hidden;
+      padding: 7px 10px;
+      border: 1px solid rgba(255,250,240,.18);
+      color: #ddd4e8;
+      background: rgba(255,255,255,.04);
+      font-size: 10px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .browser-bar b { color: var(--violet-2); font-size: 9px; }
+
+    .scan-zone {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 15px;
+      min-height: 270px;
+      overflow: hidden;
+    }
+    .scan-zone::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--acid), transparent);
+      box-shadow: 0 0 16px var(--acid);
+      animation: scan 3.2s ease-in-out infinite alternate;
+    }
+    @keyframes scan { from { transform: translateY(12px); } to { transform: translateY(242px); } }
+
+    .candidate {
+      position: relative;
+      display: grid;
+      align-content: start;
+      gap: 10px;
+      min-width: 0;
+      padding: 12px;
+      border: 2px solid rgba(255,250,240,.32);
+      background: rgba(255,255,255,.035);
+      transition: transform 180ms cubic-bezier(.16,1,.3,1), border-color 180ms ease, background 180ms ease;
+    }
+    .candidate:hover { transform: translateY(-4px); border-color: var(--violet-2); background: rgba(129,80,216,.12); }
+    .candidate.winner { border-color: var(--acid); background: rgba(214,255,82,.07); }
+    .candidate.winner::after {
+      content: "winner";
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      padding: 5px 7px;
+      background: var(--acid);
+      color: #111;
+      font-size: 8px;
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+    .candidate-icon {
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 54px;
+      border: 2px solid rgba(255,250,240,.5);
+      background: var(--white);
+      overflow: hidden;
+    }
+    .candidate-icon img { width: 44px; height: 44px; object-fit: contain; transform: scale(1.28); }
+    .candidate b { font-size: 10px; text-transform: uppercase; }
+    .candidate small { color: #a99fb1; font-size: 9px; line-height: 1.35; }
+    .meter { height: 6px; border: 1px solid rgba(255,250,240,.35); background: linear-gradient(90deg, var(--violet) var(--fill), transparent var(--fill)); }
+    .winner .meter { background: linear-gradient(90deg, var(--acid) var(--fill), transparent var(--fill)); }
+
+    .trace {
+      margin: 0 14px 14px;
+      border-top: 2px solid rgba(255,250,240,.28);
+    }
+    .trace-row {
+      display: grid;
+      grid-template-columns: 78px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      min-height: 38px;
+      border-bottom: 1px solid rgba(255,250,240,.2);
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+    .trace-row:last-child { border-bottom: 0; }
+    .trace-row strong { color: var(--violet-2); }
+
+    .lab-foot {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      border-top: 2px solid rgba(255,250,240,.35);
+    }
+    .lab-stat { padding: 12px; border-right: 1px solid rgba(255,250,240,.25); }
+    .lab-stat:last-child { border-right: 0; }
+    .lab-stat b { display: block; margin-bottom: 5px; color: var(--violet-2); font-size: 14px; }
+    .lab-stat span { color: #aaa1ae; font-size: 8px; text-transform: uppercase; }
+
+    .section { margin-top: 16px; }
+    .section-head {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 16px;
+      align-items: center;
+      min-height: 56px;
+      padding: 9px 14px;
+      border: 3px solid var(--line);
+      background: var(--paper);
+      text-transform: uppercase;
+    }
+    .section-head h2 { margin: 0; font-size: clamp(24px, 2.6vw, 40px); line-height: 1; font-weight: 1000; letter-spacing: -.035em; }
+    .section-index { color: var(--violet); font-size: 12px; font-weight: 950; }
+    .section-note { color: var(--muted); font-size: 9px; font-weight: 900; }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-left: 3px solid var(--line);
+    }
+    .feature {
+      position: relative;
+      min-height: 236px;
+      padding: 22px 20px 18px;
+      border-right: 3px solid var(--line);
+      border-bottom: 3px solid var(--line);
+      background: var(--paper-2);
+      overflow: hidden;
+      transition: background 180ms ease;
+    }
+    .feature:hover { background: color-mix(in srgb, var(--paper-2) 78%, var(--violet) 22%); }
+    .feature::after {
+      content: attr(data-tag);
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      color: var(--muted);
+      font: 800 8px/1 "Cascadia Mono", Consolas, monospace;
+      text-transform: uppercase;
+    }
+    .feature-icon {
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 54px;
+      margin-bottom: 28px;
+      border: 2px solid var(--line);
+      background: var(--paper);
+      box-shadow: 5px 5px 0 var(--violet);
+      transition: transform 180ms cubic-bezier(.16,1,.3,1);
+    }
+    .feature:hover .feature-icon { transform: rotate(-4deg) translate(-2px,-2px); }
+    .feature-icon svg { width: 28px; height: 28px; color: var(--violet); }
+    .feature h3 { margin: 0 0 10px; font-size: 20px; line-height: 1; text-transform: uppercase; }
+    .feature p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      border-left: 3px solid var(--line);
+    }
+    .flow-step {
+      position: relative;
+      min-height: 230px;
+      padding: 18px;
+      border-right: 3px solid var(--line);
+      border-bottom: 3px solid var(--line);
+      background: var(--paper);
+      overflow: hidden;
+    }
+    .flow-step::before {
+      content: "→";
+      position: absolute;
+      right: -13px;
+      top: 72px;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border: 2px solid var(--line);
+      background: var(--violet);
+      color: var(--white);
       font-weight: 950;
     }
+    .flow-step:last-child::before { display: none; }
+    .flow-number { font-size: 60px; line-height: .9; font-weight: 1000; color: var(--violet); letter-spacing: -.08em; }
+    .flow-step h3 { margin: 34px 0 8px; font-size: 16px; text-transform: uppercase; }
+    .flow-step p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      border-left: 3px solid var(--line);
+    }
+    .privacy-panel,
+    .release-panel {
+      min-width: 0;
+      border-right: 3px solid var(--line);
+      border-bottom: 3px solid var(--line);
+    }
+    .privacy-panel { padding: 26px; background: var(--ink); color: var(--white); }
+    .privacy-panel .lockline { color: var(--acid); font-size: 11px; font-weight: 900; text-transform: uppercase; }
+    .privacy-panel h3 { max-width: 12ch; margin: 18px 0 20px; font-size: clamp(40px, 4.8vw, 72px); line-height: .86; letter-spacing: -.05em; text-transform: uppercase; }
+    .privacy-panel p { max-width: 760px; margin: 0; color: #c8becd; font-size: 13px; line-height: 1.55; }
+    .privacy-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 24px; }
+    .privacy-item { min-height: 88px; padding: 12px; border: 1px solid rgba(255,250,240,.28); background: rgba(255,255,255,.035); }
+    .privacy-item strong { display: block; margin-bottom: 8px; color: var(--violet-2); font-size: 10px; text-transform: uppercase; }
+    .privacy-item span { color: #b5abba; font-size: 9px; line-height: 1.4; }
+
+    .release-panel {
+      padding: 24px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.1) 0 8%, transparent 8% 16%, rgba(255,255,255,.06) 16% 24%, transparent 24% 100%),
+        linear-gradient(135deg, #7040ca, #8b55e6 70%);
+      color: var(--white);
+    }
+    .release-top { display: flex; justify-content: space-between; gap: 14px; align-items: start; }
+    .release-label { font-size: 10px; font-weight: 950; text-transform: uppercase; }
+    .release-version { margin: 20px 0 8px; font-size: clamp(66px, 6vw, 94px); line-height: .8; font-weight: 1000; letter-spacing: -.07em; }
+    .release-date { margin: 0 0 25px; font-size: 10px; }
+    .download-stack { display: grid; gap: 8px; }
+    .download-row {
+      display: grid;
+      grid-template-columns: 40px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      min-height: 52px;
+      padding: 0 12px;
+      border: 2px solid rgba(255,250,240,.5);
+      background: rgba(11,10,12,.16);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      transition: transform 160ms cubic-bezier(.16,1,.3,1), background 160ms ease;
+    }
+    .download-row:hover { transform: translateX(4px); background: rgba(11,10,12,.28); }
+    .download-row b { color: var(--acid); }
+
+    .install-strip {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 0;
+      border-left: 3px solid var(--line);
+    }
+    .install-step,
+    .install-arrow {
+      min-height: 132px;
+      border-right: 3px solid var(--line);
+      border-bottom: 3px solid var(--line);
+      background: var(--paper-2);
+    }
+    .install-step { padding: 18px; }
+    .install-step b { display: block; margin-bottom: 10px; color: var(--violet); font-size: 11px; text-transform: uppercase; }
+    .install-step strong { display: block; margin-bottom: 8px; font-size: 18px; text-transform: uppercase; }
+    .install-step span { color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .install-arrow { display: grid; place-items: center; width: 50px; font-size: 30px; font-weight: 1000; background: var(--ink); color: var(--violet-2); }
+
+    .community-grid {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      border-left: 3px solid var(--line);
+    }
+    .community-card {
+      position: relative;
+      min-height: 170px;
+      padding: 20px;
+      border-right: 3px solid var(--line);
+      border-bottom: 3px solid var(--line);
+      background: var(--paper);
+      transition: background 160ms ease;
+    }
+    .community-card:hover { background: var(--paper-2); }
+    .community-card .sig { display: grid; place-items: center; width: 42px; height: 42px; margin-bottom: 30px; background: var(--violet); color: var(--white); border: 2px solid var(--line); box-shadow: 4px 4px 0 var(--shadow); font-size: 11px; font-weight: 950; }
+    .community-card strong { display: block; margin-bottom: 7px; font-size: 17px; text-transform: uppercase; }
+    .community-card span { color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .community-card::after { content: "↗"; position: absolute; right: 16px; bottom: 14px; font-size: 20px; font-weight: 950; }
 
     footer {
       display: grid;
       grid-template-columns: auto 1fr auto;
-      gap: 28px;
+      gap: 22px;
       align-items: center;
-      min-height: 84px;
-      margin-top: 18px;
+      min-height: 88px;
       padding: 18px 22px;
-      color: var(--paper);
       background: var(--ink);
+      color: var(--white);
+      border-top: 3px solid var(--line);
       text-transform: uppercase;
     }
+    footer .brand-word { font-size: 24px; }
+    footer .fine { color: #aaa1ae; font-size: 9px; }
+    footer .tagline { color: var(--violet-2); font-size: 10px; font-weight: 900; }
 
-    @media (max-width: 1100px) {
-      .topbar,
-      .hero,
-      .bottom-grid,
-      .release-card { grid-template-columns: 1fr; }
-      .hero-side { grid-template-columns: 1fr; }
-      .hero-console { grid-template-columns: 1fr; max-width: none; }
-      .header-actions { justify-content: flex-start; flex-wrap: wrap; }
-      .feature-grid { grid-template-columns: repeat(2, 1fr); }
-      .workflow { grid-template-columns: 1fr; }
-      .flow-step { border-right: 0; border-bottom: 3px solid var(--line); }
-      .flow-step:last-child { border-bottom: 0; }
-      .chain-body { grid-template-columns: 1fr; }
-      .nav { justify-content: flex-start; flex-wrap: wrap; }
+    :focus-visible { outline: 3px solid var(--acid); outline-offset: 3px; }
+
+    @media (max-width: 1180px) {
+      .topbar { grid-template-columns: 1fr auto; }
+      .nav { grid-column: 1 / -1; justify-content: flex-start; order: 3; }
+      .hero { grid-template-columns: 1fr; max-height: none; }
+      .hero-copy { min-height: 700px; }
+      .feature-grid { grid-template-columns: repeat(2,1fr); }
+      .workflow { grid-template-columns: repeat(2,1fr); }
+      .flow-step:nth-child(2n)::before { display: none; }
+      .split { grid-template-columns: 1fr; }
+      .privacy-panel, .release-panel { border-right: 3px solid var(--line); }
+      .install-strip { grid-template-columns: 1fr; }
+      .install-arrow { width: auto; min-height: 46px; transform: none; }
+      .install-arrow span { transform: rotate(90deg); }
     }
 
-    @media (max-width: 700px) {
-      .page { border-left-width: 8px; border-right-width: 8px; padding: 10px; }
-      .topbar { position: static; padding: 14px; }
-      .brand { font-size: 22px; }
-      .header-actions,
-      .star,
-      .theme-toggle { width: 100%; }
-      .star,
-      .theme-toggle { justify-content: center; }
-      h1 {
-        max-width: 100%;
-        font-size: clamp(58px, 18vw, 68px);
-        transform: none;
-      }
-      .subline { font-size: 28px; }
-      .ribbon span { width: 100%; }
-      .hero-console { grid-template-columns: 1fr; }
-      .preset-grid { grid-template-columns: 1fr; }
-      .preset,
-      .preset:nth-child(2n),
-      .preset:nth-last-child(-n + 2) {
-        border-right: 0;
-        border-bottom: 2px solid var(--line);
-      }
-      .preset:last-child { border-bottom: 0; }
-      .trace-row { grid-template-columns: 1fr; }
-      .section-label { font-size: 18px; overflow-wrap: anywhere; }
-      .feature-grid { grid-template-columns: 1fr; }
-      .community-row {
-        grid-template-columns: 44px 1fr;
-        min-height: auto;
-        padding: 14px;
-      }
-      .community-row > span:last-child {
-        grid-column: 2;
-        overflow-wrap: anywhere;
-      }
+    @media (max-width: 760px) {
+      .page { border-left-width: 8px; border-right-width: 8px; padding: 8px; }
+      .topbar { position: static; grid-template-columns: 1fr; padding: 12px; gap: 12px; }
+      .nav { gap: 14px 20px; overflow-x: auto; flex-wrap: nowrap; }
+      .header-actions { width: 100%; }
+      .header-actions > * { flex: 1; }
+      .tiny-badge { display: none; }
+      .ticker { display: none; }
+      .hero { min-height: auto; gap: 8px; }
+      .hero-copy { min-height: 0; padding: 44px 16px 16px; }
+      .hero-copy::before { top: 12px; right: 12px; }
+      h1 { font-size: clamp(66px, 23vw, 104px); max-width: 100%; }
+      .hero-kicker { font-size: 24px; }
+      .hero-intro { font-size: 14px; }
+      .hero-actions > * { width: 100%; }
+      .hero-meta { grid-template-columns: repeat(2,1fr); }
+      .lab { min-height: 650px; }
+      .scan-zone { grid-template-columns: 1fr; min-height: auto; }
+      .scan-zone::before { display: none; }
+      .candidate { grid-template-columns: auto 1fr; align-items: center; }
+      .candidate .meter { grid-column: 1 / -1; }
+      .trace-row { grid-template-columns: 66px 1fr auto; }
+      .lab-foot { grid-template-columns: 1fr; }
+      .lab-stat { border-right: 0; border-bottom: 1px solid rgba(255,250,240,.25); }
+      .lab-stat:last-child { border-bottom: 0; }
+      .section-head { grid-template-columns: auto 1fr; }
+      .section-note { grid-column: 1 / -1; }
+      .feature-grid,
+      .workflow,
+      .privacy-grid,
+      .community-grid { grid-template-columns: 1fr; }
+      .flow-step::before { display: none; }
+      .privacy-panel { padding: 20px; }
+      .privacy-panel h3 { font-size: 46px; }
+      .release-panel { padding: 20px; }
+      .download-row { grid-template-columns: 34px 1fr; }
+      .download-row span:last-child { grid-column: 2; }
       footer { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
     }
   </style>
 </head>
 <body>
+  <a class="skip-link mono" href="#main">Skip to content</a>
+
   <header class="topbar">
-    <a class="brand" href="#">
-      <span class="mark" aria-hidden="true">
-        <img src="assets/icons/keefetch-app.png" alt="">
-      </span>
-      KeeFetch
-      <span class="badge mono">Open source</span>
+    <a class="brand" href="#main" aria-label="KeeFetch home">
+      <span class="mark" aria-hidden="true"><img src="assets/icons/keefetch-app.png" alt=""></span>
+      <span class="brand-word">KeeFetch</span>
+      <span class="tiny-badge mono">Open source</span>
     </a>
-    <nav class="nav mono" aria-label="Primary">
+
+    <nav class="nav mono" aria-label="Primary navigation">
+      <a href="#features">Features</a>
+      <a href="#workflow">Workflow</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#release">Download</a>
       <a href="https://github.com/tzii/KeeFetch#readme">Docs</a>
-      <a href="https://github.com/tzii/KeeFetch">GitHub</a>
-      <a href="https://github.com/tzii/KeeFetch/issues">Issues</a>
-      <a href="#release">Release</a>
     </nav>
+
     <div class="header-actions">
       <button class="theme-toggle mono" id="themeToggle" type="button" aria-pressed="false">Dark mode</button>
-      <a class="star mono" href="https://github.com/tzii/KeeFetch">Star on GitHub</a>
+      <a class="button primary mono" href="https://github.com/tzii/KeeFetch">GitHub ↗</a>
     </div>
   </header>
 
-  <main class="page">
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track mono">
+      <span><i></i> Direct site first <b>→</b> ranked fallbacks <b>→</b> SHA-256 dedup <b>→</b> KeePass</span>
+      <span><i></i> No telemetry <b>/</b> third-party controls <b>/</b> group processing <b>/</b> Android URLs</span>
+      <span><i></i> Direct site first <b>→</b> ranked fallbacks <b>→</b> SHA-256 dedup <b>→</b> KeePass</span>
+      <span><i></i> No telemetry <b>/</b> third-party controls <b>/</b> group processing <b>/</b> Android URLs</span>
+    </div>
+  </div>
+
+  <main id="main" class="page">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <h1 id="hero-title">KeeFetch</h1>
-        <div class="subline">Fetch. Resolve. Store. <span class="stripe">No noise.</span></div>
-        <div class="rule"></div>
-        <p class="intro mono">Automatic favicon discovery for KeePass. Direct-site parsing, ranked fallbacks, privacy-first controls, and SHA-256 deduplication.</p>
-        <div class="ribbon mono" aria-label="Key traits">
-          <span>Privacy first</span>
-          <span>Local controls</span>
-          <span>Bulk ready</span>
-          <span>SHA-256 dedup</span>
+        <div>
+          <div class="eyebrow mono">
+            <span>KeePass 2.x plugin</span>
+            <span>.NET Framework 4.8</span>
+            <span>MIT</span>
+          </div>
+          <h1 id="hero-title">Kee<span class="dot">.</span>Fetch</h1>
+          <div class="hero-kicker">Your vault has URLs. <strong>Give them faces.</strong></div>
+          <p class="hero-intro mono">A fast, smart favicon fetcher for KeePass. KeeFetch finds the best icon, ranks competing sources, avoids duplicate blobs, and gives you explicit control over third-party requests.</p>
+          <div class="hero-actions">
+            <a class="button acid mono" href="https://github.com/tzii/KeeFetch/releases/latest/download/KeeFetch.plgx">↓ Download KeeFetch.plgx</a>
+            <a class="button mono" href="#workflow">See how it works</a>
+          </div>
         </div>
-        <div class="hero-console" aria-label="KeeFetch presets and provider trace">
-          <div class="console-panel">
-            <div class="console-title mono"><span>Presets</span><span>4 modes</span></div>
-            <div class="preset-grid mono">
-              <div class="preset">Fast<span>Direct site first, fewer resolver calls.</span></div>
-              <div class="preset">Balanced<span>Speed and coverage for daily vaults.</span></div>
-              <div class="preset">Thorough<span>Checks every enabled provider lane.</span></div>
-              <div class="preset">Custom<span>Manual order, toggles, and fallbacks.</span></div>
-            </div>
-          </div>
-          <div class="console-panel trace-list">
-            <div class="console-title mono"><span>Provider trace</span><span>CSV ready</span></div>
-            <div class="trace-row mono"><span>Direct site</span><span class="trace-bar" style="--fill: 82%"></span><span>182 ms</span></div>
-            <div class="trace-row mono"><span>Favicone</span><span class="trace-bar" style="--fill: 64%"></span><span>417 ms</span></div>
-            <div class="trace-row mono"><span>Icon Horse</span><span class="trace-bar" style="--fill: 38%"></span><span>1.3 s</span></div>
-          </div>
+
+        <div class="hero-meta mono" aria-label="Project highlights">
+          <div class="meta-cell"><strong>Direct first</strong><span>Parse site-declared icons before resolver fallbacks.</span></div>
+          <div class="meta-cell"><strong>Ranked</strong><span>Site canonical → strong resolver → synthetic fallback.</span></div>
+          <div class="meta-cell"><strong>Bulk ready</strong><span>Single entries, whole groups, and database maintenance.</span></div>
+          <div class="meta-cell"><strong>Private</strong><span>No telemetry. Providers can be disabled individually.</span></div>
         </div>
       </div>
 
-      <div class="hero-side">
-        <div class="icon-poster" aria-label="Abstract KeeFetch icon">
-          <img src="assets/icons/keefetch-app.png" alt="">
+      <aside class="lab" aria-label="Illustrated favicon selection trace">
+        <div class="lab-head mono">
+          <span class="lab-title">Icon selection / live trace</span>
+          <span class="status">ready</span>
         </div>
-        <aside class="install-card" aria-label="Install instructions">
-          <h2 class="panel-title">Install</h2>
-          <div class="tabs mono">
-            <span class="tab active">KeePass 2.x</span>
-            <span class="tab">.NET 4.8</span>
+
+        <div class="browser">
+          <div class="browser-bar mono">
+            <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="urlbar">https://example.com/login</span>
+            <b>SCAN</b>
           </div>
-          <p class="mono">Method: plugin folder</p>
-          <div class="steps mono">
-            1. Download KeeFetch.plgx<br>
-            2. Copy into Plugins<br>
-            3. Restart KeePass<br>
-            4. Fetch icons
+          <div class="scan-zone">
+            <article class="candidate winner">
+              <span class="candidate-icon"><img src="assets/icons/keefetch-app.png" alt=""></span>
+              <b class="mono">Direct site</b>
+              <small class="mono">apple-touch-icon<br>site canonical</small>
+              <span class="meter" style="--fill: 94%"></span>
+            </article>
+            <article class="candidate">
+              <span class="candidate-icon"><img src="assets/icons/keefetch-download.png" alt=""></span>
+              <b class="mono">Resolver</b>
+              <small class="mono">fallback candidate<br>strong resolver</small>
+              <span class="meter" style="--fill: 72%"></span>
+            </article>
+            <article class="candidate">
+              <span class="candidate-icon"><img src="assets/icons/keefetch-settings.png" alt=""></span>
+              <b class="mono">Synthetic</b>
+              <small class="mono">last resort<br>fallback tier</small>
+              <span class="meter" style="--fill: 46%"></span>
+            </article>
           </div>
-          <p class="mono">Manual path:</p>
-          <code class="mono">%APPDATA%\KeePass\Plugins\</code>
-          <a class="outline-button mono" href="#release">Download release</a>
-        </aside>
-        <aside id="release" class="release-card" aria-label="Latest release">
-          <div>
-            <h2 class="panel-title">Latest release</h2>
-            <p class="version">v1.2.0</p>
-            <p class="mono">April 26, 2026</p>
-          </div>
-          <div class="downloads mono">
-            <a class="download-row" href="https://github.com/tzii/KeeFetch/releases/latest/download/KeeFetch.plgx"><span>DL</span><span>Download PLGX</span><span>v1.2</span></a>
-            <a class="download-row" href="https://github.com/tzii/KeeFetch/releases"><span>GH</span><span>All releases</span><span>stable</span></a>
-            <a class="download-row" href="https://github.com/tzii/KeeFetch"><span>ZIP</span><span>Source code</span><span>MIT</span></a>
-          </div>
-        </aside>
-      </div>
+        </div>
+
+        <div class="trace mono" aria-label="Provider trace illustration">
+          <div class="trace-row"><span>request</span><span>example.com</span><strong>normalized</strong></div>
+          <div class="trace-row"><span>direct</span><span>apple-touch-icon.png</span><strong>accepted</strong></div>
+          <div class="trace-row"><span>hash</span><span>sha-256 content check</span><strong>unique</strong></div>
+          <div class="trace-row"><span>store</span><span>custom icon → KeePass</span><strong>done</strong></div>
+        </div>
+
+        <div class="lab-foot mono">
+          <div class="lab-stat"><b>01</b><span>best surviving candidate</span></div>
+          <div class="lab-stat"><b>SHA-256</b><span>content deduplication</span></div>
+          <div class="lab-stat"><b>0</b><span>telemetry events</span></div>
+        </div>
+      </aside>
     </section>
 
-    <section id="features" aria-labelledby="features-title">
-      <div class="section-label" id="features-title">Features</div>
+    <section id="features" class="section" aria-labelledby="features-title">
+      <div class="section-head">
+        <span class="section-index mono">01</span>
+        <h2 id="features-title">Useful, not noisy</h2>
+        <span class="section-note mono">Six things KeeFetch does well</span>
+      </div>
       <div class="feature-grid">
-        <article class="feature">
-          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3"><circle cx="24" cy="24" r="18"/><path d="M6 24h36M24 6c6 6 9 12 9 18s-3 12-9 18M24 6c-6 6-9 12-9 18s3 12 9 18"/></svg>
+        <article class="feature" data-tag="discover">
+          <span class="feature-icon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3"><circle cx="24" cy="24" r="18"/><path d="M6 24h36M24 6c6 6 9 12 9 18s-3 12-9 18M24 6c-6 6-9 12-9 18s3 12 9 18"/></svg></span>
           <h3>Direct-site parsing</h3>
-          <p>Reads the target website first. No third-party resolver wins by default.</p>
+          <p class="mono">Reads favicon links, apple-touch icons, and manifest declarations directly from the target site before stronger fallback lanes compete.</p>
         </article>
-        <article class="feature">
-          <svg viewBox="0 0 48 48" fill="currentColor"><path d="M25 5c2 0 4 0 6 1-2 2-3 4-3 7 0 4 3 7 6 9-1 4-5 12-10 12-2 0-4-1-6-1s-4 1-6 1C7 34 3 26 3 20 3 13 8 9 14 9c3 0 5 1 7 2 1-3 2-5 4-6Z"/></svg>
-          <h3>Apple-touch priority</h3>
-          <p>Prefers high quality icons when sites expose proper mobile assets.</p>
+        <article class="feature" data-tag="rank">
+          <span class="feature-icon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3"><path d="M8 10h32M8 24h25M8 38h17"/><circle cx="38" cy="24" r="4"/><circle cx="30" cy="38" r="4"/></svg></span>
+          <h3>Availability-first ranking</h3>
+          <p class="mono">Candidates are classified by trust tier so a placeholder-prone synthetic result cannot outrank a stronger real icon.</p>
         </article>
-        <article class="feature">
-          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4"><path d="M8 16 24 8l16 8-16 8-16-8Z"/><path d="m8 24 16 8 16-8M8 32l16 8 16-8"/></svg>
-          <h3>Bulk group processing</h3>
-          <p>Fetch icons for full groups. Concurrent, cancellable, and resumable.</p>
+        <article class="feature" data-tag="batch">
+          <span class="feature-icon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 10h30v10H9zM9 28h30v10H9z"/><path d="M15 15h18M15 33h18"/></svg></span>
+          <h3>Bulk processing</h3>
+          <p class="mono">Run KeeFetch on a single entry, a whole group, or your database maintenance flow without turning the UI into a waiting room.</p>
         </article>
-        <article class="feature">
-          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3"><path d="M15 16h18v20H15z"/><path d="M18 11 15 6M30 11l3-5M12 18H7M41 18h-5M20 36v6M28 36v6"/><circle cx="20" cy="24" r="1.5" fill="currentColor"/><circle cx="28" cy="24" r="1.5" fill="currentColor"/></svg>
+        <article class="feature" data-tag="android">
+          <span class="feature-icon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3"><path d="M14 18h20v18H14zM18 18l-4-7M30 18l4-7M10 22v10M38 22v10M18 36v6M30 36v6"/><circle cx="20" cy="25" r="1.5" fill="currentColor"/><circle cx="28" cy="25" r="1.5" fill="currentColor"/></svg></span>
           <h3>Android URL mapping</h3>
-          <p>Maps packages to web domains, then fetches native-looking icons.</p>
+          <p class="mono">Understands <code>androidapp://</code> entries, maps packages to web domains, and can fall back through Play Store discovery.</p>
         </article>
-        <article class="feature">
-          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4"><path d="M18 6 12 42M36 6 30 42M8 18h34M6 32h34"/></svg>
-          <h3>SHA-256 deduplication</h3>
-          <p>Content-addressed storage prevents duplicate icons and saves space.</p>
+        <article class="feature" data-tag="dedup">
+          <span class="feature-icon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 7 12 41M36 7 30 41M8 18h34M6 31h34"/></svg></span>
+          <h3>SHA-256 dedup</h3>
+          <p class="mono">Icons are content-addressed before storage, preventing the same image from being inserted over and over across entries.</p>
         </article>
-        <article class="feature">
-          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4"><path d="M24 5 39 11v11c0 10-6 17-15 21C15 39 9 32 9 22V11l15-6Z"/><path d="m17 24 5 5 10-12"/></svg>
-          <h3>Privacy toggles</h3>
-          <p>Disable third-party lookups or synthetic fallbacks. You control remote requests.</p>
+        <article class="feature" data-tag="control">
+          <span class="feature-icon"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3"><path d="M24 5 39 11v11c0 10-6 17-15 21C15 39 9 32 9 22V11l15-6Z"/><path d="m17 24 5 5 10-12"/></svg></span>
+          <h3>Privacy controls</h3>
+          <p class="mono">Disable third-party providers, synthetic fallbacks, or individual resolvers. KeeFetch has no telemetry or analytics.</p>
         </article>
       </div>
     </section>
 
-    <section id="workflow" aria-labelledby="workflow-title">
-      <div class="section-label" id="workflow-title">Workflow</div>
+    <section id="workflow" class="section" aria-labelledby="workflow-title">
+      <div class="section-head">
+        <span class="section-index mono">02</span>
+        <h2 id="workflow-title">URL in. Good icon out.</h2>
+        <span class="section-note mono">The pipeline, without the mystery</span>
+      </div>
       <div class="workflow">
-        <article class="flow-step"><span class="number">1</span><div><h3>Entry URL detected</h3><p>From URL field, references, or Android package.</p></div></article>
-        <article class="flow-step"><span class="number">2</span><div><h3>Parse target site</h3><p>Extract favicon links, manifest data, and icon declarations.</p></div></article>
-        <article class="flow-step"><span class="number">3</span><div><h3>Download icon</h3><p>Compare direct candidates with configured providers.</p></div></article>
-        <article class="flow-step"><span class="number">4</span><div><h3>SHA-256 check</h3><p>Deduplicate and store efficiently in the database.</p></div></article>
-        <article class="flow-step"><span class="number">5</span><div><h3>Cache and apply</h3><p>Store once, reuse everywhere, keep scans fast.</p></div></article>
+        <article class="flow-step"><div class="flow-number">01</div><h3>Read the entry</h3><p class="mono">Resolve the URL, references, or Android package into a usable target.</p></article>
+        <article class="flow-step"><div class="flow-number">02</div><h3>Inspect the site</h3><p class="mono">Look for declared favicons, touch icons, manifests, and strong direct candidates.</p></article>
+        <article class="flow-step"><div class="flow-number">03</div><h3>Race fallbacks</h3><p class="mono">Enabled providers return structured candidates instead of blindly overwriting one another.</p></article>
+        <article class="flow-step"><div class="flow-number">04</div><h3>Rank + dedup</h3><p class="mono">Trust tier and candidate quality decide the winner; SHA-256 prevents duplicate storage.</p></article>
+        <article class="flow-step"><div class="flow-number">05</div><h3>Apply</h3><p class="mono">The selected icon is stored once and attached to the KeePass entry.</p></article>
       </div>
     </section>
 
-    <div class="bottom-grid">
-      <section class="chain" aria-labelledby="chain-title">
-        <div class="section-label" id="chain-title">Architecture and fallback chain</div>
-        <div class="chain-body mono">
-          <div class="chain-node"><strong>1. Direct site</strong>/favicon.ico<br>/apple-touch-icon<br>manifest.json</div>
-          <div class="chain-node"><strong>2. Twenty Icons</strong>Strong resolver<br>coverage fallback</div>
-          <div class="chain-node"><strong>3. Search services</strong>DuckDuckGo<br>Google<br>Yandex</div>
-          <div class="chain-node"><strong>4. Synthetic APIs</strong>Favicone<br>Icon Horse</div>
-          <div class="chain-node"><strong>5. No icon</strong>Use default placeholder only when needed</div>
+    <section id="privacy" class="section" aria-labelledby="privacy-title">
+      <div class="section-head">
+        <span class="section-index mono">03</span>
+        <h2 id="privacy-title">Remote lookups, on your terms</h2>
+        <span class="section-note mono">Clear defaults. Clear switches.</span>
+      </div>
+      <div class="split">
+        <div class="privacy-panel">
+          <div class="lockline mono">◈ Privacy model</div>
+          <h3>No telemetry. No analytics. No secret side-channel.</h3>
+          <p class="mono">KeeFetch reads URL and title information locally. Direct Site contacts the target origin. When enabled fallback providers are needed, the target domain can be sent to those services to resolve an icon. Credentials, usernames, passwords, and full database contents are not sent.</p>
+          <div class="privacy-grid mono">
+            <div class="privacy-item"><strong>Direct site</strong><span>Contacts the website you are already storing in the entry.</span></div>
+            <div class="privacy-item"><strong>Fallbacks</strong><span>Can receive the target domain only when those providers are enabled.</span></div>
+            <div class="privacy-item"><strong>Your controls</strong><span>Disable third-party or synthetic providers from KeeFetch settings.</span></div>
+          </div>
         </div>
-        <div class="privacy-strip mono">All lookups respect your privacy settings. No telemetry. No analytics.</div>
-      </section>
 
-      <section id="community" class="community" aria-labelledby="community-title">
-        <div class="section-label" id="community-title">Contribute and community</div>
-        <a class="community-row" href="https://github.com/tzii/KeeFetch">
-          <span class="community-icon mono">GH</span><span><strong>GitHub</strong><br><span class="mono">Source code, releases, issues</span></span><span class="mono">github.com/tzii/KeeFetch</span>
-        </a>
-        <a class="community-row" href="https://github.com/tzii/KeeFetch/issues">
-          <span class="community-icon mono">IS</span><span><strong>Issues</strong><br><span class="mono">Report bugs and edge cases</span></span><span class="mono">open</span>
-        </a>
-        <a class="community-row" href="https://github.com/tzii/KeeFetch/pulls">
-          <span class="community-icon mono">PR</span><span><strong>Contribute</strong><br><span class="mono">Tests, providers, docs</span></span><span class="mono">pull requests welcome</span>
-        </a>
-      </section>
-    </div>
+        <aside id="release" class="release-panel" aria-label="Latest release">
+          <div class="release-top mono">
+            <span class="release-label">Latest stable release</span>
+            <span class="tiny-badge">PLGX</span>
+          </div>
+          <div class="release-version">v1.2.0</div>
+          <p class="release-date mono">April 26, 2026 · KeePass 2.x · .NET Framework 4.8</p>
+          <div class="download-stack mono">
+            <a class="download-row" href="https://github.com/tzii/KeeFetch/releases/latest/download/KeeFetch.plgx"><b>DL</b><span>Download KeeFetch.plgx</span><span>recommended</span></a>
+            <a class="download-row" href="https://github.com/tzii/KeeFetch/releases"><b>GH</b><span>Browse all releases</span><span>history ↗</span></a>
+            <a class="download-row" href="https://github.com/tzii/KeeFetch"><b>{ }</b><span>Read the source</span><span>MIT ↗</span></a>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="install-title">
+      <div class="section-head">
+        <span class="section-index mono">04</span>
+        <h2 id="install-title">Install in three moves</h2>
+        <span class="section-note mono">No package manager required</span>
+      </div>
+      <div class="install-strip mono">
+        <div class="install-step"><b>Step 01</b><strong>Download</strong><span>Grab <code>KeeFetch.plgx</code> from the latest GitHub release.</span></div>
+        <div class="install-arrow" aria-hidden="true"><span>→</span></div>
+        <div class="install-step"><b>Step 02</b><strong>Copy</strong><span>Put it in <code>KeePass/Plugins/</code> (portable) or the installed KeePass 2 Plugins folder.</span></div>
+        <div class="install-arrow" aria-hidden="true"><span>→</span></div>
+        <div class="install-step"><b>Step 03</b><strong>Restart</strong><span>Open KeePass again, then right-click an entry and choose KeeFetch.</span></div>
+      </div>
+    </section>
+
+    <section id="community" class="section" aria-labelledby="community-title">
+      <div class="section-head">
+        <span class="section-index mono">05</span>
+        <h2 id="community-title">Open source means doors open</h2>
+        <span class="section-note mono">Bugs, edge cases, providers, docs</span>
+      </div>
+      <div class="community-grid">
+        <a class="community-card" href="https://github.com/tzii/KeeFetch"><span class="sig mono">GH</span><strong>GitHub</strong><span class="mono">Read the code, inspect releases, or follow the project.</span></a>
+        <a class="community-card" href="https://github.com/tzii/KeeFetch/issues"><span class="sig mono">IS</span><strong>Issues</strong><span class="mono">Found a stubborn site or strange icon? Drop a reproducible case.</span></a>
+        <a class="community-card" href="https://github.com/tzii/KeeFetch/pulls"><span class="sig mono">PR</span><strong>Contribute</strong><span class="mono">Tests, provider integrations, fixes, and documentation are welcome.</span></a>
+      </div>
+    </section>
   </main>
 
   <footer>
-    <strong>KeeFetch</strong>
-    <span class="mono">MIT License - built by the community</span>
-    <span class="mono">Simple. Powerful. Respects your data.</span>
+    <div class="brand"><span class="mark" aria-hidden="true"><img src="assets/icons/keefetch-app.png" alt=""></span><span class="brand-word">KeeFetch</span></div>
+    <span class="fine mono">MIT License · KeePass 2.x plugin · no analytics</span>
+    <span class="tagline mono">URLs in. Faces out.</span>
   </footer>
+
   <script>
     (function () {
       var storageKey = "keefetch-site-theme";
       var button = document.getElementById("themeToggle");
-      var savedTheme = localStorage.getItem(storageKey);
-      var theme = savedTheme || "light";
+      var savedTheme = null;
+      try { savedTheme = localStorage.getItem(storageKey); } catch (_) {}
+      var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      var theme = savedTheme || (prefersDark ? "dark" : "light");
 
       function applyTheme(nextTheme) {
         document.body.dataset.theme = nextTheme;
-        button.textContent = nextTheme === "dark" ? "Light mode" : "Dark mode";
-        button.setAttribute("aria-pressed", String(nextTheme === "dark"));
-        localStorage.setItem(storageKey, nextTheme);
+        if (button) {
+          button.textContent = nextTheme === "dark" ? "Light mode" : "Dark mode";
+          button.setAttribute("aria-pressed", String(nextTheme === "dark"));
+        }
+        try { localStorage.setItem(storageKey, nextTheme); } catch (_) {}
       }
 
-      button.addEventListener("click", function () {
-        applyTheme(document.body.dataset.theme === "dark" ? "light" : "dark");
-      });
+      if (button) {
+        button.addEventListener("click", function () {
+          applyTheme(document.body.dataset.theme === "dark" ? "light" : "dark");
+        });
+      }
 
       applyTheme(theme);
     })();

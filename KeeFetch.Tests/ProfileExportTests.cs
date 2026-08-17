@@ -72,6 +72,8 @@ namespace KeeFetch.Tests
                     "Cumulative timeout mismatch for " + expected.Id + ".");
                 Assert.AreEqual(expected.AllowSyntheticFallbacks, Convert.ToBoolean(actual["allowSyntheticFallbacks"]),
                     "Synthetic fallback flag mismatch for " + expected.Id + ".");
+                Assert.AreEqual(expected.StopAfterStrongResolved, Convert.ToBoolean(actual["stopAfterStrongResolved"]),
+                    "Early-stop policy mismatch for " + expected.Id + ".");
                 Assert.AreEqual(expected.IsVisible, Convert.ToBoolean(actual["isVisible"]),
                     "Visibility mismatch for " + expected.Id + ".");
                 Assert.AreEqual(expected.EvidenceReport, (string)actual["evidenceReport"],

@@ -110,6 +110,9 @@ for ($i = 0; $i -lt $visible.Count; $i++) {
     $syntheticJson = "false"
     if ([bool]$p.AllowSyntheticFallbacks) { $syntheticJson = "true" }
     $lines.Add((ConvertTo-JsonProperty -Name "allowSyntheticFallbacks" -ValueJson $syntheticJson -IndentLevel 3) + ",")
+    $stopJson = "false"
+    if ([bool]$p.StopAfterStrongResolved) { $stopJson = "true" }
+    $lines.Add((ConvertTo-JsonProperty -Name "stopAfterStrongResolved" -ValueJson $stopJson -IndentLevel 3) + ",")
     $visibleJson = "false"
     if ([bool]$p.IsVisible) { $visibleJson = "true" }
     $lines.Add((ConvertTo-JsonProperty -Name "isVisible" -ValueJson $visibleJson -IndentLevel 3) + ",")

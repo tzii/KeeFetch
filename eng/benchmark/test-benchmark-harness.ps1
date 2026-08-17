@@ -239,358 +239,371 @@ try {
         if ($presetsText.IndexOf("cand-") -lt 0) { throw "benchmark-presets.ps1 must handle cand- candidate authority" }
     }
 
-    # ---------------------------------------------------------------------------
-    # Test 8-24: Mock matrix, sampling, provenance, ambiguity, and selector tests
-    # ---------------------------------------------------------------------------
-    function Get-Sha256Hex {
-        param([Parameter(Mandatory=$true)][string]$Text)
+    # ---- Fingerprinted mock experiment: prepare-review + select-profiles --
+    function Get-TestSha256HexFile {
+        param([string]$Path)
         $sha = [System.Security.Cryptography.SHA256]::Create()
         try {
-            $bytes = [System.Text.Encoding]::UTF8.GetBytes($Text)
-            $hash = $sha.ComputeHash($bytes)
-            return [BitConverter]::ToString($hash).Replace("-","").ToLowerInvariant()
-        } finally {
-            $sha.Dispose()
-        }
+            $stream = [System.IO.File]::OpenRead($Path)
+            try { $hash = $sha.ComputeHash($stream) } finally { $stream.Dispose() }
+            return [BitConverter]::ToString($hash).Replace('-','').ToLowerInvariant()
+        } finally { $sha.Dispose() }
     }
 
-    $mockRoot = Join-Path $temp 'mock-experiment-root'
+    function Get-TestCandidateFingerprint {
+        param([object]$Def)
+        $providerIds = @($Def.providerIds)
+        $syn = '0'; if ([bool]$Def.allowSynthetic) { $syn = '1' }
+        $stp = '0'; if ([bool]$Def.stopAfterStrongResolved) { $stp = '1' }
+        $canonical = "v1|providers={0}|primaryMs={1}|fallbackMs={2}|cumulativeMs={3}|synthetic={4}|stopAfterStrongResolved={5}" -f `
+            ($providerIds -join ','), [int]$Def.primaryTimeout, [int]$Def.fallbackTimeout, [int]$Def.cumulativeTimeout, $syn, $stp
+        $sha = [System.Security.Cryptography.SHA256]::Create()
+        try {
+            $bytes = [System.Text.Encoding]::UTF8.GetBytes($canonical)
+            return [BitConverter]::ToString($sha.ComputeHash($bytes)).Replace('-','').ToLowerInvariant()
+        } finally { $sha.Dispose() }
+    }
+
+    $mockRoot = Join-Path $temp 'mock-select'
     New-Item -ItemType Directory -Path $mockRoot -Force | Out-Null
 
-    # Create mock corpus
-    $mockCorpusPath = Join-Path $temp 'mock-corpus.csv'
-    $mockCorpusRows = @(
-        [pscustomobject]@{ fixture_id = 'pub-001'; category = 'global-brand'; input_url = 'https://site1.com'; expected_class = 'usable-icon'; expected_host = 'site1.com'; review_required = 'false'; notes = '' },
-        [pscustomobject]@{ fixture_id = 'pub-002'; category = 'global-brand'; input_url = 'https://site2.com'; expected_class = 'usable-icon'; expected_host = 'site2.com'; review_required = 'false'; notes = '' },
-        [pscustomobject]@{ fixture_id = 'pub-003'; category = 'global-brand'; input_url = 'https://site3.com'; expected_class = 'usable-icon'; expected_host = 'site3.com'; review_required = 'false'; notes = '' },
-        [pscustomobject]@{ fixture_id = 'pub-004'; category = 'financial';    input_url = 'https://site4.com'; expected_class = 'usable-icon'; expected_host = 'site4.com'; review_required = 'false'; notes = '' }
-    )
-    $mockCorpusRows | Export-Csv -LiteralPath $mockCorpusPath -NoTypeInformation -Encoding UTF8
-    $mockCorpusFp = Get-Sha256Hex (Get-Content -Raw -LiteralPath $mockCorpusPath)
-    $mockBinaryHash = 'mockbinary1234567890abcdef'
+    # Mock corpus: 12 fixtures. The experiment records the absolute path so
+    # the selector resolves the exact row count from it.
+    $mockCorpus = Join-Path $mockRoot 'corpus.csv'
+    $mockFixtureIds = @()
+    for ($i = 1; $i -le 12; $i++) { $mockFixtureIds += ('mk-{0:D3}' -f $i) }
+    $mockFixtureIds | ForEach-Object {
+        [pscustomobject]@{
+            fixture_id = $_; category = 'global-brand'; input_url = "https://example.com/$_"
+            expected_class = 'usable-site-icon'; expected_host = 'example.com'
+            review_required = 'false'; notes = 'mock'
+        }
+    } | Export-Csv -LiteralPath $mockCorpus -NoTypeInformation -Encoding UTF8
 
-    # 3 mock candidates: privacy-eligible, fast-eligible, thorough-eligible
-    $mockCand1 = [ordered]@{
-        id = 'mock-direct-only'
-        providerIds = @('direct-site')
-        primaryTimeout = 6000; fallbackTimeout = 3500; cumulativeTimeout = 22000
-        allowSynthetic = $false; stopAfterStrongResolved = $true
-    }
-    $mockCand2 = [ordered]@{
-        id = 'mock-fast'
-        providerIds = @('direct-site', 'google', 'twenty-icons')
-        primaryTimeout = 4000; fallbackTimeout = 2500; cumulativeTimeout = 15000
-        allowSynthetic = $false; stopAfterStrongResolved = $true
-    }
-    $mockCand3 = [ordered]@{
-        id = 'mock-thorough'
-        providerIds = @('direct-site', 'google', 'twenty-icons', 'favicone')
-        primaryTimeout = 10000; fallbackTimeout = 5000; cumulativeTimeout = 45000
-        allowSynthetic = $true; stopAfterStrongResolved = $false
-    }
+    $mockCandidateDefs = @(
+        [ordered]@{ id = 'cand-direct-only-balanced'; providerIds = @('direct-site'); primaryTimeout = 6000; fallbackTimeout = 3500; cumulativeTimeout = 22000; allowSynthetic = $false; stopAfterStrongResolved = $true },
+        [ordered]@{ id = 'cand-full-thorough-synth'; providerIds = @('direct-site','twenty-icons','duckduckgo','google','yandex','favicone','icon-horse'); primaryTimeout = 10000; fallbackTimeout = 5000; cumulativeTimeout = 45000; allowSynthetic = $true; stopAfterStrongResolved = $false },
+        [ordered]@{ id = 'cand-direct-google-twenty-fast'; providerIds = @('direct-site','google','twenty-icons'); primaryTimeout = 4000; fallbackTimeout = 2500; cumulativeTimeout = 15000; allowSynthetic = $false; stopAfterStrongResolved = $true }
+    )
+    $mockCandidateIds = @($mockCandidateDefs | ForEach-Object { $_.id })
     $mockExpObj = [ordered]@{
-        experiment_id = 'mock-exp-v13'
-        corpus = (Join-Path $temp 'mock-corpus.csv').Replace('\', '/')
-        profiles = @('mock-direct-only', 'mock-fast', 'mock-thorough')
+        experiment_id = 'mock-select'
+        corpus = $mockCorpus
+        profiles = $mockCandidateIds
         schedule_seed = 42
         repetitions = 1
         concurrency = 2
-        cache_modes = @('cold', 'warm')
-        output_root = $mockRoot.Replace('\', '/')
-        candidates = @($mockCand1, $mockCand2, $mockCand3)
+        cache_modes = @('cold','warm')
+        output_root = $mockRoot
+        candidates = $mockCandidateDefs
     }
-    $mockExpJsonPath = Join-Path $temp 'mock-exp-v13.json'
+    $mockExpPath = Join-Path $mockRoot 'mock-select.json'
+    $mockExpJson = ConvertTo-Json -InputObject $mockExpObj -Depth 10
     $utf8NoBom = New-Object System.Text.UTF8Encoding $false
-    [System.IO.File]::WriteAllText($mockExpJsonPath, (ConvertTo-Json -InputObject $mockExpObj -Depth 6), $utf8NoBom)
-    $mockExpFp = Get-Sha256Hex (Get-Content -Raw -LiteralPath $mockExpJsonPath)
+    [System.IO.File]::WriteAllText($mockExpPath, $mockExpJson, $utf8NoBom)
 
-    function Get-MockPolicyFp {
-        param([object]$Def)
-        $syn = if ($Def.allowSynthetic) { "1" } else { "0" }
-        $stp = if ($Def.stopAfterStrongResolved) { "1" } else { "0" }
-        $canon = ("v1|providers={0}|primaryMs={1}|fallbackMs={2}|cumulativeMs={3}|synthetic={4}|stopAfterStrongResolved={5}" -f `
-            ($Def.providerIds -join ','), $Def.primaryTimeout, $Def.fallbackTimeout, $Def.cumulativeTimeout, $syn, $stp)
-        return Get-Sha256Hex $canon
-    }
+    $mockExpFp = Get-TestSha256HexFile -Path $mockExpPath
+    $mockCorpusFp = Get-TestSha256HexFile -Path $mockCorpus
+    $mockBinaryHash = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
+    $mockPolicyFps = @{}
+    foreach ($def in $mockCandidateDefs) { $mockPolicyFps[[string]$def.id] = Get-TestCandidateFingerprint -Def $def }
 
-    $candFps = @{
-        'mock-direct-only' = Get-MockPolicyFp -Def $mockCand1
-        'mock-fast'        = Get-MockPolicyFp -Def $mockCand2
-        'mock-thorough'    = Get-MockPolicyFp -Def $mockCand3
-    }
-
-    function New-MockRunCell {
-        param(
-            [string]$CandidateId,
-            [string]$CacheMode,
-            [int]$Repetition,
-            [string]$RunKind = 'measured',
-            [int]$ActiveElapsedMs = 500,
-            [string]$Status = 'complete',
-            [string]$ExpFp = $mockExpFp
-        )
-        $dirName = if ($RunKind -eq 'warmup') {
-            "{0}-warmup" -f $CandidateId
-        } else {
-            "{0}-{1}-rep{2}" -f $CandidateId, $CacheMode, $Repetition
-        }
-        $runDir = Join-Path $mockRoot $dirName
-        New-Item -ItemType Directory -Path $runDir -Force | Out-Null
-
-        $meta = [ordered]@{
-            experiment_id = 'mock-exp-v13'
-            experiment_fingerprint = $ExpFp
-            corpus_fingerprint = $mockCorpusFp
-            binary_hash = $mockBinaryHash
-            candidate_id = $CandidateId
-            policy_fingerprint = $candFps[$CandidateId]
-            cache_mode = $CacheMode
-            repetition = $Repetition
-            run_kind = $RunKind
-            status = $Status
+    function global:New-MockRow {
+        param([string]$FixtureId, [string]$Profile, [string]$Outcome, [int]$Elapsed,
+              [string]$Provider, [bool]$Synthetic = $false, [bool]$Placeholder = $false,
+              [string]$CacheMode = 'cold', $Metrics = @())
+        return [ordered]@{
+            fixture_id = $FixtureId
+            repetition = 1
+            category = 'global-brand'
+            input_url = "https://example.com/$FixtureId"
+            selected_provider = $Provider
+            tier = 'SiteCanonical'
+            is_synthetic = $Synthetic
+            placeholder_suspected = $Placeholder
+            blank_suspected = $false
+            machine_outcome = $Outcome
+            candidate_counts = @{}
+            per_provider_metrics = $Metrics
+            provider_metrics = $Metrics
+            total_elapsed_ms = $Elapsed
+            total_elapsed = $Elapsed
+            cache_behavior = 'miss'
+            cache_hit = $false
+            coalesced = $false
+            coalescing = $false
+            image_type = 'png'
+            image_width = 16
+            image_height = 16
+            image_byte_size = 1024
+            image_validation = 'ok'
+            artifact_path = "artifacts/$FixtureId.png"
+            artifact_hash = "hash-$FixtureId-$Profile"
+            experiment_id = 'mock-select'
+            profile = $Profile
+            network_context = 'default'
             concurrency = 2
-            network_context = 'test'
-            started_timestamp = '2026-08-17T12:00:00Z'
-            completed_timestamp = '2026-08-17T12:00:01Z'
-            active_elapsed_ms = $ActiveElapsedMs
-            resumed = $false
-            row_count = 4
+            cache_mode = $CacheMode
         }
-        [System.IO.File]::WriteAllText((Join-Path $runDir 'run.json'), (ConvertTo-Json -InputObject $meta -Depth 4), $utf8NoBom)
+    }
 
-        $rows = @()
-        for ($i = 1; $i -le 4; $i++) {
-            $fid = ('pub-{0:D3}' -f $i)
-            $cat = if ($i -le 3) { 'global-brand' } else { 'financial' }
-            $prov = if ($CandidateId -eq 'mock-direct-only') { 'Direct Site' } else { 'Google' }
-            $hash = if ($CandidateId -eq 'mock-direct-only' -and $i -eq 4) { 'hash-direct-4' } else { "hash-$i" }
-            $mo = 'success'
-            $syn = ($CandidateId -eq 'mock-thorough' -and $i -eq 3)
-            $place = ($i -eq 2)
-            $pm = @(
-                [ordered]@{ provider = $prov; calls = 1; elapsed_ms = 50; candidate_count = 1; outcome = 'success'; errors = 0 }
-            )
-            $rows += [pscustomobject]@{
-                fixture_id = $fid
-                repetition = $Repetition
-                category = $cat
-                input_url = "https://site$i.com"
-                selected_provider = $prov
-                tier = 'SiteCanonical'
-                is_synthetic = $syn
-                placeholder_suspected = $place
-                blank_suspected = $false
-                machine_outcome = $mo
-                candidate_counts = "{}"
-                per_provider_metrics = "[]"
-                provider_metrics = (ConvertTo-Json -InputObject $pm -Compress)
-                total_elapsed_ms = 100
-                cache_behavior = 'miss'
-                cache_hit = $false
-                coalesced = $false
-                coalescing = $false
-                image_type = 'png'
-                image_width = 16
-                image_height = 16
-                image_byte_size = 512
-                image_validation = 'ok'
-                artifact_path = "artifacts/$fid.png"
-                artifact_hash = $hash
-                experiment_id = 'mock-exp-v13'
-                profile = $CandidateId
-                network_context = 'test'
-                concurrency = 2
-                cache_mode = $CacheMode
+    # Outcomes per candidate (fixture index 0..11):
+    #   fixtures 0..7  -> all three succeed via "Direct Site" (non-differing)
+    #   fixture  8     -> direct-only "Direct Site", thorough "Google", fast "Direct Site" (differing)
+    #   fixture  9     -> only thorough succeeds via "Google" (single resolved provider)
+    #   fixtures 10..11-> all not-found
+    # thorough additionally flags synthetic on fixture 5 and placeholder on 2.
+    function New-MockRunDir {
+        param([string]$CandId, [string]$Mode, [int]$Rep, [string]$Kind, [long]$ActiveMs)
+        $def = $null
+        foreach ($d in $mockCandidateDefs) { if ([string]$d.id -eq $CandId) { $def = $d } }
+        $r = New-KeeFetchRun -OutputRoot $mockRoot -ExperimentId 'mock-select' -CorpusPath $mockCorpus `
+            -CorpusVersion 'v1' -Concurrency 2 -CacheMode $Mode -Profiles @($CandId) -Repetitions 1 `
+            -CacheModes @('cold','warm') -ExtraMetadata @{
+                candidate_id = $CandId
+                repetition = $Rep
+                run_kind = $Kind
+                policy_fingerprint = $mockPolicyFps[$CandId]
+                experiment_fingerprint = $mockExpFp
+                corpus_fingerprint = $mockCorpusFp
+                binary_hash = $mockBinaryHash
+                schedule_seed = 42
             }
+        for ($i = 0; $i -lt 12; $i++) {
+            $fid = $mockFixtureIds[$i]
+            $outcome = 'not-found'
+            $provider = ''
+            $synthetic = $false
+            $placeholder = $false
+            $elapsed = 100
+            $metrics = @()
+            if ($CandId -eq 'cand-direct-only-balanced') {
+                if ($i -le 8) { $outcome = 'success'; $provider = 'Direct Site'; $elapsed = 100 }
+            } elseif ($CandId -eq 'cand-full-thorough-synth') {
+                if ($i -le 9) {
+                    $outcome = 'success'
+                    $provider = 'Direct Site'
+                    if ($i -ge 8) { $provider = 'Google' }
+                    $elapsed = 300
+                    if ($i -eq 5) { $synthetic = $true }
+                    if ($i -eq 2) { $placeholder = $true }
+                    $metrics = @([ordered]@{ provider = 'Google'; calls = 1; elapsed = 200; elapsed_ms = 200; candidate_count = 1; outcome = 'candidate'; errors = 0 })
+                }
+            } else {
+                if ($i -le 8) {
+                    $outcome = 'success'; $provider = 'Direct Site'; $elapsed = 40
+                    $metrics = @([ordered]@{ provider = 'Twenty Icons'; calls = 1; elapsed = 30; elapsed_ms = 30; candidate_count = 1; outcome = 'candidate'; errors = 0 })
+                }
+            }
+            $row = New-MockRow -FixtureId $fid -Profile $CandId -Outcome $outcome -Elapsed $elapsed `
+                -Provider $provider -Synthetic $synthetic -Placeholder $placeholder -CacheMode $Mode -Metrics $metrics
+            Add-KeeFetchResult -RunDirectory $r.Directory -Result $row
         }
-        $rows | Export-Csv -LiteralPath (Join-Path $runDir 'rows.csv') -NoTypeInformation -Encoding UTF8
-        return $runDir
+        Complete-KeeFetchRun -RunDirectory $r.Directory -ActiveElapsedMs $ActiveMs -Resumed $false
+        return $r
     }
 
-    # Generate full matrix cells: 3 candidates x 2 modes (cold, warm) x 1 rep + 3 warmups
-    $createdRunDirs = @()
-    foreach ($cid in @('mock-direct-only', 'mock-fast', 'mock-thorough')) {
-        $createdRunDirs += New-MockRunCell -CandidateId $cid -CacheMode 'cold' -Repetition 1 -ActiveElapsedMs 300
-        $createdRunDirs += New-MockRunCell -CandidateId $cid -CacheMode 'warm' -Repetition 1 -ActiveElapsedMs 100
-        $createdRunDirs += New-MockRunCell -CandidateId $cid -CacheMode 'warm' -Repetition 0 -RunKind 'warmup' -ActiveElapsedMs 150
+    foreach ($cid in $mockCandidateIds) {
+        [void](New-MockRunDir -CandId $cid -Mode 'cold' -Rep 1 -Kind 'measured' -ActiveMs 9000)
+        # Warm-up rows carry absurd latencies: they must never leak into metrics.
+        [void](New-MockRunDir -CandId $cid -Mode 'warm' -Rep 0 -Kind 'warmup' -ActiveMs 999999)
+        [void](New-MockRunDir -CandId $cid -Mode 'warm' -Rep 1 -Kind 'measured' -ActiveMs 1500)
     }
 
-    # Verify prepare-review.ps1 and select-profiles.ps1 syntax
     $prepPath = Join-Path $PSScriptRoot 'prepare-review.ps1'
     $selPath = Join-Path $PSScriptRoot 'select-profiles.ps1'
-    if (-not (Test-Path -LiteralPath $prepPath)) { throw 'Missing prepare-review.ps1' }
-    if (-not (Test-Path -LiteralPath $selPath)) { throw 'Missing select-profiles.ps1' }
-
-    # Test: prepare-review generates exact-hash queue and excludes warm-up runs
-    $mockQueuePath = Join-Path $mockRoot 'review-queue.csv'
-    & $prepPath -RunDir $mockRoot -OutputPath $mockQueuePath -Seed 'test-seed-42' | Out-Null
-    if (-not (Test-Path -LiteralPath $mockQueuePath)) { throw 'Review queue was not created' }
-    $queueData = @(Import-Csv -LiteralPath $mockQueuePath)
-    if ($queueData.Count -eq 0) { throw 'Review queue is empty' }
-
-    # Test: queue identity is exact fixture_id|artifact_hash
-    $seenQKeys = New-Object 'System.Collections.Generic.HashSet[string]'
-    foreach ($q in $queueData) {
-        if ([string]::IsNullOrWhiteSpace($q.fixture_id) -or [string]::IsNullOrWhiteSpace($q.artifact_hash)) {
-            throw 'Queue entry missing fixture_id or artifact_hash'
-        }
-        $k = "$($q.fixture_id)|$($q.artifact_hash)"
-        if (-not $seenQKeys.Add($k)) { throw "Duplicate review unit in queue: $k" }
+    foreach ($p in @($prepPath, $selPath)) {
+        $errors = $null; $tokens = $null
+        $null = [System.Management.Automation.Language.Parser]::ParseFile($p, [ref]$tokens, [ref]$errors)
+        if ($null -ne $errors -and $errors.Count -gt 0) { throw "$(Split-Path -Leaf $p) parse failed: $($errors[0].Message)" }
     }
 
-    # Test: deterministic sampling stability (same seed -> identical queue)
-    $mockQueuePath2 = Join-Path $mockRoot 'review-queue-seed2.csv'
-    & $prepPath -RunDir $mockRoot -OutputPath $mockQueuePath2 -Seed 'test-seed-42' | Out-Null
-    $queueData2 = @(Import-Csv -LiteralPath $mockQueuePath2)
-    if ($queueData.Count -ne $queueData2.Count) { throw 'Sampling with same seed produced different queue length' }
-    for ($i = 0; $i -lt $queueData.Count; $i++) {
-        if ($queueData[$i].fixture_id -ne $queueData2[$i].fixture_id -or $queueData[$i].artifact_hash -ne $queueData2[$i].artifact_hash) {
-            throw 'Sampling with same seed produced different ordering or items'
-        }
+    # Deterministic sampling: two generations must be byte-identical, and the
+    # queue must contain only unique (fixture, artifact hash) review units.
+    $queueA = Join-Path $mockRoot 'review-queue.csv'
+    $queueB = Join-Path $mockRoot 'review-queue-b.csv'
+    & $prepPath -RunDir $mockRoot -OutputPath $queueA | Out-Null
+    & $prepPath -RunDir $mockRoot -OutputPath $queueB | Out-Null
+    $bytesA = [System.IO.File]::ReadAllBytes($queueA)
+    $bytesB = [System.IO.File]::ReadAllBytes($queueB)
+    if (-not ($bytesA.Length -eq $bytesB.Length)) { throw 'prepare-review sampling is not deterministic (different sizes)' }
+    for ($bi = 0; $bi -lt $bytesA.Length; $bi++) {
+        if ($bytesA[$bi] -ne $bytesB[$bi]) { throw 'prepare-review sampling is not deterministic (content differs)' }
+    }
+    Remove-Item -LiteralPath $queueB -Force
+    $rq = @(Import-Csv -LiteralPath $queueA)
+    if ($rq.Count -eq 0) { throw 'review queue empty' }
+    $unitKeys = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    foreach ($q in $rq) { [void]$unitKeys.Add("$($q.fixture_id)|$($q.artifact_hash)") }
+    if ($unitKeys.Count -ne $rq.Count) { throw "review queue rows ($($rq.Count)) are not unique units ($($unitKeys.Count))" }
+    $mustRows = @($rq | Where-Object { $_.notes -match 'synthetic|placeholder|profile-differing' })
+    if ($mustRows.Count -lt 3) { throw "expected must-review rows (synthetic/placeholder/profile-differing), got $($mustRows.Count)" }
+    $sampledRows = @($rq | Where-Object { $_.notes -match 'sampled' })
+    if ($sampledRows.Count -lt 1) { throw 'expected sampled rows in queue' }
+    foreach ($col in @('fixture_id','artifact_hash','profiles','categories','occurrences','review_label','reviewer','reviewed_at_utc','notes')) {
+        if ($rq[0].PSObject.Properties.Name -notcontains $col) { throw "review-queue missing column $col" }
     }
 
-    # Test: validation rejects not-reviewed labels (ASSERTION MUST FAIL CLOSED)
-    $valFailed = $false
+    # Validation must fail closed while rows remain not-reviewed. The
+    # exception is asserted directly - no self-set success flags.
+    $validateThrewOnUnreviewed = $false
     try {
-        & $prepPath -RunDir $mockRoot -OutputPath $mockQueuePath -Validate 2>$null | Out-Null
-    } catch {
-        $valFailed = $true
-    }
-    if (-not $valFailed) {
-        throw 'Validation passed on an unreviewed queue (must fail closed).'
-    }
+        & $prepPath -RunDir $mockRoot -OutputPath $queueA -Validate 2>$null | Out-Null
+    } catch { $validateThrewOnUnreviewed = $true }
+    if (-not $validateThrewOnUnreviewed) { throw 'validate accepted a queue with not-reviewed rows' }
 
-    # Test: validation rejects fabricated/stale artifact hash
-    $badQueuePath = Join-Path $mockRoot 'review-queue-badhash.csv'
-    $badQData = @(Import-Csv -LiteralPath $mockQueuePath)
-    foreach ($r in $badQData) { $r.review_label = 'correct'; $r.reviewer = 'test-reviewer'; $r.reviewed_at_utc = '2026-08-17T12:00:00Z' }
-    $badQData[0].artifact_hash = 'fabricatedhash123'
-    $badQData | Export-Csv -LiteralPath $badQueuePath -NoTypeInformation -Encoding UTF8
-    $badHashRejected = $false
+    # A fabricated artifact hash must be rejected with an exact-hash error.
+    $badHashRows = @(Import-Csv -LiteralPath $queueA)
+    $badHashRows[0].artifact_hash = 'fabricatedhash000000000000000000000000000000000000000000000000000000'
+    $badHashRows[0].review_label = 'correct'
+    $badHashRows[0].reviewer = 't'
+    $badHashRows[0].reviewed_at_utc = '2026-01-01T00:00:00Z'
+    $badHashPath = Join-Path $mockRoot 'bad-hash-queue.csv'
+    $badHashRows | Export-Csv -LiteralPath $badHashPath -NoTypeInformation -Encoding UTF8
+    $fabricatedRejected = $false
     try {
-        & $prepPath -RunDir $mockRoot -OutputPath $badQueuePath -Validate 2>$null | Out-Null
-    } catch {
-        $badHashRejected = $true
-    }
-    if (-not $badHashRejected) {
-        throw 'Validation accepted a fabricated artifact hash (must fail closed).'
-    }
+        & $prepPath -RunDir $mockRoot -OutputPath $badHashPath -Validate 2>$null | Out-Null
+    } catch { $fabricatedRejected = $_.Exception.Message -match 'nonexistent result artifact|does not exist in the run artifacts|Required review unit missing' }
+    if (-not $fabricatedRejected) { throw 'validate accepted a fabricated artifact hash' }
 
-    # Fill valid labels on the main queue
-    $labeledRows = @(Import-Csv -LiteralPath $mockQueuePath)
-    foreach ($r in $labeledRows) {
-        $r.review_label = 'correct'
-        $r.reviewer = 'test-reviewer'
-        $r.reviewed_at_utc = '2026-08-17T12:00:00Z'
+    # Happy labels: everything correct.
+    $labeled = @(Import-Csv -LiteralPath $queueA)
+    foreach ($l in $labeled) {
+        $l.review_label = 'correct'
+        $l.reviewer = 'test-reviewer'
+        $l.reviewed_at_utc = '2026-01-01T00:00:00Z'
     }
-    $labeledRows | Export-Csv -LiteralPath $mockQueuePath -NoTypeInformation -Encoding UTF8
-
-    # Test: validation passes on complete, valid review queue
+    $labeled | Export-Csv -LiteralPath $queueA -NoTypeInformation -Encoding UTF8
     try {
-        & $prepPath -RunDir $mockRoot -OutputPath $mockQueuePath -Validate | Out-Null
+        & $prepPath -RunDir $mockRoot -OutputPath $queueA -Validate | Out-Null
     } catch {
-        throw "Validation failed on valid labeled queue: $($_.Exception.Message)"
+        throw "validate failed on a fully labeled queue: $($_.Exception.Message)"
     }
 
-    # Test: selector runs without -Publish and writes only to OutputDir (does NOT mutate repo source)
-    $mockOutputDir = Join-Path $mockRoot 'selection-out'
-    & $selPath -RunDir $mockRoot -ReviewQueue $mockQueuePath -OutputDir $mockOutputDir -ExperimentFile $mockExpJsonPath | Out-Null
-    foreach ($p in @('FetchProfileCatalog.Generated.cs', 'v1.3-provider-study.md', 'selection-summary.json', 'selection-report.md')) {
-        if (-not (Test-Path -LiteralPath (Join-Path $mockOutputDir $p))) {
-            throw "select-profiles missing output: $p"
-        }
+    # Selector: happy path. It must not mutate the repository without -Publish.
+    $repoGeneratedBefore = Get-TestSha256HexFile -Path (Join-Path $PSScriptRoot '..\..\FetchProfiles\FetchProfileCatalog.Generated.cs')
+    $selOut = Join-Path $mockRoot 'selection-out'
+    & $selPath -RunDir $mockRoot -ReviewQueue $queueA -OutputDir $selOut -ExperimentFile $mockExpPath | Out-Null
+    $repoGeneratedAfter = Get-TestSha256HexFile -Path (Join-Path $PSScriptRoot '..\..\FetchProfiles\FetchProfileCatalog.Generated.cs')
+    if ($repoGeneratedBefore -ne $repoGeneratedAfter) { throw 'selector mutated FetchProfileCatalog.Generated.cs without -Publish' }
+
+    foreach ($p in @('selection-summary.json','selection-report.md','FetchProfileCatalog.Generated.cs','v1.3-provider-study.md')) {
+        if (-not (Test-Path -LiteralPath (Join-Path $selOut $p))) { throw "select-profiles missing output $p" }
+    }
+    $summary = Get-Content -Raw -LiteralPath (Join-Path $selOut 'selection-summary.json') | ConvertFrom-Json
+    if ($summary.winners.privacy -ne 'cand-direct-only-balanced') { throw "privacy winner expected cand-direct-only-balanced, got $($summary.winners.privacy)" }
+    # All-correct labels tie every candidate's estimated usable rate at 1.0,
+    # so max-coverage resolves through the documented cold-p95 tie-break (the
+    # fast chain has the lowest latency) and bulk-fast picks the same
+    # eligible candidate by its smallest active batch.
+    if ($summary.winners.'max-coverage' -ne 'cand-direct-google-twenty-fast') { throw "max-coverage winner expected cand-direct-google-twenty-fast, got $($summary.winners.'max-coverage')" }
+    if ($summary.winners.'bulk-fast' -ne 'cand-direct-google-twenty-fast') { throw "bulk-fast winner expected cand-direct-google-twenty-fast, got $($summary.winners.'bulk-fast')" }
+    if ([string]::IsNullOrWhiteSpace([string]$summary.winners.everyday)) { throw 'everyday winner missing' }
+
+    # Machine availability and human usability stay separate: with every
+    # reviewed label correct, usable is 100% while coverage equals machine
+    # availability, and warm-up latencies (999999ms) never leak into metrics.
+    $thoroughStats = @($summary.candidates | Where-Object { $_.profile_id -eq 'cand-full-thorough-synth' })[0]
+    if ([Math]::Abs([double]$thoroughStats.machine_availability - 10.0/12.0) -gt 0.001) { throw "thorough machine availability expected 10/12, got $($thoroughStats.machine_availability)" }
+    if ([Math]::Abs([double]$thoroughStats.estimated_usable_rate - 1.0) -gt 0.001) { throw "thorough usable expected 1.0, got $($thoroughStats.estimated_usable_rate)" }
+    if ([Math]::Abs([double]$thoroughStats.coverage - 10.0/12.0) -gt 0.001) { throw "coverage must equal availability x usability" }
+    if ([int]$thoroughStats.cold_median_ms -ne 300) { throw "cold median leaked warm-up rows or wrong rows: $($thoroughStats.cold_median_ms)" }
+    if ([int]$thoroughStats.active_batch_cold_ms -ne 9000) { throw "active cold batch expected 9000, got $($thoroughStats.active_batch_cold_ms)" }
+    if ([double]$thoroughStats.third_party_disclosure_rate -le 0) { throw 'thorough disclosure rate must reflect observed Google calls' }
+
+    # Generated descriptions must state policy facts for the actual winner.
+    $csText = Get-Content -Raw -LiteralPath (Join-Path $selOut 'FetchProfileCatalog.Generated.cs')
+    foreach ($mid in @('bulk-fast','everyday','privacy','max-coverage')) {
+        if ($csText.IndexOf('"' + $mid + '"') -lt 0) { throw "generated CS missing role $mid" }
     }
 
-    # Test: ambiguous challenger can force rejection (ASSERTION MUST BE VERIFIED)
-    $ambQueuePath = Join-Path $mockRoot 'review-queue-ambiguous.csv'
-    $ambQRows = @(Import-Csv -LiteralPath $mockQueuePath)
-    # Set labels so mock-direct-only has 3 correct / 1 wrong-brand (0.75), while mock-thorough has 2 correct / 2 ambiguous
-    # Under conservative: mock-direct-only (0.75) beats mock-thorough (0.50) -> winner is mock-direct-only
-    # Under optimistic: mock-thorough (1.00) beats mock-direct-only (0.75) -> winner is mock-thorough
-    foreach ($r in $ambQRows) {
-        if ($r.artifact_hash -eq 'hash-direct-4') {
-            $r.review_label = 'wrong-brand'
-        } elseif ($r.artifact_hash -eq 'hash-3' -or $r.artifact_hash -eq 'hash-4') {
-            $r.review_label = 'ambiguous'
-        } else {
-            $r.review_label = 'correct'
-        }
+    # Adversarial: a sampled wrong-brand must sink the estimated usable rate
+    # without touching machine availability, flipping max-coverage away from
+    # the current winner. Unsampled successes are never implicitly correct.
+    $advRows = @(Import-Csv -LiteralPath $queueA)
+    $fastSampled = @($advRows | Where-Object { $_.notes -match 'sampled' -and $_.profiles -match 'cand-direct-google-twenty-fast' })
+    if ($fastSampled.Count -eq 0) { throw ('expected a sampled fast unit for the adversarial case; queue rows: ' + (($advRows | ForEach-Object { "$($_.fixture_id)|$($_.artifact_hash)|$($_.profiles)|$($_.notes)" }) -join ' ;; ')) }
+    foreach ($s in $fastSampled) { $s.review_label = 'wrong-brand' }
+    $advPath = Join-Path $mockRoot 'adv-queue.csv'
+    $advRows | Export-Csv -LiteralPath $advPath -NoTypeInformation -Encoding UTF8
+    $advOut = Join-Path $mockRoot 'adv-out'
+    & $selPath -RunDir $mockRoot -ReviewQueue $advPath -OutputDir $advOut -ExperimentFile $mockExpPath | Out-Null
+    $advSummary = Get-Content -Raw -LiteralPath (Join-Path $advOut 'selection-summary.json') | ConvertFrom-Json
+    $advFast = @($advSummary.candidates | Where-Object { $_.profile_id -eq 'cand-direct-google-twenty-fast' })[0]
+    $advThorough = @($advSummary.candidates | Where-Object { $_.profile_id -eq 'cand-full-thorough-synth' })[0]
+    if ([Math]::Abs([double]$advThorough.machine_availability - 10.0/12.0) -gt 0.001) { throw 'adversarial case must not change machine availability' }
+    if ([double]$advFast.estimated_usable_rate -ge 0.5) { throw "wrong-brand sample failed to sink the estimated usable rate: $($advFast.estimated_usable_rate)" }
+    if ($advSummary.winners.'max-coverage' -eq 'cand-direct-google-twenty-fast') { throw 'unsampled successes were implicitly counted as correct (winner unchanged)' }
+
+    # Ambiguity sensitivity: ambiguous mass on the current winner can flip
+    # the max-coverage ranking between ambiguity-as-failure and
+    # ambiguity-as-usable, which must reject the whole selection.
+    $ambRows = @(Import-Csv -LiteralPath $queueA)
+    foreach ($a in @($ambRows | Where-Object { $_.profiles -match 'cand-direct-google-twenty-fast' } | Select-Object -First 4)) {
+        $a.review_label = 'ambiguous'
     }
-    $ambQRows | Export-Csv -LiteralPath $ambQueuePath -NoTypeInformation -Encoding UTF8
-    $ambRejected = $false
+    $ambPath = Join-Path $mockRoot 'amb-queue.csv'
+    $ambRows | Export-Csv -LiteralPath $ambPath -NoTypeInformation -Encoding UTF8
+    $ambThrew = $false
+    $ambMessage = ''
     try {
-        & $selPath -RunDir $mockRoot -ReviewQueue $ambQueuePath -OutputDir (Join-Path $mockRoot 'amb-out') -ExperimentFile $mockExpJsonPath 2>$null | Out-Null
+        & $selPath -RunDir $mockRoot -ReviewQueue $ambPath -OutputDir (Join-Path $mockRoot 'amb-out') -ExperimentFile $mockExpPath 2>$null | Out-Null
     } catch {
-        $ambRejected = $true
+        $ambThrew = $true
+        $ambMessage = $_.Exception.Message
     }
-    if (-not $ambRejected) {
-        throw 'Selector did not reject ambiguous reversal (must fail closed on ambiguous instability).'
-    }
+    if (-not $ambThrew) { throw 'selector accepted a selection that ambiguity can reverse' }
+    if ($ambMessage -notmatch 'Ambiguity sensitivity') { throw "ambiguity rejection message unexpected: $ambMessage" }
 
-    # Test: missing matrix cell is rejected
-    $missingMatrixRoot = Join-Path $temp 'mock-missing-cell-root'
-    Copy-Item -LiteralPath $mockRoot -Destination $missingMatrixRoot -Recurse
-    # Remove one measured cell
-    Remove-Item -LiteralPath (Join-Path $missingMatrixRoot 'mock-fast-cold-rep1') -Recurse -Force
-    $missingRejected = $false
+    # Duplicate matrix cell must be rejected.
+    $measuredDirs = @(Get-ChildItem -LiteralPath $mockRoot -Directory | Where-Object {
+        (Test-Path (Join-Path $_.FullName 'run.json')) -and
+        ((Get-Content -Raw (Join-Path $_.FullName 'run.json') | ConvertFrom-Json).run_kind -eq 'measured')
+    })
+    $dupSource = $measuredDirs[0]
+    $dupTarget = Join-Path $mockRoot 'run_duplicate_cell'
+    Copy-Item -LiteralPath $dupSource.FullName -Destination $dupTarget -Recurse
+    $dupThrew = $false
     try {
-        & $selPath -RunDir $missingMatrixRoot -ReviewQueue $mockQueuePath -OutputDir (Join-Path $missingMatrixRoot 'out') -ExperimentFile $mockExpJsonPath 2>$null | Out-Null
-    } catch {
-        $missingRejected = $_.Exception.Message -match 'Missing matrix cells'
-    }
-    if (-not $missingRejected) {
-        throw 'Selector accepted missing matrix cell (must fail closed).'
-    }
+        & $selPath -RunDir $mockRoot -ReviewQueue $queueA -OutputDir (Join-Path $mockRoot 'dup-out') -ExperimentFile $mockExpPath 2>$null | Out-Null
+    } catch { $dupThrew = $_.Exception.Message -match 'Duplicate matrix cell' }
+    if (-not $dupThrew) { throw 'duplicate matrix cell was accepted' }
+    Remove-Item -LiteralPath $dupTarget -Recurse -Force
 
-    # Test: mixed experiment fingerprint is rejected
-    $mixedFpRoot = Join-Path $temp 'mock-mixed-fp-root'
-    Copy-Item -LiteralPath $mockRoot -Destination $mixedFpRoot -Recurse
-    $mixedJsonPath = Join-Path $mixedFpRoot 'mock-fast-cold-rep1\run.json'
-    $mixedMeta = Get-Content -Raw -LiteralPath $mixedJsonPath | ConvertFrom-Json
-    $mixedMeta.experiment_fingerprint = 'deadbeef12345678'
-    [System.IO.File]::WriteAllText($mixedJsonPath, (ConvertTo-Json -InputObject $mixedMeta -Depth 4), $utf8NoBom)
-    $mixedRejected = $false
+    # Missing matrix cell must be rejected (the run must leave the run root,
+    # otherwise discovery still finds it).
+    $missingSource = $measuredDirs[1]
+    $missingBackup = Join-Path $temp 'missing-backup'
+    Move-Item -LiteralPath $missingSource.FullName -Destination $missingBackup
+    $missingThrew = $false
     try {
-        & $selPath -RunDir $mixedFpRoot -ReviewQueue $mockQueuePath -OutputDir (Join-Path $mixedFpRoot 'out') -ExperimentFile $mockExpJsonPath 2>$null | Out-Null
-    } catch {
-        $mixedRejected = $_.Exception.Message -match 'Mixed experiment fingerprints'
-    }
-    if (-not $mixedRejected) {
-        throw 'Selector accepted mixed experiment fingerprints (must fail closed).'
-    }
+        & $selPath -RunDir $mockRoot -ReviewQueue $queueA -OutputDir (Join-Path $mockRoot 'missing-out') -ExperimentFile $mockExpPath 2>$null | Out-Null
+    } catch { $missingThrew = $_.Exception.Message -match 'Missing matrix cells' }
+    if (-not $missingThrew) { throw 'missing matrix cell was accepted' }
+    Move-Item -LiteralPath $missingBackup -Destination $missingSource.FullName
 
-    # Test: duplicate matrix cell is rejected
-    $dupMatrixRoot = Join-Path $temp 'mock-dup-cell-root'
-    Copy-Item -LiteralPath $mockRoot -Destination $dupMatrixRoot -Recurse
-    # Copy one cell to create a duplicate with different directory name but same metadata
-    $dupDir = Join-Path $dupMatrixRoot 'mock-fast-cold-rep1-dup'
-    Copy-Item -LiteralPath (Join-Path $dupMatrixRoot 'mock-fast-cold-rep1') -Destination $dupDir -Recurse
-    $dupRejected = $false
+    # A modified experiment file (fingerprint mismatch) must be rejected.
+    $experimentBackup = Join-Path $mockRoot 'experiment-backup.json'
+    Copy-Item -LiteralPath $mockExpPath -Destination $experimentBackup
+    [System.IO.File]::WriteAllText($mockExpPath, $mockExpJson + [Environment]::NewLine, $utf8NoBom)
+    $mismatchThrew = $false
     try {
-        & $selPath -RunDir $dupMatrixRoot -ReviewQueue $mockQueuePath -OutputDir (Join-Path $dupMatrixRoot 'out') -ExperimentFile $mockExpJsonPath 2>$null | Out-Null
-    } catch {
-        $dupRejected = $_.Exception.Message -match 'Duplicate matrix cell'
-    }
-    if (-not $dupRejected) {
-        throw 'Selector accepted duplicate matrix cell (must fail closed).'
-    }
+        & $selPath -RunDir $mockRoot -ReviewQueue $queueA -OutputDir (Join-Path $mockRoot 'mismatch-out') -ExperimentFile $mockExpPath 2>$null | Out-Null
+    } catch { $mismatchThrew = $_.Exception.Message -match 'does not match the fingerprint' }
+    if (-not $mismatchThrew) { throw 'experiment fingerprint mismatch was accepted' }
+    Copy-Item -LiteralPath $experimentBackup -Destination $mockExpPath -Force
 
-    # Test: incomplete run is rejected
-    $incompRoot = Join-Path $temp 'mock-incomplete-root'
-    Copy-Item -LiteralPath $mockRoot -Destination $incompRoot -Recurse
-    $incompJsonPath = Join-Path $incompRoot 'mock-fast-cold-rep1\run.json'
-    $incompMeta = Get-Content -Raw -LiteralPath $incompJsonPath | ConvertFrom-Json
-    $incompMeta.status = 'interrupted'
-    [System.IO.File]::WriteAllText($incompJsonPath, (ConvertTo-Json -InputObject $incompMeta -Depth 4), $utf8NoBom)
-    $incompRejected = $false
-    try {
-        & $selPath -RunDir $incompRoot -ReviewQueue $mockQueuePath -OutputDir (Join-Path $incompRoot 'out') -ExperimentFile $mockExpJsonPath 2>$null | Out-Null
-    } catch {
-        $incompRejected = $_.Exception.Message -match 'Incomplete run rejected'
+    # Shared JSON escaping: quotes, backslashes, and control characters must
+    # round-trip through ConvertTo-KeeFetchJsonString.
+    $escInput = "quote`"back\\slash`ttab`nline`rcr" + [string][char]1 + [string][char]31
+    $escaped = ConvertTo-KeeFetchJsonString -Value $escInput
+    if ($escaped -notmatch '^".*"$') { throw "escaped value must be quoted: $escaped" }
+    if ($escaped.IndexOf('"""') -ge 0) { throw 'unescaped quote in JSON string' }
+    foreach ($seq in @('\"', '\\', '\t', '\n', '\r', '\u0001', '\u001f')) {
+        if ($escaped.IndexOf($seq) -lt 0) { throw "expected escape sequence $seq missing from: $escaped" }
     }
-    if (-not $incompRejected) {
-        throw 'Selector accepted incomplete run (must fail closed).'
-    }
+    $reparsed = (ConvertFrom-Json ('{"v": ' + $escaped + '}')).v
+    if ($reparsed -ne $escInput) { throw "escape round-trip failed: [$reparsed] vs [$escInput]" }
 
 } finally {
     Remove-Item -LiteralPath $temp -Recurse -Force

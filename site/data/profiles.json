@@ -16,6 +16,7 @@
       "fallbackTimeoutMs": 2500,
       "cumulativeTimeoutMs": 15000,
       "allowSyntheticFallbacks": false,
+      "stopAfterStrongResolved": true,
       "isVisible": true,
       "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
     },
@@ -33,6 +34,7 @@
       "fallbackTimeoutMs": 3500,
       "cumulativeTimeoutMs": 22000,
       "allowSyntheticFallbacks": true,
+      "stopAfterStrongResolved": true,
       "isVisible": true,
       "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
     },
@@ -48,6 +50,7 @@
       "fallbackTimeoutMs": 3500,
       "cumulativeTimeoutMs": 22000,
       "allowSyntheticFallbacks": false,
+      "stopAfterStrongResolved": false,
       "isVisible": true,
       "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
     },
@@ -69,6 +72,7 @@
       "fallbackTimeoutMs": 5000,
       "cumulativeTimeoutMs": 45000,
       "allowSyntheticFallbacks": true,
+      "stopAfterStrongResolved": false,
       "isVisible": true,
       "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
     }

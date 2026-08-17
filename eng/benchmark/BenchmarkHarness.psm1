@@ -70,6 +70,22 @@ function Write-JsonFileUtf8NoBom {
     [System.IO.File]::WriteAllText($Path, $json, $utf8NoBom)
 }
 
+function ConvertTo-KeeFetchJsonString {
+    param([Parameter(Mandatory=$true)][string]$Value)
+    $escaped = $Value.Replace("\", "\\").Replace('"', '\"')
+    $escaped = $escaped.Replace("`r", "\r").Replace("`n", "\n").Replace("`t", "\t")
+    $builder = New-Object System.Text.StringBuilder
+    foreach ($ch in $escaped.ToCharArray()) {
+        $code = [int]$ch
+        if ($code -lt 0x20) {
+            [void]$builder.Append(("\u{0:x4}" -f $code))
+        } else {
+            [void]$builder.Append($ch)
+        }
+    }
+    return '"' + $builder.ToString() + '"'
+}
+
 function New-KeeFetchRun {
     [CmdletBinding()]
     param(
@@ -921,4 +937,4 @@ function Open-KeeFetchRun {
     return $result
 }
 
-Export-ModuleMember -Function Test-KeeFetchCorpus, New-KeeFetchRun, Add-KeeFetchResult, Complete-KeeFetchRun, Read-KeeFetchExperiment, Open-KeeFetchRun
+Export-ModuleMember -Function Test-KeeFetchCorpus, New-KeeFetchRun, Add-KeeFetchResult, Complete-KeeFetchRun, Read-KeeFetchExperiment, Open-KeeFetchRun, ConvertTo-KeeFetchJsonString

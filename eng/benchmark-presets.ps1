@@ -7,6 +7,10 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $keepassPath = "C:\Program Files\KeePass Password Safe 2\KeePass.exe"
+$keepassPathEnv = [Environment]::GetEnvironmentVariable('KEEFETCH_KEEPASS_PATH')
+if (-not [string]::IsNullOrWhiteSpace($keepassPathEnv)) {
+    $keepassPath = $keepassPathEnv
+}
 $assemblyPath = Join-Path $repoRoot "bin\Release\net48\KeeFetch.dll"
 $providerNames = @(
     "Direct Site",
@@ -44,20 +48,17 @@ if (-not [System.IO.Path]::IsPathRooted($experimentPath)) {
     }
 }
 
-$experiment = Read-KeeFetchExperiment -ExperimentPath $experimentPath
-
-# Load candidate map for custom-config authority (profile-candidates-v13 etc.)
-Load-CandidateMap -ExperimentJsonPath $experimentPath
+$experimentConfig = Read-KeeFetchExperiment -ExperimentPath $experimentPath
 
 # Resolve corpus and output root
-$corpusPath = $experiment.corpus_path
+$corpusPath = $experimentConfig.corpus_path
 if ([string]::IsNullOrWhiteSpace($corpusPath)) {
-    $corpusPath = $experiment.corpus
+    $corpusPath = $experimentConfig.corpus
     if (-not [System.IO.Path]::IsPathRooted($corpusPath)) {
         $corpusPath = Join-Path $repoRoot $corpusPath
     }
 }
-$outputRoot = $experiment.output_root
+$outputRoot = $experimentConfig.output_root
 if (-not [System.IO.Path]::IsPathRooted($outputRoot)) {
     $outputRoot = Join-Path $repoRoot $outputRoot
 }
@@ -65,7 +66,7 @@ if (-not [System.IO.Path]::IsPathRooted($outputRoot)) {
 # Validate corpus
 $vocabPath = Join-Path $repoRoot "KeeFetch.Tests\Fixtures\ProviderCorpus\v1\categories.json"
 $hasFixtureFilter = $false
-if ($experiment.PSObject.Properties.Name -contains 'fixture_ids' -and $null -ne $experiment.fixture_ids -and $experiment.fixture_ids.Count -gt 0) {
+if ($experimentConfig.PSObject.Properties.Name -contains 'fixture_ids' -and $null -ne $experimentConfig.fixture_ids -and $experimentConfig.fixture_ids.Count -gt 0) {
     $hasFixtureFilter = $true
 }
 
@@ -73,7 +74,7 @@ $filteredRows = @()
 if ($hasFixtureFilter) {
     $allRows = @(Import-Csv -LiteralPath $corpusPath)
     $filterSet = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
-    foreach ($fid in $experiment.fixture_ids) { [void]$filterSet.Add([string]$fid) }
+    foreach ($fid in $experimentConfig.fixture_ids) { [void]$filterSet.Add([string]$fid) }
     $filteredRows = @($allRows | Where-Object { $filterSet.Contains([string]$_.fixture_id) })
     if ($filteredRows.Count -eq 0) {
         throw "Filtered corpus is empty. No rows matched fixture_ids."
@@ -130,7 +131,7 @@ if (-not [string]::IsNullOrWhiteSpace($ResumeRun)) {
         $runJsonCandidate = Join-Path $resumeRunDir "run.json"
         if (Test-Path -LiteralPath $runJsonCandidate) {
             try {
-                $resumeRunInfo = Open-KeeFetchRun -RunDirectory $resumeRunDir -ExperimentId $experiment.experiment_id -Concurrency $experiment.concurrency
+                $resumeRunInfo = Open-KeeFetchRun -RunDirectory $resumeRunDir -ExperimentId $experimentConfig.experiment_id -Concurrency $experimentConfig.concurrency
             } catch {
                 throw "Failed to open resume run '$resumeRunDir': $($_.Exception.Message)"
             }
@@ -641,6 +642,9 @@ function Get-MachineOutcome {
     return "not-found"
 }
 
+# Load candidate map for custom-config authority (profile-candidates-v13 etc.)
+Load-CandidateMap -ExperimentJsonPath $experimentPath
+
 # Resume single-run path: if ResumeRun points to an existing run, reopen it instead of creating new runs
 if ($null -ne $resumeRunInfo) {
     $resumeMeta = $resumeRunInfo.Metadata
@@ -655,10 +659,10 @@ if ($null -ne $resumeRunInfo) {
     if ($resumeMeta.PSObject.Properties.Name -contains 'cache_mode') { $resumeCacheMode = [string]$resumeMeta.cache_mode }
     # Validate profile and cache_mode are in experiment
     $foundProfile = $false
-    foreach ($p in $experiment.profiles) { if ([string]$p -eq $resumeProfileName) { $foundProfile = $true; break } }
+    foreach ($p in $experimentConfig.profiles) { if ([string]$p -eq $resumeProfileName) { $foundProfile = $true; break } }
     if (-not $foundProfile) { throw "Resume profile '$resumeProfileName' not found in experiment profiles." }
     $foundCache = $false
-    foreach ($m in $experiment.cache_modes) { if ([string]$m -eq $resumeCacheMode) { $foundCache = $true; break } }
+    foreach ($m in $experimentConfig.cache_modes) { if ([string]$m -eq $resumeCacheMode) { $foundCache = $true; break } }
     if (-not $foundCache) { throw "Resume cache_mode '$resumeCacheMode' not found in experiment cache_modes." }
     $profile = New-ConfigForProfile -ProfileName $resumeProfileName
     $config = $profile.Config
@@ -676,7 +680,7 @@ if ($null -ne $resumeRunInfo) {
     $runDir = $resumeRunInfo.Directory
     $runId = $resumeRunInfo.RunId
     Write-Host ""
-    Write-Host "=== Resuming Experiment $($experiment.experiment_id) | Profile $resumeProfileName | Cache $cacheMode | Run $runId ==="
+    Write-Host "=== Resuming Experiment $($experimentConfig.experiment_id) | Profile $resumeProfileName | Cache $cacheMode | Run $runId ==="
     # Build pending list excluding already completed fixtures (resumeKeys already loaded, but also check run's ndjson via Add-KeeFetchResult dedup)
     $pendingRows = @()
     foreach ($row in $filteredRows) {
@@ -689,7 +693,7 @@ if ($null -ne $resumeRunInfo) {
         }
         $pendingRows += $row
     }
-    $concurrencyLimit = [int]$experiment.concurrency
+    $concurrencyLimit = [int]$experimentConfig.concurrency
     if ($concurrencyLimit -lt 1) { $concurrencyLimit = 1 }
     $pending = New-Object System.Collections.ArrayList
     $nextIndex = 0
@@ -701,7 +705,7 @@ if ($null -ne $resumeRunInfo) {
         if ($null -ne $Wrapped.PSObject.Properties['IsHarnessError'] -and [bool]$Wrapped.IsHarnessError) {
             $msg = ""
             if ($null -ne $Wrapped.PSObject.Properties['HarnessError']) { $msg = [string]$Wrapped.HarnessError }
-            Convert-HarnessError -RunDirectory $runDir -FixtureId ([string]$Wrapped.FixtureId) -Category ([string]$Wrapped.Category) -InputUrl ([string]$Wrapped.InputUrl) -ExceptionMessage $msg -ExperimentId $experiment.experiment_id -Profile $resumeProfileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experiment.concurrency
+            Convert-HarnessError -RunDirectory $runDir -FixtureId ([string]$Wrapped.FixtureId) -Category ([string]$Wrapped.Category) -InputUrl ([string]$Wrapped.InputUrl) -ExceptionMessage $msg -ExperimentId $experimentConfig.experiment_id -Profile $resumeProfileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experimentConfig.concurrency
             return
         }
         $result = $Wrapped.Result
@@ -888,12 +892,12 @@ if ($null -ne $resumeRunInfo) {
             ImageValidation = $imageValidation
             ArtifactPath = $artifactPath
             ArtifactHash = $artifactHash
-            ExperimentId = $experiment.experiment_id
+            ExperimentId = $experimentConfig.experiment_id
             Profile = $resumeProfileName
             Repetition = $repetition
             RunId = $runId
             CacheMode = $cacheMode
-            Concurrency = $experiment.concurrency
+            Concurrency = $experimentConfig.concurrency
         }
         if ($candidateCounts.Count -gt 0) {
             $addParams['CandidateCounts'] = $candidateCounts
@@ -918,7 +922,7 @@ if ($null -ne $resumeRunInfo) {
                 $fidEnq = [string]$row.fixture_id
                 $catEnq = [string]$row.category
                 $urlEnq = [string]$row.input_url
-                Convert-HarnessError -RunDirectory $runDir -FixtureId $fidEnq -Category $catEnq -InputUrl $urlEnq -ExceptionMessage $enqueueMsg -ExperimentId $experiment.experiment_id -Profile $resumeProfileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experiment.concurrency
+                Convert-HarnessError -RunDirectory $runDir -FixtureId $fidEnq -Category $catEnq -InputUrl $urlEnq -ExceptionMessage $enqueueMsg -ExperimentId $experimentConfig.experiment_id -Profile $resumeProfileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experimentConfig.concurrency
                 $nextIndex++
                 $completedCount++
                 if (($completedCount % 25) -eq 0 -or $completedCount -eq $totalPending) {
@@ -943,7 +947,7 @@ if ($null -ne $resumeRunInfo) {
             try { $catOuter = [string]$wrapped.Category } catch {}
             try { $urlOuter = [string]$wrapped.InputUrl } catch {}
             if (-not [string]::IsNullOrWhiteSpace($fidOuter)) {
-                Convert-HarnessError -RunDirectory $runDir -FixtureId $fidOuter -Category $catOuter -InputUrl $urlOuter -ExceptionMessage $msgOuter -ExperimentId $experiment.experiment_id -Profile $resumeProfileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experiment.concurrency
+                Convert-HarnessError -RunDirectory $runDir -FixtureId $fidOuter -Category $catOuter -InputUrl $urlOuter -ExceptionMessage $msgOuter -ExperimentId $experimentConfig.experiment_id -Profile $resumeProfileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experimentConfig.concurrency
             } else {
                 throw
             }
@@ -956,12 +960,12 @@ if ($null -ne $resumeRunInfo) {
     Complete-KeeFetchRun -RunDirectory $runDir
     Write-Host "Run completed (resumed): $runDir"
 } else {
-    foreach ($profileName in $experiment.profiles) {
+    foreach ($profileName in $experimentConfig.profiles) {
         $profile = New-ConfigForProfile -ProfileName $profileName
         $config = $profile.Config
 
-        foreach ($cacheMode in $experiment.cache_modes) {
-            for ($repetition = 1; $repetition -le $experiment.repetitions; $repetition++) {
+        foreach ($cacheMode in $experimentConfig.cache_modes) {
+            for ($repetition = 1; $repetition -le $experimentConfig.repetitions; $repetition++) {
 
                 if ($cacheMode -eq "cold") {
                     $clearCacheMethod.Invoke($null, @()) | Out-Null
@@ -969,11 +973,11 @@ if ($null -ne $resumeRunInfo) {
                     $clearCacheMethod.Invoke($null, @()) | Out-Null
                 }
 
-                $run = New-KeeFetchRun -OutputRoot $outputRoot -ExperimentId $experiment.experiment_id -CorpusPath $corpusPath -CorpusVersion "v1" -Concurrency $experiment.concurrency -CacheMode $cacheMode -Profiles @($profileName) -Repetitions $experiment.repetitions -CacheModes $experiment.cache_modes
+                $run = New-KeeFetchRun -OutputRoot $outputRoot -ExperimentId $experimentConfig.experiment_id -CorpusPath $corpusPath -CorpusVersion "v1" -Concurrency $experimentConfig.concurrency -CacheMode $cacheMode -Profiles @($profileName) -Repetitions $experimentConfig.repetitions -CacheModes $experimentConfig.cache_modes
                 $runDir = $run.Directory
                 $runId = $run.RunId
                 Write-Host ""
-                Write-Host "=== Experiment $($experiment.experiment_id) | Profile $profileName | Cache $cacheMode | Repetition $repetition | Run $runId ==="
+                Write-Host "=== Experiment $($experimentConfig.experiment_id) | Profile $profileName | Cache $cacheMode | Repetition $repetition | Run $runId ==="
 
                 $pendingRows = @()
                 foreach ($row in $filteredRows) {
@@ -987,7 +991,7 @@ if ($null -ne $resumeRunInfo) {
                     $pendingRows += $row
                 }
 
-                $concurrencyLimit = [int]$experiment.concurrency
+                $concurrencyLimit = [int]$experimentConfig.concurrency
                 if ($concurrencyLimit -lt 1) { $concurrencyLimit = 1 }
                 $pending = New-Object System.Collections.ArrayList
                 $nextIndex = 0
@@ -999,7 +1003,7 @@ if ($null -ne $resumeRunInfo) {
                     if ($null -ne $Wrapped.PSObject.Properties['IsHarnessError'] -and [bool]$Wrapped.IsHarnessError) {
                         $msgInner = ""
                         if ($null -ne $Wrapped.PSObject.Properties['HarnessError']) { $msgInner = [string]$Wrapped.HarnessError }
-                        Convert-HarnessError -RunDirectory $runDir -FixtureId ([string]$Wrapped.FixtureId) -Category ([string]$Wrapped.Category) -InputUrl ([string]$Wrapped.InputUrl) -ExceptionMessage $msgInner -ExperimentId $experiment.experiment_id -Profile $profileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experiment.concurrency
+                        Convert-HarnessError -RunDirectory $runDir -FixtureId ([string]$Wrapped.FixtureId) -Category ([string]$Wrapped.Category) -InputUrl ([string]$Wrapped.InputUrl) -ExceptionMessage $msgInner -ExperimentId $experimentConfig.experiment_id -Profile $profileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experimentConfig.concurrency
                         return
                     }
                     $result = $Wrapped.Result
@@ -1186,12 +1190,12 @@ if ($null -ne $resumeRunInfo) {
                         ImageValidation = $imageValidation
                         ArtifactPath = $artifactPath
                         ArtifactHash = $artifactHash
-                        ExperimentId = $experiment.experiment_id
+                        ExperimentId = $experimentConfig.experiment_id
                         Profile = $profileName
                         Repetition = $repetition
                         RunId = $runId
                         CacheMode = $cacheMode
-                        Concurrency = $experiment.concurrency
+                        Concurrency = $experimentConfig.concurrency
                     }
                     if ($candidateCounts.Count -gt 0) {
                         $addParams['CandidateCounts'] = $candidateCounts
@@ -1217,7 +1221,7 @@ if ($null -ne $resumeRunInfo) {
                             $fidInnerEnq = [string]$row.fixture_id
                             $catInnerEnq = [string]$row.category
                             $urlInnerEnq = [string]$row.input_url
-                            Convert-HarnessError -RunDirectory $runDir -FixtureId $fidInnerEnq -Category $catInnerEnq -InputUrl $urlInnerEnq -ExceptionMessage $enqueueInnerMsg -ExperimentId $experiment.experiment_id -Profile $profileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experiment.concurrency
+                            Convert-HarnessError -RunDirectory $runDir -FixtureId $fidInnerEnq -Category $catInnerEnq -InputUrl $urlInnerEnq -ExceptionMessage $enqueueInnerMsg -ExperimentId $experimentConfig.experiment_id -Profile $profileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experimentConfig.concurrency
                             $nextIndex++
                             $completedCount++
                             if (($completedCount % 25) -eq 0 -or $completedCount -eq $totalPending) {
@@ -1242,7 +1246,7 @@ if ($null -ne $resumeRunInfo) {
                         try { $catIO = [string]$wrapped.Category } catch {}
                         try { $urlIO = [string]$wrapped.InputUrl } catch {}
                         if (-not [string]::IsNullOrWhiteSpace($fidIO)) {
-                            Convert-HarnessError -RunDirectory $runDir -FixtureId $fidIO -Category $catIO -InputUrl $urlIO -ExceptionMessage $msgInnerOuter -ExperimentId $experiment.experiment_id -Profile $profileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experiment.concurrency
+                            Convert-HarnessError -RunDirectory $runDir -FixtureId $fidIO -Category $catIO -InputUrl $urlIO -ExceptionMessage $msgInnerOuter -ExperimentId $experimentConfig.experiment_id -Profile $profileName -Repetition $repetition -RunId $runId -CacheMode $cacheMode -Concurrency $experimentConfig.concurrency
                         } else {
                             throw
                         }
@@ -1261,4 +1265,4 @@ if ($null -ne $resumeRunInfo) {
 }
 
 Write-Host ""
-Write-Host "Experiment $($experiment.experiment_id) completed."
+Write-Host "Experiment $($experimentConfig.experiment_id) completed."

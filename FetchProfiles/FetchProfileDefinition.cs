@@ -17,6 +17,7 @@ namespace KeeFetch.FetchProfiles
             int fallbackTimeoutMs,
             int cumulativeTimeoutMs,
             bool allowSyntheticFallbacks,
+            bool stopAfterStrongResolved,
             bool isVisible,
             string evidenceReport)
         {
@@ -28,6 +29,7 @@ namespace KeeFetch.FetchProfiles
             FallbackTimeoutMs = fallbackTimeoutMs;
             CumulativeTimeoutMs = cumulativeTimeoutMs;
             AllowSyntheticFallbacks = allowSyntheticFallbacks;
+            StopAfterStrongResolved = stopAfterStrongResolved;
             IsVisible = isVisible;
             EvidenceReport = evidenceReport;
 
@@ -48,6 +50,7 @@ namespace KeeFetch.FetchProfiles
         public int FallbackTimeoutMs { get; private set; }
         public int CumulativeTimeoutMs { get; private set; }
         public bool AllowSyntheticFallbacks { get; private set; }
+        public bool StopAfterStrongResolved { get; private set; }
         public bool IsVisible { get; private set; }
         public string EvidenceReport { get; private set; }
     }

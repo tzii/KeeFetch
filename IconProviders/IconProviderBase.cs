@@ -57,6 +57,7 @@ namespace KeeFetch.IconProviders
         {
             int attempt = 0;
             int timeoutMs = Math.Max(1000, request.TimeoutMs);
+            Exception lastTransportException = null;
 
             while (attempt < 2)
             {
@@ -67,6 +68,7 @@ namespace KeeFetch.IconProviders
                 try
                 {
                     token.ThrowIfCancellationRequested();
+                    lastTransportException = null;
 
                     using (var httpRequest = new HttpRequestMessage(HttpMethod.Get, url))
                     {
@@ -140,11 +142,13 @@ namespace KeeFetch.IconProviders
                 catch (HttpRequestException ex)
                 {
                     Logger.Debug(Name, ex);
+                    lastTransportException = ex;
                     shouldRetry = attempt == 0;
                 }
                 catch (IOException ex)
                 {
                     Logger.Debug(Name, ex);
+                    lastTransportException = ex;
                     shouldRetry = attempt == 0;
                 }
                 catch (Exception ex)
@@ -166,6 +170,12 @@ namespace KeeFetch.IconProviders
 
                 break;
             }
+
+            // A transport-level failure after retries must stay distinguishable
+            // from an ordinary empty result; the downloader labels the thrown
+            // exception as a provider error.
+            if (lastTransportException != null)
+                throw lastTransportException;
 
             return null;
         }

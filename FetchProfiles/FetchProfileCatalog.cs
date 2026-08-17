@@ -48,6 +48,11 @@ namespace KeeFetch.FetchProfiles
             get { return Providers.Select(p => p.DisplayName).ToList(); }
         }
 
+        public static List<string> DefaultProviderIdOrder()
+        {
+            return Providers.Select(p => p.Id).ToList();
+        }
+
         public static List<string> NormalizeProviderOrder(IEnumerable<string> raw)
         {
             List<string> ordered = new List<string>();

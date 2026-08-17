@@ -60,16 +60,25 @@ namespace KeeFetch
 
         private readonly Configuration config;
         private readonly IconSelector selector = new IconSelector();
+        private readonly FetchExecutionPolicy policy;
         private readonly ConcurrentDictionary<string, ProviderHealthState> providerHealth =
             new ConcurrentDictionary<string, ProviderHealthState>(StringComparer.OrdinalIgnoreCase);
 
-        private const int DefaultMaxCumulativeTimeoutMs = 45000;
-        private const int DefaultPrimaryProviderTimeoutMs = 10000;
-        private const int DefaultFallbackProviderTimeoutMs = 5000;
+        private const int MinProviderSliceMs = 1000;
 
         public FaviconDownloader(Configuration config)
         {
             this.config = config;
+            this.policy = FetchExecutionPolicy.Resolve(config);
+        }
+
+        /// <summary>
+        /// The single authoritative execution policy this instance runs with,
+        /// resolved once from the managed catalog or the custom configuration.
+        /// </summary>
+        internal FetchExecutionPolicy ResolvedPolicy
+        {
+            get { return policy; }
         }
 
         /// <summary>Configures TLS 1.1/1.2/1.3 if available on this .NET version.</summary>
@@ -196,7 +205,7 @@ namespace KeeFetch
             token.ThrowIfCancellationRequested();
             var stopwatch = Stopwatch.StartNew();
 
-            int timeoutMs = GetEffectiveTimeoutMs();
+            int timeoutMs = policy.CumulativeTimeoutMs;
             int maxSize = config.MaxIconSize;
 
             if (AndroidAppMapper.IsAndroidUrl(url))
@@ -284,9 +293,15 @@ namespace KeeFetch
 
             var collection = await CollectCandidatesAsync(request, isPrivate, token).ConfigureAwait(false);
             var selection = selector.Select(collection.Candidates, collection.AttemptedProviders,
-                GetEffectiveAllowSyntheticFallbacks());
+                policy.AllowSyntheticFallbacks);
             var result = BuildResultFromSelection(selection, host, cacheKey, maxSize);
             result.ProviderMetrics = collection.ProviderMetrics;
+            if (collection.CumulativeBudgetExhausted)
+            {
+                result.DiagnosticsSummary = string.IsNullOrWhiteSpace(result.DiagnosticsSummary)
+                    ? "cumulative-budget-exhausted"
+                    : result.DiagnosticsSummary + "; cumulative-budget-exhausted";
+            }
             return result;
         }
 
@@ -366,7 +381,7 @@ namespace KeeFetch
                 cacheKey = "androidapp://" + packageName.ToLowerInvariant();
 
             var selection = selector.Select(combinedCandidates, attemptedProviders,
-                GetEffectiveAllowSyntheticFallbacks());
+                policy.AllowSyntheticFallbacks);
             var result = BuildResultFromSelection(selection, hostForResult, cacheKey, maxSize);
             result.ProviderMetrics = providerMetrics;
             return result;
@@ -387,15 +402,22 @@ namespace KeeFetch
                 token.ThrowIfCancellationRequested();
                 result.AttemptedProviders.Add(provider.Name);
 
-                int remaining = (int)Math.Max(0, GetMaxCumulativeTimeoutMs() - stopwatch.ElapsedMilliseconds);
-                if (remaining < 1000)
+                // The cumulative budget is a hard wall-clock ceiling over the
+                // whole pipeline; exhaustion is surfaced explicitly instead of
+                // silently degrading to not-found.
+                int remaining = (int)Math.Max(0, policy.CumulativeTimeoutMs - stopwatch.ElapsedMilliseconds);
+                if (remaining < MinProviderSliceMs)
+                {
+                    result.CumulativeBudgetExhausted = true;
                     break;
+                }
 
-                int providerTimeout = GetProviderTimeout(provider, request.TimeoutMs, remaining);
-                if (providerTimeout < 1000)
-                    break;
+                int budgetMs = IsPrimaryProvider(provider)
+                    ? policy.PrimaryTimeoutMs
+                    : policy.FallbackTimeoutMs;
+                int deadlineMs = Math.Min(budgetMs, remaining);
 
-                var providerRequest = CloneRequest(request, providerTimeout);
+                var providerRequest = CloneRequest(request, deadlineMs);
 
                 IReadOnlyList<IconCandidate> candidates;
                 var providerStopwatch = Stopwatch.StartNew();
@@ -403,10 +425,38 @@ namespace KeeFetch
                 int candidateCount = 0;
                 try
                 {
-                    candidates = await ExecuteProviderWithConcurrencyAsync(provider, providerRequest, token)
-                        .ConfigureAwait(false);
-                    candidateCount = candidates != null ? candidates.Count : 0;
-                    providerOutcome = candidateCount > 0 ? "candidate" : "empty";
+                    // The linked deadline bounds the complete provider attempt,
+                    // including any retries the provider performs internally.
+                    using (var providerCts = CancellationTokenSource.CreateLinkedTokenSource(token))
+                    {
+                        providerCts.CancelAfter(deadlineMs);
+                        try
+                        {
+                            candidates = await ExecuteProviderWithConcurrencyAsync(provider, providerRequest,
+                                providerCts.Token).ConfigureAwait(false);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            if (token.IsCancellationRequested)
+                                throw;
+                            candidates = null;
+                            providerOutcome = "timeout";
+                        }
+                        candidateCount = candidates != null ? candidates.Count : 0;
+                        if (providerOutcome != "timeout")
+                        {
+                            // A provider may swallow the deadline abort and
+                            // return no candidates; the fired deadline
+                            // distinguishes a timeout from an ordinary empty
+                            // result, while an externally cancelled token
+                            // stays cancellation.
+                            bool noResults = candidates == null || candidates.Count == 0;
+                            if (noResults && providerCts.IsCancellationRequested)
+                                providerOutcome = token.IsCancellationRequested ? "cancelled" : "timeout";
+                            else
+                                providerOutcome = candidateCount > 0 ? "candidate" : "empty";
+                        }
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -425,6 +475,12 @@ namespace KeeFetch
                 result.ProviderMetrics.Add(new ProviderAttemptMetric(provider.Name,
                     providerStopwatch.ElapsedMilliseconds, candidateCount, providerOutcome));
 
+                if (providerOutcome == "timeout")
+                {
+                    RecordProviderFailure(provider.Name);
+                    continue;
+                }
+
                 if (candidates != null && candidates.Count > 0)
                 {
                     foreach (var candidate in candidates)
@@ -440,7 +496,23 @@ namespace KeeFetch
                 }
             }
 
+            if (result.CumulativeBudgetExhausted)
+            {
+                result.ProviderMetrics.Add(new ProviderAttemptMetric("Pipeline",
+                    Math.Max(0, stopwatch.ElapsedMilliseconds), 0, "timeout"));
+            }
+
+            // External cancellation must propagate even when the last provider
+            // swallowed its abort exception.
+            token.ThrowIfCancellationRequested();
+
             return result;
+        }
+
+        private static bool IsPrimaryProvider(IIconProvider provider)
+        {
+            return provider.Capabilities.DefaultTier == IconTier.SiteCanonical &&
+                   provider.Name.Equals("Direct Site", StringComparison.OrdinalIgnoreCase);
         }
 
         private async Task<IReadOnlyList<IconCandidate>> ExecuteProviderWithConcurrencyAsync(
@@ -463,39 +535,21 @@ namespace KeeFetch
 
         private List<IIconProvider> BuildProviderPipeline(bool isPrivateTarget)
         {
-            List<string> orderedNames = GetConfiguredProviderOrder();
-            List<string> allNames = new List<string>();
-            if (orderedNames != null) allNames.AddRange(orderedNames);
-            // Legacy fallback — if no profile is configured, include all catalog providers
-            foreach (ProviderDefinition p in FetchProfileCatalog.Providers)
-                allNames.Add(p.Id);
-
-            HashSet<string> seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            // The chain comes verbatim from the resolved execution policy; only
+            // runtime context (private-target capability, provider cooldown)
+            // may further restrict it.
             List<IIconProvider> orderedProviders = new List<IIconProvider>();
 
-            foreach (string entry in allNames)
+            foreach (string providerId in policy.ProviderIds)
             {
-                if (string.IsNullOrWhiteSpace(entry))
-                    continue;
-
-                // Convert display names / ids at boundaries to stable id
-                ProviderDefinition found = FetchProfileCatalog.FindProvider(entry);
-                string id = found != null ? found.Id : entry;
-
-                if (!seen.Add(id))
+                if (string.IsNullOrWhiteSpace(providerId))
                     continue;
 
                 Func<IIconProvider> factory;
-                if (!ProviderFactories.TryGetValue(id, out factory))
-                    continue;
-
-                if (!IsProviderEnabledForCurrentMode(id))
+                if (!ProviderFactories.TryGetValue(providerId, out factory))
                     continue;
 
                 IIconProvider provider = factory();
-                bool isCustomForThirdParty = config != null && string.Equals(config.FetchProfileId, "custom", StringComparison.OrdinalIgnoreCase);
-                if (isCustomForThirdParty && provider.Capabilities.IsThirdParty && !config.UseThirdPartyFallbacks)
-                    continue;
 
                 if (isPrivateTarget && !provider.Capabilities.AllowPrivateHosts)
                     continue;
@@ -515,66 +569,6 @@ namespace KeeFetch
 
             active.AddRange(cooledDown);
             return active;
-        }
-
-        private List<string> GetConfiguredProviderOrder()
-        {
-            if (config == null)
-                return new List<string>(FetchProfileCatalog.DefaultProviderDisplayOrder);
-
-            bool isCustom = string.Equals(config.FetchProfileId, "custom", StringComparison.OrdinalIgnoreCase);
-            if (isCustom)
-                return config.GetProviderOrderList();
-
-            try
-            {
-                FetchProfileDefinition profile = FetchProfileCatalog.GetRequiredProfile(config.FetchProfileId);
-                List<string> order = new List<string>();
-                foreach (string pid in profile.ProviderIds)
-                    order.Add(pid);
-                return order;
-            }
-            catch (InvalidOperationException)
-            {
-                return config != null ? config.GetProviderOrderList() : new List<string>(FetchProfileCatalog.DefaultProviderDisplayOrder);
-            }
-        }
-
-        private bool IsProviderEnabledForCurrentMode(string providerIdOrName)
-        {
-            if (config == null)
-                return true;
-
-            bool isCustom = string.Equals(config.FetchProfileId, "custom", StringComparison.OrdinalIgnoreCase);
-            if (isCustom)
-            {
-                ProviderDefinition found = FetchProfileCatalog.FindProvider(providerIdOrName);
-                string displayName = found != null ? found.DisplayName : providerIdOrName;
-                return config.IsProviderEnabled(displayName);
-            }
-
-            try
-            {
-                FetchProfileDefinition profile = FetchProfileCatalog.GetRequiredProfile(config.FetchProfileId);
-                foreach (string pid in profile.ProviderIds)
-                    if (pid.Equals(providerIdOrName, StringComparison.OrdinalIgnoreCase))
-                        return true;
-
-                // Also support display-name lookup for backwards compat
-                ProviderDefinition foundLookup = FetchProfileCatalog.FindProvider(providerIdOrName);
-                string canonicalId = foundLookup != null ? foundLookup.Id : providerIdOrName;
-                foreach (string pid in profile.ProviderIds)
-                    if (pid.Equals(canonicalId, StringComparison.OrdinalIgnoreCase))
-                        return true;
-
-                return false;
-            }
-            catch (InvalidOperationException)
-            {
-                ProviderDefinition found2 = FetchProfileCatalog.FindProvider(providerIdOrName);
-                string displayName2 = found2 != null ? found2.DisplayName : providerIdOrName;
-                return config.IsProviderEnabled(displayName2);
-            }
         }
 
         private bool IsProviderInCooldown(string providerName)
@@ -620,7 +614,7 @@ namespace KeeFetch
                 return true;
             }
 
-            if (!config.ShouldStopAfterStrongResolvedProvider())
+            if (!policy.StopAfterStrongResolved)
                 return false;
 
             return candidates.Any(c => IsStrongStoppingCandidate(c, provider.Name, IconTier.StrongResolved, 0.72));
@@ -643,80 +637,6 @@ namespace KeeFetch
                    !candidate.IsPlaceholderSuspected &&
                    !candidate.IsSynthetic &&
                    candidate.ConfidenceScore >= minimumConfidence;
-        }
-
-        private int GetMaxCumulativeTimeoutMs()
-        {
-            if (config == null)
-                return DefaultMaxCumulativeTimeoutMs;
-
-            bool isCustom = string.Equals(config.FetchProfileId, "custom", StringComparison.OrdinalIgnoreCase);
-            if (isCustom)
-                return DefaultMaxCumulativeTimeoutMs;
-
-            try { return FetchProfileCatalog.GetRequiredProfile(config.FetchProfileId).CumulativeTimeoutMs; }
-            catch (InvalidOperationException) { return DefaultMaxCumulativeTimeoutMs; }
-        }
-
-        private int GetProviderTimeout(IIconProvider provider, int requestedTimeoutMs, int remainingMs)
-        {
-            bool isPrimary = provider.Capabilities.DefaultTier == IconTier.SiteCanonical &&
-                             provider.Name.Equals("Direct Site", StringComparison.OrdinalIgnoreCase);
-
-            int providerCap = isPrimary
-                ? GetPrimaryProviderTimeoutMs()
-                : GetFallbackProviderTimeoutMs();
-            int timeout = Math.Min(requestedTimeoutMs, providerCap);
-            timeout = Math.Min(timeout, remainingMs);
-            return Math.Max(0, timeout);
-        }
-
-        private int GetPrimaryProviderTimeoutMs()
-        {
-            if (config == null)
-                return DefaultPrimaryProviderTimeoutMs;
-
-            bool isCustom = string.Equals(config.FetchProfileId, "custom", StringComparison.OrdinalIgnoreCase);
-            if (isCustom)
-                return DefaultPrimaryProviderTimeoutMs;
-
-            try { return FetchProfileCatalog.GetRequiredProfile(config.FetchProfileId).PrimaryTimeoutMs; }
-            catch (InvalidOperationException) { return DefaultPrimaryProviderTimeoutMs; }
-        }
-
-        private int GetFallbackProviderTimeoutMs()
-        {
-            if (config == null)
-                return DefaultFallbackProviderTimeoutMs;
-
-            bool isCustom = string.Equals(config.FetchProfileId, "custom", StringComparison.OrdinalIgnoreCase);
-            if (isCustom)
-                return DefaultFallbackProviderTimeoutMs;
-
-            try { return FetchProfileCatalog.GetRequiredProfile(config.FetchProfileId).FallbackTimeoutMs; }
-            catch (InvalidOperationException) { return DefaultFallbackProviderTimeoutMs; }
-        }
-
-        private int GetEffectiveTimeoutMs()
-        {
-            if (config == null)
-                return DefaultMaxCumulativeTimeoutMs;
-            bool isCustom = string.Equals(config.FetchProfileId, "custom", StringComparison.OrdinalIgnoreCase);
-            if (isCustom)
-                return Math.Max(5000, config.Timeout * 1000);
-            try { return FetchProfileCatalog.GetRequiredProfile(config.FetchProfileId).CumulativeTimeoutMs; }
-            catch (InvalidOperationException) { return Math.Max(5000, config.Timeout * 1000); }
-        }
-
-        private bool GetEffectiveAllowSyntheticFallbacks()
-        {
-            if (config == null)
-                return false;
-            bool isCustom = string.Equals(config.FetchProfileId, "custom", StringComparison.OrdinalIgnoreCase);
-            if (isCustom)
-                return config.AllowSyntheticFallbacks;
-            try { return FetchProfileCatalog.GetRequiredProfile(config.FetchProfileId).AllowSyntheticFallbacks; }
-            catch (InvalidOperationException) { return config.AllowSyntheticFallbacks; }
         }
 
         private static IconRequest CloneRequest(IconRequest source, int timeoutMs)
@@ -860,11 +780,7 @@ namespace KeeFetch
             {
                 cacheKey ?? string.Empty,
                 maxSize.ToString(),
-                config.FetchPresetMode.ToString(),
-                config.Timeout.ToString(),
-                config.UseThirdPartyFallbacks.ToString(),
-                config.AllowSyntheticFallbacks.ToString(),
-                config.ProviderOrder ?? string.Empty
+                policy.Fingerprint()
             });
         }
 
@@ -934,6 +850,7 @@ namespace KeeFetch
             public List<IconCandidate> Candidates { get; private set; }
             public List<string> AttemptedProviders { get; private set; }
             public List<ProviderAttemptMetric> ProviderMetrics { get; private set; }
+            public bool CumulativeBudgetExhausted { get; set; }
         }
 
         internal sealed class CachedIconEntry

@@ -537,6 +537,17 @@ namespace KeeFetch
             get { return (int)config.GetLong(Prefix + "CustomStopAfterStrongResolved", -1); }
         }
 
+        /// <summary>
+        /// Benchmark override for the Android store (Google Play) lookup permission
+        /// of a custom execution policy: negative = derive from
+        /// UseThirdPartyFallbacks, 0 = deny, positive = allow. Participates in the
+        /// policy fingerprint.
+        /// </summary>
+        internal long CustomAllowAndroidStoreLookupOverride
+        {
+            get { return config.GetLong(Prefix + "CustomAllowAndroidStoreLookup", -1); }
+        }
+
         private static bool TryGetProfileForMode(FetchPresetMode mode, out FetchProfileDefinition profile)
         {
             profile = null;

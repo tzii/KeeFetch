@@ -78,57 +78,62 @@ namespace KeeFetch.IconProviders
                         using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
                         {
                             cts.CancelAfter(timeoutMs);
-                            var response = await SharedHttp.Instance.SendAsync(httpRequest,
-                                HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
-
-                            statusCode = response.StatusCode;
-                            contentType = response.Content.Headers.ContentType != null
-                                ? response.Content.Headers.ContentType.MediaType
-                                : null;
-
-                            if (!response.IsSuccessStatusCode)
+                            // The response is deterministically disposed on every
+                            // path (success, HTTP error, oversize, parse rejection).
+                            // The cancellation registration below remains only to
+                            // abort stalled .NET Framework response stream reads.
+                            using (var response = await SharedHttp.Instance.SendAsync(httpRequest,
+                                HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false))
                             {
-                                shouldRetry = attempt == 0 && IsRetryableStatus(response.StatusCode);
-                                if (!shouldRetry)
-                                    return null;
-                                continue;
-                            }
+                                statusCode = response.StatusCode;
+                                contentType = response.Content.Headers.ContentType != null
+                                    ? response.Content.Headers.ContentType.MediaType
+                                    : null;
 
-                            var contentLength = response.Content.Headers.ContentLength;
-                            if (contentLength.HasValue && contentLength.Value > MaxIconDownloadBytes)
-                                return null;
-
-                            byte[] data;
-                            // .NET Framework response streams ignore the cancellation token on
-                            // ReadAsync; disposing the response when the deadline fires is the
-                            // only reliable way to abort a stalled socket read.
-                            using (cts.Token.Register(delegate
-                            {
-                                try { response.Dispose(); }
-                                catch (Exception) { }
-                            }))
-                            using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                            using (var ms = new MemoryStream())
-                            {
-                                if (stream == null)
-                                    return null;
-
-                                byte[] buffer = new byte[8192];
-                                int read;
-                                long total = 0;
-
-                                while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token).ConfigureAwait(false)) > 0)
+                                if (!response.IsSuccessStatusCode)
                                 {
-                                    await ms.WriteAsync(buffer, 0, read, cts.Token).ConfigureAwait(false);
-                                    total += read;
-                                    if (total > MaxIconDownloadBytes)
+                                    shouldRetry = attempt == 0 && IsRetryableStatus(response.StatusCode);
+                                    if (!shouldRetry)
                                         return null;
+                                    continue;
                                 }
 
-                                data = ms.ToArray();
-                            }
+                                var contentLength = response.Content.Headers.ContentLength;
+                                if (contentLength.HasValue && contentLength.Value > MaxIconDownloadBytes)
+                                    return null;
 
-                            return BuildCandidateFromData(url, request, data, contentType);
+                                byte[] data;
+                                // .NET Framework response streams ignore the cancellation token on
+                                // ReadAsync; disposing the response when the deadline fires is the
+                                // only reliable way to abort a stalled socket read.
+                                using (cts.Token.Register(delegate
+                                {
+                                    try { response.Dispose(); }
+                                    catch (Exception) { }
+                                }))
+                                using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                                using (var ms = new MemoryStream())
+                                {
+                                    if (stream == null)
+                                        return null;
+
+                                    byte[] buffer = new byte[8192];
+                                    int read;
+                                    long total = 0;
+
+                                    while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token).ConfigureAwait(false)) > 0)
+                                    {
+                                        await ms.WriteAsync(buffer, 0, read, cts.Token).ConfigureAwait(false);
+                                        total += read;
+                                        if (total > MaxIconDownloadBytes)
+                                            return null;
+                                    }
+
+                                    data = ms.ToArray();
+                                }
+
+                                return BuildCandidateFromData(url, request, data, contentType);
+                            }
                         }
                     }
                 }

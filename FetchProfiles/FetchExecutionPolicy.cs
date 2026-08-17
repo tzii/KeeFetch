@@ -19,31 +19,71 @@ namespace KeeFetch.FetchProfiles
         internal const int DefaultFallbackTimeoutMs = 5000;
         internal const int DefaultCumulativeTimeoutMs = 45000;
 
+        // Sane bounds enforced for every policy (managed, custom, benchmark).
+        internal const int MinProviderTimeoutMs = 250;
+        internal const int MaxProviderTimeoutMs = 120000;
+        internal const int MinCumulativeTimeoutMs = 1000;
+        internal const int MaxCumulativeTimeoutMs = 300000;
+
         private readonly List<string> providerIds;
 
+        /// <summary>
+        /// Constructs an immutable, fully validated execution policy. Every
+        /// behavior-affecting field is checked fail-closed so that a fingerprinted
+        /// policy always corresponds to executable behavior: provider ids must be
+        /// non-empty, unique, and resolve through the catalog, and timeouts must
+        /// be positive integral values in sane ranges.
+        /// </summary>
         public FetchExecutionPolicy(
             IEnumerable<string> providerIds,
             int primaryTimeoutMs,
             int fallbackTimeoutMs,
             int cumulativeTimeoutMs,
             bool allowSyntheticFallbacks,
-            bool stopAfterStrongResolved)
+            bool stopAfterStrongResolved,
+            bool allowAndroidStoreLookup)
         {
-            this.providerIds = new List<string>();
+            var validated = new List<string>();
             if (providerIds != null)
             {
-                foreach (string id in providerIds)
+                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (string raw in providerIds)
                 {
-                    if (!string.IsNullOrWhiteSpace(id))
-                        this.providerIds.Add(id.Trim());
+                    if (string.IsNullOrWhiteSpace(raw))
+                        throw new ArgumentException("Execution policy contains an empty provider id.");
+                    string id = raw.Trim();
+                    if (!seen.Add(id))
+                        throw new ArgumentException("Execution policy contains duplicate provider id '" + id + "'.");
+                    if (FetchProfileCatalog.FindProvider(id) == null)
+                        throw new ArgumentException("Execution policy references unknown provider id '" + id + "'.");
+                    validated.Add(id);
                 }
             }
+            if (validated.Count == 0)
+                throw new ArgumentException("Execution policy must contain at least one provider id.");
 
+            ValidateProviderTimeout(primaryTimeoutMs, "primaryTimeoutMs");
+            ValidateProviderTimeout(fallbackTimeoutMs, "fallbackTimeoutMs");
+            if (cumulativeTimeoutMs < MinCumulativeTimeoutMs || cumulativeTimeoutMs > MaxCumulativeTimeoutMs)
+                throw new ArgumentOutOfRangeException("cumulativeTimeoutMs", cumulativeTimeoutMs,
+                    "Cumulative timeout must be between " + MinCumulativeTimeoutMs + " and " + MaxCumulativeTimeoutMs + " ms.");
+            if (cumulativeTimeoutMs < primaryTimeoutMs)
+                throw new ArgumentException("Cumulative timeout must be greater than or equal to the primary timeout.");
+
+            this.providerIds = validated;
             PrimaryTimeoutMs = primaryTimeoutMs;
             FallbackTimeoutMs = fallbackTimeoutMs;
             CumulativeTimeoutMs = cumulativeTimeoutMs;
             AllowSyntheticFallbacks = allowSyntheticFallbacks;
             StopAfterStrongResolved = stopAfterStrongResolved;
+            AllowAndroidStoreLookup = allowAndroidStoreLookup;
+        }
+
+        private static void ValidateProviderTimeout(int value, string paramName)
+        {
+            if (value < MinProviderTimeoutMs || value > MaxProviderTimeoutMs)
+                throw new ArgumentOutOfRangeException(paramName, value,
+                    "Provider timeout must be between " + MinProviderTimeoutMs + " and " + MaxProviderTimeoutMs + " ms.");
         }
 
         public IList<string> ProviderIds
@@ -58,6 +98,12 @@ namespace KeeFetch.FetchProfiles
         public bool StopAfterStrongResolved { get; private set; }
 
         /// <summary>
+        /// Whether androidapp:// requests may perform a Google Play store lookup.
+        /// Behavior-affecting and therefore part of the canonical fingerprint.
+        /// </summary>
+        public bool AllowAndroidStoreLookup { get; private set; }
+
+        /// <summary>
         /// Canonical, versioned textual form of every effective field. Two
         /// configurations produce the same string if and only if they execute
         /// identically.
@@ -65,13 +111,14 @@ namespace KeeFetch.FetchProfiles
         public string CanonicalForm()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("v1");
+            sb.Append("v2");
             sb.Append("|providers=").Append(string.Join(",", providerIds));
             sb.Append("|primaryMs=").Append(PrimaryTimeoutMs);
             sb.Append("|fallbackMs=").Append(FallbackTimeoutMs);
             sb.Append("|cumulativeMs=").Append(CumulativeTimeoutMs);
             sb.Append("|synthetic=").Append(AllowSyntheticFallbacks ? "1" : "0");
             sb.Append("|stopAfterStrongResolved=").Append(StopAfterStrongResolved ? "1" : "0");
+            sb.Append("|androidStore=").Append(AllowAndroidStoreLookup ? "1" : "0");
             return sb.ToString();
         }
 
@@ -100,7 +147,8 @@ namespace KeeFetch.FetchProfiles
                 profile.FallbackTimeoutMs,
                 profile.CumulativeTimeoutMs,
                 profile.AllowSyntheticFallbacks,
-                profile.StopAfterStrongResolved);
+                profile.StopAfterStrongResolved,
+                profile.AllowAndroidStoreLookup);
         }
 
         /// <summary>
@@ -121,21 +169,19 @@ namespace KeeFetch.FetchProfiles
                     DefaultFallbackTimeoutMs,
                     DefaultCumulativeTimeoutMs,
                     false,
-                    false);
+                    false,
+                    true);
             }
 
             string profileId = config.FetchProfileId;
             bool isCustom = string.Equals(profileId, "custom", StringComparison.OrdinalIgnoreCase);
 
-            FetchProfileDefinition profile = null;
             if (!isCustom)
             {
-                try { profile = FetchProfileCatalog.GetRequiredProfile(profileId); }
-                catch (InvalidOperationException) { profile = null; }
+                // Fail closed: an unknown managed profile id must never silently
+                // degrade into Custom behavior.
+                return FromProfile(FetchProfileCatalog.GetRequiredProfile(profileId));
             }
-
-            if (profile != null)
-                return FromProfile(profile);
 
             List<string> chain = ResolveCustomProviderChain(config);
 
@@ -143,6 +189,10 @@ namespace KeeFetch.FetchProfiles
             long fallbackOverride = config.CustomFallbackTimeoutMsOverride;
             long cumulativeOverride = config.CustomCumulativeTimeoutMsOverride;
             int stopOverride = config.CustomStopAfterStrongResolvedOverride;
+            long androidStoreOverride = config.CustomAllowAndroidStoreLookupOverride;
+            bool allowAndroidStoreLookup = androidStoreOverride >= 0
+                ? androidStoreOverride > 0
+                : config.UseThirdPartyFallbacks;
 
             if (primaryOverride > 0 || fallbackOverride > 0 || cumulativeOverride > 0)
             {
@@ -151,7 +201,7 @@ namespace KeeFetch.FetchProfiles
                 int cumulative = cumulativeOverride > 0 ? (int)cumulativeOverride : DefaultCumulativeTimeoutMs;
                 bool stop = stopOverride > 0;
                 return new FetchExecutionPolicy(chain, primary, fallback, cumulative,
-                    config.AllowSyntheticFallbacks, stop);
+                    config.AllowSyntheticFallbacks, stop, allowAndroidStoreLookup);
             }
 
             // Historical Custom semantics: the user timeout (seconds) caps the
@@ -162,7 +212,8 @@ namespace KeeFetch.FetchProfiles
             int fallbackBudget = Math.Min(DefaultFallbackTimeoutMs, requested);
             bool stopDefault = stopOverride > 0;
             return new FetchExecutionPolicy(chain, primaryBudget, fallbackBudget,
-                DefaultCumulativeTimeoutMs, config.AllowSyntheticFallbacks, stopDefault);
+                DefaultCumulativeTimeoutMs, config.AllowSyntheticFallbacks, stopDefault,
+                allowAndroidStoreLookup);
         }
 
         private static List<string> ResolveCustomProviderChain(Configuration config)

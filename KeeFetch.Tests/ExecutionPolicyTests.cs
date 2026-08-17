@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using KeeFetch.FetchProfiles;
 using KeePass.App.Configuration;
@@ -28,7 +29,7 @@ namespace KeeFetch.Tests
 
         private static Configuration CustomCandidateConfig(
             string[] providerIds, int primaryMs, int fallbackMs, int cumulativeMs,
-            bool allowSynthetic, bool stopAfterStrongResolved)
+            bool allowSynthetic, bool stopAfterStrongResolved, long androidStoreOverride = -1)
         {
             var ace = new AceCustomConfig();
             var config = new Configuration(ace);
@@ -52,6 +53,7 @@ namespace KeeFetch.Tests
             ace.SetLong("KeeFetch.CustomFallbackTimeoutMs", fallbackMs);
             ace.SetLong("KeeFetch.CustomCumulativeTimeoutMs", cumulativeMs);
             ace.SetLong("KeeFetch.CustomStopAfterStrongResolved", stopAfterStrongResolved ? 1 : 0);
+            ace.SetLong("KeeFetch.CustomAllowAndroidStoreLookup", androidStoreOverride);
             return config;
         }
 
@@ -169,7 +171,7 @@ namespace KeeFetch.Tests
                 "generated",
                 "generated",
                 new[] { "direct-site", "google", "favicone" },
-                6000, 3500, 22000, true, true, true,
+                6000, 3500, 22000, true, true, true, true,
                 "docs/benchmarks/v1.3-provider-study.md");
             string managedFingerprint = FetchExecutionPolicy.FromProfile(asManaged).Fingerprint();
 
@@ -210,6 +212,128 @@ namespace KeeFetch.Tests
             string b = Resolve(ManagedConfig("everyday")).Fingerprint();
             Assert.AreEqual(a, b);
             Assert.AreEqual(64, a.Length);
+        }
+
+        [TestMethod]
+        public void PolicyCtor_RejectsTypoProviderId()
+        {
+            try
+            {
+                new FetchExecutionPolicy(new[] { "direct-site", "goggle" }, 6000, 3500, 22000, true, true, true);
+                Assert.Fail("A typo provider id must fail closed.");
+            }
+            catch (ArgumentException) { }
+        }
+
+        [TestMethod]
+        public void PolicyCtor_RejectsDuplicateProviderId()
+        {
+            try
+            {
+                new FetchExecutionPolicy(new[] { "google", "direct-site", "Google" }, 6000, 3500, 22000, true, true, true);
+                Assert.Fail("Duplicate provider ids must fail closed.");
+            }
+            catch (ArgumentException) { }
+        }
+
+        [TestMethod]
+        public void PolicyCtor_RejectsEmptyAndBlankChains()
+        {
+            try
+            {
+                new FetchExecutionPolicy(new string[0], 6000, 3500, 22000, false, false, false);
+                Assert.Fail("An empty provider chain must fail closed.");
+            }
+            catch (ArgumentException) { }
+
+            try
+            {
+                new FetchExecutionPolicy(new[] { "  " }, 6000, 3500, 22000, false, false, false);
+                Assert.Fail("A blank provider id must fail closed.");
+            }
+            catch (ArgumentException) { }
+        }
+
+        [TestMethod]
+        public void PolicyCtor_RejectsMalformedTimeouts()
+        {
+            try
+            {
+                new FetchExecutionPolicy(new[] { "google" }, 0, 3500, 22000, true, true, true);
+                Assert.Fail("Zero primary timeout must fail closed.");
+            }
+            catch (ArgumentOutOfRangeException) { }
+
+            try
+            {
+                new FetchExecutionPolicy(new[] { "google" }, 6000, -5, 22000, true, true, true);
+                Assert.Fail("Negative fallback timeout must fail closed.");
+            }
+            catch (ArgumentOutOfRangeException) { }
+
+            try
+            {
+                new FetchExecutionPolicy(new[] { "google" }, 6000, 3500, 0, true, true, true);
+                Assert.Fail("Zero cumulative timeout must fail closed.");
+            }
+            catch (ArgumentOutOfRangeException) { }
+
+            try
+            {
+                new FetchExecutionPolicy(new[] { "google" }, 6000, 3500, 5000, true, true, true);
+                Assert.Fail("Cumulative below primary must fail closed.");
+            }
+            catch (ArgumentException) { }
+        }
+
+        [TestMethod]
+        public void UnknownManagedProfileId_FailsClosed()
+        {
+            try
+            {
+                FetchProfileCatalog.GetRequiredProfile("does-not-exist");
+                Assert.Fail("Unknown managed profile ids must fail closed.");
+            }
+            catch (InvalidOperationException) { }
+        }
+
+        [TestMethod]
+        public void ManagedProfiles_ExposeAndroidStoreLookupPermission()
+        {
+            Assert.IsFalse(Resolve(ManagedConfig("privacy")).AllowAndroidStoreLookup,
+                "Privacy must never perform Google Play lookups.");
+            Assert.IsTrue(Resolve(ManagedConfig("bulk-fast")).AllowAndroidStoreLookup);
+            Assert.IsTrue(Resolve(ManagedConfig("everyday")).AllowAndroidStoreLookup);
+            Assert.IsTrue(Resolve(ManagedConfig("max-coverage")).AllowAndroidStoreLookup);
+        }
+
+        [TestMethod]
+        public void CustomPolicy_AndroidStoreLookup_DefaultsFromThirdPartyToggle()
+        {
+            var denied = new Configuration(new AceCustomConfig());
+            denied.FetchProfileId = "custom";
+            denied.UseThirdPartyFallbacks = false;
+            Assert.IsFalse(Resolve(denied).AllowAndroidStoreLookup,
+                "With third-party fallbacks disabled, Google Play lookups must be denied by default.");
+
+            var allowed = new Configuration(new AceCustomConfig());
+            allowed.FetchProfileId = "custom";
+            allowed.UseThirdPartyFallbacks = true;
+            Assert.IsTrue(Resolve(allowed).AllowAndroidStoreLookup);
+        }
+
+        [TestMethod]
+        public void CustomPolicy_AndroidStoreLookup_OverrideWinsAndChangesFingerprint()
+        {
+            var allow = Resolve(CustomCandidateConfig(
+                new[] { "direct-site", "google" }, 6000, 3500, 22000, true, true, 1));
+            var deny = Resolve(CustomCandidateConfig(
+                new[] { "direct-site", "google" }, 6000, 3500, 22000, true, true, 0));
+
+            Assert.IsTrue(allow.AllowAndroidStoreLookup);
+            Assert.IsFalse(deny.AllowAndroidStoreLookup);
+            Assert.AreNotEqual(allow.Fingerprint(), deny.Fingerprint(),
+                "AllowAndroidStoreLookup is behavior-affecting and must change the fingerprint.");
         }
     }
 }

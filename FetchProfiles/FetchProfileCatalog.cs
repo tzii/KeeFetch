@@ -184,6 +184,9 @@ namespace KeeFetch.FetchProfiles
                         if (provider != null && provider.IsThirdParty)
                             throw new InvalidOperationException("Privacy profile must not contain third-party provider: " + provider.Id);
                     }
+
+                    if (p.AllowAndroidStoreLookup)
+                        throw new InvalidOperationException("Privacy profile must not allow Android store lookups: " + p.Id);
                 }
             }
         }

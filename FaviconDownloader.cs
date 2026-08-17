@@ -66,6 +66,9 @@ namespace KeeFetch
 
         private const int MinProviderSliceMs = 1000;
 
+        /// <summary>Configured cap for a single Google Play store lookup.</summary>
+        private const int AndroidStoreLookupMaxMs = 7000;
+
         public FaviconDownloader(Configuration config)
         {
             this.config = config;
@@ -308,6 +311,11 @@ namespace KeeFetch
         private async Task<FaviconResult> DownloadAndroidIconAsync(string url, int maxSize, int timeoutMs,
             CancellationToken token = default(CancellationToken))
         {
+            // One outer clock bounds the complete Android request: the domain
+            // resolver phase and any Google Play phase share the policy's single
+            // cumulative budget instead of each receiving an independent budget.
+            var requestStopwatch = Stopwatch.StartNew();
+
             var providerMetrics = new List<ProviderAttemptMetric>();
             string packageName = AndroidAppMapper.GetPackageName(url);
             string mappedDomain = AndroidAppMapper.MapToWebDomain(url);
@@ -321,6 +329,7 @@ namespace KeeFetch
 
             var combinedCandidates = new List<IconCandidate>();
             var attemptedProviders = new List<string>();
+            bool androidStoreSkipped = false;
 
             string hostForResult = resolvedDomain ?? packageName;
             string cacheKey = null;
@@ -352,28 +361,43 @@ namespace KeeFetch
                     };
 
                     var collected = await CollectCandidatesAsync(domainRequest,
-                        Util.IsPrivateHost(resolvedDomain), token).ConfigureAwait(false);
+                        Util.IsPrivateHost(resolvedDomain), token,
+                        requestStopwatch.ElapsedMilliseconds).ConfigureAwait(false);
                     combinedCandidates.AddRange(collected.Candidates);
                     attemptedProviders.AddRange(collected.AttemptedProviders);
                     providerMetrics.AddRange(collected.ProviderMetrics);
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(packageName))
+            // The Google Play store lookup is a third-party network path and is
+            // therefore gated by the explicit policy flag (Privacy: denied).
+            if (!string.IsNullOrWhiteSpace(packageName) && policy.AllowAndroidStoreLookup)
             {
                 token.ThrowIfCancellationRequested();
-                attemptedProviders.Add("Google Play");
-                var playStopwatch = Stopwatch.StartNew();
-                var playCandidate = await AndroidAppMapper.FetchGooglePlayIconCandidateAsync(
-                    packageName, Math.Max(2000, Math.Min(7000, timeoutMs)), token).ConfigureAwait(false);
-                providerMetrics.Add(new ProviderAttemptMetric("Google Play",
-                    playStopwatch.ElapsedMilliseconds, playCandidate != null ? 1 : 0,
-                    playCandidate != null ? "candidate" : "empty"));
-                if (playCandidate != null)
+
+                long remainingMs = policy.CumulativeTimeoutMs - requestStopwatch.ElapsedMilliseconds;
+                if (remainingMs >= MinProviderSliceMs)
                 {
-                    if (string.IsNullOrWhiteSpace(playCandidate.TargetHost))
-                        playCandidate.TargetHost = hostForResult;
-                    combinedCandidates.Add(playCandidate);
+                    attemptedProviders.Add("Google Play");
+                    var playStopwatch = Stopwatch.StartNew();
+                    int playBudgetMs = (int)Math.Min(AndroidStoreLookupMaxMs, remainingMs);
+                    var playCandidate = await AndroidAppMapper.FetchGooglePlayIconCandidateAsync(
+                        packageName, playBudgetMs, token).ConfigureAwait(false);
+                    providerMetrics.Add(new ProviderAttemptMetric("Google Play",
+                        playStopwatch.ElapsedMilliseconds, playCandidate != null ? 1 : 0,
+                        playCandidate != null ? "candidate" : "empty"));
+                    if (playCandidate != null)
+                    {
+                        if (string.IsNullOrWhiteSpace(playCandidate.TargetHost))
+                            playCandidate.TargetHost = hostForResult;
+                        combinedCandidates.Add(playCandidate);
+                    }
+                }
+                else
+                {
+                    androidStoreSkipped = true;
+                    providerMetrics.Add(new ProviderAttemptMetric("Google Play", 0, 0,
+                        "skipped-budget-exhausted"));
                 }
             }
 
@@ -384,11 +408,22 @@ namespace KeeFetch
                 policy.AllowSyntheticFallbacks);
             var result = BuildResultFromSelection(selection, hostForResult, cacheKey, maxSize);
             result.ProviderMetrics = providerMetrics;
+            result.ElapsedMilliseconds = requestStopwatch.ElapsedMilliseconds;
+            if (androidStoreSkipped)
+            {
+                result.DiagnosticsSummary = string.IsNullOrWhiteSpace(result.DiagnosticsSummary)
+                    ? "android-store-skipped-budget-exhausted"
+                    : result.DiagnosticsSummary + "; android-store-skipped-budget-exhausted";
+            }
             return result;
         }
 
+        /// <param name="preElapsedMs">
+        /// Milliseconds of the policy cumulative budget already consumed by an
+        /// outer phase (e.g. Android package resolution) before this chain runs.
+        /// </param>
         private async Task<CandidateCollectionResult> CollectCandidatesAsync(IconRequest request,
-            bool isPrivateTarget, CancellationToken token)
+            bool isPrivateTarget, CancellationToken token, long preElapsedMs = 0)
         {
             var result = new CandidateCollectionResult();
             var providers = BuildProviderPipeline(isPrivateTarget);
@@ -405,7 +440,7 @@ namespace KeeFetch
                 // The cumulative budget is a hard wall-clock ceiling over the
                 // whole pipeline; exhaustion is surfaced explicitly instead of
                 // silently degrading to not-found.
-                int remaining = (int)Math.Max(0, policy.CumulativeTimeoutMs - stopwatch.ElapsedMilliseconds);
+                int remaining = (int)Math.Max(0, policy.CumulativeTimeoutMs - preElapsedMs - stopwatch.ElapsedMilliseconds);
                 if (remaining < MinProviderSliceMs)
                 {
                     result.CumulativeBudgetExhausted = true;
@@ -542,12 +577,16 @@ namespace KeeFetch
 
             foreach (string providerId in policy.ProviderIds)
             {
-                if (string.IsNullOrWhiteSpace(providerId))
-                    continue;
-
                 Func<IIconProvider> factory;
-                if (!ProviderFactories.TryGetValue(providerId, out factory))
-                    continue;
+                if (string.IsNullOrWhiteSpace(providerId) ||
+                    !ProviderFactories.TryGetValue(providerId, out factory))
+                {
+                    // Defense in depth: a fingerprinted policy must never execute a
+                    // partially resolved chain. Policy construction validates ids;
+                    // reaching this point means an unvalidated policy escaped.
+                    throw new InvalidOperationException(
+                        "Execution policy references unknown provider id '" + providerId + "'.");
+                }
 
                 IIconProvider provider = factory();
 
@@ -603,6 +642,12 @@ namespace KeeFetch
 
         private bool CanStopEarly(IIconProvider provider, IReadOnlyList<IconCandidate> candidates)
         {
+            // The early-stop policy flag is the single authority: when it is off,
+            // no provider result, however strong, may terminate the configured
+            // chain; every remaining executable provider must still be queried.
+            if (!policy.StopAfterStrongResolved)
+                return false;
+
             if (provider == null || candidates == null || candidates.Count == 0)
                 return false;
 
@@ -613,9 +658,6 @@ namespace KeeFetch
             {
                 return true;
             }
-
-            if (!policy.StopAfterStrongResolved)
-                return false;
 
             return candidates.Any(c => IsStrongStoppingCandidate(c, provider.Name, IconTier.StrongResolved, 0.72));
         }

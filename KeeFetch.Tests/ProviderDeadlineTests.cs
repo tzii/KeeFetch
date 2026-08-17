@@ -20,6 +20,7 @@ namespace KeeFetch.Tests
     /// previously allowed indefinite hangs.
     /// </summary>
     [TestClass]
+    [DoNotParallelize] // mutates the process-global SharedHttp client
     public class ProviderDeadlineTests
     {
         private static byte[] twoTonePng;

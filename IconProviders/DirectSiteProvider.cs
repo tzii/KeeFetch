@@ -598,81 +598,65 @@ namespace KeeFetch.IconProviders
                         using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
                         {
                             cts.CancelAfter(Math.Max(1000, timeoutMs));
-                            var response = await SharedHttp.Instance.SendAsync(request,
-                                HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
-
-                            if (!response.IsSuccessStatusCode)
+                            // The response is deterministically disposed on every
+                            // path (success, HTTP error, private redirect, oversize).
+                            // The cancellation registration below remains only to
+                            // abort stalled .NET Framework response stream reads.
+                            using (var response = await SharedHttp.Instance.SendAsync(request,
+                                HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false))
                             {
-                                shouldRetry = attempt == 0 && IsRetryableStatus(response.StatusCode);
-                                if (!shouldRetry)
+                                if (!response.IsSuccessStatusCode)
                                 {
-                                    return new DownloadResult
+                                    shouldRetry = attempt == 0 && IsRetryableStatus(response.StatusCode);
+                                    if (!shouldRetry)
                                     {
-                                        Data = null,
-                                        ResponseUri = null,
-                                        ContentType = null,
-                                        StatusCode = response.StatusCode
-                                    };
+                                        return new DownloadResult
+                                        {
+                                            Data = null,
+                                            ResponseUri = null,
+                                            ContentType = null,
+                                            StatusCode = response.StatusCode
+                                        };
+                                    }
+                                    continue;
                                 }
-                                continue;
-                            }
 
-                            responseUri = response.RequestMessage != null ? response.RequestMessage.RequestUri : null;
-                            if (!allowPrivateResponse && responseUri != null && Util.IsPrivateHost(responseUri.Host))
-                            {
-                                return new DownloadResult
-                                {
-                                    Data = null,
-                                    ResponseUri = responseUri,
-                                    ContentType = null,
-                                    StatusCode = response.StatusCode
-                                };
-                            }
-
-                            var contentLength = response.Content.Headers.ContentLength;
-                            if (contentLength.HasValue && contentLength.Value > maxBytes)
-                            {
-                                return new DownloadResult
-                                {
-                                    Data = null,
-                                    ResponseUri = responseUri,
-                                    ContentType = null,
-                                    StatusCode = response.StatusCode
-                                };
-                            }
-
-                            // .NET Framework response streams ignore the cancellation token on
-                            // ReadAsync; disposing the response when the deadline fires is the
-                            // only reliable way to abort a stalled socket read.
-                            using (cts.Token.Register(delegate
-                            {
-                                try { response.Dispose(); }
-                                catch (Exception) { }
-                            }))
-                            using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                            using (var ms = new MemoryStream())
-                            {
-                                if (stream == null)
+                                responseUri = response.RequestMessage != null ? response.RequestMessage.RequestUri : null;
+                                if (!allowPrivateResponse && responseUri != null && Util.IsPrivateHost(responseUri.Host))
                                 {
                                     return new DownloadResult
                                     {
                                         Data = null,
                                         ResponseUri = responseUri,
-                                        ContentType = response.Content.Headers.ContentType != null
-                                            ? response.Content.Headers.ContentType.MediaType
-                                            : null,
+                                        ContentType = null,
                                         StatusCode = response.StatusCode
                                     };
                                 }
 
-                                byte[] buffer = new byte[8192];
-                                int read;
-                                long total = 0;
-                                while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token).ConfigureAwait(false)) > 0)
+                                var contentLength = response.Content.Headers.ContentLength;
+                                if (contentLength.HasValue && contentLength.Value > maxBytes)
                                 {
-                                    await ms.WriteAsync(buffer, 0, read, cts.Token).ConfigureAwait(false);
-                                    total += read;
-                                    if (total > maxBytes)
+                                    return new DownloadResult
+                                    {
+                                        Data = null,
+                                        ResponseUri = responseUri,
+                                        ContentType = null,
+                                        StatusCode = response.StatusCode
+                                    };
+                                }
+
+                                // .NET Framework response streams ignore the cancellation token on
+                                // ReadAsync; disposing the response when the deadline fires is the
+                                // only reliable way to abort a stalled socket read.
+                                using (cts.Token.Register(delegate
+                                {
+                                    try { response.Dispose(); }
+                                    catch (Exception) { }
+                                }))
+                                using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                                using (var ms = new MemoryStream())
+                                {
+                                    if (stream == null)
                                     {
                                         return new DownloadResult
                                         {
@@ -684,17 +668,38 @@ namespace KeeFetch.IconProviders
                                             StatusCode = response.StatusCode
                                         };
                                     }
-                                }
 
-                                return new DownloadResult
-                                {
-                                    Data = ms.ToArray(),
-                                    ResponseUri = responseUri,
-                                    ContentType = response.Content.Headers.ContentType != null
-                                        ? response.Content.Headers.ContentType.MediaType
-                                        : null,
-                                    StatusCode = response.StatusCode
-                                };
+                                    byte[] buffer = new byte[8192];
+                                    int read;
+                                    long total = 0;
+                                    while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token).ConfigureAwait(false)) > 0)
+                                    {
+                                        await ms.WriteAsync(buffer, 0, read, cts.Token).ConfigureAwait(false);
+                                        total += read;
+                                        if (total > maxBytes)
+                                        {
+                                            return new DownloadResult
+                                            {
+                                                Data = null,
+                                                ResponseUri = responseUri,
+                                                ContentType = response.Content.Headers.ContentType != null
+                                                    ? response.Content.Headers.ContentType.MediaType
+                                                    : null,
+                                                StatusCode = response.StatusCode
+                                            };
+                                        }
+                                    }
+
+                                    return new DownloadResult
+                                    {
+                                        Data = ms.ToArray(),
+                                        ResponseUri = responseUri,
+                                        ContentType = response.Content.Headers.ContentType != null
+                                            ? response.Content.Headers.ContentType.MediaType
+                                            : null,
+                                        StatusCode = response.StatusCode
+                                    };
+                                }
                             }
                         }
                     }

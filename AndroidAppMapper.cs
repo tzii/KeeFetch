@@ -252,32 +252,36 @@ namespace KeeFetch
                     {
                         cts.CancelAfter(timeoutMs);
 
-                        var response = await SharedHttp.Instance.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
-                        if (!response.IsSuccessStatusCode) return null;
+                        // Deterministic disposal on every path; the cancellation
+                        // registration only aborts stalled framework stream reads.
+                        using (var response = await SharedHttp.Instance.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false))
+                        {
+                            if (!response.IsSuccessStatusCode) return null;
 
-                        // .NET Framework response streams ignore the cancellation token on
-                        // ReadAsync; disposing the response when the deadline fires is the
-                        // only reliable way to abort a stalled socket read.
-                        using (cts.Token.Register(delegate
-                        {
-                            try { response.Dispose(); }
-                            catch (Exception) { }
-                        }))
-                        using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                        using (var ms = new MemoryStream())
-                        {
-                            if (stream == null) return null;
-                            byte[] buffer = new byte[8192];
-                            int read;
-                            long total = 0;
-                            while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token).ConfigureAwait(false)) > 0)
+                            // .NET Framework response streams ignore the cancellation token on
+                            // ReadAsync; disposing the response when the deadline fires is the
+                            // only reliable way to abort a stalled socket read.
+                            using (cts.Token.Register(delegate
                             {
-                                await ms.WriteAsync(buffer, 0, read, cts.Token).ConfigureAwait(false);
-                                total += read;
-                                if (total > MaxPlayStoreHtmlBytes)
-                                    break; // Stop reading after limit - we likely have the head
+                                try { response.Dispose(); }
+                                catch (Exception) { }
+                            }))
+                            using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                            using (var ms = new MemoryStream())
+                            {
+                                if (stream == null) return null;
+                                byte[] buffer = new byte[8192];
+                                int read;
+                                long total = 0;
+                                while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token).ConfigureAwait(false)) > 0)
+                                {
+                                    await ms.WriteAsync(buffer, 0, read, cts.Token).ConfigureAwait(false);
+                                    total += read;
+                                    if (total > MaxPlayStoreHtmlBytes)
+                                        break; // Stop reading after limit - we likely have the head
+                                }
+                                html = System.Text.Encoding.UTF8.GetString(ms.ToArray());
                             }
-                            html = System.Text.Encoding.UTF8.GetString(ms.ToArray());
                         }
                     }
                 }
@@ -313,32 +317,36 @@ namespace KeeFetch
                     using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
                     {
                         cts.CancelAfter(timeoutMs);
-                        var response = await SharedHttp.Instance.SendAsync(iconRequest, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
-                        if (!response.IsSuccessStatusCode) return null;
+                        // Deterministic disposal on every path; the cancellation
+                        // registration only aborts stalled framework stream reads.
+                        using (var response = await SharedHttp.Instance.SendAsync(iconRequest, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false))
+                        {
+                            if (!response.IsSuccessStatusCode) return null;
 
-                        // .NET Framework response streams ignore the cancellation token on
-                        // ReadAsync; disposing the response when the deadline fires is the
-                        // only reliable way to abort a stalled socket read.
-                        using (cts.Token.Register(delegate
-                        {
-                            try { response.Dispose(); }
-                            catch (Exception) { }
-                        }))
-                        using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                        using (var ms = new MemoryStream())
-                        {
-                            if (stream == null) return null;
-                            byte[] buffer = new byte[8192];
-                            int read;
-                            long total = 0;
-                            while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token).ConfigureAwait(false)) > 0)
+                            // .NET Framework response streams ignore the cancellation token on
+                            // ReadAsync; disposing the response when the deadline fires is the
+                            // only reliable way to abort a stalled socket read.
+                            using (cts.Token.Register(delegate
                             {
-                                await ms.WriteAsync(buffer, 0, read, cts.Token).ConfigureAwait(false);
-                                total += read;
-                                if (total > MaxIconBytes) return null;
+                                try { response.Dispose(); }
+                                catch (Exception) { }
+                            }))
+                            using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                            using (var ms = new MemoryStream())
+                            {
+                                if (stream == null) return null;
+                                byte[] buffer = new byte[8192];
+                                int read;
+                                long total = 0;
+                                while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token).ConfigureAwait(false)) > 0)
+                                {
+                                    await ms.WriteAsync(buffer, 0, read, cts.Token).ConfigureAwait(false);
+                                    total += read;
+                                    if (total > MaxIconBytes) return null;
+                                }
+                                byte[] data = ms.ToArray();
+                                return Util.IsValidImage(data) ? data : null;
                             }
-                            byte[] data = ms.ToArray();
-                            return Util.IsValidImage(data) ? data : null;
                         }
                     }
                 }

@@ -21,6 +21,7 @@ namespace KeeFetch.FetchProfiles
                 false,
                 true,
                 true,
+                true,
                 "docs/benchmarks/v1.3-provider-study.md"));
 
             profiles.Add(new FetchProfileDefinition(
@@ -32,6 +33,7 @@ namespace KeeFetch.FetchProfiles
                 6000,
                 3500,
                 22000,
+                true,
                 true,
                 true,
                 true,
@@ -48,6 +50,7 @@ namespace KeeFetch.FetchProfiles
                 22000,
                 false,
                 false,
+                false,
                 true,
                 "docs/benchmarks/v1.3-provider-study.md"));
 
@@ -62,6 +65,7 @@ namespace KeeFetch.FetchProfiles
                 45000,
                 true,
                 false,
+                true,
                 true,
                 "docs/benchmarks/v1.3-provider-study.md"));
 

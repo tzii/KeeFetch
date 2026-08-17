@@ -18,6 +18,7 @@ namespace KeeFetch.FetchProfiles
             int cumulativeTimeoutMs,
             bool allowSyntheticFallbacks,
             bool stopAfterStrongResolved,
+            bool allowAndroidStoreLookup,
             bool isVisible,
             string evidenceReport)
         {
@@ -30,6 +31,7 @@ namespace KeeFetch.FetchProfiles
             CumulativeTimeoutMs = cumulativeTimeoutMs;
             AllowSyntheticFallbacks = allowSyntheticFallbacks;
             StopAfterStrongResolved = stopAfterStrongResolved;
+            AllowAndroidStoreLookup = allowAndroidStoreLookup;
             IsVisible = isVisible;
             EvidenceReport = evidenceReport;
 
@@ -51,6 +53,12 @@ namespace KeeFetch.FetchProfiles
         public int CumulativeTimeoutMs { get; private set; }
         public bool AllowSyntheticFallbacks { get; private set; }
         public bool StopAfterStrongResolved { get; private set; }
+
+        /// <summary>
+        /// Whether androidapp:// requests may perform a Google Play store lookup
+        /// under this profile. Behavior-affecting; exported and fingerprinted.
+        /// </summary>
+        public bool AllowAndroidStoreLookup { get; private set; }
         public bool IsVisible { get; private set; }
         public string EvidenceReport { get; private set; }
     }

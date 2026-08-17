@@ -33,7 +33,7 @@ namespace KeeFetch.Tests
         {
             Dictionary<string, object> root = LoadExportRoot();
 
-            Assert.AreEqual(1, Convert.ToInt32(root["schema"]), "Unexpected export schema version.");
+            Assert.AreEqual(2, Convert.ToInt32(root["schema"]), "Unexpected export schema version.");
             Assert.AreEqual("FetchProfileCatalog.ManagedProfiles", (string)root["source"],
                 "Export source must name the managed catalog.");
 
@@ -74,6 +74,8 @@ namespace KeeFetch.Tests
                     "Synthetic fallback flag mismatch for " + expected.Id + ".");
                 Assert.AreEqual(expected.StopAfterStrongResolved, Convert.ToBoolean(actual["stopAfterStrongResolved"]),
                     "Early-stop policy mismatch for " + expected.Id + ".");
+                Assert.AreEqual(expected.AllowAndroidStoreLookup, Convert.ToBoolean(actual["allowAndroidStoreLookup"]),
+                    "Android store lookup flag mismatch for " + expected.Id + ".");
                 Assert.AreEqual(expected.IsVisible, Convert.ToBoolean(actual["isVisible"]),
                     "Visibility mismatch for " + expected.Id + ".");
                 Assert.AreEqual(expected.EvidenceReport, (string)actual["evidenceReport"],

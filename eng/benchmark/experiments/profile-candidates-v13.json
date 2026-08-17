@@ -35,7 +35,8 @@
       "cumulativeTimeout": 22000,
       "allowSynthetic": false,
       "stopAfterStrongResolved": true,
-      "notes": "direct-site only. Privacy baseline. Balanced timeout."
+      "allowAndroidStoreLookup": false,
+      "notes": "direct-site only. Privacy baseline. Balanced timeout. No Android store lookup."
     },
     {
       "id": "cand-direct-google-balanced",
@@ -45,6 +46,7 @@
       "cumulativeTimeout": 22000,
       "allowSynthetic": false,
       "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true,
       "notes": "direct plus one resolver: Google. Balanced."
     },
     {
@@ -55,6 +57,7 @@
       "cumulativeTimeout": 22000,
       "allowSynthetic": false,
       "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true,
       "notes": "direct plus one resolver: Twenty Icons. Balanced."
     },
     {
@@ -65,6 +68,7 @@
       "cumulativeTimeout": 22000,
       "allowSynthetic": false,
       "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true,
       "notes": "direct plus one resolver: DuckDuckGo. Balanced."
     },
     {
@@ -75,6 +79,7 @@
       "cumulativeTimeout": 22000,
       "allowSynthetic": false,
       "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true,
       "notes": "direct plus one resolver: Yandex. Balanced."
     },
     {
@@ -85,6 +90,7 @@
       "cumulativeTimeout": 22000,
       "allowSynthetic": true,
       "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true,
       "notes": "direct plus one fallback (synthetic-capable): Favicone. Balanced with synthetic."
     },
     {
@@ -95,6 +101,7 @@
       "cumulativeTimeout": 15000,
       "allowSynthetic": true,
       "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true,
       "notes": "direct plus one resolver plus one fallback: Google + Favicone. Fast budget (4000/2500/15000)."
     },
     {
@@ -105,6 +112,7 @@
       "cumulativeTimeout": 22000,
       "allowSynthetic": true,
       "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true,
       "notes": "direct plus resolver plus fallback: Google + Favicone. Balanced budget. v1.2 everyday baseline chain with custom timeouts/synthetic."
     },
     {
@@ -115,6 +123,7 @@
       "cumulativeTimeout": 22000,
       "allowSynthetic": true,
       "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true,
       "notes": "direct plus resolver plus fallback: Twenty Icons + Favicone. Balanced."
     },
     {
@@ -125,6 +134,7 @@
       "cumulativeTimeout": 22000,
       "allowSynthetic": true,
       "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true,
       "notes": "direct plus resolver plus fallback: DuckDuckGo + Favicone. Balanced."
     },
     {
@@ -135,6 +145,7 @@
       "cumulativeTimeout": 22000,
       "allowSynthetic": true,
       "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true,
       "notes": "direct plus resolver plus fallback: Yandex + Favicone. Balanced."
     },
     {
@@ -145,6 +156,7 @@
       "cumulativeTimeout": 15000,
       "allowSynthetic": false,
       "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true,
       "notes": "direct plus resolver plus fallback: Google + Twenty Icons. Fast budget. v1.2 bulk-fast baseline chain with custom timeouts, no synthetic."
     },
     {
@@ -155,6 +167,7 @@
       "cumulativeTimeout": 45000,
       "allowSynthetic": true,
       "stopAfterStrongResolved": false,
+      "allowAndroidStoreLookup": true,
       "notes": "full chain (7 providers). Thorough budget (10000/5000/45000). v1.2 max-coverage baseline with custom synthetic flag."
     },
     {
@@ -165,6 +178,7 @@
       "cumulativeTimeout": 45000,
       "allowSynthetic": true,
       "stopAfterStrongResolved": false,
+      "allowAndroidStoreLookup": true,
       "notes": "full chain minus Twenty Icons. Thorough."
     },
     {
@@ -175,6 +189,7 @@
       "cumulativeTimeout": 45000,
       "allowSynthetic": true,
       "stopAfterStrongResolved": false,
+      "allowAndroidStoreLookup": true,
       "notes": "full chain minus DuckDuckGo. Thorough."
     },
     {
@@ -185,6 +200,7 @@
       "cumulativeTimeout": 45000,
       "allowSynthetic": true,
       "stopAfterStrongResolved": false,
+      "allowAndroidStoreLookup": true,
       "notes": "full chain minus Google. Thorough."
     },
     {
@@ -195,6 +211,7 @@
       "cumulativeTimeout": 45000,
       "allowSynthetic": true,
       "stopAfterStrongResolved": false,
+      "allowAndroidStoreLookup": true,
       "notes": "full chain minus Favicone. Thorough."
     },
     {
@@ -205,6 +222,7 @@
       "cumulativeTimeout": 45000,
       "allowSynthetic": true,
       "stopAfterStrongResolved": false,
+      "allowAndroidStoreLookup": true,
       "notes": "full chain minus Icon Horse. Thorough."
     }
   ],

@@ -82,7 +82,7 @@ $visible = @($profiles | Where-Object { [bool]$_.IsVisible })
 
 $lines = New-Object System.Collections.Generic.List[string]
 $lines.Add("{")
-$lines.Add("  " + '"schema": 1,')
+$lines.Add("  " + '"schema": 2,')
 $lines.Add("  " + '"source": "FetchProfileCatalog.ManagedProfiles",')
 $lines.Add('  "profiles": [')
 for ($i = 0; $i -lt $visible.Count; $i++) {
@@ -113,6 +113,9 @@ for ($i = 0; $i -lt $visible.Count; $i++) {
     $stopJson = "false"
     if ([bool]$p.StopAfterStrongResolved) { $stopJson = "true" }
     $lines.Add((ConvertTo-JsonProperty -Name "stopAfterStrongResolved" -ValueJson $stopJson -IndentLevel 3) + ",")
+    $androidStoreJson = "false"
+    if ([bool]$p.AllowAndroidStoreLookup) { $androidStoreJson = "true" }
+    $lines.Add((ConvertTo-JsonProperty -Name "allowAndroidStoreLookup" -ValueJson $androidStoreJson -IndentLevel 3) + ",")
     $visibleJson = "false"
     if ([bool]$p.IsVisible) { $visibleJson = "true" }
     $lines.Add((ConvertTo-JsonProperty -Name "isVisible" -ValueJson $visibleJson -IndentLevel 3) + ",")

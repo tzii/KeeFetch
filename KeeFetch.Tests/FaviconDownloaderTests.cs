@@ -47,8 +47,10 @@ namespace KeeFetch.Tests
         {
             var config = new Configuration(new AceCustomConfig());
             config.FetchPresetMode = FetchPresetMode.Custom;
+            // A fingerprinted policy requires a non-empty chain; keep Direct Site
+            // enabled and let it fail against an unresolvable host instead.
             foreach (string providerName in FaviconDownloader.DefaultProviderOrder)
-                config.SetProviderEnabled(providerName, false);
+                config.SetProviderEnabled(providerName, providerName == "Direct Site");
 
             FaviconDownloader.ClearCache();
 

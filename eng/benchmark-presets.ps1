@@ -65,23 +65,38 @@ function Assert-CandidateDefinition {
     $providerIds = @()
     if ($Candidate.PSObject.Properties.Name -contains 'providerIds') { $providerIds = @($Candidate.providerIds) }
     if ($providerIds.Count -eq 0) { throw "Candidate '$id' must declare at least one providerId." }
+    $seenProviders = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
     foreach ($providerId in $providerIds) {
-        if ([string]::IsNullOrWhiteSpace([string]$providerId)) { throw "Candidate '$id' has an empty providerId." }
+        $pidText = ([string]$providerId).Trim()
+        if ([string]::IsNullOrWhiteSpace($pidText)) { throw "Candidate '$id' has an empty providerId." }
+        if (-not $seenProviders.Add($pidText)) { throw "Candidate '$id' declares duplicate providerId '$pidText'." }
+        if ($null -eq [KeeFetch.FetchProfiles.FetchProfileCatalog]::FindProvider($pidText)) {
+            throw "Candidate '$id' references unknown providerId '$pidText'."
+        }
     }
 
     foreach ($field in @('primaryTimeout','fallbackTimeout','cumulativeTimeout')) {
-        $value = 0
-        if ($Candidate.PSObject.Properties.Name -contains $field) {
-            try { $value = [int]$Candidate.$field } catch { $value = 0 }
+        if (-not ($Candidate.PSObject.Properties.Name -contains $field)) {
+            throw "Candidate '$id' must declare $field explicitly."
         }
-        if ($value -le 0) { throw "Candidate '$id' must declare a positive $field." }
+        $raw = $Candidate.$field
+        if (($raw -isnot [int]) -and ($raw -isnot [long])) {
+            throw "Candidate '$id' has a non-integral $field."
+        }
+        $value = [long]$raw
+        if ($value -lt 250 -or $value -gt 300000) {
+            throw "Candidate '$id' has an out-of-range ${field}: $value ms."
+        }
+    }
+    if ([long]$Candidate.cumulativeTimeout -lt [long]$Candidate.primaryTimeout) {
+        throw "Candidate '$id' cumulativeTimeout must be >= primaryTimeout."
     }
 
-    foreach ($field in @('allowSynthetic','stopAfterStrongResolved')) {
+    foreach ($field in @('allowSynthetic','stopAfterStrongResolved','allowAndroidStoreLookup')) {
         if (-not ($Candidate.PSObject.Properties.Name -contains $field)) {
             throw "Candidate '$id' must declare $field explicitly; behavior is never inferred from the candidate name."
         }
-        try { [void][bool]$Candidate.$field } catch {
+        if ($Candidate.$field -isnot [bool]) {
             throw "Candidate '$id' has a non-boolean $field."
         }
     }
@@ -111,27 +126,11 @@ $experimentConfig = Read-KeeFetchExperiment -ExperimentPath $experimentPath
 
 # Candidate authority: every candidate is a CUSTOM configuration with the
 # full execution policy recorded in the experiment definition. Managed
-# profile lookups are never used for candidates.
+# profile lookups are never used for candidates. Candidate validation runs
+# after the KeeFetch assembly load below so provider ids resolve through the
+# real catalog.
 $script:candidateMap = @{}
 $rawExperiment = Get-Content -Raw -LiteralPath $experimentPath | ConvertFrom-Json
-if ($rawExperiment.PSObject.Properties.Name -contains 'candidates') {
-    foreach ($c in @($rawExperiment.candidates)) {
-        Assert-CandidateDefinition -Candidate $c
-        $script:candidateMap[[string]$c.id] = $c
-    }
-}
-$profileOrder = @()
-foreach ($p in @($experimentConfig.profiles)) {
-    $name = [string]$p
-    if ($profileOrder -notcontains $name) { $profileOrder += $name }
-}
-# Profiles are executed through New-ConfigForProfile: cand-* ids resolve to
-# their candidate definition, anything else is a managed baseline preset.
-foreach ($name in $profileOrder) {
-    if ($name.ToLowerInvariant().StartsWith('cand-') -and -not $script:candidateMap.ContainsKey($name)) {
-        throw "Unknown benchmark candidate '$name'. Candidates must be defined in the experiment file."
-    }
-}
 $scheduleSeed = 0
 if ($rawExperiment.PSObject.Properties.Name -contains 'schedule_seed') {
     try { $scheduleSeed = [int]$rawExperiment.schedule_seed } catch { $scheduleSeed = 0 }
@@ -196,6 +195,40 @@ if (-not (Test-Path -LiteralPath $assemblyPath)) {
 [void][Reflection.Assembly]::LoadFrom($keepassPath)
 $keefetchAssembly = [Reflection.Assembly]::LoadFrom($assemblyPath)
 
+# Strict candidate validation (fail closed): unique candidate ids, unique
+# catalog-resolvable provider ids, integral timeouts in sane ranges, real
+# booleans for every behavior flag.
+$candidateIds = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+if ($rawExperiment.PSObject.Properties.Name -contains 'candidates') {
+    foreach ($c in @($rawExperiment.candidates)) {
+        Assert-CandidateDefinition -Candidate $c
+        if (-not $candidateIds.Add([string]$c.id)) {
+            throw "Duplicate candidate id '$($c.id)' in experiment definition."
+        }
+        $script:candidateMap[[string]$c.id] = $c
+    }
+}
+
+# profiles[] and candidates[] must describe the exact same candidate ID set.
+$profileOrder = @()
+$profileIdSet = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+foreach ($p in @($experimentConfig.profiles)) {
+    $name = [string]$p
+    if ([string]::IsNullOrWhiteSpace($name)) { throw "Experiment profiles[] contains an empty entry." }
+    if (-not $profileIdSet.Add($name)) { throw "Duplicate profile id '$name' in experiment profiles[]." }
+    $profileOrder += $name
+}
+foreach ($name in $profileOrder) {
+    if (-not $script:candidateMap.ContainsKey($name)) {
+        throw "Unknown benchmark candidate '$name'. Candidates must be defined in the experiment file."
+    }
+}
+foreach ($cid in $candidateIds) {
+    if (-not $profileIdSet.Contains($cid)) {
+        throw "Candidate '$cid' is defined in candidates[] but missing from profiles[]."
+    }
+}
+
 $configType = $keefetchAssembly.GetType("KeeFetch.Configuration", $true)
 $downloaderType = $keefetchAssembly.GetType("KeeFetch.FaviconDownloader", $true)
 $downloaderCtor = $downloaderType.GetConstructor(
@@ -230,33 +263,22 @@ function New-CustomConfigForCandidate {
     $ids = @()
     if ($CandidateDef.PSObject.Properties.Name -contains "providerIds") { $ids = @($CandidateDef.providerIds) }
     elseif ($CandidateDef.PSObject.Properties.Name -contains "provider_ids") { $ids = @($CandidateDef.provider_ids) }
-    if ($ids.Count -eq 0) { $ids = @("direct-site") }
+    if ($ids.Count -eq 0) { throw "Candidate '$CandidateId' must declare at least one providerId." }
 
+    # Unknown/typo provider ids fail immediately; the policy fingerprint must
+    # correspond to the executable chain exactly.
+    $catalogType = [KeeFetch.FetchProfiles.FetchProfileCatalog]
     $displayOrder = @()
+    $hasThird = $false
     foreach ($rawId in $ids) {
         $trim = ([string]$rawId).Trim()
         if ([string]::IsNullOrWhiteSpace($trim)) { continue }
-        $found = $null
-        try {
-            $catalogType = [KeeFetch.FetchProfiles.FetchProfileCatalog]
-            $found = $catalogType::FindProvider($trim)
-        } catch {
-            $found = $null
+        $found = $catalogType::FindProvider($trim)
+        if ($null -eq $found) {
+            throw "Candidate '$CandidateId' references unknown providerId '$trim'."
         }
-        if ($null -ne $found) {
-            $displayOrder += $found.DisplayName
-        } else {
-            switch ($trim.ToLowerInvariant()) {
-                "direct-site" { $displayOrder += "Direct Site" }
-                "twenty-icons" { $displayOrder += "Twenty Icons" }
-                "duckduckgo" { $displayOrder += "DuckDuckGo" }
-                "google" { $displayOrder += "Google" }
-                "yandex" { $displayOrder += "Yandex" }
-                "favicone" { $displayOrder += "Favicone" }
-                "icon-horse" { $displayOrder += "Icon Horse" }
-                default { $displayOrder += $trim }
-            }
-        }
+        $displayOrder += $found.DisplayName
+        if ($found.IsThirdParty) { $hasThird = $true }
     }
 
     $config.ProviderOrder = [string]::Join(",", $displayOrder)
@@ -267,35 +289,23 @@ function New-CustomConfigForCandidate {
         $config.SetProviderEnabled($providerName, $enabledSet.Contains($providerName))
     }
 
-    $allowSyn = $false
-    if ($CandidateDef.PSObject.Properties.Name -contains "allowSynthetic") {
-        try { $allowSyn = [bool]$CandidateDef.allowSynthetic } catch { $allowSyn = $false }
-    }
-    $config.AllowSyntheticFallbacks = $allowSyn
-
-    $hasThird = $false
-    foreach ($d in $displayOrder) {
-        if (-not $d.Equals("Direct Site", [StringComparison]::OrdinalIgnoreCase)) { $hasThird = $true; break }
-    }
+    # All behavior fields were validated fail-closed by Assert-CandidateDefinition;
+    # apply them verbatim so the resolved policy matches the recorded fingerprint.
+    $config.AllowSyntheticFallbacks = [bool]$CandidateDef.allowSynthetic
     $config.UseThirdPartyFallbacks = $hasThird
 
-    $primary = 6000
-    $fallback = 3500
-    $cumulative = 22000
-    if ($CandidateDef.PSObject.Properties.Name -contains "primaryTimeout") { try { $primary = [int]$CandidateDef.primaryTimeout } catch {} }
-    if ($CandidateDef.PSObject.Properties.Name -contains "fallbackTimeout") { try { $fallback = [int]$CandidateDef.fallbackTimeout } catch {} }
-    if ($CandidateDef.PSObject.Properties.Name -contains "cumulativeTimeout") { try { $cumulative = [int]$CandidateDef.cumulativeTimeout } catch {} }
-
-    $stop = $false
-    if ($CandidateDef.PSObject.Properties.Name -contains "stopAfterStrongResolved") {
-        try { $stop = [bool]$CandidateDef.stopAfterStrongResolved } catch { $stop = $false }
-    }
+    $primary = [int]$CandidateDef.primaryTimeout
+    $fallback = [int]$CandidateDef.fallbackTimeout
+    $cumulative = [int]$CandidateDef.cumulativeTimeout
+    $stop = [bool]$CandidateDef.stopAfterStrongResolved
+    $allowAndroidStore = [bool]$CandidateDef.allowAndroidStoreLookup
 
     $config.Timeout = [Math]::Max(5, [Math]::Min(60, [int]([Math]::Ceiling($cumulative / 1000.0))))
     $ace.SetLong("KeeFetch.CustomPrimaryTimeoutMs", $primary)
     $ace.SetLong("KeeFetch.CustomFallbackTimeoutMs", $fallback)
     $ace.SetLong("KeeFetch.CustomCumulativeTimeoutMs", $cumulative)
     $ace.SetLong("KeeFetch.CustomStopAfterStrongResolved", [int]$stop)
+    $ace.SetLong("KeeFetch.CustomAllowAndroidStoreLookup", [int]$allowAndroidStore)
     $ace.SetString("KeeFetch.CustomCandidateId", $CandidateId)
 
     return [PSCustomObject]@{

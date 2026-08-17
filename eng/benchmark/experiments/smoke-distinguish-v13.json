@@ -20,7 +20,8 @@
       "fallbackTimeout": 2500,
       "cumulativeTimeout": 15000,
       "allowSynthetic": false,
-      "stopAfterStrongResolved": true
+      "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true
     },
     {
       "id": "cand-direct-google-twenty-balanced",
@@ -29,7 +30,8 @@
       "fallbackTimeout": 3500,
       "cumulativeTimeout": 22000,
       "allowSynthetic": false,
-      "stopAfterStrongResolved": true
+      "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true
     },
     {
       "id": "cand-full-thorough-synth",
@@ -38,7 +40,8 @@
       "fallbackTimeout": 5000,
       "cumulativeTimeout": 45000,
       "allowSynthetic": true,
-      "stopAfterStrongResolved": false
+      "stopAfterStrongResolved": false,
+      "allowAndroidStoreLookup": true
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "source": "FetchProfileCatalog.ManagedProfiles",
   "profiles": [
     {
@@ -17,6 +17,7 @@
       "cumulativeTimeoutMs": 15000,
       "allowSyntheticFallbacks": false,
       "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true,
       "isVisible": true,
       "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
     },
@@ -35,6 +36,7 @@
       "cumulativeTimeoutMs": 22000,
       "allowSyntheticFallbacks": true,
       "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true,
       "isVisible": true,
       "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
     },
@@ -51,6 +53,7 @@
       "cumulativeTimeoutMs": 22000,
       "allowSyntheticFallbacks": false,
       "stopAfterStrongResolved": false,
+      "allowAndroidStoreLookup": false,
       "isVisible": true,
       "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
     },
@@ -73,6 +76,7 @@
       "cumulativeTimeoutMs": 45000,
       "allowSyntheticFallbacks": true,
       "stopAfterStrongResolved": false,
+      "allowAndroidStoreLookup": true,
       "isVisible": true,
       "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
     }

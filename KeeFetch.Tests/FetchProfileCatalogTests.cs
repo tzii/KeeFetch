@@ -51,6 +51,18 @@ namespace KeeFetch.Tests
             var profile = FetchProfileCatalog.GetRequiredProfile("privacy");
             Assert.IsTrue(profile.ProviderIds.All(id => !FetchProfileCatalog.FindProvider(id).IsThirdParty));
             Assert.IsFalse(profile.AllowSyntheticFallbacks);
+            Assert.IsFalse(profile.AllowAndroidStoreLookup,
+                "Privacy must not perform Google Play store lookups.");
+        }
+
+        [TestMethod]
+        public void NonPrivacyProfiles_AllowAndroidStoreLookupExplicitly()
+        {
+            foreach (string id in new[] { "bulk-fast", "everyday", "max-coverage" })
+            {
+                Assert.IsTrue(FetchProfileCatalog.GetRequiredProfile(id).AllowAndroidStoreLookup,
+                    id + " intentionally permits the Google Play lookup.");
+            }
         }
     }
 }

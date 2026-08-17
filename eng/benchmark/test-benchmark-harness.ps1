@@ -418,17 +418,18 @@ try {
         if ($null -ne $errors -and $errors.Count -gt 0) { throw "$(Split-Path -Leaf $p) parse failed: $($errors[0].Message)" }
     }
 
-    # Deterministic sampling: two generations must be byte-identical, and the
-    # queue must contain only unique (fixture, artifact hash) review units.
+    # Census: two generations must be byte-identical, and the queue must
+    # contain exactly the unique cold (fixture, artifact hash) units - every
+    # one of them, with no sampling anywhere.
     $queueA = Join-Path $mockRoot 'review-queue.csv'
     $queueB = Join-Path $mockRoot 'review-queue-b.csv'
     & $prepPath -RunDir $mockRoot -OutputPath $queueA | Out-Null
     & $prepPath -RunDir $mockRoot -OutputPath $queueB | Out-Null
     $bytesA = [System.IO.File]::ReadAllBytes($queueA)
     $bytesB = [System.IO.File]::ReadAllBytes($queueB)
-    if (-not ($bytesA.Length -eq $bytesB.Length)) { throw 'prepare-review sampling is not deterministic (different sizes)' }
+    if (-not ($bytesA.Length -eq $bytesB.Length)) { throw 'prepare-review census is not deterministic (different sizes)' }
     for ($bi = 0; $bi -lt $bytesA.Length; $bi++) {
-        if ($bytesA[$bi] -ne $bytesB[$bi]) { throw 'prepare-review sampling is not deterministic (content differs)' }
+        if ($bytesA[$bi] -ne $bytesB[$bi]) { throw 'prepare-review census is not deterministic (content differs)' }
     }
     Remove-Item -LiteralPath $queueB -Force
     $rq = @(Import-Csv -LiteralPath $queueA)
@@ -436,10 +437,29 @@ try {
     $unitKeys = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
     foreach ($q in $rq) { [void]$unitKeys.Add("$($q.fixture_id)|$($q.artifact_hash)") }
     if ($unitKeys.Count -ne $rq.Count) { throw "review queue rows ($($rq.Count)) are not unique units ($($unitKeys.Count))" }
+    $expectedCensus = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    foreach ($d in @(Get-ChildItem -LiteralPath $mockRoot -Directory)) {
+        $rj = Join-Path $d.FullName 'run.json'
+        if (-not (Test-Path -LiteralPath $rj)) { continue }
+        $rm = Get-Content -Raw -LiteralPath $rj | ConvertFrom-Json
+        if ([string]$rm.run_kind -eq 'warmup') { continue }
+        if ([string]$rm.cache_mode -ne 'cold') { continue }
+        foreach ($cr in @(Import-Csv -LiteralPath (Join-Path $d.FullName 'rows.csv'))) {
+            if (-not [string]::IsNullOrWhiteSpace([string]$cr.artifact_hash)) {
+                [void]$expectedCensus.Add("$($cr.fixture_id)|$($cr.artifact_hash)")
+            }
+        }
+    }
+    if ($rq.Count -ne $expectedCensus.Count) {
+        throw "census queue has $($rq.Count) rows but the cold evidence has $($expectedCensus.Count) unique units"
+    }
+    foreach ($k in @($expectedCensus)) {
+        if (-not $unitKeys.Contains($k)) { throw "cold census unit missing from queue: $k" }
+    }
     $mustRows = @($rq | Where-Object { $_.notes -match 'synthetic|placeholder|profile-differing' })
-    if ($mustRows.Count -lt 3) { throw "expected must-review rows (synthetic/placeholder/profile-differing), got $($mustRows.Count)" }
+    if ($mustRows.Count -lt 3) { throw "expected flagged rows (synthetic/placeholder/profile-differing), got $($mustRows.Count)" }
     $sampledRows = @($rq | Where-Object { $_.notes -match 'sampled' })
-    if ($sampledRows.Count -lt 1) { throw 'expected sampled rows in queue' }
+    if ($sampledRows.Count -ne 0) { throw 'census queue must not contain any sampled units' }
     foreach ($col in @('fixture_id','artifact_hash','profiles','categories','occurrences','review_label','reviewer','reviewed_at_utc','notes')) {
         if ($rq[0].PSObject.Properties.Name -notcontains $col) { throw "review-queue missing column $col" }
     }
@@ -463,7 +483,7 @@ try {
     $fabricatedRejected = $false
     try {
         & $prepPath -RunDir $mockRoot -OutputPath $badHashPath -Validate 2>$null | Out-Null
-    } catch { $fabricatedRejected = $_.Exception.Message -match 'nonexistent result artifact|does not exist in the run artifacts|Required review unit missing' }
+    } catch { $fabricatedRejected = $_.Exception.Message -match 'not a cold census unit|Required review unit missing' }
     if (-not $fabricatedRejected) { throw 'validate accepted a fabricated artifact hash' }
 
     # Happy labels: everything correct.
@@ -517,13 +537,14 @@ try {
         if ($csText.IndexOf('"' + $mid + '"') -lt 0) { throw "generated CS missing role $mid" }
     }
 
-    # Adversarial: a sampled wrong-brand must sink the estimated usable rate
-    # without touching machine availability, flipping max-coverage away from
-    # the current winner. Unsampled successes are never implicitly correct.
+    # Adversarial: wrong-brand labels on the fast chain's units must sink its
+    # estimated usable rate without touching machine availability, flipping
+    # max-coverage away from it. Under the census every unit is reviewed, so
+    # no success is ever implicitly correct.
     $advRows = @(Import-Csv -LiteralPath $queueA)
-    $fastSampled = @($advRows | Where-Object { $_.notes -match 'sampled' -and $_.profiles -match 'cand-direct-google-twenty-fast' })
-    if ($fastSampled.Count -eq 0) { throw ('expected a sampled fast unit for the adversarial case; queue rows: ' + (($advRows | ForEach-Object { "$($_.fixture_id)|$($_.artifact_hash)|$($_.profiles)|$($_.notes)" }) -join ' ;; ')) }
-    foreach ($s in $fastSampled) { $s.review_label = 'wrong-brand' }
+    $fastUnits = @($advRows | Where-Object { $_.profiles -match 'cand-direct-google-twenty-fast' })
+    if ($fastUnits.Count -eq 0) { throw ('expected fast-chain census units for the adversarial case; queue rows: ' + (($advRows | ForEach-Object { "$($_.fixture_id)|$($_.artifact_hash)|$($_.profiles)|$($_.notes)" }) -join ' ;; ')) }
+    foreach ($s in $fastUnits) { $s.review_label = 'wrong-brand' }
     $advPath = Join-Path $mockRoot 'adv-queue.csv'
     $advRows | Export-Csv -LiteralPath $advPath -NoTypeInformation -Encoding UTF8
     $advOut = Join-Path $mockRoot 'adv-out'

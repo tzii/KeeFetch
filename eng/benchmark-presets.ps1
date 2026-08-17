@@ -17,6 +17,11 @@ $keepassPath = "C:\Program Files\KeePass Password Safe 2\KeePass.exe"
 $keepassPathEnv = [Environment]::GetEnvironmentVariable('KEEFETCH_KEEPASS_PATH')
 if (-not [string]::IsNullOrWhiteSpace($keepassPathEnv)) {
     $keepassPath = $keepassPathEnv
+} elseif (-not (Test-Path -LiteralPath $keepassPath)) {
+    $localFallback = "C:\Dev\tools\KeePass-2.60\KeePass.exe"
+    if (Test-Path -LiteralPath $localFallback) {
+        $keepassPath = $localFallback
+    }
 }
 $assemblyPath = Join-Path $repoRoot "bin\Release\net48\KeeFetch.dll"
 $providerNames = @(

@@ -14,6 +14,11 @@ $keepassPath = "C:\Program Files\KeePass Password Safe 2\KeePass.exe"
 $keepassPathEnv = [Environment]::GetEnvironmentVariable('KEEFETCH_KEEPASS_PATH')
 if (-not [string]::IsNullOrWhiteSpace($keepassPathEnv)) {
     $keepassPath = $keepassPathEnv
+} elseif (-not (Test-Path -LiteralPath $keepassPath)) {
+    $localFallback = "C:\Dev\tools\KeePass-2.60\KeePass.exe"
+    if (Test-Path -LiteralPath $localFallback) {
+        $keepassPath = $localFallback
+    }
 }
 $assemblyPath = Join-Path $repoRoot "bin\Release\net48\KeeFetch.dll"
 $outPath = Join-Path $repoRoot "site\data\profiles.json"
@@ -36,9 +41,30 @@ if ($null -eq $profilesProperty) {
 
 function ConvertTo-JsonString {
     param([Parameter(Mandatory=$true)][string]$Value)
-    $escaped = $Value.Replace("\", "\\").Replace('"', '\"')
-    $escaped = $escaped.Replace("`r", "\r").Replace("`n", "\n").Replace("`t", "\t")
-    return '"' + $escaped + '"'
+    $sb = New-Object System.Text.StringBuilder
+    $null = $sb.Append('"')
+    foreach ($ch in $Value.ToCharArray()) {
+        switch ($ch) {
+            '\' { $null = $sb.Append('\\'); break }
+            '"' { $null = $sb.Append('\"'); break }
+            "`b" { $null = $sb.Append('\b'); break }
+            "`f" { $null = $sb.Append('\f'); break }
+            "`n" { $null = $sb.Append('\n'); break }
+            "`r" { $null = $sb.Append('\r'); break }
+            "`t" { $null = $sb.Append('\t'); break }
+            default {
+                $code = [int][char]$ch
+                if ($code -lt 32) {
+                    $null = $sb.AppendFormat('\u{0:x4}', $code)
+                } else {
+                    $null = $sb.Append($ch)
+                }
+                break
+            }
+        }
+    }
+    $null = $sb.Append('"')
+    return $sb.ToString()
 }
 
 function ConvertTo-JsonProperty {
@@ -98,7 +124,7 @@ for ($i = 0; $i -lt $visible.Count; $i++) {
 $lines.Add("  ]")
 $lines.Add("}")
 
-$content = ($lines -join [Environment]::NewLine) + [Environment]::NewLine
+$content = ($lines -join "`n") + "`n"
 
 if ($Check) {
     if (-not (Test-Path -LiteralPath $outPath)) {

@@ -87,5 +87,29 @@ namespace KeeFetch.Tests
             Assert.IsFalse(raw[0] == 0xEF && raw[1] == 0xBB && raw[2] == 0xBF,
                 "Export must be UTF-8 without a byte-order mark.");
         }
+
+        [TestMethod]
+        public void ProfilesJson_UsesCanonicalLfLineEndings()
+        {
+            string raw = File.ReadAllText(ProfilesJsonPath());
+            Assert.IsFalse(raw.Contains("\r"), "Export file must use Unix LF (\\n) line endings, not CRLF (\\r\\n).");
+            Assert.IsTrue(raw.EndsWith("\n"), "Export file must end with a newline.");
+            Assert.IsFalse(raw.EndsWith("\n\n"), "Export file must have exactly one trailing newline.");
+        }
+
+        [TestMethod]
+        public void ProfilesJson_EscapingFormatValid()
+        {
+            // Verify that all strings in profiles.json can roundtrip properly through JSON deserializer
+            Dictionary<string, object> root = LoadExportRoot();
+            Assert.IsNotNull(root);
+            ArrayList profiles = (ArrayList)root["profiles"];
+            foreach (object p in profiles)
+            {
+                Dictionary<string, object> dict = (Dictionary<string, object>)p;
+                string desc = (string)dict["description"];
+                Assert.IsFalse(string.IsNullOrEmpty(desc), "Description should not be empty.");
+            }
+        }
     }
 }

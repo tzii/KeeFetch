@@ -100,11 +100,12 @@ jobs:
           $expectedFiles = @(
             "KeeFetchExt.cs", "FaviconDownloader.cs", "FaviconDialog.cs",
             "Configuration.cs", "SettingsForm.cs", "SettingsForm.Designer.cs",
-            "Logger.cs", "Util.cs", "AndroidAppMapper.cs",
+            "Logger.cs", "Util.cs", "SharedHttp.cs", "AndroidAppMapper.cs",
             "Properties\AssemblyInfo.cs", "KeeFetch.csproj",
             "IconSelection\IconSelector.cs", "IconSelection\IconCandidate.cs",
             "Assets\Icons\keefetch-app.png", "Assets\Icons\keefetch-download.png",
             "Assets\Icons\keefetch-settings.png",
+            "FetchProfiles\FetchExecutionPolicy.cs",
             "FetchProfiles\ProviderDefinition.cs",
             "FetchProfiles\FetchProfileCatalog.cs",
             "FetchProfiles\FetchProfileDefinition.cs",

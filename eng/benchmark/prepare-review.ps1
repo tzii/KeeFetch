@@ -1,10 +1,24 @@
 param(
     [string]$RunDir,
     [switch]$Validate,
-    [string]$OutputPath
+    [string]$OutputPath,
+    [string]$Seed = ''
 )
 
 $ErrorActionPreference = "Stop"
+
+# Builds (and validates) the human review queue for a benchmark experiment.
+#
+# Review identity is the exact (fixture_id, artifact_hash) pair: the same
+# visual artifact produced by any repetition or candidate is one review unit,
+# with occurrence/profile mappings retained for statistics. fixture|profile
+# is never accepted as a review key.
+#
+# Must-review coverage: every synthetic result, every placeholder- or
+# blank-suspected result, and every fixture that different profiles resolved
+# differently. The remaining machine successes are sampled per
+# category|profile stratum using a deterministic SHA-256 ranking over
+# seed|fixture|profile|hash, never a positional first-N take.
 
 $allowedLabels = @("correct","acceptable-synthetic","generic","wrong-brand","blank","unusable","ambiguous","not-reviewed")
 
@@ -19,9 +33,21 @@ function ParseBoolValue {
     return $false
 }
 
-function GetRowsCsvFiles {
+function Get-Sha256Hex {
+    param([Parameter(Mandatory=$true)][string]$Text)
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $bytes = [System.Text.Encoding]::UTF8.GetBytes($Text)
+        $hash = $sha.ComputeHash($bytes)
+        return [BitConverter]::ToString($hash).Replace("-","").ToLowerInvariant()
+    } finally {
+        $sha.Dispose()
+    }
+}
+
+function Get-MeasuredRunDirectories {
     param([string]$BaseDir)
-    $files = @()
+
     if ([string]::IsNullOrWhiteSpace($BaseDir)) {
         $BaseDir = (Get-Location).Path
     }
@@ -32,38 +58,45 @@ function GetRowsCsvFiles {
     if ($null -ne $item -and -not $item.PSIsContainer) {
         $BaseDir = Split-Path -Parent $BaseDir
     }
-    $direct = Join-Path $BaseDir "rows.csv"
-    if (Test-Path -LiteralPath $direct) {
-        $files += (Resolve-Path -LiteralPath $direct).Path
-    }
-    $subDirs = @(Get-ChildItem -LiteralPath $BaseDir -Directory -ErrorAction SilentlyContinue)
-    foreach ($dir in $subDirs) {
-        $candidate = Join-Path $dir.FullName "rows.csv"
-        if (Test-Path -LiteralPath $candidate) {
-            $files += (Resolve-Path -LiteralPath $candidate).Path
-        }
-        # Also look one level deeper for benchmark-runs/<run>/rows.csv when BaseDir is output_root
-        $nested = @(Get-ChildItem -LiteralPath $dir.FullName -Directory -ErrorAction SilentlyContinue)
-        foreach ($nd in $nested) {
-            $nestedCandidate = Join-Path $nd.FullName "rows.csv"
-            if (Test-Path -LiteralPath $nestedCandidate) {
-                $files += (Resolve-Path -LiteralPath $nestedCandidate).Path
-            }
+
+    $runs = @()
+    $runJson = Join-Path $BaseDir "run.json"
+    if (Test-Path -LiteralPath $runJson) { $runs += $BaseDir }
+    foreach ($dir in @(Get-ChildItem -LiteralPath $BaseDir -Directory -ErrorAction SilentlyContinue)) {
+        $candidate = Join-Path $dir.FullName "run.json"
+        if (Test-Path -LiteralPath $candidate) { $runs += $dir.FullName }
+        foreach ($nested in @(Get-ChildItem -LiteralPath $dir.FullName -Directory -ErrorAction SilentlyContinue)) {
+            $nestedJson = Join-Path $nested.FullName "run.json"
+            if (Test-Path -LiteralPath $nestedJson) { $runs += $nested.FullName }
         }
     }
-    if ($files.Count -eq 0) {
-        # Try recursive search as fallback
-        $found = @(Get-ChildItem -Path $BaseDir -Filter "rows.csv" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
-        foreach ($f in $found) {
-            $already = $false
-            foreach ($existing in $files) { if ($existing -eq $f) { $already = $true; break } }
-            if (-not $already) { $files += $f }
+    if ($runs.Count -eq 0) {
+        throw "No run.json found under RunDir: $BaseDir"
+    }
+
+    $measured = @()
+    foreach ($run in $runs) {
+        $meta = Get-Content -Raw -LiteralPath (Join-Path $run "run.json") | ConvertFrom-Json
+        $status = ""
+        if ($meta.PSObject.Properties.Name -contains 'status') { $status = [string]$meta.status }
+        if ($status -ne "complete") {
+            throw "Incomplete run rejected: $run"
+        }
+        $kind = "measured"
+        if ($meta.PSObject.Properties.Name -contains 'run_kind') { $kind = [string]$meta.run_kind }
+        if ($kind -eq "warmup") { continue }
+        $measured += [PSCustomObject]@{
+            Directory = $run
+            Metadata = $meta
         }
     }
-    return $files
+    if ($measured.Count -eq 0) {
+        throw "No complete measured runs found under RunDir: $BaseDir (warm-up runs never count as evidence)."
+    }
+    return $measured
 }
 
-function GetReviewQueuePath {
+function Get-ReviewQueuePath {
     param([string]$BaseDir, [string]$OutPath)
     if (-not [string]::IsNullOrWhiteSpace($OutPath)) {
         return $OutPath
@@ -71,84 +104,91 @@ function GetReviewQueuePath {
     if ([string]::IsNullOrWhiteSpace($BaseDir)) {
         $BaseDir = (Get-Location).Path
     }
-    # If BaseDir is a file, use its directory
-    if (Test-Path -LiteralPath $BaseDir) {
-        $it = Get-Item -LiteralPath $BaseDir -ErrorAction SilentlyContinue
-        if ($null -ne $it -and -not $it.PSIsContainer) {
-            $BaseDir = Split-Path -Parent $BaseDir
-        }
-    }
     return (Join-Path $BaseDir "review-queue.csv")
 }
 
+# ---------------------------------------------------------------------------
+# Validation path
+# ---------------------------------------------------------------------------
+
 if ($Validate) {
-    $queuePath = GetReviewQueuePath -BaseDir $RunDir -OutPath $OutputPath
-    # If RunDir itself points to review-queue.csv, handle
-    if (-not [string]::IsNullOrWhiteSpace($RunDir) -and (Test-Path -LiteralPath $RunDir)) {
-        $ri = Get-Item -LiteralPath $RunDir -ErrorAction SilentlyContinue
-        if ($null -ne $ri -and -not $ri.PSIsContainer -and $ri.Name.ToLowerInvariant().EndsWith(".csv")) {
-            $queuePath = (Resolve-Path -LiteralPath $RunDir).Path
+    $queuePath = $null
+    if (-not [string]::IsNullOrWhiteSpace($OutputPath)) {
+        $queuePath = $OutputPath
+    } elseif (-not [string]::IsNullOrWhiteSpace($RunDir)) {
+        $base = $RunDir
+        if (Test-Path -LiteralPath $base) {
+            $it = Get-Item -LiteralPath $base -ErrorAction SilentlyContinue
+            if ($null -ne $it -and -not $it.PSIsContainer -and $it.Name.ToLowerInvariant().EndsWith(".csv")) {
+                $base = Split-Path -Parent $base
+            }
         }
+        $queuePath = Join-Path $base "review-queue.csv"
+    }
+    if ([string]::IsNullOrWhiteSpace($queuePath)) {
+        $queuePath = Join-Path (Get-Location).Path "review-queue.csv"
     }
     if (-not (Test-Path -LiteralPath $queuePath)) {
-        # Try OutputPath as direct file
-        if (-not [string]::IsNullOrWhiteSpace($OutputPath) -and (Test-Path -LiteralPath $OutputPath)) {
-            $queuePath = (Resolve-Path -LiteralPath $OutputPath).Path
-        } else {
-            throw "review-queue.csv not found for validation: $queuePath"
-        }
-    } else {
-        $queuePath = (Resolve-Path -LiteralPath $queuePath).Path
+        throw "review-queue.csv not found for validation: $queuePath"
     }
+    $queuePath = (Resolve-Path -LiteralPath $queuePath).Path
 
     $rows = @(Import-Csv -LiteralPath $queuePath)
+    if ($rows.Count -eq 0) { throw "Review queue is empty: $queuePath" }
 
-    # Build map of artifact hashes from rows.csv for hash validation if RunDir available
-    $artifactMap = @{}
-    $rowsCsvFilesForValidation = @()
+    # Artifact inventory from the measured runs for existence/staleness checks.
+    $artifactUnits = @{}
+    $fixtureHashes = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    $mustReviewUnits = $null
     if (-not [string]::IsNullOrWhiteSpace($RunDir) -and (Test-Path -LiteralPath $RunDir)) {
-        $candidateBase = $RunDir
-        $runItemCheck = Get-Item -LiteralPath $candidateBase -ErrorAction SilentlyContinue
-        if ($null -ne $runItemCheck -and -not $runItemCheck.PSIsContainer -and $runItemCheck.Name.ToLowerInvariant().EndsWith(".csv")) {
-            $candidateBase = Split-Path -Parent $candidateBase
-        }
-        try {
-            $rowsCsvFilesForValidation = GetRowsCsvFiles -BaseDir $candidateBase
-        } catch {
-            $rowsCsvFilesForValidation = @()
-        }
-        foreach ($rf in $rowsCsvFilesForValidation) {
-            try {
-                $runRows = @(Import-Csv -LiteralPath $rf)
-                foreach ($rr in $runRows) {
-                    $fid = ""
-                    if ($rr.PSObject.Properties.Name -contains "fixture_id") { $fid = [string]$rr.fixture_id }
-                    $prof = ""
-                    if ($rr.PSObject.Properties.Name -contains "profile") { $prof = [string]$rr.profile }
-                    if ([string]::IsNullOrWhiteSpace($prof) -and $rr.PSObject.Properties.Name -contains "profile_id") { $prof = [string]$rr.profile_id }
-                    $ah = ""
-                    if ($rr.PSObject.Properties.Name -contains "artifact_hash") { $ah = [string]$rr.artifact_hash }
-                    $ap = ""
-                    if ($rr.PSObject.Properties.Name -contains "artifact_path") { $ap = [string]$rr.artifact_path }
-                    $key = "$fid|$prof|$ah"
-                    $key2 = "$fid|$prof"
-                    if (-not $artifactMap.ContainsKey($key)) { $artifactMap[$key] = $ah }
-                    if (-not $artifactMap.ContainsKey($key2)) { $artifactMap[$key2] = $ah }
-                    # Store path for file hash check
-                    $pathKey = "$fid|$prof|path"
-                    if (-not [string]::IsNullOrWhiteSpace($ap)) {
-                        $artifactMap[$pathKey] = $ap
+        $measuredRuns = Get-MeasuredRunDirectories -BaseDir $RunDir
+        foreach ($mr in $measuredRuns) {
+            $rowsCsv = Join-Path $mr.Directory "rows.csv"
+            if (-not (Test-Path -LiteralPath $rowsCsv)) { continue }
+            foreach ($r in @(Import-Csv -LiteralPath $rowsCsv)) {
+                $fid = [string]$r.fixture_id
+                $hash = [string]$r.artifact_hash
+                if (-not [string]::IsNullOrWhiteSpace($hash)) {
+                    [void]$fixtureHashes.Add("$fid|$hash")
+                    if (-not $artifactUnits.ContainsKey("$fid|$hash")) {
+                        $artifactUnits["$fid|$hash"] = $true
                     }
                 }
-            } catch {
+                $fixturesByHash = "${fid}|${hash}"
             }
         }
     }
 
     $errors = @()
+    $seenKeys = @{}
     $lineNo = 1
     foreach ($row in $rows) {
         $lineNo = $lineNo + 1
+
+        $fid = ""
+        if ($row.PSObject.Properties.Name -contains "fixture_id") { $fid = [string]$row.fixture_id }
+        $hash = ""
+        if ($row.PSObject.Properties.Name -contains "artifact_hash") { $hash = [string]$row.artifact_hash }
+        $key = "$fid|$hash"
+
+        if ([string]::IsNullOrWhiteSpace($fid)) {
+            $errors += "Line ${lineNo}: review row missing fixture_id"
+            continue
+        }
+        if ([string]::IsNullOrWhiteSpace($hash)) {
+            $errors += "Line ${lineNo}: review row missing artifact_hash (exact-hash identity is mandatory)"
+            continue
+        }
+        if ($seenKeys.ContainsKey($key)) {
+            $errors += "Line ${lineNo}: duplicate review key $key"
+            continue
+        }
+        $seenKeys[$key] = $row
+
+        if ($artifactUnits.Count -gt 0 -and -not $artifactUnits.ContainsKey($key)) {
+            $errors += "Line ${lineNo}: review key $key does not exist in the run artifacts (stale or fabricated)"
+        }
+
         $label = ""
         if ($row.PSObject.Properties.Name -contains "review_label") { $label = [string]$row.review_label }
         $labelTrim = $label.Trim().ToLowerInvariant()
@@ -156,95 +196,48 @@ if ($Validate) {
             $errors += "Line ${lineNo}: label outside allowed set: '$label'"
             continue
         }
-        if ($labelTrim -ne "not-reviewed") {
-            $reviewer = ""
-            if ($row.PSObject.Properties.Name -contains "reviewer") { $reviewer = [string]$row.reviewer }
-            $reviewedAt = ""
-            if ($row.PSObject.Properties.Name -contains "reviewed_at_utc") { $reviewedAt = [string]$row.reviewed_at_utc }
-            if ([string]::IsNullOrWhiteSpace($reviewer)) {
-                $errors += "Line ${lineNo}: reviewed row missing reviewer"
-            }
-            if ([string]::IsNullOrWhiteSpace($reviewedAt)) {
-                $errors += "Line ${lineNo}: reviewed row missing reviewed_at_utc"
-            } else {
-                $dt = [DateTime]::MinValue
-                $parsed = [DateTime]::TryParse($reviewedAt, [ref]$dt)
-                if (-not $parsed) {
-                    $errors += "Line ${lineNo}: reviewed_at_utc not parseable: '$reviewedAt'"
-                }
+        if ($labelTrim -eq "not-reviewed") {
+            $errors += "Line ${lineNo}: queue still contains not-reviewed rows; complete the review before validating"
+            continue
+        }
+
+        $reviewer = ""
+        if ($row.PSObject.Properties.Name -contains "reviewer") { $reviewer = [string]$row.reviewer }
+        $reviewedAt = ""
+        if ($row.PSObject.Properties.Name -contains "reviewed_at_utc") { $reviewedAt = [string]$row.reviewed_at_utc }
+        if ([string]::IsNullOrWhiteSpace($reviewer)) {
+            $errors += "Line ${lineNo}: reviewed row missing reviewer"
+        }
+        if ([string]::IsNullOrWhiteSpace($reviewedAt)) {
+            $errors += "Line ${lineNo}: reviewed row missing reviewed_at_utc"
+        } else {
+            $dt = [DateTime]::MinValue
+            $styles = [System.Globalization.DateTimeStyles]::AllowLeadingWhite -bor [System.Globalization.DateTimeStyles]::AllowTrailingWhite
+            if (-not [DateTime]::TryParse($reviewedAt, [System.Globalization.CultureInfo]::InvariantCulture, $styles, [ref]$dt)) {
+                $errors += "Line ${lineNo}: reviewed_at_utc not parseable: '$reviewedAt'"
             }
         }
-        # Artifact hash validation if map available
-        if ($artifactMap.Count -gt 0) {
-            $fid2 = ""
-            if ($row.PSObject.Properties.Name -contains "fixture_id") { $fid2 = [string]$row.fixture_id }
-            $prof2 = ""
-            if ($row.PSObject.Properties.Name -contains "profile_id") { $prof2 = [string]$row.profile_id }
-            if ([string]::IsNullOrWhiteSpace($prof2) -and $row.PSObject.Properties.Name -contains "profile") { $prof2 = [string]$row.profile }
-            $ah2 = ""
-            if ($row.PSObject.Properties.Name -contains "artifact_hash") { $ah2 = [string]$row.artifact_hash }
-            if (-not [string]::IsNullOrWhiteSpace($ah2)) {
-                $lookupKey = "$fid2|$prof2|$ah2"
-                $lookupKey2 = "$fid2|$prof2"
-                $expected = $null
-                if ($artifactMap.ContainsKey($lookupKey)) {
-                    $expected = $artifactMap[$lookupKey]
-                } elseif ($artifactMap.ContainsKey($lookupKey2)) {
-                    $expected = $artifactMap[$lookupKey2]
-                    # If review hash doesn't match expected, flag
-                    if ($ah2 -ne $expected -and -not [string]::IsNullOrWhiteSpace($expected)) {
-                        $errors += "Line ${lineNo}: artifact hash mismatch for $fid2/$prof2 expected '$expected' got '$ah2'"
-                    }
-                } else {
-                    # No matching rows.csv entry - might be stale, but not error unless we require coverage
-                }
-                # Check file hash if artifact file exists
-                $pathKey2 = "$fid2|$prof2|path"
-                if ($artifactMap.ContainsKey($pathKey2)) {
-                    $artPath = [string]$artifactMap[$pathKey2]
-                    if (-not [string]::IsNullOrWhiteSpace($artPath)) {
-                        $baseForArt = $RunDir
-                        if ([string]::IsNullOrWhiteSpace($baseForArt)) { $baseForArt = (Get-Location).Path }
-                        if (Test-Path -LiteralPath $baseForArt) {
-                            $bi = Get-Item -LiteralPath $baseForArt -ErrorAction SilentlyContinue
-                            if ($null -ne $bi -and -not $bi.PSIsContainer) { $baseForArt = Split-Path -Parent $baseForArt }
-                        }
-                        # Search for artifact file
-                        $fullArtPath = $null
-                        $candidateArt = Join-Path $baseForArt $artPath
-                        if (Test-Path -LiteralPath $candidateArt) {
-                            $fullArtPath = $candidateArt
-                        } else {
-                            # Try under each rows.csv directory
-                            foreach ($rf2 in $rowsCsvFilesForValidation) {
-                                $runDirForArt = Split-Path -Parent $rf2
-                                $candidate2 = Join-Path $runDirForArt $artPath
-                                if (Test-Path -LiteralPath $candidate2) { $fullArtPath = $candidate2; break }
-                                # Also try artifacts folder directly
-                                $candidate3 = Join-Path $runDirForArt "artifacts" | Join-Path -ChildPath ([System.IO.Path]::GetFileName($artPath))
-                                if (Test-Path -LiteralPath $candidate3) { $fullArtPath = $candidate3; break }
-                            }
-                        }
-                        if ($null -ne $fullArtPath -and (Test-Path -LiteralPath $fullArtPath)) {
-                            try {
-                                $bytes = [System.IO.File]::ReadAllBytes($fullArtPath)
-                                $sha = [System.Security.Cryptography.SHA256]::Create()
-                                $hashBytes = $null
-                                try {
-                                    $hashBytes = $sha.ComputeHash($bytes)
-                                } finally {
-                                    if ($null -ne $sha) { $sha.Dispose() }
-                                }
-                                $computed = [BitConverter]::ToString($hashBytes).Replace("-","").ToLowerInvariant()
-                                if ($computed -ne $ah2.ToLowerInvariant()) {
-                                    $errors += "Line ${lineNo}: artifact file hash mismatch for $fid2/$prof2 file '$fullArtPath' expected '$ah2' computed '$computed'"
-                                }
-                            } catch {
-                            }
-                        }
-                    }
+    }
+
+    # Completeness: every unit that requires review (as regenerated from the
+    # same deterministic inputs) must be present in the queue under review.
+    if (-not [string]::IsNullOrWhiteSpace($RunDir) -and (Test-Path -LiteralPath $RunDir)) {
+        $regenBase = $RunDir
+        $regenItem = Get-Item -LiteralPath $regenBase -ErrorAction SilentlyContinue
+        if ($null -ne $regenItem -and -not $regenItem.PSIsContainer) {
+            $regenBase = Split-Path -Parent $regenBase
+        }
+        $tempQueue = [System.IO.Path]::GetTempFileName()
+        try {
+            & $PSCommandPath -RunDir $regenBase -OutputPath $tempQueue | Out-Null
+            foreach ($req in @(Import-Csv -LiteralPath $tempQueue)) {
+                $reqKey = "$([string]$req.fixture_id)|$([string]$req.artifact_hash)"
+                if (-not $seenKeys.ContainsKey($reqKey)) {
+                    $errors += "Required review unit missing from queue: $reqKey (regenerate and review the new rows)"
                 }
             }
+        } finally {
+            Remove-Item -LiteralPath $tempQueue -Force -ErrorAction SilentlyContinue
         }
     }
 
@@ -257,235 +250,195 @@ if ($Validate) {
     return
 }
 
+# ---------------------------------------------------------------------------
 # Generation path
+# ---------------------------------------------------------------------------
 
 $baseDir = $RunDir
 if ([string]::IsNullOrWhiteSpace($baseDir)) {
     $baseDir = (Get-Location).Path
 }
-
-# Resolve baseDir
 if (-not (Test-Path -LiteralPath $baseDir)) {
     throw "RunDir not found: $baseDir"
 }
 
-$rowsFiles = GetRowsCsvFiles -BaseDir $baseDir
-if ($rowsFiles.Count -eq 0) {
-    throw "No rows.csv found under RunDir: $baseDir"
+$measuredRuns = Get-MeasuredRunDirectories -BaseDir $baseDir
+
+# Deterministic seed: explicit -Seed wins; otherwise the experiment
+# fingerprint shared by the runs; otherwise a fixed constant.
+$reviewSeed = $Seed
+if ([string]::IsNullOrWhiteSpace($reviewSeed)) {
+    $experimentFingerprint = ""
+    foreach ($mr in $measuredRuns) {
+        if ($mr.Metadata.PSObject.Properties.Name -contains 'experiment_fingerprint') {
+            $experimentFingerprint = [string]$mr.Metadata.experiment_fingerprint
+            break
+        }
+    }
+    if (-not [string]::IsNullOrWhiteSpace($experimentFingerprint)) {
+        $reviewSeed = $experimentFingerprint
+    } else {
+        $reviewSeed = "keefetch-review"
+    }
 }
 
 $allRows = @()
-foreach ($rf in $rowsFiles) {
-    try {
-        $imported = @(Import-Csv -LiteralPath $rf)
-        foreach ($r in $imported) {
-            # Tag with source file for artifact resolution
-            $r | Add-Member -NotePropertyName "_source_rows_file" -NotePropertyValue $rf -Force -ErrorAction SilentlyContinue
-            $allRows += $r
-        }
-    } catch {
-        throw "Failed to read rows.csv '$rf': $($_.Exception.Message)"
+foreach ($mr in $measuredRuns) {
+    $rowsCsv = Join-Path $mr.Directory "rows.csv"
+    if (-not (Test-Path -LiteralPath $rowsCsv)) {
+        throw "Measured run missing rows.csv: $($mr.Directory)"
+    }
+    foreach ($r in @(Import-Csv -LiteralPath $rowsCsv)) {
+        $r | Add-Member -NotePropertyName "_run_directory" -NotePropertyValue $mr.Directory -Force
+        $allRows += $r
     }
 }
-
 if ($allRows.Count -eq 0) {
-    throw "No rows found in rows.csv files under $baseDir"
+    throw "No rows found in measured runs under $baseDir"
 }
 
-# Determine output path
-$queuePathOut = GetReviewQueuePath -BaseDir $baseDir -OutPath $OutputPath
-# If OutputPath was provided and is a directory, join file name
-if (-not [string]::IsNullOrWhiteSpace($OutputPath)) {
-    if (Test-Path -LiteralPath $OutputPath) {
-        $opItem = Get-Item -LiteralPath $OutputPath -ErrorAction SilentlyContinue
-        if ($null -ne $opItem -and $opItem.PSIsContainer) {
-            $queuePathOut = Join-Path $OutputPath "review-queue.csv"
-        }
-    } else {
-        # If OutputPath has no extension or is existing dir path, handle
-        if ($OutputPath.EndsWith("\") -or $OutputPath.EndsWith("/")) {
-            $queuePathOut = Join-Path $OutputPath "review-queue.csv"
-        }
-    }
-}
-
-# Build fixture->providers map for profile-differing detection
-$fixtureToProviders = @{}
+# fixture -> set of distinct selected providers across all profiles/reps
+$fixtureProviders = @{}
 foreach ($row in $allRows) {
-    $fid = ""
-    if ($row.PSObject.Properties.Name -contains "fixture_id") { $fid = [string]$row.fixture_id }
+    $fid = [string]$row.fixture_id
     if ([string]::IsNullOrWhiteSpace($fid)) { continue }
-    $prov = ""
-    if ($row.PSObject.Properties.Name -contains "selected_provider") { $prov = [string]$row.selected_provider }
-    if (-not $fixtureToProviders.ContainsKey($fid)) {
-        $fixtureToProviders[$fid] = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    $prov = [string]$row.selected_provider
+    if (-not $fixtureProviders.ContainsKey($fid)) {
+        $fixtureProviders[$fid] = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
     }
     if (-not [string]::IsNullOrWhiteSpace($prov)) {
-        [void]$fixtureToProviders[$fid].Add($prov)
+        [void]$fixtureProviders[$fid].Add($prov)
     }
 }
 
-# Identify must-review rows
-$mustKeys = New-Object 'System.Collections.Generic.HashSet[string]'
-$mustRows = @()
-# Map from row key to row and reason
-$rowKeyToReason = @{}
+# A review unit is the exact (fixture_id, artifact_hash) pair. Occurrences
+# track which profiles and repetitions produced the artifact.
+$units = @{}
+foreach ($row in $allRows) {
+    $fid = [string]$row.fixture_id
+    $hash = [string]$row.artifact_hash
+    if ([string]::IsNullOrWhiteSpace($fid)) { continue }
 
-for ($idx = 0; $idx -lt $allRows.Count; $idx++) {
-    $row = $allRows[$idx]
-    $fid = ""
-    if ($row.PSObject.Properties.Name -contains "fixture_id") { $fid = [string]$row.fixture_id }
-    $prof = ""
-    if ($row.PSObject.Properties.Name -contains "profile") { $prof = [string]$row.profile }
-    if ([string]::IsNullOrWhiteSpace($prof) -and $row.PSObject.Properties.Name -contains "profile_id") { $prof = [string]$row.profile_id }
-    $ah = ""
-    if ($row.PSObject.Properties.Name -contains "artifact_hash") { $ah = [string]$row.artifact_hash }
-    $runId = ""
-    if ($row.PSObject.Properties.Name -contains "run_id") { $runId = [string]$row.run_id }
-    $cat = ""
-    if ($row.PSObject.Properties.Name -contains "category") { $cat = [string]$row.category }
     $isSyn = ParseBoolValue -Value $row.is_synthetic
-    # Some CSV may have is_synthetic as string "TRUE"/"FALSE"
-    if (-not $isSyn -and $row.PSObject.Properties.Name -contains "is_synthetic") {
-        $rawSyn = [string]$row.is_synthetic
-        if ($rawSyn.ToLowerInvariant() -eq "true") { $isSyn = $true }
-    }
     $placeholder = ParseBoolValue -Value $row.placeholder_suspected
     $blank = ParseBoolValue -Value $row.blank_suspected
-    # Also check alternative column names
-    if ($row.PSObject.Properties.Name -contains "placeholder_suspected") {
-        $placeholder = ParseBoolValue -Value $row.placeholder_suspected
-    }
-    if ($row.PSObject.Properties.Name -contains "blank_suspected") {
-        $blank = ParseBoolValue -Value $row.blank_suspected
-    }
-
-    $reasons = @()
-    if ($isSyn) { $reasons += "synthetic" }
-    if ($placeholder) { $reasons += "placeholder_suspected" }
-    if ($blank) { $reasons += "blank_suspected" }
-    if ($fixtureToProviders.ContainsKey($fid)) {
-        $provSet = $fixtureToProviders[$fid]
-        if ($provSet.Count -gt 1) { $reasons += "profile-differing" }
-    }
-
-    if ($reasons.Count -gt 0) {
-        $key = "$fid|$prof|$ah"
-        # Use composite key with index to handle duplicate fixture/profile with different repetition? But spec says key is fixture,profile,hash
-        # If duplicate key already added, skip duplicate row (keep first)
-        if (-not $mustKeys.Contains($key)) {
-            [void]$mustKeys.Add($key)
-            $mustRows += $row
-            $rowKeyToReason[$key] = ($reasons -join ";")
-        } else {
-            # Already have this key, but merge reasons if needed
-            $existingReason = $rowKeyToReason[$key]
-            foreach ($r in $reasons) {
-                if ($existingReason.IndexOf($r) -lt 0) {
-                    $existingReason = $existingReason + ";" + $r
-                }
-            }
-            $rowKeyToReason[$key] = $existingReason
-        }
-    }
-}
-
-# Remaining successes for stratified sampling
-$remainingSuccesses = @()
-foreach ($row in $allRows) {
-    $fid = ""
-    if ($row.PSObject.Properties.Name -contains "fixture_id") { $fid = [string]$row.fixture_id }
-    $prof = ""
-    if ($row.PSObject.Properties.Name -contains "profile") { $prof = [string]$row.profile }
-    if ([string]::IsNullOrWhiteSpace($prof) -and $row.PSObject.Properties.Name -contains "profile_id") { $prof = [string]$row.profile_id }
-    $ah = ""
-    if ($row.PSObject.Properties.Name -contains "artifact_hash") { $ah = [string]$row.artifact_hash }
-    $key = "$fid|$prof|$ah"
-    if ($mustKeys.Contains($key)) { continue }
     $outcome = ""
     if ($row.PSObject.Properties.Name -contains "machine_outcome") { $outcome = [string]$row.machine_outcome }
-    if ($outcome.ToLowerInvariant() -ne "success") { continue }
-    $remainingSuccesses += $row
+    $profile = ""
+    if ($row.PSObject.Properties.Name -contains "profile") { $profile = [string]$row.profile }
+    $category = ""
+    if ($row.PSObject.Properties.Name -contains "category") { $category = [string]$row.category }
+
+    if ([string]::IsNullOrWhiteSpace($hash)) {
+        # Failures without artifacts can only be must-review when they carry a
+        # review trigger flag; otherwise they are machine-evidence only.
+        if (-not ($isSyn -or $placeholder -or $blank)) { continue }
+        $hash = ""
+    }
+
+    $key = "$fid|$hash"
+    if (-not $units.ContainsKey($key)) {
+        $units[$key] = [PSCustomObject]@{
+            FixtureId = $fid
+            ArtifactHash = $hash
+            Categories = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+            Profiles = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+            Reasons = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+            Occurrences = 0
+            MachineOutcome = $outcome
+            SampleStratumProfile = $null
+        }
+    }
+    $unit = $units[$key]
+    $unit.Occurrences++
+    if (-not [string]::IsNullOrWhiteSpace($category)) { [void]$unit.Categories.Add($category) }
+    if (-not [string]::IsNullOrWhiteSpace($profile)) { [void]$unit.Profiles.Add($profile) }
+
+    if ($isSyn) { [void]$unit.Reasons.Add("synthetic") }
+    if ($placeholder) { [void]$unit.Reasons.Add("placeholder_suspected") }
+    if ($blank) { [void]$unit.Reasons.Add("blank_suspected") }
 }
 
-# Group remaining by category|profile
-$grouped = @{}
-foreach ($row in $remainingSuccesses) {
-    $cat = ""
-    if ($row.PSObject.Properties.Name -contains "category") { $cat = [string]$row.category }
-    if ([string]::IsNullOrWhiteSpace($cat)) { $cat = "unknown" }
-    $prof = ""
-    if ($row.PSObject.Properties.Name -contains "profile") { $prof = [string]$row.profile }
-    if ([string]::IsNullOrWhiteSpace($prof) -and $row.PSObject.Properties.Name -contains "profile_id") { $prof = [string]$row.profile_id }
-    if ([string]::IsNullOrWhiteSpace($prof)) { $prof = "unknown" }
-    $gk = "$cat|$prof"
-    if (-not $grouped.ContainsKey($gk)) { $grouped[$gk] = @() }
-    $grouped[$gk] += $row
-}
-
-foreach ($gk in $grouped.Keys) {
-    $groupRows = @($grouped[$gk] | Sort-Object -Property fixture_id)
-    $cnt = $groupRows.Count
-    if ($cnt -eq 0) { continue }
-    $sampleCount = [Math]::Ceiling($cnt * 0.10)
-    if ($sampleCount -lt 1) { $sampleCount = 1 }
-    if ($sampleCount -gt $cnt) { $sampleCount = $cnt }
-    for ($i = 0; $i -lt $sampleCount; $i++) {
-        $row = $groupRows[$i]
-        $fid = ""
-        if ($row.PSObject.Properties.Name -contains "fixture_id") { $fid = [string]$row.fixture_id }
-        $prof = ""
-        if ($row.PSObject.Properties.Name -contains "profile") { $prof = [string]$row.profile }
-        if ([string]::IsNullOrWhiteSpace($prof) -and $row.PSObject.Properties.Name -contains "profile_id") { $prof = [string]$row.profile_id }
-        $ah = ""
-        if ($row.PSObject.Properties.Name -contains "artifact_hash") { $ah = [string]$row.artifact_hash }
-        $key = "$fid|$prof|$ah"
-        if (-not $mustKeys.Contains($key)) {
-            [void]$mustKeys.Add($key)
-            $mustRows += $row
-            $rowKeyToReason[$key] = "sampled-10pct"
+# Profile-differing trigger: a fixture resolved to different providers across
+# profiles. Every unit of such a fixture is required review.
+foreach ($fid in @($fixtureProviders.Keys)) {
+    if ($fixtureProviders[$fid].Count -gt 1) {
+        foreach ($key in @($units.Keys)) {
+            if ($units[$key].FixtureId -eq $fid) {
+                [void]$units[$key].Reasons.Add("profile-differing")
+            }
         }
     }
 }
 
-# Sort mustRows deterministically by fixture_id, profile
-$sortedMust = @($mustRows | Sort-Object -Property @{ Expression = { [string]$_.fixture_id }; Ascending = $true }, @{ Expression = { if ($_.PSObject.Properties.Name -contains "profile") { [string]$_.profile } elseif ($_.PSObject.Properties.Name -contains "profile_id") { [string]$_.profile_id } else { "" } }; Ascending = $true })
+$mustUnits = @()
+$remainingSuccessUnits = @()
+foreach ($key in @($units.Keys)) {
+    $unit = $units[$key]
+    if ($unit.Reasons.Count -gt 0) {
+        $mustUnits += $unit
+    } elseif ($unit.MachineOutcome -eq "success" -and -not [string]::IsNullOrWhiteSpace($unit.ArtifactHash)) {
+        $remainingSuccessUnits += $unit
+    }
+}
 
-# Load existing queue for preservation
+# Deterministic stratified sample: rank unique units within each
+# category|profile stratum by SHA-256(seed|fixture|profile|hash) ascending.
+# A unit's stratum profile is its lexicographically first producing profile.
+$strata = @{}
+foreach ($unit in $remainingSuccessUnits) {
+    $category = (@($unit.Categories) | Sort-Object | Select-Object -First 1)
+    if ([string]::IsNullOrWhiteSpace($category)) { $category = "unknown" }
+    $profile = (@($unit.Profiles) | Sort-Object | Select-Object -First 1)
+    if ([string]::IsNullOrWhiteSpace($profile)) { $profile = "unknown" }
+    $stratumKey = "$category|$profile"
+    if (-not $strata.ContainsKey($stratumKey)) { $strata[$stratumKey] = @() }
+    $strata[$stratumKey] += $unit
+}
+
+$sampledUnits = @()
+foreach ($stratumKey in @($strata.Keys | Sort-Object)) {
+    $ranked = @($strata[$stratumKey] | ForEach-Object {
+        $profile = (@($_.Profiles) | Sort-Object | Select-Object -First 1)
+        $rank = Get-Sha256Hex -Text ("{0}|{1}|{2}|{3}" -f $reviewSeed, $_.FixtureId, $profile, $_.ArtifactHash)
+        [PSCustomObject]@{ Unit = $_; Rank = $rank }
+    } | Sort-Object -Property Rank)
+
+    $population = $ranked.Count
+    $sampleCount = [Math]::Ceiling($population * 0.10)
+    if ($sampleCount -lt 1) { $sampleCount = 1 }
+    if ($sampleCount -gt $population) { $sampleCount = $population }
+    for ($i = 0; $i -lt $sampleCount; $i++) {
+        $sampledUnits += $ranked[$i].Unit
+    }
+}
+
+$queueUnits = @($mustUnits) + @($sampledUnits)
+
+# Determine output path
+$queuePathOut = Get-ReviewQueuePath -BaseDir $baseDir -OutPath $OutputPath
+
+# Preserve existing human labels by exact review key.
 $existingMap = @{}
 if (Test-Path -LiteralPath $queuePathOut) {
     try {
-        $existingRows = @(Import-Csv -LiteralPath $queuePathOut)
-        foreach ($er in $existingRows) {
-            $fidE = ""
-            if ($er.PSObject.Properties.Name -contains "fixture_id") { $fidE = [string]$er.fixture_id }
-            $profE = ""
-            if ($er.PSObject.Properties.Name -contains "profile_id") { $profE = [string]$er.profile_id }
-            if ([string]::IsNullOrWhiteSpace($profE) -and $er.PSObject.Properties.Name -contains "profile") { $profE = [string]$er.profile }
-            $ahE = ""
-            if ($er.PSObject.Properties.Name -contains "artifact_hash") { $ahE = [string]$er.artifact_hash }
-            $keyE = "$fidE|$profE|$ahE"
-            $existingMap[$keyE] = $er
+        foreach ($er in @(Import-Csv -LiteralPath $queuePathOut)) {
+            $fidE = [string]$er.fixture_id
+            $hashE = [string]$er.artifact_hash
+            $keyE = "$fidE|$hashE"
+            if (-not $existingMap.ContainsKey($keyE)) {
+                $existingMap[$keyE] = $er
+            }
         }
     } catch {
     }
 }
 
-# Build queue rows to write
 $queueOut = @()
-foreach ($row in $sortedMust) {
-    $fid = ""
-    if ($row.PSObject.Properties.Name -contains "fixture_id") { $fid = [string]$row.fixture_id }
-    $prof = ""
-    if ($row.PSObject.Properties.Name -contains "profile") { $prof = [string]$row.profile }
-    if ([string]::IsNullOrWhiteSpace($prof) -and $row.PSObject.Properties.Name -contains "profile_id") { $prof = [string]$row.profile_id }
-    $ah = ""
-    if ($row.PSObject.Properties.Name -contains "artifact_hash") { $ah = [string]$row.artifact_hash }
-    $runId = ""
-    if ($row.PSObject.Properties.Name -contains "run_id") { $runId = [string]$row.run_id }
-    $key = "$fid|$prof|$ah"
-    $reason = $rowKeyToReason[$key]
-    if ($null -eq $reason) { $reason = "" }
+foreach ($unit in ($queueUnits | Sort-Object -Property FixtureId, ArtifactHash)) {
+    $key = "$($unit.FixtureId)|$($unit.ArtifactHash)"
+    $reason = (@($unit.Reasons) | Sort-Object) -join ";"
+    if ($reason -eq "") { $reason = "sampled-10pct" }
 
     $reviewLabel = "not-reviewed"
     $reviewer = ""
@@ -493,7 +446,6 @@ foreach ($row in $sortedMust) {
     $notes = $reason
     if ($existingMap.ContainsKey($key)) {
         $ex = $existingMap[$key]
-        # Preserve only if hash unchanged (key includes hash, so unchanged)
         $exLabel = ""
         if ($ex.PSObject.Properties.Name -contains "review_label") { $exLabel = [string]$ex.review_label }
         $exReviewer = ""
@@ -502,23 +454,22 @@ foreach ($row in $sortedMust) {
         if ($ex.PSObject.Properties.Name -contains "reviewed_at_utc") { $exAt = [string]$ex.reviewed_at_utc }
         $exNotes = ""
         if ($ex.PSObject.Properties.Name -contains "notes") { $exNotes = [string]$ex.notes }
-        # Only preserve if existing label not empty
-        if (-not [string]::IsNullOrWhiteSpace($exLabel)) {
+        if (-not [string]::IsNullOrWhiteSpace($exLabel) -and $exLabel.Trim().ToLowerInvariant() -ne "not-reviewed") {
             $reviewLabel = $exLabel
+            $reviewer = $exReviewer
+            $reviewedAt = $exAt
         }
-        $reviewer = $exReviewer
-        $reviewedAt = $exAt
-        # Preserve notes if existing notes non-empty, otherwise use reason
-        if (-not [string]::IsNullOrWhiteSpace($exNotes)) {
-            $notes = $exNotes
+        if (-not [string]::IsNullOrWhiteSpace($exNotes) -and $exNotes -ne $reason) {
+            $notes = "$reason; $exNotes"
         }
     }
 
     $obj = [PSCustomObject]@{
-        run_id = $runId
-        fixture_id = $fid
-        profile_id = $prof
-        artifact_hash = $ah
+        fixture_id = $unit.FixtureId
+        artifact_hash = $unit.ArtifactHash
+        profiles = (@($unit.Profiles) | Sort-Object) -join ";"
+        categories = (@($unit.Categories) | Sort-Object) -join ";"
+        occurrences = $unit.Occurrences
         review_label = $reviewLabel
         reviewer = $reviewer
         reviewed_at_utc = $reviewedAt
@@ -527,14 +478,12 @@ foreach ($row in $sortedMust) {
     $queueOut += $obj
 }
 
-# Ensure output directory exists
 $outDir = Split-Path -Parent $queuePathOut
 if (-not [string]::IsNullOrWhiteSpace($outDir) -and -not (Test-Path -LiteralPath $outDir)) {
     New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 }
 
-# Write CSV UTF8
 $queueOut | Export-Csv -LiteralPath $queuePathOut -NoTypeInformation -Encoding UTF8
 
-Write-Output "review-queue written: $queuePathOut with $($queueOut.Count) rows from $($allRows.Count) total"
-
+Write-Output ("review-queue written: {0} with {1} review units ({2} must-review, {3} sampled) from {4} result rows; seed={5}" -f `
+    $queuePathOut, $queueOut.Count, $mustUnits.Count, $sampledUnits.Count, $allRows.Count, $reviewSeed)

@@ -1,0 +1,44 @@
+{
+  "experiment_id": "smoke-distinguish-v13",
+  "corpus": "KeeFetch.Tests/Fixtures/ProviderCorpus/v1/public-sites.csv",
+  "fixture_ids": ["pub-001", "pub-002"],
+  "profiles": [
+    "cand-direct-google-twenty-fast",
+    "cand-direct-google-twenty-balanced",
+    "cand-full-thorough-synth"
+  ],
+  "schedule_seed": 20260817,
+  "repetitions": 1,
+  "concurrency": 2,
+  "cache_modes": ["cold"],
+  "output_root": "eng/benchmark-runs/smoke-distinguish-v13",
+  "candidates": [
+    {
+      "id": "cand-direct-google-twenty-fast",
+      "providerIds": ["direct-site", "google", "twenty-icons"],
+      "primaryTimeout": 4000,
+      "fallbackTimeout": 2500,
+      "cumulativeTimeout": 15000,
+      "allowSynthetic": false,
+      "stopAfterStrongResolved": true
+    },
+    {
+      "id": "cand-direct-google-twenty-balanced",
+      "providerIds": ["direct-site", "google", "twenty-icons"],
+      "primaryTimeout": 6000,
+      "fallbackTimeout": 3500,
+      "cumulativeTimeout": 22000,
+      "allowSynthetic": false,
+      "stopAfterStrongResolved": true
+    },
+    {
+      "id": "cand-full-thorough-synth",
+      "providerIds": ["direct-site", "twenty-icons", "duckduckgo", "google", "yandex", "favicone", "icon-horse"],
+      "primaryTimeout": 10000,
+      "fallbackTimeout": 5000,
+      "cumulativeTimeout": 45000,
+      "allowSynthetic": true,
+      "stopAfterStrongResolved": false
+    }
+  ]
+}

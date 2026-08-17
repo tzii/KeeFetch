@@ -49,6 +49,11 @@ jobs:
         run: |
           dotnet build KeeFetch.csproj --configuration Release --no-restore -p:KeePassPath="$env:KEEPASS_DIR"
 
+      - name: Check profile data consistency
+        shell: pwsh
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File eng/export-profile-data.ps1 -Check
+
       - name: Verify C# 5 compatibility
         shell: pwsh
         run: |

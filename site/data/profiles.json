@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "source": "FetchProfileCatalog.ManagedProfiles",
+  "profiles": [
+    {
+      "id": "bulk-fast",
+      "displayName": "Fast",
+      "description": "Shortest path. Tries direct site, then a compact strong-resolver chain with reduced time budgets for faster large batches.",
+      "intendedUse": "Large batch fetching with reduced latency",
+      "providerIds": [
+        "direct-site",
+        "google",
+        "twenty-icons"
+      ],
+      "primaryTimeoutMs": 4000,
+      "fallbackTimeoutMs": 2500,
+      "cumulativeTimeoutMs": 15000,
+      "allowSyntheticFallbacks": false,
+      "isVisible": true,
+      "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
+    },
+    {
+      "id": "everyday",
+      "displayName": "Balanced",
+      "description": "Recommended default. Uses direct site, Google, and a lightweight synthetic fallback to balance coverage and batch speed.",
+      "intendedUse": "Default everyday use balancing coverage and speed",
+      "providerIds": [
+        "direct-site",
+        "google",
+        "favicone"
+      ],
+      "primaryTimeoutMs": 6000,
+      "fallbackTimeoutMs": 3500,
+      "cumulativeTimeoutMs": 22000,
+      "allowSyntheticFallbacks": true,
+      "isVisible": true,
+      "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
+    },
+    {
+      "id": "privacy",
+      "displayName": "Privacy",
+      "description": "Privacy-focused mode. Uses only direct site resolution with no third-party requests.",
+      "intendedUse": "Privacy-sensitive fetching without third-party providers",
+      "providerIds": [
+        "direct-site"
+      ],
+      "primaryTimeoutMs": 6000,
+      "fallbackTimeoutMs": 3500,
+      "cumulativeTimeoutMs": 22000,
+      "allowSyntheticFallbacks": false,
+      "isVisible": true,
+      "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
+    },
+    {
+      "id": "max-coverage",
+      "displayName": "Thorough",
+      "description": "Availability-first mode. Uses the full resolver chain with the largest time budgets and synthetic fallbacks for maximum coverage.",
+      "intendedUse": "Maximum coverage with full resolver chain",
+      "providerIds": [
+        "direct-site",
+        "twenty-icons",
+        "duckduckgo",
+        "google",
+        "yandex",
+        "favicone",
+        "icon-horse"
+      ],
+      "primaryTimeoutMs": 10000,
+      "fallbackTimeoutMs": 5000,
+      "cumulativeTimeoutMs": 45000,
+      "allowSyntheticFallbacks": true,
+      "isVisible": true,
+      "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
+    }
+  ]
+}

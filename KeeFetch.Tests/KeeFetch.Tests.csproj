@@ -32,6 +32,7 @@
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
 

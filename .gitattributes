@@ -1,0 +1,8 @@
+# Set default behavior to automatically normalize line endings to LF
+* text=auto eol=lf
+
+# Explicitly ensure JSON and data files are checked out with LF
+*.json text eol=lf
+*.csv text eol=lf
+*.md text eol=lf
+*.cs text eol=lf

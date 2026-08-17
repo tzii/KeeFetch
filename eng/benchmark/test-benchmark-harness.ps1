@@ -605,6 +605,170 @@ try {
     $reparsed = (ConvertFrom-Json ('{"v": ' + $escaped + '}')).v
     if ($reparsed -ne $escInput) { throw "escape round-trip failed: [$reparsed] vs [$escInput]" }
 
+    # ---- Test 8: seeded schedule ordering (deterministic, seeded) ----------
+    $schedItems = @('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r')
+    $orderA = Get-SeededScheduleOrder -Items $schedItems -Seed 20260817 -Phase 'cold' -Repetition 1
+    $orderB = Get-SeededScheduleOrder -Items $schedItems -Seed 20260817 -Phase 'cold' -Repetition 1
+    if (($orderA -join '|') -ne ($orderB -join '|')) { throw 'Get-SeededScheduleOrder is not deterministic for identical inputs.' }
+    if ((@($orderA | Sort-Object) -join '|') -ne (@($schedItems | Sort-Object) -join '|')) {
+        throw 'Seeded schedule order is not a permutation of the input items.'
+    }
+    $orderRep2 = Get-SeededScheduleOrder -Items $schedItems -Seed 20260817 -Phase 'cold' -Repetition 2
+    $orderWarm = Get-SeededScheduleOrder -Items $schedItems -Seed 20260817 -Phase 'warm' -Repetition 0
+    $orderSeed2 = Get-SeededScheduleOrder -Items $schedItems -Seed 999 -Phase 'cold' -Repetition 1
+    if (($orderA -join '|') -eq ($orderRep2 -join '|')) { throw 'Repetition must influence the seeded schedule.' }
+    if (($orderA -join '|') -eq ($orderWarm -join '|')) { throw 'Phase must influence the seeded schedule.' }
+    if (($orderA -join '|') -eq ($orderSeed2 -join '|')) { throw 'Seed must influence the seeded schedule.' }
+    $single = @(Get-SeededScheduleOrder -Items @('only') -Seed 1 -Phase 'cold' -Repetition 1)
+    if ($single.Count -ne 1 -or [string]$single[0] -ne 'only') { throw 'Single-item schedule must return exactly that item.' }
+
+    # ---- Test 9: atomic warm-block validation -------------------------------
+    function New-WarmRunState {
+        param([string]$Status, [int]$Repetition)
+        return [PSCustomObject]@{ Status = $Status; Repetition = $Repetition }
+    }
+    function Assert-WarmBlockInvalid {
+        param([array]$Warmups, [array]$Measured, [int]$Reps, [string]$Pattern, [string]$Scenario)
+        $reason = $null
+        try {
+            $reason = Get-WarmBlockInvalidReason -Warmups $Warmups -Measured $Measured -Repetitions $Reps
+        } catch {
+            throw "Get-WarmBlockInvalidReason threw for scenario '$Scenario': $($_.Exception.Message)"
+        }
+        if ([string]::IsNullOrWhiteSpace([string]$reason)) { throw "Expected invalid warm block ('$Scenario') but validation returned no reason." }
+        if ($reason -notmatch $Pattern) { throw "Warm-block reason for '$Scenario' was '$reason'; expected pattern '$Pattern'." }
+    }
+    $okWarm = @(New-WarmRunState -Status 'complete' -Repetition 0)
+    $okMeasured = @(1..3 | ForEach-Object { New-WarmRunState -Status 'complete' -Repetition $_ })
+    $validReason = Get-WarmBlockInvalidReason -Warmups $okWarm -Measured $okMeasured -Repetitions 3
+    if ($null -ne $validReason) { throw "Valid complete warm block was rejected: $validReason" }
+    Assert-WarmBlockInvalid -Warmups @() -Measured $okMeasured -Reps 3 -Pattern 'missing warm-up' -Scenario 'missing warm-up'
+    Assert-WarmBlockInvalid -Warmups @((New-WarmRunState 'complete' 0), (New-WarmRunState 'complete' 0)) -Measured $okMeasured -Reps 3 -Pattern 'duplicate warm-up' -Scenario 'duplicate warm-up'
+    Assert-WarmBlockInvalid -Warmups @(New-WarmRunState 'incomplete' 0) -Measured $okMeasured -Reps 3 -Pattern 'incomplete warm-up' -Scenario 'incomplete warm-up'
+    Assert-WarmBlockInvalid -Warmups $okWarm -Measured @((New-WarmRunState 'complete' 1), (New-WarmRunState 'complete' 3)) -Reps 3 -Pattern 'missing warm measured cell for repetition 2' -Scenario 'missing repetition'
+    Assert-WarmBlockInvalid -Warmups $okWarm -Measured @((New-WarmRunState 'complete' 1), (New-WarmRunState 'complete' 2), (New-WarmRunState 'complete' 2), (New-WarmRunState 'complete' 3)) -Reps 3 -Pattern 'duplicate warm measured cell for repetition 2' -Scenario 'duplicate repetition'
+    Assert-WarmBlockInvalid -Warmups $okWarm -Measured @((New-WarmRunState 'incomplete' 1), (New-WarmRunState 'complete' 2), (New-WarmRunState 'complete' 3)) -Reps 3 -Pattern 'incomplete warm measured cell for repetition 1' -Scenario 'incomplete measured repetition'
+    Assert-WarmBlockInvalid -Warmups $okWarm -Measured @((New-WarmRunState 'complete' 1), (New-WarmRunState 'complete' 2), (New-WarmRunState 'complete' 4)) -Reps 3 -Pattern 'outside 1\.\.3' -Scenario 'repetition out of range'
+
+    # ---- Test 10: execution-harness fingerprint -----------------------------
+    $fpRepo = Join-Path $temp 'fp-repo'
+    New-Item -ItemType Directory -Path (Join-Path $fpRepo 'eng\benchmark') -Force | Out-Null
+    $realRunner = Join-Path $PSScriptRoot '..\benchmark-presets.ps1'
+    if (-not (Test-Path -LiteralPath $realRunner)) { $realRunner = Join-Path $PSScriptRoot '..\..\benchmark-presets.ps1' }
+    $realModule = Join-Path $PSScriptRoot 'BenchmarkHarness.psm1'
+    $fpRunnerCopy = Join-Path $fpRepo 'eng\benchmark-presets.ps1'
+    $fpModuleCopy = Join-Path $fpRepo 'eng\benchmark\BenchmarkHarness.psm1'
+    Copy-Item -LiteralPath $realRunner -Destination $fpRunnerCopy
+    Copy-Item -LiteralPath $realModule -Destination $fpModuleCopy
+    $fpA = Get-KeeFetchHarnessFingerprint -RepoRoot $fpRepo
+    $fpB = Get-KeeFetchHarnessFingerprint -RepoRoot $fpRepo
+    if ([string]::IsNullOrWhiteSpace($fpA) -or $fpA -notmatch '^[0-9a-f]{64}$') { throw "Harness fingerprint must be 64 hex chars: $fpA" }
+    if ($fpA -ne $fpB) { throw 'Harness fingerprint is not deterministic for identical inputs.' }
+    $liveRepoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
+    $fpLive = Get-KeeFetchHarnessFingerprint -RepoRoot $liveRepoRoot
+    if ($fpLive -ne $fpA) { throw 'Fingerprint of identical working-tree copies must equal the live harness fingerprint.' }
+    # Line-ending normalization: identical bytes modulo CRLF must not change identity.
+    $lfOnly = ([System.IO.File]::ReadAllText($fpRunnerCopy)) -replace "`r`n", "`n" -replace "`r", "`n"
+    [System.IO.File]::WriteAllText($fpRunnerCopy, ($lfOnly -replace "`n", "`r`n"), (New-Object System.Text.UTF8Encoding $false))
+    $fpCrlf = Get-KeeFetchHarnessFingerprint -RepoRoot $fpRepo
+    if ($fpCrlf -ne $fpA) { throw 'Harness fingerprint must be invariant under CRLF/LF normalization.' }
+    # Any content change in a harness component must change the identity.
+    [System.IO.File]::AppendAllText($fpModuleCopy, "# fingerprint-sentinel$([Environment]::NewLine)", (New-Object System.Text.UTF8Encoding $false))
+    $fpChanged = Get-KeeFetchHarnessFingerprint -RepoRoot $fpRepo
+    if ($fpChanged -eq $fpA) { throw 'Harness fingerprint did not change after a harness component was modified.' }
+    $missingRepo = Join-Path $temp 'fp-empty-repo'
+    New-Item -ItemType Directory -Path $missingRepo -Force | Out-Null
+    $fpThrew = $false
+    try { Get-KeeFetchHarnessFingerprint -RepoRoot $missingRepo | Out-Null }
+    catch { $fpThrew = $true }
+    if (-not $fpThrew) { throw 'Harness fingerprint must fail closed when a component file is missing.' }
+
+    # ---- Test 11: exact matrix validation (Assert-KeeFetchRunRows) ----------
+    $rowsRoot = Join-Path $temp 'rows-assert'
+    New-Item -ItemType Directory -Path $rowsRoot -Force | Out-Null
+    function New-AssertRun {
+        param([string[]]$FixtureIds, [string]$Outcome = 'success', [string]$Profile = 'cand-x', [switch]$WithArtifacts)
+        $r = New-KeeFetchRun -OutputRoot $rowsRoot -ExperimentId 'rows-assert' -CorpusPath 'corpus.csv' -CorpusVersion 'v1' -Concurrency 4 -CacheMode 'cold' -Profiles @($Profile) -Repetitions 1 -ExtraMetadata @{ corpus_fingerprint = 'c_fp_1' }
+        foreach ($fid in $FixtureIds) {
+            $row = [ordered]@{
+                fixture_id = $fid; repetition = 1; category = 'global-brand'; input_url = "https://$fid.example/"
+                selected_provider = 'Direct Site'; tier = 'SiteCanonical'; is_synthetic = $false; placeholder_suspected = $false; blank_suspected = $false
+                machine_outcome = $Outcome; candidate_counts = @{}; per_provider_metrics = @(); provider_metrics = @()
+                total_elapsed_ms = 10; total_elapsed = 10; cache_behavior = 'miss'; cache_hit = $false; coalesced = $false; coalescing = $false
+                image_type = 'png'; image_width = 16; image_height = 16; image_byte_size = 64; image_validation = 'ok'
+                artifact_path = ''; artifact_hash = ''
+                experiment_id = 'rows-assert'; profile = $Profile; network_context = 'default'; concurrency = 4; cache_mode = 'cold'
+                run_id = [string]$r.RunId
+            }
+            if ($WithArtifacts.IsPresent -and $Outcome -eq 'success') {
+                $artDir = Join-Path $r.Directory 'artifacts'
+                if (-not (Test-Path -LiteralPath $artDir)) { New-Item -ItemType Directory -Path $artDir -Force | Out-Null }
+                [System.IO.File]::WriteAllBytes((Join-Path $artDir ($fid + '.png')), ([System.Text.Encoding]::ASCII.GetBytes('artifact-' + $fid)))
+                $row['artifact_path'] = 'artifacts/' + $fid + '.png'
+                $row['artifact_hash'] = 'hash-' + $fid
+            }
+            Add-KeeFetchResult -RunDirectory $r.Directory -Result $row
+        }
+        Complete-KeeFetchRun -RunDirectory $r.Directory
+        return $r
+    }
+    function Assert-RunRowsThrows {
+        param([string]$Pattern, [scriptblock]$Action, [string]$Scenario)
+        $threw = $false
+        $msg = ''
+        try { & $Action | Out-Null } catch { $threw = $true; $msg = $_.Exception.Message }
+        if (-not $threw) { throw "Assert-KeeFetchRunRows accepted invalid evidence ('$Scenario')." }
+        if ($msg -notmatch $Pattern) { throw "Assert-KeeFetchRunRows('$Scenario') message '$msg' does not match '$Pattern'." }
+    }
+
+    # Valid matrix passes, with and without artifact requirements.
+    $goodRun = New-AssertRun -FixtureIds @('f1','f2','f3')
+    Assert-KeeFetchRunRows -RunDirectory $goodRun.Directory -ExpectedFixtureIds @('f1','f2','f3') -CurrentCorpusFingerprint 'c_fp_1' -ExpectedExperimentId 'rows-assert' -ExpectedProfile 'cand-x' -ExpectedCacheMode 'cold' -ExpectedRepetition 1 -ExpectedRunId ([string]$goodRun.RunId) -ExpectedConcurrency 4
+    $artRun = New-AssertRun -FixtureIds @('f1','f2','f3') -WithArtifacts
+    Assert-KeeFetchRunRows -RunDirectory $artRun.Directory -ExpectedFixtureIds @('f1','f2','f3') -CurrentCorpusFingerprint 'c_fp_1' -ExpectedExperimentId 'rows-assert' -ExpectedProfile 'cand-x' -ExpectedCacheMode 'cold' -ExpectedRepetition 1 -ExpectedRunId ([string]$artRun.RunId) -ExpectedConcurrency 4 -RequireSuccessArtifacts
+
+    # Successful cold rows must carry artifacts when required.
+    Assert-RunRowsThrows -Scenario 'success row without artifact' -Pattern 'no artifact hash' -Action {
+        Assert-KeeFetchRunRows -RunDirectory $goodRun.Directory -ExpectedFixtureIds @('f1','f2','f3') -CurrentCorpusFingerprint 'c_fp_1' -ExpectedExperimentId 'rows-assert' -ExpectedProfile 'cand-x' -ExpectedCacheMode 'cold' -ExpectedRepetition 1 -ExpectedRunId ([string]$goodRun.RunId) -ExpectedConcurrency 4 -RequireSuccessArtifacts
+    }
+    # Artifact recorded but missing on disk is invalid evidence.
+    $missingArtRun = New-AssertRun -FixtureIds @('f1') -WithArtifacts
+    Remove-Item -LiteralPath (Join-Path $missingArtRun.Directory 'artifacts\f1.png') -Force
+    Assert-RunRowsThrows -Scenario 'artifact missing on disk' -Pattern 'missing on disk' -Action {
+        Assert-KeeFetchRunRows -RunDirectory $missingArtRun.Directory -ExpectedFixtureIds @('f1') -CurrentCorpusFingerprint 'c_fp_1' -ExpectedExperimentId 'rows-assert' -ExpectedProfile 'cand-x' -ExpectedCacheMode 'cold' -ExpectedRepetition 1 -ExpectedRunId ([string]$missingArtRun.RunId) -ExpectedConcurrency 4 -RequireSuccessArtifacts
+    }
+    # Corpus fingerprint mismatch invalidates the run.
+    Assert-RunRowsThrows -Scenario 'corpus fingerprint mismatch' -Pattern 'corpus fingerprint mismatch' -Action {
+        Assert-KeeFetchRunRows -RunDirectory $goodRun.Directory -ExpectedFixtureIds @('f1','f2','f3') -CurrentCorpusFingerprint 'changed' -ExpectedExperimentId 'rows-assert' -ExpectedProfile 'cand-x' -ExpectedCacheMode 'cold' -ExpectedRepetition 1 -ExpectedRunId ([string]$goodRun.RunId) -ExpectedConcurrency 4
+    }
+    # Missing fixture: fewer rows than the corpus set.
+    $shortRun = New-AssertRun -FixtureIds @('f1','f2')
+    Assert-RunRowsThrows -Scenario 'missing fixture (row count)' -Pattern 'expected 3 rows but recorded 2' -Action {
+        Assert-KeeFetchRunRows -RunDirectory $shortRun.Directory -ExpectedFixtureIds @('f1','f2','f3') -CurrentCorpusFingerprint 'c_fp_1' -ExpectedExperimentId 'rows-assert' -ExpectedProfile 'cand-x' -ExpectedCacheMode 'cold' -ExpectedRepetition 1 -ExpectedRunId ([string]$shortRun.RunId) -ExpectedConcurrency 4
+    }
+    # Unexpected fixture from outside the corpus.
+    $alienRun = New-AssertRun -FixtureIds @('f1','f2','g1')
+    Assert-RunRowsThrows -Scenario 'unexpected fixture' -Pattern "unexpected fixture 'g1'" -Action {
+        Assert-KeeFetchRunRows -RunDirectory $alienRun.Directory -ExpectedFixtureIds @('f1','f2','f3') -CurrentCorpusFingerprint 'c_fp_1' -ExpectedExperimentId 'rows-assert' -ExpectedProfile 'cand-x' -ExpectedCacheMode 'cold' -ExpectedRepetition 1 -ExpectedRunId ([string]$alienRun.RunId) -ExpectedConcurrency 4
+    }
+    # Duplicate fixture within the cell (same fixture under two repetitions).
+    $dupRun = New-AssertRun -FixtureIds @('f1','f2')
+    Add-KeeFetchResult -RunDirectory $dupRun.Directory -Result ([ordered]@{
+        fixture_id = 'f1'; repetition = 2; machine_outcome = 'not-found'; artifact_path = ''; artifact_hash = ''
+        experiment_id = 'rows-assert'; profile = 'cand-x'; cache_mode = 'cold'; run_id = [string]$dupRun.RunId; concurrency = 4
+    })
+    Complete-KeeFetchRun -RunDirectory $dupRun.Directory
+    Assert-RunRowsThrows -Scenario 'duplicate fixture within cell' -Pattern "duplicate fixture 'f1'" -Action {
+        Assert-KeeFetchRunRows -RunDirectory $dupRun.Directory -ExpectedFixtureIds @('f1','f2','f3') -CurrentCorpusFingerprint 'c_fp_1' -ExpectedExperimentId 'rows-assert' -ExpectedProfile 'cand-x' -ExpectedCacheMode 'cold' -ExpectedRepetition 1 -ExpectedRunId ([string]$dupRun.RunId) -ExpectedConcurrency 4
+    }
+    # Per-row metadata must match run metadata exactly.
+    Assert-RunRowsThrows -Scenario 'profile metadata mismatch' -Pattern "profile 'cand-x' does not match run metadata 'cand-y'" -Action {
+        Assert-KeeFetchRunRows -RunDirectory $goodRun.Directory -ExpectedFixtureIds @('f1','f2','f3') -CurrentCorpusFingerprint 'c_fp_1' -ExpectedExperimentId 'rows-assert' -ExpectedProfile 'cand-y' -ExpectedCacheMode 'cold' -ExpectedRepetition 1 -ExpectedRunId ([string]$goodRun.RunId) -ExpectedConcurrency 4
+    }
+    Assert-RunRowsThrows -Scenario 'run id metadata mismatch' -Pattern 'run_id .* does not match run metadata' -Action {
+        Assert-KeeFetchRunRows -RunDirectory $goodRun.Directory -ExpectedFixtureIds @('f1','f2','f3') -CurrentCorpusFingerprint 'c_fp_1' -ExpectedExperimentId 'rows-assert' -ExpectedProfile 'cand-x' -ExpectedCacheMode 'cold' -ExpectedRepetition 1 -ExpectedRunId 'run_other' -ExpectedConcurrency 4
+    }
+
 } finally {
     Remove-Item -LiteralPath $temp -Recurse -Force
 }

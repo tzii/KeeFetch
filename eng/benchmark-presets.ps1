@@ -6,11 +6,14 @@ param(
 $ErrorActionPreference = "Stop"
 
 # Executes a benchmark experiment with explicit matrix-cell identity,
-# fingerprinted provenance, a deterministic interleaved schedule, warm-up
-# methodology, and experiment-level resume. Every run directory records the
-# experiment/corpus/binary fingerprints plus the per-candidate effective
-# policy fingerprint resolved through the real FaviconDownloader path, so the
-# selector can fail closed on any mismatch.
+# fingerprinted provenance, a deterministic seeded schedule recorded in
+# schedule.json, atomic warm-block methodology, and experiment-level resume.
+# Every run directory records the experiment/corpus/binary/execution-harness
+# fingerprints plus the per-candidate effective policy fingerprint resolved
+# through the real FaviconDownloader path, so the selector can fail closed on
+# any mismatch. Each matrix cell executes through exactly one FaviconDownloader
+# instance so provider-health state transfers within a cell and resets between
+# cells, matching production behavior.
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $keepassPath = "C:\Program Files\KeePass Password Safe 2\KeePass.exe"
@@ -131,10 +134,15 @@ $experimentConfig = Read-KeeFetchExperiment -ExperimentPath $experimentPath
 # real catalog.
 $script:candidateMap = @{}
 $rawExperiment = Get-Content -Raw -LiteralPath $experimentPath | ConvertFrom-Json
-$scheduleSeed = 0
-if ($rawExperiment.PSObject.Properties.Name -contains 'schedule_seed') {
-    try { $scheduleSeed = [int]$rawExperiment.schedule_seed } catch { $scheduleSeed = 0 }
+# Fail closed: the execution schedule is part of the methodology. An
+# experiment without an explicit schedule_seed must never run, because its
+# candidate ordering could not be reproduced or audited.
+if (-not ($rawExperiment.PSObject.Properties.Name -contains 'schedule_seed')) {
+    throw "Experiment '$experimentPath' must declare schedule_seed explicitly; the seeded schedule is mandatory."
 }
+$scheduleSeed = 0
+try { $scheduleSeed = [int64]$rawExperiment.schedule_seed } catch { $scheduleSeed = 0 }
+if ($scheduleSeed -le 0) { throw "schedule_seed must be a positive integer (got '$($rawExperiment.schedule_seed)')." }
 
 # Resolve corpus and output root
 $corpusPath = $experimentConfig.corpus_path
@@ -184,6 +192,7 @@ if ($hasFixtureFilter) {
 }
 $expectedRowCount = $filteredRows.Count
 if ($expectedRowCount -eq 0) { throw "Corpus is empty." }
+$expectedFixtureIds = [string[]]@($filteredRows | ForEach-Object { [string]$_.fixture_id })
 
 if (-not (Test-Path -LiteralPath $keepassPath)) {
     throw "KeePass.exe not found at $keepassPath (set KEEFETCH_KEEPASS_PATH to override)."
@@ -380,6 +389,19 @@ $experimentFingerprint = Get-Sha256HexFile -Path $experimentPath
 $corpusFingerprint = Get-Sha256HexFile -Path $corpusPath
 $binaryHash = Get-Sha256HexFile -Path $assemblyPath
 
+# The execution harness itself is fingerprinted: runner plus module code.
+# Evidence produced by a different harness is a different experiment.
+$harnessFingerprint = Get-KeeFetchHarnessFingerprint -RepoRoot $repoRoot
+$harnessEnvironment = [ordered]@{
+    powershell_version = [string]$PSVersionTable.PSVersion
+    os_version = [System.Environment]::OSVersion.VersionString
+    is_64bit_process = [bool][System.Environment]::Is64BitProcess
+    machine_name = [System.Environment]::MachineName
+}
+if ($PSVersionTable.ContainsKey('ClrVersion')) {
+    $harnessEnvironment['clr_version'] = [string]$PSVersionTable.ClrVersion
+}
+
 # Resolve every profile's effective policy through the real downloader path.
 $profileConfigs = @{}
 $profilePolicyFingerprints = @{}
@@ -395,6 +417,7 @@ foreach ($profileName in $profileOrder) {
 Write-Host "Experiment fingerprint: $experimentFingerprint"
 Write-Host "Corpus fingerprint:     $corpusFingerprint"
 Write-Host "Binary hash:            $binaryHash"
+Write-Host "Harness fingerprint:    $harnessFingerprint"
 Write-Host "Schedule seed:          $scheduleSeed"
 foreach ($profileName in $profileOrder) {
     Write-Host ("Policy fingerprint {0}: {1}" -f $profileName, $profilePolicyFingerprints[$profileName])
@@ -402,15 +425,19 @@ foreach ($profileName in $profileOrder) {
 
 function Start-DownloadTask {
     param(
-        [object]$Config,
+        # The single cell downloader: exactly one FaviconDownloader instance is
+        # created per matrix cell and shared by every fixture in it, matching
+        # production behavior where one plugin instance serves many entries.
+        # Provider health therefore transfers within a cell and resets between
+        # cells; the static cache is unaffected because it is keyed by origin.
+        [object]$Downloader,
         [string]$Url,
         [string]$FixtureId = "",
         [string]$Category = "",
         [string]$InputUrl = ""
     )
 
-    $downloader = $downloaderCtor.Invoke([object[]] @($Config.PSObject.BaseObject))
-    $task = $downloadMethod.Invoke($downloader, @($Url, [Threading.CancellationToken]::None))
+    $task = $downloadMethod.Invoke($Downloader, @($Url, [Threading.CancellationToken]::None))
     $obj = [PSCustomObject]@{
         Url = $Url
         Task = $task
@@ -773,8 +800,16 @@ function Invoke-RunDirectoryWork {
         [Parameter(Mandatory=$true)][string]$CacheMode,
         [Parameter(Mandatory=$true)][object]$Config,
         [Parameter(Mandatory=$true)][long]$ActiveElapsedSeed,
-        [Parameter(Mandatory=$true)][bool]$Resumed
+        [Parameter(Mandatory=$true)][bool]$Resumed,
+        [Parameter(Mandatory=$true)][string]$RunKind
     )
+
+    # Exactly one downloader per matrix cell: provider-health state (failure
+    # counters, cooldown) transfers across fixtures within the cell, exactly
+    # as it would inside the plugin during real use, and resets for the next
+    # cell. Creating one downloader per fixture would erase that state and
+    # make the measurement unrepresentative of production execution.
+    $cellDownloader = $downloaderCtor.Invoke([object[]] @($Config.PSObject.BaseObject))
 
     # Already-completed fixtures in this run directory are skipped; the
     # harness deduplicates by (fixture_id, repetition) as a second guard.
@@ -811,7 +846,7 @@ function Invoke-RunDirectoryWork {
             $enqueueFailed = $false
             $enqueueMsg = ""
             try {
-                $taskObj = Start-DownloadTask -Config $Config -Url $row.input_url -FixtureId $row.fixture_id -Category $row.category -InputUrl $row.input_url
+                $taskObj = Start-DownloadTask -Downloader $cellDownloader -Url $row.input_url -FixtureId $row.fixture_id -Category $row.category -InputUrl $row.input_url
             } catch {
                 $enqueueFailed = $true
                 $enqueueMsg = $_.Exception.Message
@@ -858,15 +893,32 @@ function Invoke-RunDirectoryWork {
     $activeElapsedMs = $ActiveElapsedSeed + $cellStopwatch.ElapsedMilliseconds
     Complete-KeeFetchRun -RunDirectory $RunDirectory -ActiveElapsedMs $activeElapsedMs -Resumed $Resumed
 
-    # Fail closed on incomplete cells: a run that completes with the wrong
-    # number of records is invalid evidence, not a partial success.
-    $rowsCsv = Join-Path $RunDirectory "rows.csv"
-    $recordCount = 0
-    if (Test-Path -LiteralPath $rowsCsv) {
-        $recordCount = @(@(Import-Csv -LiteralPath $rowsCsv)).Count
-    }
-    if ($recordCount -ne $expectedRowCount) {
-        throw "Row count mismatch for run $RunId : expected $expectedRowCount but recorded $recordCount. Evidence is invalid; inspect the run directory."
+    # Fail closed on incomplete cells: the exact matrix validation replaces the
+    # old row-count-only check. A run that does not contain exactly the corpus
+    # fixture set, with per-row metadata matching run.json, is invalid evidence.
+    if ($RunKind -eq "measured" -and $CacheMode -eq "cold") {
+        # Measured cold cells are the scoring evidence: every success must also
+        # carry a non-empty artifact hash and a real artifact on disk.
+        Assert-KeeFetchRunRows -RunDirectory $RunDirectory `
+            -ExpectedFixtureIds $expectedFixtureIds `
+            -CurrentCorpusFingerprint $corpusFingerprint `
+            -ExpectedExperimentId $experimentConfig.experiment_id `
+            -ExpectedProfile $ProfileName `
+            -ExpectedCacheMode $CacheMode `
+            -ExpectedRepetition $Repetition `
+            -ExpectedRunId $RunId `
+            -ExpectedConcurrency ([int]$experimentConfig.concurrency) `
+            -RequireSuccessArtifacts
+    } else {
+        Assert-KeeFetchRunRows -RunDirectory $RunDirectory `
+            -ExpectedFixtureIds $expectedFixtureIds `
+            -CurrentCorpusFingerprint $corpusFingerprint `
+            -ExpectedExperimentId $experimentConfig.experiment_id `
+            -ExpectedProfile $ProfileName `
+            -ExpectedCacheMode $CacheMode `
+            -ExpectedRepetition $Repetition `
+            -ExpectedRunId $RunId `
+            -ExpectedConcurrency ([int]$experimentConfig.concurrency)
     }
 
     Write-Host "Run completed: $RunDirectory"
@@ -890,6 +942,8 @@ function Invoke-RunCell {
         experiment_fingerprint = $experimentFingerprint
         corpus_fingerprint = $corpusFingerprint
         binary_hash = $binaryHash
+        execution_harness_fingerprint = $harnessFingerprint
+        harness_environment = $harnessEnvironment
         schedule_seed = $scheduleSeed
     }
     $runDir = $run.Directory
@@ -900,7 +954,8 @@ function Invoke-RunCell {
         $experimentConfig.experiment_id, $CandidateId, $CacheMode, $Repetition, $RunKind, $runId)
 
     Invoke-RunDirectoryWork -RunDirectory $runDir -RunId $runId -ProfileName $CandidateId `
-        -Repetition $Repetition -CacheMode $CacheMode -Config $config -ActiveElapsedSeed 0 -Resumed $false
+        -Repetition $Repetition -CacheMode $CacheMode -Config $config -ActiveElapsedSeed 0 -Resumed $false `
+        -RunKind $RunKind
 }
 
 function Invoke-ResumeCell {
@@ -924,7 +979,7 @@ function Invoke-ResumeCell {
 
     Invoke-RunDirectoryWork -RunDirectory $RunDirectory -RunId $runId -ProfileName $CandidateId `
         -Repetition $repetition -CacheMode $cacheMode -Config $profileConfigs[$CandidateId] `
-        -ActiveElapsedSeed $priorActiveMs -Resumed $true
+        -ActiveElapsedSeed $priorActiveMs -Resumed $true -RunKind "measured"
 }
 
 # --- Experiment-level pre-scan: matrix identity, fingerprints, resume -------
@@ -943,6 +998,7 @@ $completedMeasured = @{}
 $completedWarmups = @{}
 $incompleteCells = @{}
 $cellsSeen = New-Object 'System.Collections.Generic.HashSet[string]'
+$warmRunsByCandidate = @{}
 
 foreach ($dir in $existingRuns) {
     $runJsonPath = Join-Path $dir.FullName "run.json"
@@ -969,6 +1025,17 @@ foreach ($dir in $existingRuns) {
         }
     }
 
+    # The execution harness fingerprint is mandatory provenance: runs produced
+    # by a different runner/module revision are a different experiment.
+    $recordedHarnessFp = ""
+    if ($meta.PSObject.Properties.Name -contains 'execution_harness_fingerprint') { $recordedHarnessFp = [string]$meta.execution_harness_fingerprint }
+    if ([string]::IsNullOrWhiteSpace($recordedHarnessFp)) {
+        throw "Run $($dir.Name) predates execution-harness fingerprint provenance. Pre-repair evidence must not be combined; quarantine it."
+    }
+    if ($recordedHarnessFp -ne $harnessFingerprint) {
+        throw "Run $($dir.Name) was produced by a different execution harness (found $recordedHarnessFp, current $harnessFingerprint). Do not resume across harness revisions; quarantine it."
+    }
+
     $candidateId = ""
     if ($meta.PSObject.Properties.Name -contains 'candidate_id') { $candidateId = [string]$meta.candidate_id }
     if ($profileOrder -notcontains $candidateId) {
@@ -989,19 +1056,37 @@ foreach ($dir in $existingRuns) {
     $repetition = 0
     if ($meta.PSObject.Properties.Name -contains 'repetition') { try { $repetition = [int]$meta.repetition } catch { $repetition = 0 } }
 
+    # Warm runs (warm-up plus measured warm repetitions) are collected per
+    # candidate and validated as one atomic block below; they never register
+    # into completedMeasured/incompleteCells individually because a partially
+    # executed warm block is invalid as a whole.
     if ($runKind -eq "warmup") {
-        if ($status -eq "complete") {
-            if ($completedWarmups.ContainsKey($candidateId)) {
-                throw "Duplicate completed warmup runs for candidate '$candidateId'."
-            }
-            $completedWarmups[$candidateId] = $dir.FullName
+        if ($cacheMode -ne "warm") {
+            throw "Run $($dir.Name) is a warmup with cache mode '$cacheMode'; warm-ups exist only inside warm blocks."
         }
+        if (-not $warmRunsByCandidate.ContainsKey($candidateId)) { $warmRunsByCandidate[$candidateId] = @() }
+        $warmRunsByCandidate[$candidateId] = @($warmRunsByCandidate[$candidateId] + [PSCustomObject]@{
+            RunKind = $runKind; Status = $status; CacheMode = $cacheMode
+            Repetition = $repetition; Directory = $dir.FullName; Name = $dir.Name
+            RunId = [string]$meta.run_id
+        })
         continue
     }
 
     if ($cacheModes -notcontains $cacheMode) {
         throw "Run $($dir.Name) has cache mode '$cacheMode' outside the experiment definition."
     }
+
+    if ($cacheMode -eq "warm") {
+        if (-not $warmRunsByCandidate.ContainsKey($candidateId)) { $warmRunsByCandidate[$candidateId] = @() }
+        $warmRunsByCandidate[$candidateId] = @($warmRunsByCandidate[$candidateId] + [PSCustomObject]@{
+            RunKind = $runKind; Status = $status; CacheMode = $cacheMode
+            Repetition = $repetition; Directory = $dir.FullName; Name = $dir.Name
+            RunId = [string]$meta.run_id
+        })
+        continue
+    }
+
     if ($repetition -lt 1 -or $repetition -gt $repetitions) {
         throw "Run $($dir.Name) has repetition $repetition outside 1..$repetitions."
     }
@@ -1013,14 +1098,17 @@ foreach ($dir in $existingRuns) {
     [void]$cellsSeen.Add($cellKey)
 
     if ($status -eq "complete") {
-        $rowsCsvCheck = Join-Path $dir.FullName "rows.csv"
-        $rowCountCheck = 0
-        if (Test-Path -LiteralPath $rowsCsvCheck) {
-            $rowCountCheck = @(@(Import-Csv -LiteralPath $rowsCsvCheck)).Count
-        }
-        if ($rowCountCheck -ne $expectedRowCount) {
-            throw "Completed run $($dir.Name) has $rowCountCheck rows, expected $expectedRowCount."
-        }
+        # Exact matrix validation replaces the old row-count-only check.
+        Assert-KeeFetchRunRows -RunDirectory $dir.FullName `
+            -ExpectedFixtureIds $expectedFixtureIds `
+            -CurrentCorpusFingerprint $corpusFingerprint `
+            -ExpectedExperimentId $experimentConfig.experiment_id `
+            -ExpectedProfile $candidateId `
+            -ExpectedCacheMode $cacheMode `
+            -ExpectedRepetition $repetition `
+            -ExpectedRunId ([string]$meta.run_id) `
+            -ExpectedConcurrency ([int]$meta.concurrency) `
+            -RequireSuccessArtifacts
         $completedMeasured[$cellKey] = $dir.FullName
     } elseif ($status -eq "incomplete") {
         $incompleteCells[$cellKey] = $dir.FullName
@@ -1029,40 +1117,158 @@ foreach ($dir in $existingRuns) {
     }
 }
 
-# --- Deterministic schedule --------------------------------------------------
-# Cold cells interleave across candidates per repetition with a rotation so
-# candidate ordering cannot systematically favor early or late execution.
-# Warm blocks are contiguous per candidate: the production cache is keyed by
-# origin, so a candidate's measured warm repetitions must follow its own
-# warm-up without any other candidate's runs (or a cache clear) in between.
+# --- Atomic warm-block validation (quarantine-rebuild) ------------------------
+# A warm block counts only as one complete atomic unit: exactly one complete
+# warm-up plus complete measured repetitions 1..N. Any deviation (missing,
+# duplicate, or incomplete part) invalidates the whole block: the runs are
+# quarantined under the benchmark-runs quarantine root and the block is
+# rebuilt from scratch by the schedule below. Warm cells are never resumed
+# individually because the production cache state between them cannot be
+# reconstructed.
 
-function Get-RotatedOrder {
-    param([string[]]$Items, [int]$Offset)
-    $count = $Items.Count
-    $rotated = @()
-    for ($i = 0; $i -lt $count; $i++) {
-        $rotated += $Items[($i + $Offset) % $count]
+$quarantineRoot = Join-Path (Split-Path -Parent $outputRoot) "quarantine"
+if ($hasWarm) {
+    foreach ($cid in $profileOrder) {
+        $warmRuns = @()
+        if ($warmRunsByCandidate.ContainsKey($cid)) { $warmRuns = @($warmRunsByCandidate[$cid]) }
+        if ($warmRuns.Count -eq 0) { continue }
+
+        $warmups = @($warmRuns | Where-Object { $_.RunKind -eq "warmup" })
+        $measured = @($warmRuns | Where-Object { $_.RunKind -ne "warmup" })
+        $reason = Get-WarmBlockInvalidReason -Warmups $warmups -Measured $measured -Repetitions $repetitions
+
+        if ($null -ne $reason) {
+            $stamp = (Get-Date).ToUniversalTime().ToString("yyyyMMdd-HHmmssZ")
+            $quarantineDir = Join-Path $quarantineRoot "$($experimentConfig.experiment_id)-warmblock-rebuild-$cid-$stamp"
+            New-Item -ItemType Directory -Path $quarantineDir -Force | Out-Null
+            $movedNames = @()
+            foreach ($wr in $warmRuns) {
+                Move-Item -LiteralPath $wr.Directory -Destination $quarantineDir
+                $movedNames += $wr.Name
+            }
+            $reasonText = @(
+                "Warm-block quarantine rebuild"
+                "Experiment: $($experimentConfig.experiment_id)"
+                "Candidate:  $cid"
+                "Reason:     $reason"
+                "Quarantined (UTC): $stamp"
+                "Moved runs: $($movedNames -join ', ')"
+                ""
+                "The schedule rebuilds this candidate's complete warm block from scratch;"
+                "warm cells are never resumed individually and quarantined runs are never merged."
+            ) -join [Environment]::NewLine
+            [System.IO.File]::WriteAllText((Join-Path $quarantineDir "quarantine-reason.txt"), $reasonText,
+                (New-Object System.Text.UTF8Encoding $false))
+            Write-Host "Warm block for $cid is invalid ($reason); quarantined $($warmRuns.Count) run(s) to $quarantineDir for rebuild."
+            continue
+        }
+
+        # Complete atomic block: validate every run's rows exactly (no artifact
+        # requirement for warm evidence) and register the cells so the
+        # schedule skips them.
+        foreach ($wr in $warmups) {
+            Assert-KeeFetchRunRows -RunDirectory $wr.Directory `
+                -ExpectedFixtureIds $expectedFixtureIds `
+                -CurrentCorpusFingerprint $corpusFingerprint `
+                -ExpectedExperimentId $experimentConfig.experiment_id `
+                -ExpectedProfile $cid `
+                -ExpectedCacheMode "warm" `
+                -ExpectedRepetition 0 `
+                -ExpectedRunId ([string]$wr.RunId) `
+                -ExpectedConcurrency ([int]$experimentConfig.concurrency)
+            $completedWarmups[$cid] = $wr.Directory
+        }
+        foreach ($wr in $measured) {
+            Assert-KeeFetchRunRows -RunDirectory $wr.Directory `
+                -ExpectedFixtureIds $expectedFixtureIds `
+                -CurrentCorpusFingerprint $corpusFingerprint `
+                -ExpectedExperimentId $experimentConfig.experiment_id `
+                -ExpectedProfile $cid `
+                -ExpectedCacheMode "warm" `
+                -ExpectedRepetition ([int]$wr.Repetition) `
+                -ExpectedRunId ([string]$wr.RunId) `
+                -ExpectedConcurrency ([int]$experimentConfig.concurrency)
+            $completedMeasured["$cid|warm|$($wr.Repetition)"] = $wr.Directory
+        }
     }
-    return $rotated
 }
+
+# --- Deterministic seeded schedule -------------------------------------------
+# Cold cells interleave across candidates per repetition in a seeded order so
+# candidate ordering cannot systematically favor early or late execution, and
+# the exact order is reproducible from the recorded schedule_seed. Warm blocks
+# are contiguous per candidate: the production cache is keyed by origin, so a
+# candidate's measured warm repetitions must follow its own warm-up without
+# any other candidate's runs (or a cache clear) in between.
 
 $scheduledCells = @()
 for ($rep = 1; $rep -le $repetitions; $rep++) {
-    $rotated = Get-RotatedOrder -Items $profileOrder -Offset (($rep - 1) % $profileOrder.Count)
-    foreach ($cid in $rotated) {
+    $coldOrder = Get-SeededScheduleOrder -Items $profileOrder -Seed $scheduleSeed -Phase "cold" -Repetition $rep
+    foreach ($cid in $coldOrder) {
         if ($hasCold) {
             $scheduledCells += [PSCustomObject]@{ CandidateId = $cid; CacheMode = "cold"; Repetition = $rep; Kind = "measured" }
         }
     }
 }
 if ($hasWarm) {
-    $warmOrder = Get-RotatedOrder -Items $profileOrder -Offset 0
+    $warmOrder = Get-SeededScheduleOrder -Items $profileOrder -Seed $scheduleSeed -Phase "warm" -Repetition 0
     foreach ($cid in $warmOrder) {
         $scheduledCells += [PSCustomObject]@{ CandidateId = $cid; CacheMode = "warm"; Repetition = 0; Kind = "warmup" }
         for ($rep = 1; $rep -le $repetitions; $rep++) {
             $scheduledCells += [PSCustomObject]@{ CandidateId = $cid; CacheMode = "warm"; Repetition = $rep; Kind = "measured" }
         }
     }
+}
+
+# --- schedule.json: the executed order is recorded and verified ---------------
+# The complete schedule identity (seed, fingerprints, cell order) is written to
+# the output root before any cell executes. A later invocation over the same
+# output root must compute the identical schedule or fail closed: resuming a
+# study under a different schedule, seed, or component fingerprint would mix
+# methodologies.
+
+$scheduleIdentity = [ordered]@{
+    version = 1
+    schedule_seed = $scheduleSeed
+    experiment_fingerprint = $experimentFingerprint
+    corpus_fingerprint = $corpusFingerprint
+    binary_hash = $binaryHash
+    execution_harness_fingerprint = $harnessFingerprint
+    cells = [string[]]@($scheduledCells | ForEach-Object { "$($_.CandidateId)|$($_.CacheMode)|$($_.Repetition)|$($_.Kind)" })
+}
+$schedulePath = Join-Path $outputRoot "schedule.json"
+if (Test-Path -LiteralPath $schedulePath) {
+    $recordedSchedule = $null
+    try {
+        $recordedSchedule = Get-Content -Raw -LiteralPath $schedulePath | ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        throw "Unreadable schedule.json in output root: $($_.Exception.Message). Quarantine the output root and start clean."
+    }
+    foreach ($field in @('schedule_seed','experiment_fingerprint','corpus_fingerprint','binary_hash','execution_harness_fingerprint')) {
+        $recordedValue = ""
+        if ($recordedSchedule.PSObject.Properties.Name -contains $field) { $recordedValue = [string]$recordedSchedule.$field }
+        if ($recordedValue -ne [string]$scheduleIdentity[$field]) {
+            throw "schedule.json $field mismatch (recorded '$recordedValue', current '$($scheduleIdentity[$field])'). The existing output root belongs to a different schedule; quarantine it and start clean."
+        }
+    }
+    $recordedCells = @()
+    if ($recordedSchedule.PSObject.Properties.Name -contains 'cells') { $recordedCells = @($recordedSchedule.cells) }
+    $currentCells = @($scheduleIdentity['cells'])
+    if ($recordedCells.Count -ne $currentCells.Count) {
+        throw "schedule.json cell count mismatch (recorded $($recordedCells.Count), current $($currentCells.Count)). The existing output root belongs to a different schedule; quarantine it and start clean."
+    }
+    for ($i = 0; $i -lt $currentCells.Count; $i++) {
+        if ([string]$recordedCells[$i] -ne [string]$currentCells[$i]) {
+            throw "schedule.json cell order mismatch at position $($i + 1) (recorded '$($recordedCells[$i])', current '$($currentCells[$i])'). The existing output root belongs to a different schedule; quarantine it and start clean."
+        }
+    }
+    Write-Host "Schedule verified against schedule.json ($($currentCells.Count) cells, seed $scheduleSeed)."
+} else {
+    if (-not (Test-Path -LiteralPath $outputRoot)) {
+        New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
+    }
+    Write-JsonFileUtf8NoBom -Path $schedulePath -Object $scheduleIdentity -Depth 20
+    Write-Host "Schedule recorded to schedule.json ($($scheduleIdentity['cells'].Count) cells, seed $scheduleSeed)."
 }
 
 $totalCells = $scheduledCells.Count

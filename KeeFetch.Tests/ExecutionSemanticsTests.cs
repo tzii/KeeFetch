@@ -16,7 +16,8 @@ namespace KeeFetch.Tests
     /// <summary>
     /// Deterministic execution-semantics tests over a fake HTTP transport:
     /// the early-stop policy flag as single authority, Android store lookup
-    /// privacy gating with one shared cumulative deadline, and deterministic
+    /// privacy gating with one shared cumulative deadline, provider-health
+    /// transference across requests and instances, and deterministic
     /// HttpResponseMessage disposal on every outcome path.
     /// </summary>
     [TestClass]
@@ -317,6 +318,51 @@ namespace KeeFetch.Tests
             Assert.IsTrue(stopwatch.ElapsedMilliseconds < 2500 + 1500,
                 "the complete Android request must stay within the policy cumulative ceiling (plus test tolerance); took "
                 + stopwatch.ElapsedMilliseconds + "ms");
+        }
+
+        [TestMethod]
+        public async Task ProviderHealth_TransfersWithinOneDownloader_AndResetsAcrossInstances()
+        {
+            // Direct Site times out for these hosts (delay exceeds its primary
+            // budget) while Google answers instantly; four consecutive Direct
+            // Site timeouts trip the per-instance cooldown.
+            InstallTransport((request, token) =>
+            {
+                string host = request.RequestUri.Host;
+                if (host.EndsWith(".transference.example", StringComparison.OrdinalIgnoreCase))
+                    return DelayedNotFound(token, 3000);
+                return Tracked(HttpStatusCode.OK, quadrantPng192);
+            });
+
+            var config = CustomPolicyConfig("Direct Site,Google", 500, 400, 15000, false);
+            var downloader = new FaviconDownloader(config);
+
+            for (int i = 1; i <= 4; i++)
+            {
+                var failing = await downloader.DownloadAsync("https://fail" + i + ".transference.example/");
+                Assert.AreEqual(FaviconStatus.Success, failing.Status,
+                    "Google must resolve the host while Direct Site times out");
+            }
+
+            // Same downloader instance: the fifth request must execute Google
+            // first because Direct Site is in cooldown. Provider-health state
+            // transfers across requests within one instance, which is exactly
+            // what the benchmark harness relies on when it uses a single
+            // downloader per matrix cell.
+            var fifth = await downloader.DownloadAsync("https://cooled.transference.example/");
+            Assert.AreEqual("Google", fifth.ProviderMetrics[0].ProviderName,
+                "cooldown from earlier requests must reorder the pipeline within one downloader instance. metrics=["
+                + string.Join(";", fifth.ProviderMetrics.Select(m => m.ProviderName + ":" + m.Outcome).ToArray()) + "]");
+
+            // A fresh instance with the same configuration starts with clean
+            // health: Direct Site executes first again. Health never transfers
+            // across instances, so benchmark cells measured with separate
+            // downloaders cannot contaminate each other.
+            var fresh = new FaviconDownloader(config);
+            var freshResult = await fresh.DownloadAsync("https://fresh.transference.example/");
+            Assert.AreEqual("Direct Site", freshResult.ProviderMetrics[0].ProviderName,
+                "a new downloader instance must not inherit provider cooldown. metrics=["
+                + string.Join(";", freshResult.ProviderMetrics.Select(m => m.ProviderName + ":" + m.Outcome).ToArray()) + "]");
         }
 
         private void AssertAllResponsesDisposed(string scenario)

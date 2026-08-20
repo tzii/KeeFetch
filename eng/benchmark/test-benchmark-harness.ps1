@@ -305,6 +305,9 @@ try {
     $mockExpFp = Get-TestSha256HexFile -Path $mockExpPath
     $mockCorpusFp = Get-TestSha256HexFile -Path $mockCorpus
     $mockBinaryHash = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
+    # The selector verifies run provenance against the CURRENT execution
+    # harness fingerprint; the mocks must carry the real one.
+    $mockHarnessFp = Get-KeeFetchHarnessFingerprint -RepoRoot ((Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path)
     $mockPolicyFps = @{}
     foreach ($def in $mockCandidateDefs) { $mockPolicyFps[[string]$def.id] = Get-TestCandidateFingerprint -Def $def }
 
@@ -367,6 +370,7 @@ try {
                 experiment_fingerprint = $mockExpFp
                 corpus_fingerprint = $mockCorpusFp
                 binary_hash = $mockBinaryHash
+                execution_harness_fingerprint = $mockHarnessFp
                 schedule_seed = 42
             }
         for ($i = 0; $i -lt 12; $i++) {
@@ -378,7 +382,10 @@ try {
             $elapsed = 100
             $metrics = @()
             if ($CandId -eq 'cand-direct-only-balanced') {
-                if ($i -le 8) { $outcome = 'success'; $provider = 'Direct Site'; $elapsed = 100 }
+                if ($i -le 8) {
+                    $outcome = 'success'; $provider = 'Direct Site'; $elapsed = 100
+                    $metrics = @([ordered]@{ provider = 'Direct Site'; calls = 1; elapsed = 100; elapsed_ms = 100; candidate_count = 1; outcome = 'candidate'; errors = 0 })
+                }
             } elseif ($CandId -eq 'cand-full-thorough-synth') {
                 if ($i -le 9) {
                     $outcome = 'success'
@@ -531,6 +538,21 @@ try {
     if ([int]$thoroughStats.active_batch_cold_ms -ne 9000) { throw "active cold batch expected 9000, got $($thoroughStats.active_batch_cold_ms)" }
     if ([double]$thoroughStats.third_party_disclosure_rate -le 0) { throw 'thorough disclosure rate must reflect observed Google calls' }
 
+    # Commit-4 contract: census counts, no sampling fields, no Wilson output,
+    # harness provenance recorded, cold-only denominators.
+    if ([int]$thoroughStats.cold_rows -ne 12) { throw "scoring must be cold-only (expected 12 cold rows, got $($thoroughStats.cold_rows))" }
+    if ([int]$thoroughStats.reviewed_units -ne 10) { throw "thorough reviewed census units expected 10, got $($thoroughStats.reviewed_units)" }
+    if ([int]$thoroughStats.usable_units -ne 10) { throw "thorough usable units expected 10, got $($thoroughStats.usable_units)" }
+    foreach ($removedField in @('sampled_covered','targeted_covered','weighted_reviewed_total')) {
+        if ($thoroughStats.PSObject.Properties.Name -contains $removedField) { throw "summary still carries sampling field $removedField" }
+    }
+    if ([string]$summary.execution_harness_fingerprint -ne $mockHarnessFp) { throw 'summary must record the execution harness fingerprint of the evidence' }
+    if ([int]$summary.census_units -ne $rq.Count) { throw "summary census_units ($($summary.census_units)) must equal the queue size ($($rq.Count))" }
+    $evidenceText = Get-Content -Raw -LiteralPath (Join-Path $selOut 'v1.3-provider-study.md')
+    if ($evidenceText -match 'Wilson') { throw 'evidence report still mentions Wilson intervals' }
+    if ($evidenceText -notmatch 'CENSUS') { throw 'evidence report must document the census methodology' }
+    if ($evidenceText -notmatch 'cold-only') { throw 'evidence report must document cold-only scoring' }
+
     # Generated descriptions must state policy facts for the actual winner.
     $csText = Get-Content -Raw -LiteralPath (Join-Path $selOut 'FetchProfileCatalog.Generated.cs')
     foreach ($mid in @('bulk-fast','everyday','privacy','max-coverage')) {
@@ -613,6 +635,83 @@ try {
     } catch { $mismatchThrew = $_.Exception.Message -match 'does not match the fingerprint' }
     if (-not $mismatchThrew) { throw 'experiment fingerprint mismatch was accepted' }
     Copy-Item -LiteralPath $experimentBackup -Destination $mockExpPath -Force
+
+    # A review queue with a hole (a removed census unit) must fail closed.
+    $holeRows = @(Import-Csv -LiteralPath $queueA)
+    $holeRows = @($holeRows[0..($holeRows.Count - 2)])
+    $holePath = Join-Path $mockRoot 'hole-queue.csv'
+    $holeRows | Export-Csv -LiteralPath $holePath -NoTypeInformation -Encoding UTF8
+    $holeThrew = $false
+    try {
+        & $selPath -RunDir $mockRoot -ReviewQueue $holePath -OutputDir (Join-Path $mockRoot 'hole-out') -ExperimentFile $mockExpPath 2>$null | Out-Null
+    } catch { $holeThrew = $_.Exception.Message -match 'Census unit missing from the review queue' }
+    if (-not $holeThrew) { throw 'selector accepted a census with a hole (missing review unit)' }
+
+    # A fabricated review key (not a cold census unit) must fail closed.
+    $fabRows = @(Import-Csv -LiteralPath $queueA)
+    $fabRows[0].artifact_hash = 'fabricated-selector-hash-0000000000000000000000000'
+    $fabPath = Join-Path $mockRoot 'fab-queue.csv'
+    $fabRows | Export-Csv -LiteralPath $fabPath -NoTypeInformation -Encoding UTF8
+    $fabThrew = $false
+    try {
+        & $selPath -RunDir $mockRoot -ReviewQueue $fabPath -OutputDir (Join-Path $mockRoot 'fab-out') -ExperimentFile $mockExpPath 2>$null | Out-Null
+    } catch { $fabThrew = $_.Exception.Message -match 'not cold census units' }
+    if (-not $fabThrew) { throw 'selector accepted a fabricated review key' }
+
+    # Strict provider_metrics: each violation must reject the selection.
+    $coldThoroughDir = @($measuredDirs | Where-Object {
+        $m = Get-Content -Raw (Join-Path $_.FullName 'run.json') | ConvertFrom-Json
+        return (([string]$m.candidate_id -eq 'cand-full-thorough-synth') -and ([string]$m.cache_mode -eq 'cold'))
+    })[0]
+    if ($null -eq $coldThoroughDir) { throw 'could not locate the thorough cold run for strict-parser tests' }
+    $thoroughRowsCsv = Join-Path $coldThoroughDir.FullName 'rows.csv'
+    $thoroughRowsBackup = [System.IO.File]::ReadAllBytes($thoroughRowsCsv)
+    $strictCases = @(
+        @{ Match = 'not parseable JSON'; Json = '{not json' },
+        @{ Match = 'unknown provider';     Json = '[{"provider":"MysteryCorp","calls":1,"elapsed_ms":5,"candidate_count":1,"outcome":"candidate","errors":0}]' },
+        @{ Match = 'unknown outcome';      Json = '[{"provider":"Google","calls":1,"elapsed_ms":5,"candidate_count":1,"outcome":"mystery","errors":0}]' },
+        @{ Match = 'zero provider activity'; Json = '[]' }
+    )
+    try {
+        foreach ($case in $strictCases) {
+            [System.IO.File]::WriteAllBytes($thoroughRowsCsv, $thoroughRowsBackup)
+            # Row 0 is fixture mk-001, a successful thorough fetch: every case
+            # must trip the strict parser on it.
+            $rows = @(Import-Csv -LiteralPath $thoroughRowsCsv)
+            $rows[0].provider_metrics = $case.Json
+            $rows | Export-Csv -LiteralPath $thoroughRowsCsv -NoTypeInformation -Encoding UTF8
+            $strictThrew = $false
+            try {
+                & $selPath -RunDir $mockRoot -ReviewQueue $queueA -OutputDir (Join-Path $mockRoot ('strict-out-' + [Guid]::NewGuid().ToString('N').Substring(0,8))) -ExperimentFile $mockExpPath 2>$null | Out-Null
+            } catch { $strictThrew = $_.Exception.Message -match $case.Match }
+            if (-not $strictThrew) { throw "strict provider_metrics parser accepted a row violating: $($case.Match)" }
+        }
+    } finally {
+        [System.IO.File]::WriteAllBytes($thoroughRowsCsv, $thoroughRowsBackup)
+    }
+
+    # Uniform but stale execution-harness fingerprints must fail closed: the
+    # evidence must come from the harness that is selecting it.
+    $allRunJsonPaths = @(Get-ChildItem -LiteralPath $mockRoot -Directory | ForEach-Object {
+        $p = Join-Path $_.FullName 'run.json'
+        if (Test-Path -LiteralPath $p) { $p }
+    })
+    $runJsonBackups = @{}
+    foreach ($p in $allRunJsonPaths) { $runJsonBackups[$p] = [System.IO.File]::ReadAllBytes($p) }
+    try {
+        foreach ($p in $allRunJsonPaths) {
+            $rm = Get-Content -Raw -LiteralPath $p | ConvertFrom-Json
+            $rm.execution_harness_fingerprint = '0' * 64
+            [System.IO.File]::WriteAllText($p, ($rm | ConvertTo-Json -Depth 20), (New-Object System.Text.UTF8Encoding $false))
+        }
+        $fpThrew = $false
+        try {
+            & $selPath -RunDir $mockRoot -ReviewQueue $queueA -OutputDir (Join-Path $mockRoot 'fp-out') -ExperimentFile $mockExpPath 2>$null | Out-Null
+        } catch { $fpThrew = $_.Exception.Message -match 'different execution harness' }
+        if (-not $fpThrew) { throw 'selector accepted evidence produced by a different execution harness' }
+    } finally {
+        foreach ($p in $allRunJsonPaths) { [System.IO.File]::WriteAllBytes($p, $runJsonBackups[$p]) }
+    }
 
     # Shared JSON escaping: quotes, backslashes, and control characters must
     # round-trip through ConvertTo-KeeFetchJsonString.

@@ -73,7 +73,17 @@ function Assert-CandidateDefinition {
         $pidText = ([string]$providerId).Trim()
         if ([string]::IsNullOrWhiteSpace($pidText)) { throw "Candidate '$id' has an empty providerId." }
         if (-not $seenProviders.Add($pidText)) { throw "Candidate '$id' declares duplicate providerId '$pidText'." }
-        if ($null -eq [KeeFetch.FetchProfiles.FetchProfileCatalog]::FindProvider($pidText)) {
+        # Bracket type literals do not reliably resolve for LoadFrom-context
+        # assemblies in a fresh PowerShell process; resolve via reflection.
+        $foundProvider = $null
+        if ($null -ne $script:keefetchAssembly) {
+            $catalogForValidation = $script:keefetchAssembly.GetType('KeeFetch.FetchProfiles.FetchProfileCatalog', $false)
+            if ($null -ne $catalogForValidation) {
+                $findProviderForValidation = $catalogForValidation.GetMethod('FindProvider')
+                $foundProvider = $findProviderForValidation.Invoke($null, @($pidText))
+            }
+        }
+        if ($null -eq $foundProvider) {
             throw "Candidate '$id' references unknown providerId '$pidText'."
         }
     }
@@ -275,8 +285,10 @@ function New-CustomConfigForCandidate {
     if ($ids.Count -eq 0) { throw "Candidate '$CandidateId' must declare at least one providerId." }
 
     # Unknown/typo provider ids fail immediately; the policy fingerprint must
-    # correspond to the executable chain exactly.
-    $catalogType = [KeeFetch.FetchProfiles.FetchProfileCatalog]
+    # correspond to the executable chain exactly. Type resolved via reflection
+    # (LoadFrom-context assemblies are invisible to bracket type literals in a
+    # fresh PowerShell process).
+    $catalogType = $script:keefetchAssembly.GetType('KeeFetch.FetchProfiles.FetchProfileCatalog', $true)
     $displayOrder = @()
     $hasThird = $false
     foreach ($rawId in $ids) {

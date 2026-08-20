@@ -1118,4 +1118,4 @@ function Assert-KeeFetchRunRows {
     }
 }
 
-Export-ModuleMember -Function Test-KeeFetchCorpus, New-KeeFetchRun, Add-KeeFetchResult, Complete-KeeFetchRun, Read-KeeFetchExperiment, Open-KeeFetchRun, ConvertTo-KeeFetchJsonString, Get-KeeFetchHarnessFingerprint, Get-SeededScheduleOrder, Get-WarmBlockInvalidReason, Assert-KeeFetchRunRows
+Export-ModuleMember -Function Test-KeeFetchCorpus, New-KeeFetchRun, Add-KeeFetchResult, Complete-KeeFetchRun, Read-KeeFetchExperiment, Open-KeeFetchRun, ConvertTo-KeeFetchJsonString, Get-KeeFetchHarnessFingerprint, Get-SeededScheduleOrder, Get-WarmBlockInvalidReason, Assert-KeeFetchRunRows, Write-JsonFileUtf8NoBom

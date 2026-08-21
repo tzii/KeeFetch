@@ -252,11 +252,15 @@ try {
 
     function Get-TestCandidateFingerprint {
         param([object]$Def)
+        # Mirrors FetchExecutionPolicy.CanonicalForm() v2 exactly: the runner
+        # resolves candidates through the real downloader and records the C#
+        # fingerprint, androidStore included.
         $providerIds = @($Def.providerIds)
         $syn = '0'; if ([bool]$Def.allowSynthetic) { $syn = '1' }
         $stp = '0'; if ([bool]$Def.stopAfterStrongResolved) { $stp = '1' }
-        $canonical = "v1|providers={0}|primaryMs={1}|fallbackMs={2}|cumulativeMs={3}|synthetic={4}|stopAfterStrongResolved={5}" -f `
-            ($providerIds -join ','), [int]$Def.primaryTimeout, [int]$Def.fallbackTimeout, [int]$Def.cumulativeTimeout, $syn, $stp
+        $and = '0'; if ([bool]$Def.allowAndroidStoreLookup) { $and = '1' }
+        $canonical = "v2|providers={0}|primaryMs={1}|fallbackMs={2}|cumulativeMs={3}|synthetic={4}|stopAfterStrongResolved={5}|androidStore={6}" -f `
+            ($providerIds -join ','), [int]$Def.primaryTimeout, [int]$Def.fallbackTimeout, [int]$Def.cumulativeTimeout, $syn, $stp, $and
         $sha = [System.Security.Cryptography.SHA256]::Create()
         try {
             $bytes = [System.Text.Encoding]::UTF8.GetBytes($canonical)
@@ -281,9 +285,9 @@ try {
     } | Export-Csv -LiteralPath $mockCorpus -NoTypeInformation -Encoding UTF8
 
     $mockCandidateDefs = @(
-        [ordered]@{ id = 'cand-direct-only-balanced'; providerIds = @('direct-site'); primaryTimeout = 6000; fallbackTimeout = 3500; cumulativeTimeout = 22000; allowSynthetic = $false; stopAfterStrongResolved = $true },
-        [ordered]@{ id = 'cand-full-thorough-synth'; providerIds = @('direct-site','twenty-icons','duckduckgo','google','yandex','favicone','icon-horse'); primaryTimeout = 10000; fallbackTimeout = 5000; cumulativeTimeout = 45000; allowSynthetic = $true; stopAfterStrongResolved = $false },
-        [ordered]@{ id = 'cand-direct-google-twenty-fast'; providerIds = @('direct-site','google','twenty-icons'); primaryTimeout = 4000; fallbackTimeout = 2500; cumulativeTimeout = 15000; allowSynthetic = $false; stopAfterStrongResolved = $true }
+        [ordered]@{ id = 'cand-direct-only-balanced'; providerIds = @('direct-site'); primaryTimeout = 6000; fallbackTimeout = 3500; cumulativeTimeout = 22000; allowSynthetic = $false; stopAfterStrongResolved = $true; allowAndroidStoreLookup = $false },
+        [ordered]@{ id = 'cand-full-thorough-synth'; providerIds = @('direct-site','twenty-icons','duckduckgo','google','yandex','favicone','icon-horse'); primaryTimeout = 10000; fallbackTimeout = 5000; cumulativeTimeout = 45000; allowSynthetic = $true; stopAfterStrongResolved = $false; allowAndroidStoreLookup = $true },
+        [ordered]@{ id = 'cand-direct-google-twenty-fast'; providerIds = @('direct-site','google','twenty-icons'); primaryTimeout = 4000; fallbackTimeout = 2500; cumulativeTimeout = 15000; allowSynthetic = $false; stopAfterStrongResolved = $true; allowAndroidStoreLookup = $false }
     )
     $mockCandidateIds = @($mockCandidateDefs | ForEach-Object { $_.id })
     $mockExpObj = [ordered]@{
@@ -310,6 +314,20 @@ try {
     $mockHarnessFp = Get-KeeFetchHarnessFingerprint -RepoRoot ((Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path)
     $mockPolicyFps = @{}
     foreach ($def in $mockCandidateDefs) { $mockPolicyFps[[string]$def.id] = Get-TestCandidateFingerprint -Def $def }
+
+    # The android-store flag is behavior-affecting: two definitions that
+    # differ only in allowAndroidStoreLookup must fingerprint differently
+    # (mirrors the C# android-store fingerprint split), and the recorded
+    # mock fingerprints must be pairwise distinct.
+    $splitDef = [ordered]@{}
+    foreach ($k in @($mockCandidateDefs[0].Keys)) { $splitDef[$k] = $mockCandidateDefs[0][$k] }
+    $splitDef.allowAndroidStoreLookup = $true
+    if ((Get-TestCandidateFingerprint -Def $splitDef) -eq $mockPolicyFps['cand-direct-only-balanced']) {
+        throw 'allowAndroidStoreLookup failed to change the candidate policy fingerprint'
+    }
+    if (@($mockPolicyFps.Values | Select-Object -Unique).Count -ne $mockCandidateDefs.Count) {
+        throw 'mock candidate policy fingerprints are not pairwise distinct'
+    }
 
     function global:New-MockRow {
         param([string]$FixtureId, [string]$Profile, [string]$Outcome, [int]$Elapsed,
@@ -507,6 +525,46 @@ try {
         throw "validate failed on a fully labeled queue: $($_.Exception.Message)"
     }
 
+    # Adversarial -Validate: each malformed queue must fail closed with the
+    # exact defect named. Every case clones the known-good labeled queue and
+    # mutates exactly one thing.
+    $validateCases = @(
+        @{ Pattern = 'label outside allowed set'; Mutate = { param($rows) $rows[0].review_label = 'definitely-fine'; $rows } },
+        @{ Pattern = 'duplicate review key';       Mutate = { param($rows) $rows + $rows[0] } },
+        @{ Pattern = 'missing reviewer';           Mutate = { param($rows) $rows[0].reviewer = ''; $rows } },
+        @{ Pattern = 'not parseable';              Mutate = { param($rows) $rows[0].reviewed_at_utc = 'not-a-date'; $rows } },
+        @{ Pattern = 'missing artifact_hash';      Mutate = { param($rows) $rows[0].artifact_hash = ''; $rows } }
+    )
+    foreach ($case in $validateCases) {
+        $caseRows = @(& $case.Mutate -Rows @(Import-Csv -LiteralPath $queueA))
+        $casePath = Join-Path $mockRoot ('validate-bad-' + [Guid]::NewGuid().ToString('N').Substring(0,8) + '.csv')
+        $caseRows | Export-Csv -LiteralPath $casePath -NoTypeInformation -Encoding UTF8
+        $caseThrew = $false
+        try {
+            & $prepPath -RunDir $mockRoot -OutputPath $casePath -Validate 2>$null | Out-Null
+        } catch { $caseThrew = $_.Exception.Message -match $case.Pattern }
+        if (-not $caseThrew) { throw "validate accepted a queue violating: $($case.Pattern)" }
+    }
+
+    # Regeneration must preserve existing human labels by exact review key
+    # and refresh only the informational columns.
+    $preservePath = Join-Path $mockRoot 'preserve-queue.csv'
+    Copy-Item -LiteralPath $queueA -Destination $preservePath -Force
+    $preserveRows = @(Import-Csv -LiteralPath $preservePath)
+    $preserveRows[0].review_label = 'wrong-brand'
+    $preserveRows[0].reviewer = 'human-reviewer'
+    $preserveRows[0].reviewed_at_utc = '2026-02-02T00:00:00Z'
+    $preserveRows | Export-Csv -LiteralPath $preservePath -NoTypeInformation -Encoding UTF8
+    & $prepPath -RunDir $mockRoot -OutputPath $preservePath | Out-Null
+    $preserved = @(Import-Csv -LiteralPath $preservePath)
+    if ($preserved.Count -ne $preserveRows.Count) { throw "regeneration changed the census size ($($preserved.Count) vs $($preserveRows.Count))" }
+    $flipped = @($preserved | Where-Object { "$($_.fixture_id)|$($_.artifact_hash)" -eq "$($preserveRows[0].fixture_id)|$($preserveRows[0].artifact_hash)" })
+    if ($flipped.Count -ne 1 -or $flipped[0].review_label -ne 'wrong-brand' -or $flipped[0].reviewer -ne 'human-reviewer') {
+        throw 'regeneration failed to preserve an existing human label by exact review key'
+    }
+    $notReviewed = @($preserved | Where-Object { $_.review_label -eq 'not-reviewed' })
+    if ($notReviewed.Count -ne 0) { throw "regeneration dropped $($notReviewed.Count) previously reviewed labels" }
+
     # Selector: happy path. It must not mutate the repository without -Publish.
     $repoGeneratedBefore = Get-TestSha256HexFile -Path (Join-Path $PSScriptRoot '..\..\FetchProfiles\FetchProfileCatalog.Generated.cs')
     $selOut = Join-Path $mockRoot 'selection-out'
@@ -670,7 +728,14 @@ try {
         @{ Match = 'not parseable JSON'; Json = '{not json' },
         @{ Match = 'unknown provider';     Json = '[{"provider":"MysteryCorp","calls":1,"elapsed_ms":5,"candidate_count":1,"outcome":"candidate","errors":0}]' },
         @{ Match = 'unknown outcome';      Json = '[{"provider":"Google","calls":1,"elapsed_ms":5,"candidate_count":1,"outcome":"mystery","errors":0}]' },
-        @{ Match = 'zero provider activity'; Json = '[]' }
+        @{ Match = 'zero provider activity'; Json = '[]' },
+        @{ Match = 'is not a JSON array';  Json = '{"provider":"Google","calls":1,"elapsed_ms":5,"candidate_count":1,"outcome":"candidate","errors":0}' },
+        @{ Match = "missing the 'calls' field"; Json = '[{"provider":"Google","elapsed_ms":5,"candidate_count":1,"outcome":"candidate","errors":0}]' },
+        @{ Match = 'is not an integer';    Json = '[{"provider":"Google","calls":1.5,"elapsed_ms":5,"candidate_count":1,"outcome":"candidate","errors":0}]' },
+        @{ Match = 'is negative';          Json = '[{"provider":"Google","calls":1,"elapsed_ms":5,"candidate_count":1,"outcome":"candidate","errors":-1}]' },
+        @{ Match = 'calls < 1';            Json = '[{"provider":"Google","calls":0,"elapsed_ms":5,"candidate_count":1,"outcome":"candidate","errors":0}]' },
+        @{ Match = 'empty provider name';  Json = '[{"provider":"  ","calls":1,"elapsed_ms":5,"candidate_count":1,"outcome":"candidate","errors":0}]' },
+        @{ Match = 'null element';         Json = '[null]' }
     )
     try {
         foreach ($case in $strictCases) {
@@ -711,6 +776,142 @@ try {
         if (-not $fpThrew) { throw 'selector accepted evidence produced by a different execution harness' }
     } finally {
         foreach ($p in $allRunJsonPaths) { [System.IO.File]::WriteAllBytes($p, $runJsonBackups[$p]) }
+    }
+
+    # ---- Selector fail-closed battery (commit 5) ---------------------------
+    # Each scenario mutates exactly one thing and must reject with the exact
+    # defect named; byte backups restore the evidence between scenarios.
+    function Invoke-SelectorExpectThrow {
+        param([string]$Pattern, [string]$Scenario, [string]$QueuePath = $queueA)
+        $threw = $false
+        $msg = ''
+        try {
+            & $selPath -RunDir $mockRoot -ReviewQueue $QueuePath -OutputDir (Join-Path $mockRoot ('battery-out-' + [Guid]::NewGuid().ToString('N').Substring(0,8))) -ExperimentFile $mockExpPath 2>$null | Out-Null
+        } catch { $threw = $true; $msg = $_.Exception.Message }
+        if (-not $threw) { throw "selector accepted invalid evidence ('$Scenario')." }
+        if ($msg -notmatch $Pattern) { throw "selector('$Scenario') message '$msg' does not match '$Pattern'." }
+    }
+
+    # Review-queue adversarial cases (each clones the known-good queue).
+    $queueCases = @(
+        @{ Pattern = 'Unreviewed rows remain';       Mutate = { param($rows) $rows[0].review_label = 'not-reviewed'; $rows } },
+        @{ Pattern = 'Invalid review label';         Mutate = { param($rows) $rows[0].review_label = 'looks-great'; $rows } },
+        @{ Pattern = 'missing reviewer/timestamp';   Mutate = { param($rows) $rows[0].reviewer = ''; $rows } },
+        @{ Pattern = 'Unparseable reviewed_at_utc';  Mutate = { param($rows) $rows[0].reviewed_at_utc = 'yesterday'; $rows } },
+        @{ Pattern = 'Duplicate review key in queue'; Mutate = { param($rows) $rows + $rows[0] } }
+    )
+    foreach ($case in $queueCases) {
+        $qRows = @(& $case.Mutate -Rows @(Import-Csv -LiteralPath $queueA))
+        $qPath = Join-Path $mockRoot ('queue-bad-' + [Guid]::NewGuid().ToString('N').Substring(0,8) + '.csv')
+        $qRows | Export-Csv -LiteralPath $qPath -NoTypeInformation -Encoding UTF8
+        Invoke-SelectorExpectThrow -Pattern $case.Pattern -Scenario $case.Pattern -QueuePath $qPath
+    }
+
+    # Provenance metadata mutations on one measured cold run.
+    $thoroughRunJson = Join-Path $coldThoroughDir.FullName 'run.json'
+    $thoroughRunJsonBackup = [System.IO.File]::ReadAllBytes($thoroughRunJson)
+    try {
+        $rm = Get-Content -Raw -LiteralPath $thoroughRunJson | ConvertFrom-Json
+        $rm.PSObject.Properties.Remove('execution_harness_fingerprint')
+        [System.IO.File]::WriteAllText($thoroughRunJson, ($rm | ConvertTo-Json -Depth 20), (New-Object System.Text.UTF8Encoding $false))
+        Invoke-SelectorExpectThrow -Pattern 'missing execution_harness_fingerprint' -Scenario 'missing provenance field'
+
+        [System.IO.File]::WriteAllBytes($thoroughRunJson, $thoroughRunJsonBackup)
+        $rm = Get-Content -Raw -LiteralPath $thoroughRunJson | ConvertFrom-Json
+        $rm.execution_harness_fingerprint = '1' * 64
+        [System.IO.File]::WriteAllText($thoroughRunJson, ($rm | ConvertTo-Json -Depth 20), (New-Object System.Text.UTF8Encoding $false))
+        Invoke-SelectorExpectThrow -Pattern 'Mixed execution-harness fingerprints' -Scenario 'mixed harness fingerprints'
+
+        [System.IO.File]::WriteAllBytes($thoroughRunJson, $thoroughRunJsonBackup)
+        $rm = Get-Content -Raw -LiteralPath $thoroughRunJson | ConvertFrom-Json
+        $rm.status = 'incomplete'
+        [System.IO.File]::WriteAllText($thoroughRunJson, ($rm | ConvertTo-Json -Depth 20), (New-Object System.Text.UTF8Encoding $false))
+        Invoke-SelectorExpectThrow -Pattern 'Incomplete run rejected' -Scenario 'incomplete run'
+
+        [System.IO.File]::WriteAllBytes($thoroughRunJson, $thoroughRunJsonBackup)
+        $rm = Get-Content -Raw -LiteralPath $thoroughRunJson | ConvertFrom-Json
+        $rm.policy_fingerprint = '0' * 64
+        [System.IO.File]::WriteAllText($thoroughRunJson, ($rm | ConvertTo-Json -Depth 20), (New-Object System.Text.UTF8Encoding $false))
+        Invoke-SelectorExpectThrow -Pattern 'policy fingerprint mismatch' -Scenario 'policy fingerprint mismatch'
+    } finally {
+        [System.IO.File]::WriteAllBytes($thoroughRunJson, $thoroughRunJsonBackup)
+    }
+
+    # Row-level matrix mutations: exact count and exact fixture set.
+    $batteryRowsBackup = [System.IO.File]::ReadAllBytes($thoroughRowsCsv)
+    try {
+        $rows = @(Import-Csv -LiteralPath $thoroughRowsCsv)
+        @($rows[0..($rows.Count - 2)]) | Export-Csv -LiteralPath $thoroughRowsCsv -NoTypeInformation -Encoding UTF8
+        Invoke-SelectorExpectThrow -Pattern 'rows, expected 12' -Scenario 'row count mismatch'
+
+        [System.IO.File]::WriteAllBytes($thoroughRowsCsv, $batteryRowsBackup)
+        $rows = @(Import-Csv -LiteralPath $thoroughRowsCsv)
+        $rows[1].fixture_id = $rows[0].fixture_id
+        $rows | Export-Csv -LiteralPath $thoroughRowsCsv -NoTypeInformation -Encoding UTF8
+        Invoke-SelectorExpectThrow -Pattern 'missing expected fixtures' -Scenario 'duplicate fixture displacing a missing one'
+    } finally {
+        [System.IO.File]::WriteAllBytes($thoroughRowsCsv, $batteryRowsBackup)
+    }
+
+    # Warm-up block integrity.
+    $warmDirs = @(Get-ChildItem -LiteralPath $mockRoot -Directory | Where-Object {
+        (Test-Path (Join-Path $_.FullName 'run.json')) -and
+        ((Get-Content -Raw (Join-Path $_.FullName 'run.json') | ConvertFrom-Json).run_kind -eq 'warmup')
+    })
+    if ($warmDirs.Count -eq 0) { throw 'no warm-up directories found for the fail-closed battery' }
+    $dupWarmTarget = Join-Path $mockRoot 'run_warmup_duplicate'
+    Copy-Item -LiteralPath $warmDirs[0].FullName -Destination $dupWarmTarget -Recurse
+    try {
+        Invoke-SelectorExpectThrow -Pattern 'Duplicate warmup' -Scenario 'duplicate warm-up run'
+    } finally {
+        Remove-Item -LiteralPath $dupWarmTarget -Recurse -Force
+    }
+    $warmBackupDir = Join-Path $temp 'warmup-backup'
+    Move-Item -LiteralPath $warmDirs[0].FullName -Destination $warmBackupDir
+    try {
+        Invoke-SelectorExpectThrow -Pattern 'Missing warm-up run' -Scenario 'missing warm-up run'
+    } finally {
+        Move-Item -LiteralPath $warmBackupDir -Destination $warmDirs[0].FullName
+    }
+
+    # Multi-entry provider_metrics must enumerate every element (PS 5.1
+    # returns top-level JSON arrays unenumerated): the two-entry row parses
+    # and both entries count toward provider_call_count (10 -> 11).
+    $multiRowsBackup = [System.IO.File]::ReadAllBytes($thoroughRowsCsv)
+    try {
+        $rows = @(Import-Csv -LiteralPath $thoroughRowsCsv)
+        $rows[0].provider_metrics = '[{"provider":"Direct Site","calls":1,"elapsed_ms":50,"candidate_count":1,"outcome":"candidate","errors":0},{"provider":"Google","calls":1,"elapsed_ms":80,"candidate_count":1,"outcome":"candidate","errors":0}]'
+        $rows | Export-Csv -LiteralPath $thoroughRowsCsv -NoTypeInformation -Encoding UTF8
+        $multiOut = Join-Path $mockRoot 'multi-metrics-out'
+        & $selPath -RunDir $mockRoot -ReviewQueue $queueA -OutputDir $multiOut -ExperimentFile $mockExpPath | Out-Null
+        $multiSummary = Get-Content -Raw -LiteralPath (Join-Path $multiOut 'selection-summary.json') | ConvertFrom-Json
+        $multiThorough = @($multiSummary.candidates | Where-Object { $_.profile_id -eq 'cand-full-thorough-synth' })[0]
+        if ([int]$multiThorough.provider_call_count -ne 11) {
+            throw "multi-entry provider_metrics miscounted: expected 11 provider calls, got $($multiThorough.provider_call_count)"
+        }
+    } finally {
+        [System.IO.File]::WriteAllBytes($thoroughRowsCsv, $multiRowsBackup)
+    }
+
+    # -Publish must never leave the repository half-published: an artifact
+    # write that cannot complete (a directory occupies the artifact path)
+    # must throw before any repository write happens.
+    $repoGeneratedForBattery = Join-Path $PSScriptRoot '..\..\FetchProfiles\FetchProfileCatalog.Generated.cs'
+    $repoEvidenceDirForBattery = Join-Path $PSScriptRoot '..\..\docs\benchmarks'
+    $repoHashBeforePublish = Get-TestSha256HexFile -Path $repoGeneratedForBattery
+    $evidenceDirExisted = Test-Path -LiteralPath $repoEvidenceDirForBattery
+    $pubOut = Join-Path $mockRoot 'publish-out'
+    New-Item -ItemType Directory -Path (Join-Path $pubOut 'selection-summary.json') -Force | Out-Null
+    $publishThrew = $false
+    try {
+        & $selPath -RunDir $mockRoot -ReviewQueue $queueA -OutputDir $pubOut -ExperimentFile $mockExpPath -Publish 2>$null | Out-Null
+    } catch { $publishThrew = $true }
+    if (-not $publishThrew) { throw '-Publish completed despite an unwritable output artifact' }
+    if ((Get-TestSha256HexFile -Path $repoGeneratedForBattery) -ne $repoHashBeforePublish) {
+        throw 'failed -Publish mutated the repository catalog'
+    }
+    if (-not $evidenceDirExisted -and (Test-Path -LiteralPath $repoEvidenceDirForBattery)) {
+        throw 'failed -Publish created the repository evidence directory'
     }
 
     # Shared JSON escaping: quotes, backslashes, and control characters must

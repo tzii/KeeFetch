@@ -295,7 +295,21 @@ $expectedCorpusPath = $expectedCorpus
 if (-not [System.IO.Path]::IsPathRooted($expectedCorpusPath)) {
     $expectedCorpusPath = Join-Path $repoRoot $expectedCorpusPath
 }
-$expectedRowCount = @(@(Import-Csv -LiteralPath $expectedCorpusPath)).Count
+$expectedCorpusRows = @(Import-Csv -LiteralPath $expectedCorpusPath)
+# Smoke and scaled experiments may restrict the corpus with an explicit
+# fixture_ids filter; the runner executes exactly those rows, so the
+# expected matrix is computed over the same filtered set.
+if ($experimentJson.PSObject.Properties.Name -contains 'fixture_ids' -and $null -ne $experimentJson.fixture_ids -and @($experimentJson.fixture_ids).Count -gt 0) {
+    $filterSet = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    foreach ($fid in @($experimentJson.fixture_ids)) { [void]$filterSet.Add([string]$fid) }
+    $expectedCorpusRows = @($expectedCorpusRows | Where-Object { $filterSet.Contains([string]$_.fixture_id) })
+    if ($expectedCorpusRows.Count -ne $filterSet.Count) {
+        throw "Experiment fixture_ids filter matched $($expectedCorpusRows.Count) corpus rows but declared $($filterSet.Count) fixtures."
+    }
+}
+$expectedRowCount = $expectedCorpusRows.Count
+$expectedFixtureIds = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+foreach ($fr in $expectedCorpusRows) { [void]$expectedFixtureIds.Add([string]$fr.fixture_id) }
 
 $thirdPartyIds = @{}
 foreach ($def in @('twenty-icons','duckduckgo','google','yandex','favicone','icon-horse')) { $thirdPartyIds[$def] = $true }
@@ -313,10 +327,20 @@ function Get-CandidateCanonicalForm {
     try { $synthetic = [bool]$Def.allowSynthetic } catch {}
     $stop = $false
     try { $stop = [bool]$Def.stopAfterStrongResolved } catch {}
+    # The runner resolves every candidate through the real downloader and
+    # records its C# FetchExecutionPolicy.Fingerprint() - the v2 canonical
+    # form, which includes the behavior-affecting AllowAndroidStoreLookup
+    # flag. The field is mandatory there, so it is mandatory here too:
+    # behavior is never inferred from an absent field.
+    if (-not ($Def.PSObject.Properties.Name -contains 'allowAndroidStoreLookup')) {
+        throw "Candidate definition '$($Def.id)' must declare allowAndroidStoreLookup explicitly; the recorded policy fingerprint covers it."
+    }
+    $android = ParseBoolValue -Value $Def.allowAndroidStoreLookup
     $syn = if ($synthetic) { "1" } else { "0" }
     $stp = if ($stop) { "1" } else { "0" }
-    return ("v1|providers={0}|primaryMs={1}|fallbackMs={2}|cumulativeMs={3}|synthetic={4}|stopAfterStrongResolved={5}" -f `
-        ($providerIds -join ','), $primary, $fallback, $cumulative, $syn, $stp)
+    $and = if ($android) { "1" } else { "0" }
+    return ("v2|providers={0}|primaryMs={1}|fallbackMs={2}|cumulativeMs={3}|synthetic={4}|stopAfterStrongResolved={5}|androidStore={6}" -f `
+        ($providerIds -join ','), $primary, $fallback, $cumulative, $syn, $stp, $and)
 }
 
 function Get-CandidateFingerprint {
@@ -364,7 +388,8 @@ foreach ($r in $runs) {
     if (-not (Test-Path -LiteralPath $rowsCsv)) {
         throw "Run $($r.Directory) is missing rows.csv."
     }
-    $rowCount = @(@(Import-Csv -LiteralPath $rowsCsv)).Count
+    $runRows = @(Import-Csv -LiteralPath $rowsCsv)
+    $rowCount = $runRows.Count
 
     if ($kind -eq "warmup") {
         if ($warmupsByCandidate.ContainsKey($cand)) { throw "Duplicate warmup for candidate '$cand'." }
@@ -385,6 +410,18 @@ foreach ($r in $runs) {
     }
     if ($rowCount -ne $expectedRowCount) {
         throw "Run $($r.Directory) has $rowCount rows, expected $expectedRowCount."
+    }
+    # Exact fixture set per cell (count equality alone misses a duplicated
+    # fixture displacing a missing one).
+    $rowFixtureIds = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    foreach ($rr in $runRows) { [void]$rowFixtureIds.Add([string]$rr.fixture_id) }
+    $missingFixtures = @($expectedFixtureIds | Where-Object { -not $rowFixtureIds.Contains($_) })
+    if ($missingFixtures.Count -gt 0) {
+        throw "Run $($r.Directory) is missing expected fixtures: $($missingFixtures -join ', ')."
+    }
+    $unexpectedFixtures = @($rowFixtureIds | Where-Object { -not $expectedFixtureIds.Contains($_) })
+    if ($unexpectedFixtures.Count -gt 0) {
+        throw "Run $($r.Directory) contains unexpected fixtures: $($unexpectedFixtures -join ', ')."
     }
 
     $cellKey = "$cand|$cacheMode|$repetition"
@@ -1080,6 +1117,7 @@ $summary = [PSCustomObject]@{
             cold_median_ms = $_.cold_median_ms
             cold_p95_ms = $_.cold_p95_ms
             warm_median_ms = $_.warm_median_ms
+            provider_call_count = $_.provider_call_count
             active_batch_cold_ms = $_.active_batch_cold_ms
             third_party_disclosure_rate = $_.third_party_disclosure_rate
             resumed_any = $_.resumed_any

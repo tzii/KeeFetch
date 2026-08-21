@@ -5,7 +5,8 @@
   "profiles": [
     "cand-smoke-fast-stop",
     "cand-smoke-balanced-nostop",
-    "cand-smoke-balanced-stop"
+    "cand-smoke-balanced-stop",
+    "cand-smoke-direct-only"
   ],
   "schedule_seed": 1,
   "repetitions": 1,
@@ -21,6 +22,7 @@
       "cumulativeTimeout": 15000,
       "allowSynthetic": false,
       "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": false,
       "notes": "Fast budgets with early stop; distinguishes the 4000/2500/15000 policy and stop=true from the balanced variants."
     },
     {
@@ -31,6 +33,7 @@
       "cumulativeTimeout": 22000,
       "allowSynthetic": false,
       "stopAfterStrongResolved": false,
+      "allowAndroidStoreLookup": false,
       "notes": "Balanced budgets without early stop; every provider in the chain is queried."
     },
     {
@@ -41,7 +44,19 @@
       "cumulativeTimeout": 22000,
       "allowSynthetic": false,
       "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": false,
       "notes": "Balanced budgets with early stop; same budgets as balanced-nostop, differing only in the stop flag."
+    },
+    {
+      "id": "cand-smoke-direct-only",
+      "providerIds": ["direct-site"],
+      "primaryTimeout": 6000,
+      "fallbackTimeout": 3500,
+      "cumulativeTimeout": 22000,
+      "allowSynthetic": false,
+      "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": false,
+      "notes": "Direct-site-only privacy candidate; keeps the smoke selectable end to end."
     }
   ]
 }

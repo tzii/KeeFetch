@@ -1,4 +1,6 @@
 # Handoff log — newest first, keep the last 20
 
+- 2026-08-21 · ZCode · 1a6cb3e · Commit #5 done: adversarial self-test battery, policy-smoke gate (test-smoke-policy.ps1), selector v2-fingerprint + fixture-filter repair, docs sampling sweep; all gates green incl. MSTest 161/161 and live smokes. Next: launch gate at one exact commit, then the study.
+- 2026-08-20 · ZCode · 386f54f · Verified task state against git/GitHub (clean tree, PR #4 open); corrected status WORKING→NEXT and As-of SHA; no code changes.
 - 2026-08-20 · ZCode · c2e41cb · Commit #4 selector rework done (strict metrics, cold-only census scoring, shared replayed winner fn, no Wilson, fail-closed publish; c689bed runner repairs); commit #5 adversarial tests + policy smokes + docs next.
 - 2026-08-20 · ZCode · c689bed · Set up `.agent` task-state tracking; committed dangling runner repairs as c689bed; commit #4 selector rework (select-profiles.ps1) starts now.

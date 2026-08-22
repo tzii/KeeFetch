@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "mode": "review_batch",
+  "repo": "C:\\Dev\\KeeFetch",
+  "results": [
+    {
+      "schema_version": "1.0",
+      "run_id": "20260822-171635-review-antigravity-0ee638",
+      "mode": "review",
+      "role": "google",
+      "worker": "antigravity",
+      "status": "ok",
+      "repo": {
+        "root": "C:\\Dev\\KeeFetch",
+        "base_commit": "e74a343adb253a317bf582f78242f7c235503200",
+        "dirty_source_included": true
+      },
+      "workspace": {
+        "path": "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-171635-review-antigravity-0ee638",
+        "ephemeral": true,
+        "branch": null,
+        "removed": true
+      },
+      "command": {
+        "argv": [
+          "C:\\Users\\zxcv0\\AppData\\Local\\agy\\bin\\agy.EXE",
+          "--model",
+          "gemini-3.7-flash-high",
+          "--effort",
+          "high",
+          "--mode",
+          "plan",
+          "--dangerously-skip-permissions",
+          "--print-timeout",
+          "35m",
+          "-p",
+          "<PROMPT>",
+          "--add-dir",
+          "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-171635-review-antigravity-0ee638",
+          "--output-format",
+          "json"
+        ],
+        "exit_code": 0
+      },
+      "result": {
+        "summary": "{\"conversation_id\":\"f780a2a6-544b-4153-af18-4150220ca27d\",\"status\":\"SUCCESS\",\"response\":\"[\\n  {\\n    \\\"key\\\": \\\"pub-145|c477cf7a4fe423225cb70deb5cdba9844a559215e3666ec3b0c567f29ad94b76\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Raspberry Pi raspberry fruit logo with green leaves for https://www.raspberrypi.org/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-146|4b85d43db73d8b67553d838fcbff6ebfcd1fe8d44b6294ddd31292d70f42b798\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine teal circular Arduino infinity logo with plus and minus symbols for https://www.arduino.cc/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-146|5fbe05ec0ed1f7ed4fb8b13e3988c1e326ccab10a9061dd918cd13f11d7175a8\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Arduino teal infinity logo for https://www.arduino.cc/, contradicting synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-146|97d6ebcdcda38b68baa57d1eda8cde6eb9d39b277674a36179a8d2389568ced9\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine teal circular Arduino infinity logo for https://www.arduino.cc/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-147|c06a8c8646c12c5bc9e5d9123b41efef3640de71762775b27dfae79db3a3fcd6\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Adafruit five-petal starflower brand logo for https://www.adafruit.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-148|15e3c9731dd98a79a5395d4836f9dbb156760b52bea2ac7e2883eed0cde771ab\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine SparkFun red flame brand icon for https://www.sparkfun.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-148|229a9f71e3f473f90084d209af3a3375d8741c7cd3a06c4f4291d97328cefde6\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine SparkFun red flame brand icon for https://www.sparkfun.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-148|3699d24a8398967fbc11a64309e8270a6139d61d710764d5c4a9ffa1bf83a010\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine high-resolution SparkFun red flame brand icon for https://www.sparkfun.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-148|a5134f7858204f01bd1ef35fe80174f6aaf554f4ae0acfd87dca54454e88fe23\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine SparkFun red flame brand icon for https://www.sparkfun.com/, contradicting synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-149|9300fa9a14fe0223bb11e16a38ff728643b37c7e2fa6d8b2a766c5b2635956f1\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Thingiverse white 'T' on blue square brand icon for https://www.thingiverse.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-150|d6b745d4041a3724da6fc4beee1779077c9e5e14dc82ae0590cbb12b9667dc46\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Instructables robot mascot brand icon for https://www.instructables.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-152|562ff1ded1c963efbaf40e92a7b3959cc65ad3526f6336285a714a1f51184605\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Behance 'Bē' logomark on blue background for https://www.behance.net/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-153|382322e490e077c4af256b364d4eb718495d8ce4244657ce72c88a7b4215c3e5\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Dribbble pink basketball brand icon for https://dribbble.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-153|43a8420233bfeb21d6b9c70e371e18ccb33cea25503c7e561cce854a9e6fed16\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Dribbble pink basketball brand icon for https://dribbble.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-153|b9fe19b8db996385d78d124d9fdcf5916fc7492a5a2bc4dd18406d6bf5d3cf0d\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine circular Dribbble pink basketball brand icon for https://dribbble.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-153|c79e4867a179727fd8ab32add0a3a2e628b3c00661cbb43cf84a1dc7355bfe5d\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Dribbble circular pink basketball brand icon for https://dribbble.com/, contradicting synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-153|f9ea08ca0d61eb0e97d0480159c300c73e795c73e49277e0696d514ee12676d2\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine circular Dribbble pink basketball brand icon for https://dribbble.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-154|caaddcef449769a2e1462a5d84cebd1b2bb897161af8f2df1c5b0727184c0db6\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Product Hunt orange circle with white 'P' brand logo for https://www.producthunt.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-155|3392468662d8a0cae3c45710c5296c2d30bc998092193e83481d7026d8a05242\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Hacker News orange square with white 'Y' brand logo for https://news.ycombinator.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-156|0962b8276973a27a227121e7ba526e667573d6383a1f95c98739d9b855b56add\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Indie Hackers 'IH' monogram logo on dark navy blue background for https://www.indiehackers.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-156|0cc5e5ab006e43d8dcd28e1adf4231693289dd35f90afdae62cfecbfd56c486a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated 'IH' letter mark on a white background derived from the domain name.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-156|0e251c0f2fd5c95c378047c449b06f175fceb20d6e33c9d609b2c196b2aba788\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated 'IH' letter mark on a white background derived from the domain name.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-156|faaf44a14ee65be91f17606279b6817de7d99e5c5e07fcc9ea2486320092a974\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Indie Hackers 'IH' monogram logo on dark navy blue background for https://www.indiehackers.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-157|39811139a016bd7d84058916b1103c3a581040686d9f6d509080cc72417dc75c\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Cult of Mac circular avatar icon featuring the Apple logo haircut for https://www.cultofmac.com/.\\\",\\n    \\\"verified_live\\\": true\\n  }\\n]\\n\",\"duration_seconds\":296.4912044,\"num_turns\":1,\"usage\":{\"input_tokens\":308166,\"output_tokens\":35958,\"thinking_tokens\":19852,\"cache_read_tokens\":4914978,\"total_tokens\":344124}}",
+        "summary_truncated": false,
+        "stdout_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-171635-review-antigravity-0ee638\\stdout.txt",
+        "stderr_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-171635-review-antigravity-0ee638\\stderr.txt"
+      },
+      "safety": {
+        "isolated": true,
+        "unexpected_review_mutation": false,
+        "auto_integrated": false,
+        "pushed_or_published_by_crew": false
+      },
+      "duration_ms": 301989
+    }
+  ]
+}

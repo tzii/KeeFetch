@@ -1,0 +1,1364 @@
+{
+ "batch": "03",
+ "image_count": 24,
+ "images": [
+  {
+   "artifact_hash": "6d4d927e6ed2bc560fe0f9d0a6905ea89b797ee98830e7e9bd3f051531b7b3b8",
+   "image": "images/6d4d927e6ed2bc560fe0f9d0a6905ea89b797ee98830e7e9bd3f051531b7b3b8.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 2143,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      62.4
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      12.7
+     ],
+     [
+      [
+       0,
+       64,
+       224
+      ],
+      10.3
+     ]
+    ],
+    "near_white_pct": 15.1
+   },
+   "units": [
+    {
+     "key": "pub-035|6d4d927e6ed2bc560fe0f9d0a6905ea89b797ee98830e7e9bd3f051531b7b3b8",
+     "input_url": "https://www.dropbox.com/",
+     "category": "global-brand",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "15288"
+    },
+    {
+     "key": "pub-220|6d4d927e6ed2bc560fe0f9d0a6905ea89b797ee98830e7e9bd3f051531b7b3b8",
+     "input_url": "https://www.dropbox.com/scl/fi/example",
+     "category": "url-variant",
+     "flags": "profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "15288"
+    },
+    {
+     "key": "pub-275|6d4d927e6ed2bc560fe0f9d0a6905ea89b797ee98830e7e9bd3f051531b7b3b8",
+     "input_url": "androidapp://com.dropbox.android",
+     "category": "android-app",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "15288"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "79fd406cfb342c4e0a2ad2bf970f2e7503ff6e6222638925d1ffec42b575adfe",
+   "image": "images/79fd406cfb342c4e0a2ad2bf970f2e7503ff6e6222638925d1ffec42b575adfe.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 211,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      64.2
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      14.4
+     ],
+     [
+      [
+       0,
+       64,
+       224
+      ],
+      11.2
+     ]
+    ],
+    "near_white_pct": 16.6
+   },
+   "units": [
+    {
+     "key": "pub-035|79fd406cfb342c4e0a2ad2bf970f2e7503ff6e6222638925d1ffec42b575adfe",
+     "input_url": "https://www.dropbox.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 9,
+     "w": "32",
+     "h": "32",
+     "bytes": "1279"
+    },
+    {
+     "key": "pub-220|79fd406cfb342c4e0a2ad2bf970f2e7503ff6e6222638925d1ffec42b575adfe",
+     "input_url": "https://www.dropbox.com/scl/fi/example",
+     "category": "url-variant",
+     "flags": "profile-differing",
+     "occurrences": 9,
+     "w": "32",
+     "h": "32",
+     "bytes": "1279"
+    },
+    {
+     "key": "pub-275|79fd406cfb342c4e0a2ad2bf970f2e7503ff6e6222638925d1ffec42b575adfe",
+     "input_url": "androidapp://com.dropbox.android",
+     "category": "android-app",
+     "flags": "profile-differing",
+     "occurrences": 9,
+     "w": "32",
+     "h": "32",
+     "bytes": "1279"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "cab9fea0d5a3ac2f448eee11e08ca1e03b51e2789e48e372e70b4b480ba8268c",
+   "image": "images/cab9fea0d5a3ac2f448eee11e08ca1e03b51e2789e48e372e70b4b480ba8268c.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 211,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      64.2
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      14.4
+     ],
+     [
+      [
+       0,
+       64,
+       224
+      ],
+      11.2
+     ]
+    ],
+    "near_white_pct": 16.6
+   },
+   "units": [
+    {
+     "key": "pub-035|cab9fea0d5a3ac2f448eee11e08ca1e03b51e2789e48e372e70b4b480ba8268c",
+     "input_url": "https://www.dropbox.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 12,
+     "w": "32",
+     "h": "32",
+     "bytes": "1281"
+    },
+    {
+     "key": "pub-220|cab9fea0d5a3ac2f448eee11e08ca1e03b51e2789e48e372e70b4b480ba8268c",
+     "input_url": "https://www.dropbox.com/scl/fi/example",
+     "category": "url-variant",
+     "flags": "profile-differing",
+     "occurrences": 12,
+     "w": "32",
+     "h": "32",
+     "bytes": "1281"
+    },
+    {
+     "key": "pub-275|cab9fea0d5a3ac2f448eee11e08ca1e03b51e2789e48e372e70b4b480ba8268c",
+     "input_url": "androidapp://com.dropbox.android",
+     "category": "android-app",
+     "flags": "profile-differing",
+     "occurrences": 12,
+     "w": "32",
+     "h": "32",
+     "bytes": "1281"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "b01e46e8d0c9037da3cf77a1e6d4cbdba3c91f2d9a87e31acfed35cc032a0924",
+   "image": "images/b01e46e8d0c9037da3cf77a1e6d4cbdba3c91f2d9a87e31acfed35cc032a0924.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 53.0,
+    "unique_colors": 831,
+    "top_colors": [
+     [
+      [
+       192,
+       32,
+       64
+      ],
+      25.2
+     ],
+     [
+      [
+       32,
+       160,
+       96
+      ],
+      25.0
+     ],
+     [
+      [
+       224,
+       160,
+       32
+      ],
+      24.9
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-036|b01e46e8d0c9037da3cf77a1e6d4cbdba3c91f2d9a87e31acfed35cc032a0924",
+     "input_url": "https://slack.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "6091"
+    },
+    {
+     "key": "pub-276|b01e46e8d0c9037da3cf77a1e6d4cbdba3c91f2d9a87e31acfed35cc032a0924",
+     "input_url": "androidapp://com.slack",
+     "category": "android-app",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "6091"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "8a2889316f948bba63106cbc59fe616130487920f11c3d3ad43afc66cd692864",
+   "image": "images/8a2889316f948bba63106cbc59fe616130487920f11c3d3ad43afc66cd692864.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 254,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      66.5
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      27.8
+     ],
+     [
+      [
+       96,
+       96,
+       96
+      ],
+      1.6
+     ]
+    ],
+    "near_white_pct": 67.3
+   },
+   "units": [
+    {
+     "key": "pub-037|8a2889316f948bba63106cbc59fe616130487920f11c3d3ad43afc66cd692864",
+     "input_url": "https://www.notion.so/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3917"
+    },
+    {
+     "key": "pub-228|8a2889316f948bba63106cbc59fe616130487920f11c3d3ad43afc66cd692864",
+     "input_url": "https://www.notion.so/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3917"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "a50a105964433a8d64c5ad1d36dd9ae4888bdc3adf61f24a8b3a3ff72a37e589",
+   "image": "images/a50a105964433a8d64c5ad1d36dd9ae4888bdc3adf61f24a8b3a3ff72a37e589.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 933,
+    "top_colors": [
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      73.2
+     ],
+     [
+      [
+       224,
+       96,
+       96
+      ],
+      4.9
+     ],
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      4.8
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-038|a50a105964433a8d64c5ad1d36dd9ae4888bdc3adf61f24a8b3a3ff72a37e589",
+     "input_url": "https://www.figma.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "11650"
+    },
+    {
+     "key": "pub-227|a50a105964433a8d64c5ad1d36dd9ae4888bdc3adf61f24a8b3a3ff72a37e589",
+     "input_url": "https://www.figma.com/",
+     "category": "svg-or-manifest",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "11650"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "d1867c28cbcedd1a2c75282497bb0a9185e9833e86dfaf35438d4f911bf075e3",
+   "image": "images/d1867c28cbcedd1a2c75282497bb0a9185e9833e86dfaf35438d4f911bf075e3.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 45.8,
+    "unique_colors": 1061,
+    "top_colors": [
+     [
+      [
+       224,
+       96,
+       32
+      ],
+      20.3
+     ],
+     [
+      [
+       224,
+       32,
+       32
+      ],
+      19.5
+     ],
+     [
+      [
+       32,
+       192,
+       96
+      ],
+      19.5
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-038|d1867c28cbcedd1a2c75282497bb0a9185e9833e86dfaf35438d4f911bf075e3",
+     "input_url": "https://www.figma.com/",
+     "category": "global-brand",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "7117"
+    },
+    {
+     "key": "pub-227|d1867c28cbcedd1a2c75282497bb0a9185e9833e86dfaf35438d4f911bf075e3",
+     "input_url": "https://www.figma.com/",
+     "category": "svg-or-manifest",
+     "flags": "profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "7117"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "d1addafacad0f3d91ba6f566ebb612e25c1a5a0972ace7eb5923e7936a85242b",
+   "image": "images/d1addafacad0f3d91ba6f566ebb612e25c1a5a0972ace7eb5923e7936a85242b.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 43.4,
+    "unique_colors": 145,
+    "top_colors": [
+     [
+      [
+       224,
+       32,
+       32
+      ],
+      20.6
+     ],
+     [
+      [
+       224,
+       96,
+       32
+      ],
+      20.6
+     ],
+     [
+      [
+       128,
+       64,
+       224
+      ],
+      20.6
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-038|d1addafacad0f3d91ba6f566ebb612e25c1a5a0972ace7eb5923e7936a85242b",
+     "input_url": "https://www.figma.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "64",
+     "h": "64",
+     "bytes": "1361"
+    },
+    {
+     "key": "pub-227|d1addafacad0f3d91ba6f566ebb612e25c1a5a0972ace7eb5923e7936a85242b",
+     "input_url": "https://www.figma.com/",
+     "category": "svg-or-manifest",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "64",
+     "h": "64",
+     "bytes": "1361"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "d7a877ae0480a3f590a4d191c04e1a7de7a9dab6483a21947760c98b466c76f9",
+   "image": "images/d7a877ae0480a3f590a4d191c04e1a7de7a9dab6483a21947760c98b466c76f9.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 72,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      75.8
+     ],
+     [
+      [
+       224,
+       32,
+       32
+      ],
+      4.8
+     ],
+     [
+      [
+       224,
+       96,
+       32
+      ],
+      4.8
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-038|d7a877ae0480a3f590a4d191c04e1a7de7a9dab6483a21947760c98b466c76f9",
+     "input_url": "https://www.figma.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "1784"
+    },
+    {
+     "key": "pub-227|d7a877ae0480a3f590a4d191c04e1a7de7a9dab6483a21947760c98b466c76f9",
+     "input_url": "https://www.figma.com/",
+     "category": "svg-or-manifest",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "1784"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "c8683dc7892b00dee9e8f3ad82d3e7de7c0af97b53f1873a64345ec79c892a79",
+   "image": "images/c8683dc7892b00dee9e8f3ad82d3e7de7c0af97b53f1873a64345ec79c892a79.png",
+   "pixel": {
+    "size": [
+     120,
+     120
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 4000,
+    "top_colors": [
+     [
+      [
+       0,
+       160,
+       192
+      ],
+      19.6
+     ],
+     [
+      [
+       0,
+       192,
+       192
+      ],
+      15.5
+     ],
+     [
+      [
+       96,
+       32,
+       224
+      ],
+      15.2
+     ]
+    ],
+    "near_white_pct": 10.0
+   },
+   "units": [
+    {
+     "key": "pub-039|c8683dc7892b00dee9e8f3ad82d3e7de7c0af97b53f1873a64345ec79c892a79",
+     "input_url": "https://www.canva.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "120",
+     "h": "120",
+     "bytes": "20887"
+    },
+    {
+     "key": "pub-233|c8683dc7892b00dee9e8f3ad82d3e7de7c0af97b53f1873a64345ec79c892a79",
+     "input_url": "https://www.canva.com/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "120",
+     "h": "120",
+     "bytes": "20887"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "461916f1455b676c0c990ba991e41b012814d7cfe55fc33df7aa9550224b34ca",
+   "image": "images/461916f1455b676c0c990ba991e41b012814d7cfe55fc33df7aa9550224b34ca.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 98.2,
+    "unique_colors": 500,
+    "top_colors": [
+     [
+      [
+       32,
+       32,
+       96
+      ],
+      84.1
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      10.8
+     ],
+     [
+      [
+       0,
+       32,
+       96
+      ],
+      1.5
+     ]
+    ],
+    "near_white_pct": 11.0
+   },
+   "units": [
+    {
+     "key": "pub-040|461916f1455b676c0c990ba991e41b012814d7cfe55fc33df7aa9550224b34ca",
+     "input_url": "https://www.booking.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3909"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "e19fac3dc6521708fad3ba3b7d4fc9ba7bb25b6f17d3ecccfae80c753690cd91",
+   "image": "images/e19fac3dc6521708fad3ba3b7d4fc9ba7bb25b6f17d3ecccfae80c753690cd91.png",
+   "pixel": {
+    "size": [
+     58,
+     58
+    ],
+    "opaque_pct": 98.0,
+    "unique_colors": 421,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      75.6
+     ],
+     [
+      [
+       128,
+       192,
+       224
+      ],
+      3.8
+     ],
+     [
+      [
+       192,
+       192,
+       192
+      ],
+      3.5
+     ]
+    ],
+    "near_white_pct": 80.5
+   },
+   "units": [
+    {
+     "key": "pub-041|e19fac3dc6521708fad3ba3b7d4fc9ba7bb25b6f17d3ecccfae80c753690cd91",
+     "input_url": "https://www.airbnb.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "58",
+     "h": "58",
+     "bytes": "3188"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "5b87a4ccb07e81fca51b43c586b1aab85f4d3137e308e3b45b9b7f453a91ba9c",
+   "image": "images/5b87a4ccb07e81fca51b43c586b1aab85f4d3137e308e3b45b9b7f453a91ba9c.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 131,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      89.8
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      4.5
+     ],
+     [
+      [
+       192,
+       192,
+       192
+      ],
+      1.4
+     ]
+    ],
+    "near_white_pct": 5.9
+   },
+   "units": [
+    {
+     "key": "pub-042|5b87a4ccb07e81fca51b43c586b1aab85f4d3137e308e3b45b9b7f453a91ba9c",
+     "input_url": "https://www.uber.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "1056"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "6d59a00a61a88bc396295e1c1d2768ce7c7b41baebe59bbe7b56c4e0386756bd",
+   "image": "images/6d59a00a61a88bc396295e1c1d2768ce7c7b41baebe59bbe7b56c4e0386756bd.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 32.0,
+    "unique_colors": 201,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       96
+      ],
+      100.0
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-043|6d59a00a61a88bc396295e1c1d2768ce7c7b41baebe59bbe7b56c4e0386756bd",
+     "input_url": "https://www.disneyplus.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "1961"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "2db898ce7265fcd2b1ae3c8ae073ed65910a047565008fd5608457c086377c83",
+   "image": "images/2db898ce7265fcd2b1ae3c8ae073ed65910a047565008fd5608457c086377c83.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 36,
+    "top_colors": [
+     [
+      [
+       0,
+       224,
+       128
+      ],
+      90.3
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      7.1
+     ],
+     [
+      [
+       0,
+       128,
+       64
+      ],
+      0.8
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-044|2db898ce7265fcd2b1ae3c8ae073ed65910a047565008fd5608457c086377c83",
+     "input_url": "https://www.hulu.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "1308"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "75e0605f8cca38e8e3d8a97a5e60b56c18a42dae785e3871e8af1c0a90e3c702",
+   "image": "images/75e0605f8cca38e8e3d8a97a5e60b56c18a42dae785e3871e8af1c0a90e3c702.png",
+   "pixel": {
+    "size": [
+     96,
+     96
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 1976,
+    "top_colors": [
+     [
+      [
+       0,
+       32,
+       32
+      ],
+      35.5
+     ],
+     [
+      [
+       0,
+       32,
+       64
+      ],
+      14.4
+     ],
+     [
+      [
+       0,
+       64,
+       96
+      ],
+      11.8
+     ]
+    ],
+    "near_white_pct": 4.9
+   },
+   "units": [
+    {
+     "key": "pub-044|75e0605f8cca38e8e3d8a97a5e60b56c18a42dae785e3871e8af1c0a90e3c702",
+     "input_url": "https://www.hulu.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "96",
+     "h": "96",
+     "bytes": "11390"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "9f0fb162139e74ef01631b70ee9a58b525f60fab64173a54d4f6e74a5f503ee7",
+   "image": "images/9f0fb162139e74ef01631b70ee9a58b525f60fab64173a54d4f6e74a5f503ee7.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 163,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      84.1
+     ],
+     [
+      [
+       0,
+       224,
+       128
+      ],
+      13.1
+     ],
+     [
+      [
+       0,
+       32,
+       0
+      ],
+      1.2
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-044|9f0fb162139e74ef01631b70ee9a58b525f60fab64173a54d4f6e74a5f503ee7",
+     "input_url": "https://www.hulu.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "1689"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "d0e5aa6fa7aa0bb91b0d340a132e26a485de0b022db95f6f03c62e3b93e831d2",
+   "image": "images/d0e5aa6fa7aa0bb91b0d340a132e26a485de0b022db95f6f03c62e3b93e831d2.png",
+   "pixel": {
+    "size": [
+     96,
+     96
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 1976,
+    "top_colors": [
+     [
+      [
+       0,
+       32,
+       32
+      ],
+      35.5
+     ],
+     [
+      [
+       0,
+       32,
+       64
+      ],
+      14.4
+     ],
+     [
+      [
+       0,
+       64,
+       96
+      ],
+      11.8
+     ]
+    ],
+    "near_white_pct": 4.9
+   },
+   "units": [
+    {
+     "key": "pub-044|d0e5aa6fa7aa0bb91b0d340a132e26a485de0b022db95f6f03c62e3b93e831d2",
+     "input_url": "https://www.hulu.com/",
+     "category": "global-brand",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "96",
+     "h": "96",
+     "bytes": "11390"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "02052588a42ee0c1548d14374ce4bb1470025ddd013b1ad723a6101d1e2ae6d1",
+   "image": "images/02052588a42ee0c1548d14374ce4bb1470025ddd013b1ad723a6101d1e2ae6d1.png",
+   "pixel": {
+    "size": [
+     76,
+     76
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 180,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      82.9
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      8.2
+     ],
+     [
+      [
+       160,
+       192,
+       224
+      ],
+      1.5
+     ]
+    ],
+    "near_white_pct": 9.9
+   },
+   "units": [
+    {
+     "key": "pub-045|02052588a42ee0c1548d14374ce4bb1470025ddd013b1ad723a6101d1e2ae6d1",
+     "input_url": "https://www.primevideo.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "76",
+     "h": "76",
+     "bytes": "2211"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "9b24aea73f48f00e2750bafd55c49a9476052aa8758d71048830f6593cb36433",
+   "image": "images/9b24aea73f48f00e2750bafd55c49a9476052aa8758d71048830f6593cb36433.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 142,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       32
+      ],
+      81.9
+     ],
+     [
+      [
+       0,
+       192,
+       224
+      ],
+      12.3
+     ],
+     [
+      [
+       0,
+       32,
+       32
+      ],
+      1.5
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-046|9b24aea73f48f00e2750bafd55c49a9476052aa8758d71048830f6593cb36433",
+     "input_url": "https://vimeo.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "1033"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "b04e2434321f480581d5eba37051c609e37dcdc44572ad585601ab40f0217f06",
+   "image": "images/b04e2434321f480581d5eba37051c609e37dcdc44572ad585601ab40f0217f06.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 79.6,
+    "unique_colors": 663,
+    "top_colors": [
+     [
+      [
+       64,
+       96,
+       224
+      ],
+      72.8
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      23.1
+     ],
+     [
+      [
+       64,
+       64,
+       224
+      ],
+      1.7
+     ]
+    ],
+    "near_white_pct": 23.6
+   },
+   "units": [
+    {
+     "key": "pub-047|b04e2434321f480581d5eba37051c609e37dcdc44572ad585601ab40f0217f06",
+     "input_url": "https://discord.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "5907"
+    },
+    {
+     "key": "pub-279|b04e2434321f480581d5eba37051c609e37dcdc44572ad585601ab40f0217f06",
+     "input_url": "androidapp://com.discord",
+     "category": "android-app",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "5907"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "5992989d7b13a5d6993d1e4369bd871579c1b364599b4a2a64292560257ae7ea",
+   "image": "images/5992989d7b13a5d6993d1e4369bd871579c1b364599b4a2a64292560257ae7ea.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 1070,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      48.5
+     ],
+     [
+      [
+       32,
+       160,
+       224
+      ],
+      32.5
+     ],
+     [
+      [
+       32,
+       160,
+       192
+      ],
+      10.4
+     ]
+    ],
+    "near_white_pct": 49.3
+   },
+   "units": [
+    {
+     "key": "pub-048|5992989d7b13a5d6993d1e4369bd871579c1b364599b4a2a64292560257ae7ea",
+     "input_url": "https://telegram.org/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "6362"
+    },
+    {
+     "key": "pub-278|5992989d7b13a5d6993d1e4369bd871579c1b364599b4a2a64292560257ae7ea",
+     "input_url": "androidapp://org.telegram.messenger",
+     "category": "android-app",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "6362"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "213ab1d85f4cc810e320bab2925b30ba62033d1b9f6de89288bd3cb6dc18f21e",
+   "image": "images/213ab1d85f4cc810e320bab2925b30ba62033d1b9f6de89288bd3cb6dc18f21e.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 75.2,
+    "unique_colors": 39,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      66.0
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      15.2
+     ],
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      4.2
+     ]
+    ],
+    "near_white_pct": 70.0
+   },
+   "units": [
+    {
+     "key": "pub-049|213ab1d85f4cc810e320bab2925b30ba62033d1b9f6de89288bd3cb6dc18f21e",
+     "input_url": "https://openai.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "48",
+     "h": "48",
+     "bytes": "1219"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "714aeb2760df3c5ae39a2597eec59108e251f6ef526443ae6825d43fad724e91",
+   "image": "images/714aeb2760df3c5ae39a2597eec59108e251f6ef526443ae6825d43fad724e91.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 78.9,
+    "unique_colors": 438,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      78.3
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      16.3
+     ],
+     [
+      [
+       96,
+       96,
+       96
+      ],
+      1.4
+     ]
+    ],
+    "near_white_pct": 79.2
+   },
+   "units": [
+    {
+     "key": "pub-049|714aeb2760df3c5ae39a2597eec59108e251f6ef526443ae6825d43fad724e91",
+     "input_url": "https://openai.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "5839"
+    }
+   ]
+  }
+ ]
+}

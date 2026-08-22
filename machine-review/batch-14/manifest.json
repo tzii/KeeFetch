@@ -1,0 +1,942 @@
+{
+ "batch": "14",
+ "image_count": 16,
+ "images": [
+  {
+   "artifact_hash": "5b9e7be1e6df29437b326fb578302a8808745f24f38f30357e9ac3b8febbbf20",
+   "image": "images/5b9e7be1e6df29437b326fb578302a8808745f24f38f30357e9ac3b8febbbf20.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 399,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      76.0
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      16.9
+     ],
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      4.2
+     ]
+    ],
+    "near_white_pct": 17.4
+   },
+   "units": [
+    {
+     "key": "pub-239|5b9e7be1e6df29437b326fb578302a8808745f24f38f30357e9ac3b8febbbf20",
+     "input_url": "https://www.ubuntu.com/",
+     "category": "svg-or-manifest",
+     "flags": "profile-differing",
+     "occurrences": 53,
+     "w": "128",
+     "h": "128",
+     "bytes": "4965"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "3e20b5d65b2af9b227a771078cdf1760fecadf92116d35f0a51ed1c9634f42d6",
+   "image": "images/3e20b5d65b2af9b227a771078cdf1760fecadf92116d35f0a51ed1c9634f42d6.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 22.6,
+    "unique_colors": 8,
+    "top_colors": [
+     [
+      [
+       192,
+       0,
+       64
+      ],
+      58.9
+     ],
+     [
+      [
+       192,
+       0,
+       0
+      ],
+      13.9
+     ],
+     [
+      [
+       160,
+       0,
+       32
+      ],
+      11.7
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-240|3e20b5d65b2af9b227a771078cdf1760fecadf92116d35f0a51ed1c9634f42d6",
+     "input_url": "https://www.debian.org/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "477"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "e6a6d074761b5663e4453ec96f8df6c36d03a42e4b5e2c09c006c859f1a33ce8",
+   "image": "images/e6a6d074761b5663e4453ec96f8df6c36d03a42e4b5e2c09c006c859f1a33ce8.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 34.7,
+    "unique_colors": 2524,
+    "top_colors": [
+     [
+      [
+       224,
+       32,
+       192
+      ],
+      20.0
+     ],
+     [
+      [
+       224,
+       0,
+       64
+      ],
+      13.6
+     ],
+     [
+      [
+       128,
+       0,
+       224
+      ],
+      12.7
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-241|e6a6d074761b5663e4453ec96f8df6c36d03a42e4b5e2c09c006c859f1a33ce8",
+     "input_url": "https://angular.io/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "12684"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "3f6f184ed3b3870eb642e83330c26e64a39f0ce68629a79f8066939c2f81120a",
+   "image": "images/3f6f184ed3b3870eb642e83330c26e64a39f0ce68629a79f8066939c2f81120a.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 522,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      73.6
+     ],
+     [
+      [
+       64,
+       192,
+       192
+      ],
+      18.7
+     ],
+     [
+      [
+       192,
+       224,
+       224
+      ],
+      1.8
+     ]
+    ],
+    "near_white_pct": 75.4
+   },
+   "units": [
+    {
+     "key": "pub-242|3f6f184ed3b3870eb642e83330c26e64a39f0ce68629a79f8066939c2f81120a",
+     "input_url": "https://react.dev/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "8447"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "5cf0eeca6391e95fd5a302e147196bf058a65af868ee27d8e6630841669d8d76",
+   "image": "images/5cf0eeca6391e95fd5a302e147196bf058a65af868ee27d8e6630841669d8d76.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 41.5,
+    "unique_colors": 309,
+    "top_colors": [
+     [
+      [
+       64,
+       160,
+       128
+      ],
+      66.6
+     ],
+     [
+      [
+       32,
+       64,
+       64
+      ],
+      30.2
+     ],
+     [
+      [
+       32,
+       96,
+       96
+      ],
+      1.1
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-243|5cf0eeca6391e95fd5a302e147196bf058a65af868ee27d8e6630841669d8d76",
+     "input_url": "https://vuejs.org/",
+     "category": "svg-or-manifest",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "2833"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "61f72c50455d21bbea70a281abd7d9ba730c4c4857ef92a3658fc84b5ce7ab57",
+   "image": "images/61f72c50455d21bbea70a281abd7d9ba730c4c4857ef92a3658fc84b5ce7ab57.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 42.2,
+    "unique_colors": 541,
+    "top_colors": [
+     [
+      [
+       64,
+       160,
+       128
+      ],
+      62.0
+     ],
+     [
+      [
+       32,
+       64,
+       64
+      ],
+      29.1
+     ],
+     [
+      [
+       64,
+       192,
+       128
+      ],
+      3.2
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-243|61f72c50455d21bbea70a281abd7d9ba730c4c4857ef92a3658fc84b5ce7ab57",
+     "input_url": "https://vuejs.org/",
+     "category": "svg-or-manifest",
+     "flags": "profile-differing",
+     "occurrences": 18,
+     "w": "128",
+     "h": "128",
+     "bytes": "4532"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "aed14a90a5504fd512319cc0b8569742b7e7683f707c9dc9793a568ea4b60a28",
+   "image": "images/aed14a90a5504fd512319cc0b8569742b7e7683f707c9dc9793a568ea4b60a28.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 55,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      58.9
+     ],
+     [
+      [
+       64,
+       160,
+       128
+      ],
+      25.2
+     ],
+     [
+      [
+       32,
+       64,
+       64
+      ],
+      12.1
+     ]
+    ],
+    "near_white_pct": 59.2
+   },
+   "units": [
+    {
+     "key": "pub-243|aed14a90a5504fd512319cc0b8569742b7e7683f707c9dc9793a568ea4b60a28",
+     "input_url": "https://vuejs.org/",
+     "category": "svg-or-manifest",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "2180"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "e2ebd0404a05c6e7c15cde882dbe4ad6657f882feed9c2bb196be9106fa3aee9",
+   "image": "images/e2ebd0404a05c6e7c15cde882dbe4ad6657f882feed9c2bb196be9106fa3aee9.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 55.6,
+    "unique_colors": 748,
+    "top_colors": [
+     [
+      [
+       224,
+       32,
+       0
+      ],
+      57.5
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      34.0
+     ],
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      4.2
+     ]
+    ],
+    "near_white_pct": 34.8
+   },
+   "units": [
+    {
+     "key": "pub-244|e2ebd0404a05c6e7c15cde882dbe4ad6657f882feed9c2bb196be9106fa3aee9",
+     "input_url": "https://svelte.dev/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "5735"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "793e9e2c1c9793f5d138e8675dbdca0ff385785c9ee3d35688193b027d1ce3e5",
+   "image": "images/793e9e2c1c9793f5d138e8675dbdca0ff385785c9ee3d35688193b027d1ce3e5.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 24.9,
+    "unique_colors": 221,
+    "top_colors": [
+     [
+      [
+       64,
+       128,
+       128
+      ],
+      96.8
+     ],
+     [
+      [
+       64,
+       96,
+       128
+      ],
+      2.6
+     ],
+     [
+      [
+       32,
+       96,
+       128
+      ],
+      0.6
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-245|793e9e2c1c9793f5d138e8675dbdca0ff385785c9ee3d35688193b027d1ce3e5",
+     "input_url": "https://www.electronjs.org/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "64",
+     "h": "64",
+     "bytes": "2687"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a",
+   "image": "images/a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 75,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      91.4
+     ],
+     [
+      [
+       96,
+       96,
+       96
+      ],
+      7.0
+     ],
+     [
+      [
+       192,
+       192,
+       192
+      ],
+      0.9
+     ]
+    ],
+    "near_white_pct": 92.4
+   },
+   "units": [
+    {
+     "key": "pub-210|a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a",
+     "input_url": "https://httpstat.us/301",
+     "category": "url-variant",
+     "flags": "placeholder_suspected;synthetic",
+     "occurrences": 14,
+     "w": "128",
+     "h": "128",
+     "bytes": "1072"
+    },
+    {
+     "key": "pub-211|a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a",
+     "input_url": "https://httpstat.us/302",
+     "category": "url-variant",
+     "flags": "placeholder_suspected;synthetic",
+     "occurrences": 14,
+     "w": "128",
+     "h": "128",
+     "bytes": "1072"
+    },
+    {
+     "key": "pub-247|a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a",
+     "input_url": "https://httpstat.us/404",
+     "category": "missing-or-invalid",
+     "flags": "placeholder_suspected;synthetic",
+     "occurrences": 14,
+     "w": "128",
+     "h": "128",
+     "bytes": "1072"
+    },
+    {
+     "key": "pub-248|a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a",
+     "input_url": "https://httpstat.us/500",
+     "category": "missing-or-invalid",
+     "flags": "placeholder_suspected;synthetic",
+     "occurrences": 14,
+     "w": "128",
+     "h": "128",
+     "bytes": "1072"
+    },
+    {
+     "key": "pub-249|a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a",
+     "input_url": "https://httpstat.us/204",
+     "category": "missing-or-invalid",
+     "flags": "placeholder_suspected;synthetic",
+     "occurrences": 14,
+     "w": "128",
+     "h": "128",
+     "bytes": "1072"
+    },
+    {
+     "key": "pub-256|a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a",
+     "input_url": "https://httpstat.us/502",
+     "category": "missing-or-invalid",
+     "flags": "synthetic",
+     "occurrences": 14,
+     "w": "128",
+     "h": "128",
+     "bytes": "1072"
+    },
+    {
+     "key": "pub-257|a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a",
+     "input_url": "https://httpstat.us/503",
+     "category": "missing-or-invalid",
+     "flags": "synthetic",
+     "occurrences": 14,
+     "w": "128",
+     "h": "128",
+     "bytes": "1072"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f1afd148adc7ef455eac149d951d2278254b0ce12c4c20a4a5bf8a60d7058a34",
+   "image": "images/f1afd148adc7ef455eac149d951d2278254b0ce12c4c20a4a5bf8a60d7058a34.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 43.7,
+    "unique_colors": 131,
+    "top_colors": [
+     [
+      [
+       224,
+       96,
+       32
+      ],
+      88.6
+     ],
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      8.1
+     ],
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      2.9
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-212|f1afd148adc7ef455eac149d951d2278254b0ce12c4c20a4a5bf8a60d7058a34",
+     "input_url": "https://bit.ly/3testkeep",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "1117"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "daa7043a9bf46c61b99251a9ea363a1e25ac52e87168ef01aadd8f9bc56662bc",
+   "image": "images/daa7043a9bf46c61b99251a9ea363a1e25ac52e87168ef01aadd8f9bc56662bc.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 48.4,
+    "unique_colors": 672,
+    "top_colors": [
+     [
+      [
+       0,
+       32,
+       96
+      ],
+      62.9
+     ],
+     [
+      [
+       128,
+       160,
+       32
+      ],
+      34.4
+     ],
+     [
+      [
+       128,
+       160,
+       64
+      ],
+      2.6
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-213|daa7043a9bf46c61b99251a9ea363a1e25ac52e87168ef01aadd8f9bc56662bc",
+     "input_url": "https://tinyurl.com/testkeep",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "5764"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a",
+   "image": "images/6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 87,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      91.7
+     ],
+     [
+      [
+       96,
+       96,
+       96
+      ],
+      6.5
+     ],
+     [
+      [
+       128,
+       128,
+       128
+      ],
+      0.7
+     ]
+    ],
+    "near_white_pct": 92.1
+   },
+   "units": [
+    {
+     "key": "pub-215|6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a",
+     "input_url": "http://example.com/",
+     "category": "url-variant",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 3,
+     "w": "128",
+     "h": "128",
+     "bytes": "1078"
+    },
+    {
+     "key": "pub-217|6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a",
+     "input_url": "https://example.com/",
+     "category": "url-variant",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 3,
+     "w": "128",
+     "h": "128",
+     "bytes": "1078"
+    },
+    {
+     "key": "pub-218|6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a",
+     "input_url": "https://example.com:443/path?q=1#frag",
+     "category": "url-variant",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 3,
+     "w": "128",
+     "h": "128",
+     "bytes": "1078"
+    },
+    {
+     "key": "pub-246|6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a",
+     "input_url": "https://example.invalid/",
+     "category": "missing-or-invalid",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 3,
+     "w": "128",
+     "h": "128",
+     "bytes": "1078"
+    },
+    {
+     "key": "pub-250|6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a",
+     "input_url": "https://example.com/nonexistent-favicon-xyz123",
+     "category": "missing-or-invalid",
+     "flags": "profile-differing;synthetic",
+     "occurrences": 3,
+     "w": "128",
+     "h": "128",
+     "bytes": "1078"
+    },
+    {
+     "key": "pub-284|6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a",
+     "input_url": "androidapp://com.example.app",
+     "category": "android-app",
+     "flags": "profile-differing;synthetic",
+     "occurrences": 3,
+     "w": "128",
+     "h": "128",
+     "bytes": "1078"
+    },
+    {
+     "key": "pub-285|6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a",
+     "input_url": "androidapp://io.example.todo",
+     "category": "android-app",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 3,
+     "w": "128",
+     "h": "128",
+     "bytes": "1078"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "dd47a855b83b74fb64951af53cc3899064a61b9933768161ad1721271bf65d3b",
+   "image": "images/dd47a855b83b74fb64951af53cc3899064a61b9933768161ad1721271bf65d3b.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 4,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      61.7
+     ],
+     [
+      [
+       64,
+       192,
+       224
+      ],
+      36.7
+     ],
+     [
+      [
+       32,
+       160,
+       224
+      ],
+      0.8
+     ]
+    ],
+    "near_white_pct": 62.5
+   },
+   "units": [
+    {
+     "key": "pub-216|dd47a855b83b74fb64951af53cc3899064a61b9933768161ad1721271bf65d3b",
+     "input_url": "http://neverssl.com/",
+     "category": "url-variant",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "460"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "e9f3a5c52356250942300f1220f9f3b69822c9d85b835f99a4112f6c776747cf",
+   "image": "images/e9f3a5c52356250942300f1220f9f3b69822c9d85b835f99a4112f6c776747cf.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 29,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      61.7
+     ],
+     [
+      [
+       64,
+       192,
+       224
+      ],
+      35.4
+     ],
+     [
+      [
+       64,
+       160,
+       224
+      ],
+      1.3
+     ]
+    ],
+    "near_white_pct": 61.7
+   },
+   "units": [
+    {
+     "key": "pub-216|e9f3a5c52356250942300f1220f9f3b69822c9d85b835f99a4112f6c776747cf",
+     "input_url": "http://neverssl.com/",
+     "category": "url-variant",
+     "flags": "blank_suspected;profile-differing",
+     "occurrences": 8,
+     "w": "128",
+     "h": "128",
+     "bytes": "567"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f33b3a686ad38bf890e2aeb47a2e38a330b8fe7d0c80a5190a508f17900ce7ff",
+   "image": "images/f33b3a686ad38bf890e2aeb47a2e38a330b8fe7d0c80a5190a508f17900ce7ff.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 6,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      61.7
+     ],
+     [
+      [
+       64,
+       192,
+       224
+      ],
+      36.7
+     ],
+     [
+      [
+       32,
+       160,
+       224
+      ],
+      0.8
+     ]
+    ],
+    "near_white_pct": 61.7
+   },
+   "units": [
+    {
+     "key": "pub-216|f33b3a686ad38bf890e2aeb47a2e38a330b8fe7d0c80a5190a508f17900ce7ff",
+     "input_url": "http://neverssl.com/",
+     "category": "url-variant",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "471"
+    }
+   ]
+  }
+ ]
+}

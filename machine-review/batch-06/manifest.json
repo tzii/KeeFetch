@@ -1,0 +1,1208 @@
+{
+ "batch": "06",
+ "image_count": 24,
+ "images": [
+  {
+   "artifact_hash": "5628e56500699755861214efa56acaacc8454b78a83c9bc4c478cf2f7583515e",
+   "image": "images/5628e56500699755861214efa56acaacc8454b78a83c9bc4c478cf2f7583515e.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 74.5,
+    "unique_colors": 2654,
+    "top_colors": [
+     [
+      [
+       224,
+       192,
+       32
+      ],
+      39.3
+     ],
+     [
+      [
+       224,
+       224,
+       32
+      ],
+      23.1
+     ],
+     [
+      [
+       0,
+       128,
+       192
+      ],
+      11.2
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-081|5628e56500699755861214efa56acaacc8454b78a83c9bc4c478cf2f7583515e",
+     "input_url": "https://www.flipkart.com/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 8,
+     "w": "128",
+     "h": "128",
+     "bytes": "16656"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "b944b09d7f6d68753abbed7f793d8d0a6a8bf5e987cedcf583b00e157324f033",
+   "image": "images/b944b09d7f6d68753abbed7f793d8d0a6a8bf5e987cedcf583b00e157324f033.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 74.5,
+    "unique_colors": 2952,
+    "top_colors": [
+     [
+      [
+       224,
+       192,
+       32
+      ],
+      39.3
+     ],
+     [
+      [
+       224,
+       224,
+       32
+      ],
+      23.1
+     ],
+     [
+      [
+       0,
+       128,
+       192
+      ],
+      11.5
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-081|b944b09d7f6d68753abbed7f793d8d0a6a8bf5e987cedcf583b00e157324f033",
+     "input_url": "https://www.flipkart.com/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 7,
+     "w": "128",
+     "h": "128",
+     "bytes": "18457"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "22568dce45d1cdcadd24eeae722cd72cd6a6f311744ef6081f020ccb5d135f3a",
+   "image": "images/22568dce45d1cdcadd24eeae722cd72cd6a6f311744ef6081f020ccb5d135f3a.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 12.6,
+    "unique_colors": 110,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      100.0
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-082|22568dce45d1cdcadd24eeae722cd72cd6a6f311744ef6081f020ccb5d135f3a",
+     "input_url": "https://www.olacabs.com/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "64",
+     "h": "64",
+     "bytes": "814"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "e1c40a8001a7ffcbd8c8c94c5af25742f275c974efd3286ce5c41311cfe84d46",
+   "image": "images/e1c40a8001a7ffcbd8c8c94c5af25742f275c974efd3286ce5c41311cfe84d46.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 99.8,
+    "unique_colors": 482,
+    "top_colors": [
+     [
+      [
+       192,
+       32,
+       32
+      ],
+      87.7
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      6.4
+     ],
+     [
+      [
+       192,
+       0,
+       32
+      ],
+      2.4
+     ]
+    ],
+    "near_white_pct": 6.9
+   },
+   "units": [
+    {
+     "key": "pub-083|e1c40a8001a7ffcbd8c8c94c5af25742f275c974efd3286ce5c41311cfe84d46",
+     "input_url": "https://www.zomato.com/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "4334"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "0e11e9784d034b264b1a3d74bf9ddf22e520cfb9cc15201bd2aec051c0a5215b",
+   "image": "images/0e11e9784d034b264b1a3d74bf9ddf22e520cfb9cc15201bd2aec051c0a5215b.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 82.1,
+    "unique_colors": 234,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       96
+      ],
+      71.1
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      14.2
+     ],
+     [
+      [
+       0,
+       0,
+       128
+      ],
+      5.0
+     ]
+    ],
+    "near_white_pct": 16.1
+   },
+   "units": [
+    {
+     "key": "pub-084|0e11e9784d034b264b1a3d74bf9ddf22e520cfb9cc15201bd2aec051c0a5215b",
+     "input_url": "https://www.jio.com/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "48",
+     "h": "48",
+     "bytes": "1798"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "71d7a043641e608176f8690e0bf1e9674f7a5d65b665726764757c66903e5d14",
+   "image": "images/71d7a043641e608176f8690e0bf1e9674f7a5d65b665726764757c66903e5d14.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 83.6,
+    "unique_colors": 225,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       96
+      ],
+      57.8
+     ],
+     [
+      [
+       0,
+       0,
+       128
+      ],
+      18.2
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      11.3
+     ]
+    ],
+    "near_white_pct": 14.3
+   },
+   "units": [
+    {
+     "key": "pub-084|71d7a043641e608176f8690e0bf1e9674f7a5d65b665726764757c66903e5d14",
+     "input_url": "https://www.jio.com/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "32",
+     "h": "32",
+     "bytes": "1473"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "97c49fb9af254b202802836cbdf7445a1299d7840fb2de5b3a273be8534a8483",
+   "image": "images/97c49fb9af254b202802836cbdf7445a1299d7840fb2de5b3a273be8534a8483.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 87.9,
+    "unique_colors": 1678,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       96
+      ],
+      60.1
+     ],
+     [
+      [
+       0,
+       0,
+       128
+      ],
+      8.4
+     ],
+     [
+      [
+       192,
+       192,
+       224
+      ],
+      5.3
+     ]
+    ],
+    "near_white_pct": 8.3
+   },
+   "units": [
+    {
+     "key": "pub-084|97c49fb9af254b202802836cbdf7445a1299d7840fb2de5b3a273be8534a8483",
+     "input_url": "https://www.jio.com/",
+     "category": "regional-service",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 9,
+     "w": "128",
+     "h": "128",
+     "bytes": "23186"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "46b2c8570657226abae8b9d47125661badb832e6da5aa68e0c7325e1a2cace66",
+   "image": "images/46b2c8570657226abae8b9d47125661badb832e6da5aa68e0c7325e1a2cace66.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 86,
+    "top_colors": [
+     [
+      [
+       224,
+       192,
+       0
+      ],
+      68.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      16.1
+     ],
+     [
+      [
+       32,
+       32,
+       96
+      ],
+      4.7
+     ]
+    ],
+    "near_white_pct": 16.6
+   },
+   "units": [
+    {
+     "key": "pub-085|46b2c8570657226abae8b9d47125661badb832e6da5aa68e0c7325e1a2cace66",
+     "input_url": "https://www.mercadolibre.com.ar/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 1,
+     "w": "128",
+     "h": "128",
+     "bytes": "5710"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "7ad459162b979c5e611d666e02e8ae3f9eb0dbcfd0be7889f4ac6e192debb821",
+   "image": "images/7ad459162b979c5e611d666e02e8ae3f9eb0dbcfd0be7889f4ac6e192debb821.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 56.8,
+    "unique_colors": 563,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      32.8
+     ],
+     [
+      [
+       224,
+       192,
+       0
+      ],
+      29.0
+     ],
+     [
+      [
+       32,
+       32,
+       96
+      ],
+      19.0
+     ]
+    ],
+    "near_white_pct": 35.3
+   },
+   "units": [
+    {
+     "key": "pub-085|7ad459162b979c5e611d666e02e8ae3f9eb0dbcfd0be7889f4ac6e192debb821",
+     "input_url": "https://www.mercadolibre.com.ar/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 53,
+     "w": "64",
+     "h": "64",
+     "bytes": "3360"
+    },
+    {
+     "key": "pub-086|7ad459162b979c5e611d666e02e8ae3f9eb0dbcfd0be7889f4ac6e192debb821",
+     "input_url": "https://www.mercadolivre.com.br/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "64",
+     "h": "64",
+     "bytes": "3360"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "e816cd8c5871a314b4bee6bc1f6e0865295887ef17d4283ca874506cf2e3c6d4",
+   "image": "images/e816cd8c5871a314b4bee6bc1f6e0865295887ef17d4283ca874506cf2e3c6d4.png",
+   "pixel": {
+    "size": [
+     16,
+     16
+    ],
+    "opaque_pct": 98.8,
+    "unique_colors": 67,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      36.4
+     ],
+     [
+      [
+       0,
+       64,
+       192
+      ],
+      25.7
+     ],
+     [
+      [
+       0,
+       96,
+       192
+      ],
+      14.6
+     ]
+    ],
+    "near_white_pct": 15.8
+   },
+   "units": [
+    {
+     "key": "pub-087|e816cd8c5871a314b4bee6bc1f6e0865295887ef17d4283ca874506cf2e3c6d4",
+     "input_url": "https://www.globo.com/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "16",
+     "h": "16",
+     "bytes": "476"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "bd7e0ab4e200fe9945cc79a2d90ee295af41fc05d3c7c8e7c2e8de891770e152",
+   "image": "images/bd7e0ab4e200fe9945cc79a2d90ee295af41fc05d3c7c8e7c2e8de891770e152.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 8903,
+    "top_colors": [
+     [
+      [
+       224,
+       0,
+       32
+      ],
+      40.7
+     ],
+     [
+      [
+       224,
+       192,
+       224
+      ],
+      7.3
+     ],
+     [
+      [
+       224,
+       160,
+       192
+      ],
+      6.6
+     ]
+    ],
+    "near_white_pct": 13.9
+   },
+   "units": [
+    {
+     "key": "pub-088|bd7e0ab4e200fe9945cc79a2d90ee295af41fc05d3c7c8e7c2e8de891770e152",
+     "input_url": "https://www.americanas.com.br/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "34816"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "503181088578ee71b104fe9744f4409eefb25f08c919d7668c49be484cc244e7",
+   "image": "images/503181088578ee71b104fe9744f4409eefb25f08c919d7668c49be484cc244e7.png",
+   "pixel": {
+    "size": [
+     16,
+     16
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 42,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       192
+      ],
+      61.7
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      15.2
+     ],
+     [
+      [
+       32,
+       128,
+       192
+      ],
+      5.1
+     ]
+    ],
+    "near_white_pct": 15.6
+   },
+   "units": [
+    {
+     "key": "pub-089|503181088578ee71b104fe9744f4409eefb25f08c919d7668c49be484cc244e7",
+     "input_url": "https://www.magazineluiza.com.br/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "16",
+     "h": "16",
+     "bytes": "361"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "bc26513e508507d0ee1b3eca9a81b8b35ab6e0f4f8483707690c1222645c44fd",
+   "image": "images/bc26513e508507d0ee1b3eca9a81b8b35ab6e0f4f8483707690c1222645c44fd.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 388,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      79.8
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      11.6
+     ],
+     [
+      [
+       224,
+       32,
+       0
+      ],
+      6.2
+     ]
+    ],
+    "near_white_pct": 11.9
+   },
+   "units": [
+    {
+     "key": "pub-090|bc26513e508507d0ee1b3eca9a81b8b35ab6e0f4f8483707690c1222645c44fd",
+     "input_url": "https://www.yandex.ru/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3529"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "ac22099e42b6b79a4fb1b0140ce88b6f33bd22c74a5011a2b4021eec53b59c55",
+   "image": "images/ac22099e42b6b79a4fb1b0140ce88b6f33bd22c74a5011a2b4021eec53b59c55.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 97.6,
+    "unique_colors": 3593,
+    "top_colors": [
+     [
+      [
+       192,
+       32,
+       192
+      ],
+      27.1
+     ],
+     [
+      [
+       128,
+       32,
+       224
+      ],
+      25.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      12.9
+     ]
+    ],
+    "near_white_pct": 13.4
+   },
+   "units": [
+    {
+     "key": "pub-091|ac22099e42b6b79a4fb1b0140ce88b6f33bd22c74a5011a2b4021eec53b59c55",
+     "input_url": "https://www.wildberries.ru/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "25393"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "57c9279cc70433e3391c4229fa3262f9bfa3a308d220fe32c763d3e7b0ff2843",
+   "image": "images/57c9279cc70433e3391c4229fa3262f9bfa3a308d220fe32c763d3e7b0ff2843.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 741,
+    "top_colors": [
+     [
+      [
+       0,
+       64,
+       224
+      ],
+      35.6
+     ],
+     [
+      [
+       224,
+       0,
+       64
+      ],
+      33.7
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      27.4
+     ]
+    ],
+    "near_white_pct": 28.0
+   },
+   "units": [
+    {
+     "key": "pub-092|57c9279cc70433e3391c4229fa3262f9bfa3a308d220fe32c763d3e7b0ff2843",
+     "input_url": "https://www.ozon.ru/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "6194"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "6f4701b305e642fd2473bacf865c886ae12470f26e1045e452a7fb6388a7c13b",
+   "image": "images/6f4701b305e642fd2473bacf865c886ae12470f26e1045e452a7fb6388a7c13b.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 82,
+    "top_colors": [
+     [
+      [
+       0,
+       64,
+       224
+      ],
+      35.6
+     ],
+     [
+      [
+       224,
+       0,
+       64
+      ],
+      33.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      27.5
+     ]
+    ],
+    "near_white_pct": 28.1
+   },
+   "units": [
+    {
+     "key": "pub-092|6f4701b305e642fd2473bacf865c886ae12470f26e1045e452a7fb6388a7c13b",
+     "input_url": "https://www.ozon.ru/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "3213"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "4ac5609e3986158cb87810f8bff552c0ed5e357b77812b6b052ef740dbb97629",
+   "image": "images/4ac5609e3986158cb87810f8bff552c0ed5e357b77812b6b052ef740dbb97629.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 752,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      69.8
+     ],
+     [
+      [
+       128,
+       192,
+       32
+      ],
+      11.2
+     ],
+     [
+      [
+       0,
+       160,
+       224
+      ],
+      8.1
+     ]
+    ],
+    "near_white_pct": 70.4
+   },
+   "units": [
+    {
+     "key": "pub-093|4ac5609e3986158cb87810f8bff552c0ed5e357b77812b6b052ef740dbb97629",
+     "input_url": "https://www.avito.ru/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "4851"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "e263f765eabea092a7ba22654061e274ac84355b657bfdaf5fa520a114da6689",
+   "image": "images/e263f765eabea092a7ba22654061e274ac84355b657bfdaf5fa520a114da6689.png",
+   "pixel": {
+    "size": [
+     16,
+     16
+    ],
+    "opaque_pct": 58.6,
+    "unique_colors": 105,
+    "top_colors": [
+     [
+      [
+       224,
+       96,
+       32
+      ],
+      100.0
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-094|e263f765eabea092a7ba22654061e274ac84355b657bfdaf5fa520a114da6689",
+     "input_url": "https://www.trendyol.com/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "16",
+     "h": "16",
+     "bytes": "550"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f720305eb6507b70dc45831c9de4c18868593a4735887f4ed7045902e2e95b6c",
+   "image": "images/f720305eb6507b70dc45831c9de4c18868593a4735887f4ed7045902e2e95b6c.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 99.0,
+    "unique_colors": 16,
+    "top_colors": [
+     [
+      [
+       224,
+       96,
+       0
+      ],
+      73.8
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      17.0
+     ],
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      3.9
+     ]
+    ],
+    "near_white_pct": 18.4
+   },
+   "units": [
+    {
+     "key": "pub-095|f720305eb6507b70dc45831c9de4c18868593a4735887f4ed7045902e2e95b6c",
+     "input_url": "https://www.hepsiburada.com/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "696"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "a644fa0e8ceac3dd60d8b9520936c076c9691ffcd27cea6c9c23c1265bb2bd60",
+   "image": "images/a644fa0e8ceac3dd60d8b9520936c076c9691ffcd27cea6c9c23c1265bb2bd60.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 58.4,
+    "unique_colors": 559,
+    "top_colors": [
+     [
+      [
+       160,
+       192,
+       64
+      ],
+      25.4
+     ],
+     [
+      [
+       128,
+       192,
+       64
+      ],
+      17.2
+     ],
+     [
+      [
+       96,
+       160,
+       64
+      ],
+      16.1
+     ]
+    ],
+    "near_white_pct": 0.2
+   },
+   "units": [
+    {
+     "key": "pub-096|a644fa0e8ceac3dd60d8b9520936c076c9691ffcd27cea6c9c23c1265bb2bd60",
+     "input_url": "https://www.woolworths.com.au/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "2433"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "4827e5df522d88f1c9a2acf3157f51aba5bcd622a766d074ab5c9fa57245b6a0",
+   "image": "images/4827e5df522d88f1c9a2acf3157f51aba5bcd622a766d074ab5c9fa57245b6a0.png",
+   "pixel": {
+    "size": [
+     57,
+     57
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 25,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      67.4
+     ],
+     [
+      [
+       224,
+       192,
+       0
+      ],
+      24.7
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      4.3
+     ]
+    ],
+    "near_white_pct": 67.5
+   },
+   "units": [
+    {
+     "key": "pub-097|4827e5df522d88f1c9a2acf3157f51aba5bcd622a766d074ab5c9fa57245b6a0",
+     "input_url": "https://www.commbank.com.au/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "57",
+     "h": "57",
+     "bytes": "617"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "72affb6d7328515082baeb506ce1a4659c23a16247a9334f4cd27c58ba21c3f4",
+   "image": "images/72affb6d7328515082baeb506ce1a4659c23a16247a9334f4cd27c58ba21c3f4.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 409,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      72.8
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      22.4
+     ],
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      1.0
+     ]
+    ],
+    "near_white_pct": 73.4
+   },
+   "units": [
+    {
+     "key": "pub-098|72affb6d7328515082baeb506ce1a4659c23a16247a9334f4cd27c58ba21c3f4",
+     "input_url": "https://www.abc.net.au/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "5360"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "af8ccd3c8c2507c379ac446ba1ac49a013ff47cfb376bbfb1b226ad208878fdf",
+   "image": "images/af8ccd3c8c2507c379ac446ba1ac49a013ff47cfb376bbfb1b226ad208878fdf.png",
+   "pixel": {
+    "size": [
+     60,
+     60
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 310,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      81.2
+     ],
+     [
+      [
+       192,
+       0,
+       0
+      ],
+      6.7
+     ],
+     [
+      [
+       224,
+       0,
+       0
+      ],
+      6.2
+     ]
+    ],
+    "near_white_pct": 82.5
+   },
+   "units": [
+    {
+     "key": "pub-099|af8ccd3c8c2507c379ac446ba1ac49a013ff47cfb376bbfb1b226ad208878fdf",
+     "input_url": "https://www.qantas.com.au/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "60",
+     "h": "60",
+     "bytes": "1721"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f9f4a49a2835d7d841daeadf5e08908e7ad70ec87b661cd47e6ac28f06bf65c4",
+   "image": "images/f9f4a49a2835d7d841daeadf5e08908e7ad70ec87b661cd47e6ac28f06bf65c4.png",
+   "pixel": {
+    "size": [
+     57,
+     57
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 17,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      78.9
+     ],
+     [
+      [
+       224,
+       32,
+       32
+      ],
+      12.1
+     ],
+     [
+      [
+       224,
+       192,
+       192
+      ],
+      2.0
+     ]
+    ],
+    "near_white_pct": 80.9
+   },
+   "units": [
+    {
+     "key": "pub-100|f9f4a49a2835d7d841daeadf5e08908e7ad70ec87b661cd47e6ac28f06bf65c4",
+     "input_url": "https://www.aircanada.com/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "57",
+     "h": "57",
+     "bytes": "1071"
+    }
+   ]
+  }
+ ]
+}

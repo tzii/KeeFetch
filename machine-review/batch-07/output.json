@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "mode": "review_batch",
+  "repo": "C:\\Dev\\KeeFetch",
+  "results": [
+    {
+      "schema_version": "1.0",
+      "run_id": "20260822-172417-review-antigravity-908939",
+      "mode": "review",
+      "role": "google",
+      "worker": "antigravity",
+      "status": "ok",
+      "repo": {
+        "root": "C:\\Dev\\KeeFetch",
+        "base_commit": "e74a343adb253a317bf582f78242f7c235503200",
+        "dirty_source_included": true
+      },
+      "workspace": {
+        "path": "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-172417-review-antigravity-908939",
+        "ephemeral": true,
+        "branch": null,
+        "removed": true
+      },
+      "command": {
+        "argv": [
+          "C:\\Users\\zxcv0\\AppData\\Local\\agy\\bin\\agy.EXE",
+          "--model",
+          "gemini-3.7-flash-high",
+          "--effort",
+          "high",
+          "--mode",
+          "plan",
+          "--dangerously-skip-permissions",
+          "--print-timeout",
+          "35m",
+          "-p",
+          "<PROMPT>",
+          "--add-dir",
+          "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-172417-review-antigravity-908939",
+          "--output-format",
+          "json"
+        ],
+        "exit_code": 0
+      },
+      "result": {
+        "summary": "{\"conversation_id\":\"ec005564-afd8-49ee-a641-a8f10dc18a3d\",\"status\":\"SUCCESS\",\"response\":\"[\\n  {\\n    \\\"key\\\": \\\"pub-101|23e92f32f2002338d4d7c6ae062f00d8c85c10d66b50c9a32a774d471fc9a3c0\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated 'W' letter mark on a light gray background derived from the domain name.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-144|23e92f32f2002338d4d7c6ae062f00d8c85c10d66b50c9a32a774d471fc9a3c0\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated 'W' letter mark on a light gray background derived from the domain name.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-102|313e3dd651801aa5160524849d3174e01ed28d9d4d151a8cde4a118ec4f1146d\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine red maple leaf brand favicon for https://www.timhortons.ca/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-103|0fb87e0fcd595fc0f0e5e2a2c9cd67f6de2745f937cf9758ee0a1f9f176c7b56\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine red gem logo favicon for the Canadian Broadcasting Corporation at https://www.cbc.ca/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-104|38b2974c418e4e4c79ef859cf0fc35198f6535385cf8c554629ba39f733ef8d4\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Loblaws red and orange 'L' brand icon for https://www.loblaws.ca/, contradicting synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-104|90a9c8e52ff3bb7505653b63dbe4ca9c969cc5501e7a29fd56d5af95da515ac2\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Loblaws red and orange 'L' brand icon for https://www.loblaws.ca/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-104|fbb3f1fe2e5f78c7c5a3d83216883b25b694073a0b809909913c064b98bf55aa\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Loblaws red and orange 'L' brand icon for https://www.loblaws.ca/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-105|59743f04238eae0ed0ef0a235b40c0dce173dfd3bb296b37a0d2508be0f7e86b\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine green and white Coop brand logo for https://www.coop.se/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-106|9084899fa9582300f8385f9d927bc1f98f7ed0590a5d5e7fe4eb17bad05af9bd\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine blue and yellow IKEA brand logo for https://www.ikea.se/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-106|b75d3f98e4f21c369eba3bbf5794ac778b8c95079b35a9f01c037097aa93aa9a\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine blue and yellow IKEA brand logo for https://www.ikea.se/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-107|65b8909874707994ebad080b7f3711ed2988df2fa49e942dec043ce3ab2f5f88\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine white NRK logo on blue background for https://www.nrk.no/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-108|8ee03a74446287c918cd8a0ad707328f6d17305d319b3f61ab3b2d945e7cbcd9\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine blue brand logo for Norwegian marketplace https://www.finn.no/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-109|362d67041941b7aedc649ef9fe400f7f26cd4c7bf5ed888391f56f8f9567085c\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine white 'bol.' logo on blue circular background for https://www.bol.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-109|9522d65216da22fabd5933697ba2f81ca2533da652044fd75504d3ca52a96b08\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine white 'bol.' logo on blue circular background for https://www.bol.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-109|d56c9e69b172b702da79550627a516f500e96812a976fe8c191158ef99d84572\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine white 'bol.' logo on blue circular background for https://www.bol.com/, contradicting synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-109|daa218c7656c49da200123a61b82c9236b03d41dea37bccb9b67008c530a2ca2\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine white 'bol.' brand logo on blue square background for https://www.bol.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-110|7b276a1f41e30bdab3f3034465f417981a89fcbd7129cfd1286afff8d43a2b77\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Albert Heijn blue emblem brand logo for https://www.ah.nl/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-111|3cbf36483be1bc3bfeb851094f5d66e769cb0b50d9688b3f46983b616597370d\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine NU.nl brand logo with red 'nl' badge for https://www.nu.nl/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-111|3e23abd714fa015c0a20dda65f2ecee871bb452e59bb6051f876c23a75d51326\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine NU.nl brand logo with red 'nl' badge for https://www.nu.nl/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-111|b282eb0e59d3bad13b927e2094cc4fb1765ca8af0b92f117c8ec78c76f7b5796\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine NU.nl brand logo with red 'nl' badge for https://www.nu.nl/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-111|d30ba10a2f6378f260ed6c9ad6c760bf69f05b1df316e737f39cd046b5a8adb2\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine NU.nl brand logo for https://www.nu.nl/, contradicting synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-112|d1d742f217a8aff39aacc4ddf17b879611656a7996a5b7160842b113fe19a1c6\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine OLX brand logo on teal background for https://www.olx.pl/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-116|d1d742f217a8aff39aacc4ddf17b879611656a7996a5b7160842b113fe19a1c6\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine OLX brand logo on teal background for regional domain https://www.olx.ro/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-113|e92d13ad863e35a25bab2e7cf979c78ea128a9f9c4d2ed60f078210fc672a11e\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Allegro orange shopping bag brand icon for https://www.allegro.pl/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-114|85177bb063ed6122c1a5d604e6cc24d147c515076689ba96ec0eb9192a4aba4e\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine red 'WP' brand logo for Polish portal https://www.wp.pl/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-115|2283712168cbd6136c11a6bd19d643098b08aff0ff48840449280758f2e077c4\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine multicolored 'eMAG' brand logo for Romanian retailer https://www.emag.ro/.\\\",\\n    \\\"verified_live\\\": true\\n  }\\n]\\n\",\"duration_seconds\":235.3867241,\"num_turns\":1,\"usage\":{\"input_tokens\":449908,\"output_tokens\":42316,\"thinking_tokens\":21980,\"cache_read_tokens\":6932588,\"total_tokens\":492224}}",
+        "summary_truncated": false,
+        "stdout_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-172417-review-antigravity-908939\\stdout.txt",
+        "stderr_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-172417-review-antigravity-908939\\stderr.txt"
+      },
+      "safety": {
+        "isolated": true,
+        "unexpected_review_mutation": false,
+        "auto_integrated": false,
+        "pushed_or_published_by_crew": false
+      },
+      "duration_ms": 241368
+    }
+  ]
+}

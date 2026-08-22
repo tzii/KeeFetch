@@ -1,0 +1,1210 @@
+{
+ "batch": "07",
+ "image_count": 24,
+ "images": [
+  {
+   "artifact_hash": "23e92f32f2002338d4d7c6ae062f00d8c85c10d66b50c9a32a774d471fc9a3c0",
+   "image": "images/23e92f32f2002338d4d7c6ae062f00d8c85c10d66b50c9a32a774d471fc9a3c0.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 143,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      88.6
+     ],
+     [
+      [
+       96,
+       96,
+       96
+      ],
+      8.8
+     ],
+     [
+      [
+       128,
+       128,
+       128
+      ],
+      0.9
+     ]
+    ],
+    "near_white_pct": 89.4
+   },
+   "units": [
+    {
+     "key": "pub-101|23e92f32f2002338d4d7c6ae062f00d8c85c10d66b50c9a32a774d471fc9a3c0",
+     "input_url": "https://www.shop.ca/",
+     "category": "regional-service",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 3,
+     "w": "128",
+     "h": "128",
+     "bytes": "3016"
+    },
+    {
+     "key": "pub-144|23e92f32f2002338d4d7c6ae062f00d8c85c10d66b50c9a32a774d471fc9a3c0",
+     "input_url": "https://www.aaronsw.com/",
+     "category": "small-site",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 3,
+     "w": "128",
+     "h": "128",
+     "bytes": "3016"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "313e3dd651801aa5160524849d3174e01ed28d9d4d151a8cde4a118ec4f1146d",
+   "image": "images/313e3dd651801aa5160524849d3174e01ed28d9d4d151a8cde4a118ec4f1146d.png",
+   "pixel": {
+    "size": [
+     16,
+     16
+    ],
+    "opaque_pct": 64.1,
+    "unique_colors": 48,
+    "top_colors": [
+     [
+      [
+       192,
+       0,
+       32
+      ],
+      100.0
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-102|313e3dd651801aa5160524849d3174e01ed28d9d4d151a8cde4a118ec4f1146d",
+     "input_url": "https://www.timhortons.ca/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "16",
+     "h": "16",
+     "bytes": "399"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "0fb87e0fcd595fc0f0e5e2a2c9cd67f6de2745f937cf9758ee0a1f9f176c7b56",
+   "image": "images/0fb87e0fcd595fc0f0e5e2a2c9cd67f6de2745f937cf9758ee0a1f9f176c7b56.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 49.4,
+    "unique_colors": 206,
+    "top_colors": [
+     [
+      [
+       224,
+       0,
+       32
+      ],
+      100.0
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-103|0fb87e0fcd595fc0f0e5e2a2c9cd67f6de2745f937cf9758ee0a1f9f176c7b56",
+     "input_url": "https://www.cbc.ca/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "64",
+     "h": "64",
+     "bytes": "2064"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "38b2974c418e4e4c79ef859cf0fc35198f6535385cf8c554629ba39f733ef8d4",
+   "image": "images/38b2974c418e4e4c79ef859cf0fc35198f6535385cf8c554629ba39f733ef8d4.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 96.6,
+    "unique_colors": 1172,
+    "top_colors": [
+     [
+      [
+       224,
+       0,
+       0
+      ],
+      70.5
+     ],
+     [
+      [
+       224,
+       128,
+       32
+      ],
+      22.0
+     ],
+     [
+      [
+       224,
+       32,
+       0
+      ],
+      3.3
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-104|38b2974c418e4e4c79ef859cf0fc35198f6535385cf8c554629ba39f733ef8d4",
+     "input_url": "https://www.loblaws.ca/",
+     "category": "regional-service",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "9233"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "90a9c8e52ff3bb7505653b63dbe4ca9c969cc5501e7a29fd56d5af95da515ac2",
+   "image": "images/90a9c8e52ff3bb7505653b63dbe4ca9c969cc5501e7a29fd56d5af95da515ac2.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 92.2,
+    "unique_colors": 101,
+    "top_colors": [
+     [
+      [
+       224,
+       0,
+       0
+      ],
+      75.2
+     ],
+     [
+      [
+       224,
+       128,
+       32
+      ],
+      24.8
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-104|90a9c8e52ff3bb7505653b63dbe4ca9c969cc5501e7a29fd56d5af95da515ac2",
+     "input_url": "https://www.loblaws.ca/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "64",
+     "h": "64",
+     "bytes": "872"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "fbb3f1fe2e5f78c7c5a3d83216883b25b694073a0b809909913c064b98bf55aa",
+   "image": "images/fbb3f1fe2e5f78c7c5a3d83216883b25b694073a0b809909913c064b98bf55aa.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 92.2,
+    "unique_colors": 101,
+    "top_colors": [
+     [
+      [
+       224,
+       0,
+       0
+      ],
+      75.1
+     ],
+     [
+      [
+       224,
+       128,
+       32
+      ],
+      21.1
+     ],
+     [
+      [
+       224,
+       128,
+       0
+      ],
+      3.8
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-104|fbb3f1fe2e5f78c7c5a3d83216883b25b694073a0b809909913c064b98bf55aa",
+     "input_url": "https://www.loblaws.ca/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 5,
+     "w": "64",
+     "h": "64",
+     "bytes": "1010"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "59743f04238eae0ed0ef0a235b40c0dce173dfd3bb296b37a0d2508be0f7e86b",
+   "image": "images/59743f04238eae0ed0ef0a235b40c0dce173dfd3bb296b37a0d2508be0f7e86b.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 460,
+    "top_colors": [
+     [
+      [
+       0,
+       160,
+       64
+      ],
+      85.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      10.0
+     ],
+     [
+      [
+       0,
+       160,
+       32
+      ],
+      2.1
+     ]
+    ],
+    "near_white_pct": 10.3
+   },
+   "units": [
+    {
+     "key": "pub-105|59743f04238eae0ed0ef0a235b40c0dce173dfd3bb296b37a0d2508be0f7e86b",
+     "input_url": "https://www.coop.se/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3676"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "9084899fa9582300f8385f9d927bc1f98f7ed0590a5d5e7fe4eb17bad05af9bd",
+   "image": "images/9084899fa9582300f8385f9d927bc1f98f7ed0590a5d5e7fe4eb17bad05af9bd.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 41.7,
+    "unique_colors": 9,
+    "top_colors": [
+     [
+      [
+       0,
+       64,
+       160
+      ],
+      56.9
+     ],
+     [
+      [
+       224,
+       192,
+       0
+      ],
+      32.5
+     ],
+     [
+      [
+       192,
+       192,
+       32
+      ],
+      3.2
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-106|9084899fa9582300f8385f9d927bc1f98f7ed0590a5d5e7fe4eb17bad05af9bd",
+     "input_url": "https://www.ikea.se/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "48",
+     "h": "48",
+     "bytes": "460"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "b75d3f98e4f21c369eba3bbf5794ac778b8c95079b35a9f01c037097aa93aa9a",
+   "image": "images/b75d3f98e4f21c369eba3bbf5794ac778b8c95079b35a9f01c037097aa93aa9a.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 43.8,
+    "unique_colors": 211,
+    "top_colors": [
+     [
+      [
+       0,
+       64,
+       160
+      ],
+      39.3
+     ],
+     [
+      [
+       224,
+       224,
+       0
+      ],
+      15.0
+     ],
+     [
+      [
+       224,
+       192,
+       0
+      ],
+      9.6
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-106|b75d3f98e4f21c369eba3bbf5794ac778b8c95079b35a9f01c037097aa93aa9a",
+     "input_url": "https://www.ikea.se/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "32",
+     "h": "32",
+     "bytes": "1088"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "65b8909874707994ebad080b7f3711ed2988df2fa49e942dec043ce3ab2f5f88",
+   "image": "images/65b8909874707994ebad080b7f3711ed2988df2fa49e942dec043ce3ab2f5f88.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 328,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       192
+      ],
+      85.4
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      10.8
+     ],
+     [
+      [
+       0,
+       64,
+       192
+      ],
+      0.8
+     ]
+    ],
+    "near_white_pct": 11.3
+   },
+   "units": [
+    {
+     "key": "pub-107|65b8909874707994ebad080b7f3711ed2988df2fa49e942dec043ce3ab2f5f88",
+     "input_url": "https://www.nrk.no/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "2886"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "8ee03a74446287c918cd8a0ad707328f6d17305d319b3f61ab3b2d945e7cbcd9",
+   "image": "images/8ee03a74446287c918cd8a0ad707328f6d17305d319b3f61ab3b2d945e7cbcd9.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 210,
+    "top_colors": [
+     [
+      [
+       0,
+       160,
+       224
+      ],
+      77.6
+     ],
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      8.0
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      7.3
+     ]
+    ],
+    "near_white_pct": 7.7
+   },
+   "units": [
+    {
+     "key": "pub-108|8ee03a74446287c918cd8a0ad707328f6d17305d319b3f61ab3b2d945e7cbcd9",
+     "input_url": "https://www.finn.no/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "1801"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "362d67041941b7aedc649ef9fe400f7f26cd4c7bf5ed888391f56f8f9567085c",
+   "image": "images/362d67041941b7aedc649ef9fe400f7f26cd4c7bf5ed888391f56f8f9567085c.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 81.3,
+    "unique_colors": 36,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       160
+      ],
+      72.1
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      18.4
+     ],
+     [
+      [
+       160,
+       160,
+       224
+      ],
+      3.3
+     ]
+    ],
+    "near_white_pct": 20.0
+   },
+   "units": [
+    {
+     "key": "pub-109|362d67041941b7aedc649ef9fe400f7f26cd4c7bf5ed888391f56f8f9567085c",
+     "input_url": "https://www.bol.com/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 1,
+     "w": "48",
+     "h": "48",
+     "bytes": "942"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "9522d65216da22fabd5933697ba2f81ca2533da652044fd75504d3ca52a96b08",
+   "image": "images/9522d65216da22fabd5933697ba2f81ca2533da652044fd75504d3ca52a96b08.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 81.3,
+    "unique_colors": 36,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       160
+      ],
+      72.1
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      18.4
+     ],
+     [
+      [
+       160,
+       160,
+       224
+      ],
+      3.3
+     ]
+    ],
+    "near_white_pct": 20.0
+   },
+   "units": [
+    {
+     "key": "pub-109|9522d65216da22fabd5933697ba2f81ca2533da652044fd75504d3ca52a96b08",
+     "input_url": "https://www.bol.com/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 5,
+     "w": "48",
+     "h": "48",
+     "bytes": "944"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "d56c9e69b172b702da79550627a516f500e96812a976fe8c191158ef99d84572",
+   "image": "images/d56c9e69b172b702da79550627a516f500e96812a976fe8c191158ef99d84572.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 82.2,
+    "unique_colors": 799,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       160
+      ],
+      70.2
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      16.8
+     ],
+     [
+      [
+       192,
+       192,
+       224
+      ],
+      2.8
+     ]
+    ],
+    "near_white_pct": 19.6
+   },
+   "units": [
+    {
+     "key": "pub-109|d56c9e69b172b702da79550627a516f500e96812a976fe8c191158ef99d84572",
+     "input_url": "https://www.bol.com/",
+     "category": "regional-service",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 2,
+     "w": "128",
+     "h": "128",
+     "bytes": "11483"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "daa218c7656c49da200123a61b82c9236b03d41dea37bccb9b67008c530a2ca2",
+   "image": "images/daa218c7656c49da200123a61b82c9236b03d41dea37bccb9b67008c530a2ca2.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 358,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       160
+      ],
+      78.4
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      18.1
+     ],
+     [
+      [
+       32,
+       32,
+       160
+      ],
+      0.6
+     ]
+    ],
+    "near_white_pct": 18.6
+   },
+   "units": [
+    {
+     "key": "pub-109|daa218c7656c49da200123a61b82c9236b03d41dea37bccb9b67008c530a2ca2",
+     "input_url": "https://www.bol.com/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 45,
+     "w": "128",
+     "h": "128",
+     "bytes": "3149"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "7b276a1f41e30bdab3f3034465f417981a89fcbd7129cfd1286afff8d43a2b77",
+   "image": "images/7b276a1f41e30bdab3f3034465f417981a89fcbd7129cfd1286afff8d43a2b77.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 97.0,
+    "unique_colors": 275,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      68.3
+     ],
+     [
+      [
+       0,
+       160,
+       224
+      ],
+      22.3
+     ],
+     [
+      [
+       160,
+       224,
+       224
+      ],
+      2.2
+     ]
+    ],
+    "near_white_pct": 70.3
+   },
+   "units": [
+    {
+     "key": "pub-110|7b276a1f41e30bdab3f3034465f417981a89fcbd7129cfd1286afff8d43a2b77",
+     "input_url": "https://www.ah.nl/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "1899"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "3cbf36483be1bc3bfeb851094f5d66e769cb0b50d9688b3f46983b616597370d",
+   "image": "images/3cbf36483be1bc3bfeb851094f5d66e769cb0b50d9688b3f46983b616597370d.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 58,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      59.8
+     ],
+     [
+      [
+       0,
+       0,
+       64
+      ],
+      33.1
+     ],
+     [
+      [
+       160,
+       0,
+       0
+      ],
+      2.6
+     ]
+    ],
+    "near_white_pct": 60.4
+   },
+   "units": [
+    {
+     "key": "pub-111|3cbf36483be1bc3bfeb851094f5d66e769cb0b50d9688b3f46983b616597370d",
+     "input_url": "https://www.nu.nl/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "2490"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "3e23abd714fa015c0a20dda65f2ecee871bb452e59bb6051f876c23a75d51326",
+   "image": "images/3e23abd714fa015c0a20dda65f2ecee871bb452e59bb6051f876c23a75d51326.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 65.8,
+    "unique_colors": 637,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       64
+      ],
+      50.7
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      38.9
+     ],
+     [
+      [
+       160,
+       0,
+       0
+      ],
+      4.1
+     ]
+    ],
+    "near_white_pct": 39.8
+   },
+   "units": [
+    {
+     "key": "pub-111|3e23abd714fa015c0a20dda65f2ecee871bb452e59bb6051f876c23a75d51326",
+     "input_url": "https://www.nu.nl/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "5132"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "b282eb0e59d3bad13b927e2094cc4fb1765ca8af0b92f117c8ec78c76f7b5796",
+   "image": "images/b282eb0e59d3bad13b927e2094cc4fb1765ca8af0b92f117c8ec78c76f7b5796.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 56.2,
+    "unique_colors": 177,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       64
+      ],
+      36.5
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      25.2
+     ],
+     [
+      [
+       32,
+       32,
+       96
+      ],
+      7.6
+     ]
+    ],
+    "near_white_pct": 29.9
+   },
+   "units": [
+    {
+     "key": "pub-111|b282eb0e59d3bad13b927e2094cc4fb1765ca8af0b92f117c8ec78c76f7b5796",
+     "input_url": "https://www.nu.nl/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "32",
+     "h": "32",
+     "bytes": "1130"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "d30ba10a2f6378f260ed6c9ad6c760bf69f05b1df316e737f39cd046b5a8adb2",
+   "image": "images/d30ba10a2f6378f260ed6c9ad6c760bf69f05b1df316e737f39cd046b5a8adb2.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 56.2,
+    "unique_colors": 177,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       64
+      ],
+      36.5
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      25.2
+     ],
+     [
+      [
+       32,
+       32,
+       96
+      ],
+      7.6
+     ]
+    ],
+    "near_white_pct": 29.9
+   },
+   "units": [
+    {
+     "key": "pub-111|d30ba10a2f6378f260ed6c9ad6c760bf69f05b1df316e737f39cd046b5a8adb2",
+     "input_url": "https://www.nu.nl/",
+     "category": "regional-service",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "32",
+     "h": "32",
+     "bytes": "1130"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "d1d742f217a8aff39aacc4ddf17b879611656a7996a5b7160842b113fe19a1c6",
+   "image": "images/d1d742f217a8aff39aacc4ddf17b879611656a7996a5b7160842b113fe19a1c6.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 349,
+    "top_colors": [
+     [
+      [
+       32,
+       224,
+       192
+      ],
+      79.3
+     ],
+     [
+      [
+       0,
+       32,
+       32
+      ],
+      13.9
+     ],
+     [
+      [
+       32,
+       224,
+       224
+      ],
+      3.5
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-112|d1d742f217a8aff39aacc4ddf17b879611656a7996a5b7160842b113fe19a1c6",
+     "input_url": "https://www.olx.pl/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3616"
+    },
+    {
+     "key": "pub-116|d1d742f217a8aff39aacc4ddf17b879611656a7996a5b7160842b113fe19a1c6",
+     "input_url": "https://www.olx.ro/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3616"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "e92d13ad863e35a25bab2e7cf979c78ea128a9f9c4d2ed60f078210fc672a11e",
+   "image": "images/e92d13ad863e35a25bab2e7cf979c78ea128a9f9c4d2ed60f078210fc672a11e.png",
+   "pixel": {
+    "size": [
+     57,
+     57
+    ],
+    "opaque_pct": 49.2,
+    "unique_colors": 336,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      75.4
+     ],
+     [
+      [
+       192,
+       64,
+       0
+      ],
+      5.2
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      4.1
+     ]
+    ],
+    "near_white_pct": 5.2
+   },
+   "units": [
+    {
+     "key": "pub-113|e92d13ad863e35a25bab2e7cf979c78ea128a9f9c4d2ed60f078210fc672a11e",
+     "input_url": "https://www.allegro.pl/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "57",
+     "h": "57",
+     "bytes": "1817"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "85177bb063ed6122c1a5d604e6cc24d147c515076689ba96ec0eb9192a4aba4e",
+   "image": "images/85177bb063ed6122c1a5d604e6cc24d147c515076689ba96ec0eb9192a4aba4e.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 543,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      84.1
+     ],
+     [
+      [
+       224,
+       0,
+       32
+      ],
+      10.3
+     ],
+     [
+      [
+       224,
+       0,
+       0
+      ],
+      2.0
+     ]
+    ],
+    "near_white_pct": 84.8
+   },
+   "units": [
+    {
+     "key": "pub-114|85177bb063ed6122c1a5d604e6cc24d147c515076689ba96ec0eb9192a4aba4e",
+     "input_url": "https://www.wp.pl/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "4782"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "2283712168cbd6136c11a6bd19d643098b08aff0ff48840449280758f2e077c4",
+   "image": "images/2283712168cbd6136c11a6bd19d643098b08aff0ff48840449280758f2e077c4.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 1116,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      85.2
+     ],
+     [
+      [
+       0,
+       128,
+       224
+      ],
+      3.1
+     ],
+     [
+      [
+       224,
+       0,
+       32
+      ],
+      1.0
+     ]
+    ],
+    "near_white_pct": 85.7
+   },
+   "units": [
+    {
+     "key": "pub-115|2283712168cbd6136c11a6bd19d643098b08aff0ff48840449280758f2e077c4",
+     "input_url": "https://www.emag.ro/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "6048"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,1270 @@
+{
+ "batch": "04",
+ "image_count": 24,
+ "images": [
+  {
+   "artifact_hash": "8759579205601518cf54ac6f3945b47f790cdbb528a3ef30bba5e3bb56de8bdf",
+   "image": "images/8759579205601518cf54ac6f3945b47f790cdbb528a3ef30bba5e3bb56de8bdf.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 77.4,
+    "unique_colors": 378,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      63.9
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      11.8
+     ],
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      5.2
+     ]
+    ],
+    "near_white_pct": 68.3
+   },
+   "units": [
+    {
+     "key": "pub-049|8759579205601518cf54ac6f3945b47f790cdbb528a3ef30bba5e3bb56de8bdf",
+     "input_url": "https://openai.com/",
+     "category": "global-brand",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "13612"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "a77f187abb995affcdfdaeb254b2ec36f23d526343a7706ba10e4f90bf3ecab5",
+   "image": "images/a77f187abb995affcdfdaeb254b2ec36f23d526343a7706ba10e4f90bf3ecab5.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 36,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      81.3
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      14.2
+     ],
+     [
+      [
+       192,
+       192,
+       192
+      ],
+      0.8
+     ]
+    ],
+    "near_white_pct": 82.2
+   },
+   "units": [
+    {
+     "key": "pub-049|a77f187abb995affcdfdaeb254b2ec36f23d526343a7706ba10e4f90bf3ecab5",
+     "input_url": "https://openai.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "3118"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "aee21edcbfb9f135f03efb473d98bad0db56f32eeb72bcc5528cb331bd524f8e",
+   "image": "images/aee21edcbfb9f135f03efb473d98bad0db56f32eeb72bcc5528cb331bd524f8e.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 352,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      83.3
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      14.1
+     ],
+     [
+      [
+       128,
+       128,
+       128
+      ],
+      0.5
+     ]
+    ],
+    "near_white_pct": 83.9
+   },
+   "units": [
+    {
+     "key": "pub-050|aee21edcbfb9f135f03efb473d98bad0db56f32eeb72bcc5528cb331bd524f8e",
+     "input_url": "https://www.anthropic.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3645"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "c967592661ad66bfbb219afdfb42cdedb377dd771ed3a93e553513cc83173920",
+   "image": "images/c967592661ad66bfbb219afdfb42cdedb377dd771ed3a93e553513cc83173920.png",
+   "pixel": {
+    "size": [
+     57,
+     57
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 440,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      80.1
+     ],
+     [
+      [
+       32,
+       128,
+       224
+      ],
+      3.6
+     ],
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      3.0
+     ]
+    ],
+    "near_white_pct": 82.2
+   },
+   "units": [
+    {
+     "key": "pub-051|c967592661ad66bfbb219afdfb42cdedb377dd771ed3a93e553513cc83173920",
+     "input_url": "https://www.bing.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "57",
+     "h": "57",
+     "bytes": "2020"
+    },
+    {
+     "key": "pub-261|c967592661ad66bfbb219afdfb42cdedb377dd771ed3a93e553513cc83173920",
+     "input_url": "https://www.bing.com/nonexistent12345",
+     "category": "missing-or-invalid",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "57",
+     "h": "57",
+     "bytes": "2020"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "9ea16df66728befed2c5344b61f3d1ec34afb25e7fc984df0bca04e14094c710",
+   "image": "images/9ea16df66728befed2c5344b61f3d1ec34afb25e7fc984df0bca04e14094c710.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 293,
+    "top_colors": [
+     [
+      [
+       224,
+       32,
+       0
+      ],
+      85.3
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      9.4
+     ],
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      3.1
+     ]
+    ],
+    "near_white_pct": 9.9
+   },
+   "units": [
+    {
+     "key": "pub-052|9ea16df66728befed2c5344b61f3d1ec34afb25e7fc984df0bca04e14094c710",
+     "input_url": "https://www.yandex.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "2803"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "d8c82eaacb94bb2888c08abeb1ee6098623aadf20e94ff9db0286d15866f1983",
+   "image": "images/d8c82eaacb94bb2888c08abeb1ee6098623aadf20e94ff9db0286d15866f1983.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 99.0,
+    "unique_colors": 246,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      61.6
+     ],
+     [
+      [
+       32,
+       32,
+       224
+      ],
+      29.4
+     ],
+     [
+      [
+       160,
+       160,
+       224
+      ],
+      1.9
+     ]
+    ],
+    "near_white_pct": 63.1
+   },
+   "units": [
+    {
+     "key": "pub-053|d8c82eaacb94bb2888c08abeb1ee6098623aadf20e94ff9db0286d15866f1983",
+     "input_url": "https://www.baidu.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 53,
+     "w": "64",
+     "h": "64",
+     "bytes": "2163"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f888096e550bd7f8e7c11e893c55b59e5c7e2de8a0aea6393e4e855245b791ad",
+   "image": "images/f888096e550bd7f8e7c11e893c55b59e5c7e2de8a0aea6393e4e855245b791ad.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 41,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      79.8
+     ],
+     [
+      [
+       32,
+       32,
+       224
+      ],
+      14.8
+     ],
+     [
+      [
+       0,
+       0,
+       192
+      ],
+      1.3
+     ]
+    ],
+    "near_white_pct": 80.4
+   },
+   "units": [
+    {
+     "key": "pub-053|f888096e550bd7f8e7c11e893c55b59e5c7e2de8a0aea6393e4e855245b791ad",
+     "input_url": "https://www.baidu.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 1,
+     "w": "128",
+     "h": "128",
+     "bytes": "2757"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "ca9c41f148a2b98aa01cfde7a410fc7f8137e18bb0975283c856381ee506b098",
+   "image": "images/ca9c41f148a2b98aa01cfde7a410fc7f8137e18bb0975283c856381ee506b098.png",
+   "pixel": {
+    "size": [
+     16,
+     16
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 43,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       0
+      ],
+      30.1
+     ],
+     [
+      [
+       224,
+       96,
+       32
+      ],
+      19.5
+     ],
+     [
+      [
+       224,
+       160,
+       0
+      ],
+      14.1
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-054|ca9c41f148a2b98aa01cfde7a410fc7f8137e18bb0975283c856381ee506b098",
+     "input_url": "https://www.alibaba.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "16",
+     "h": "16",
+     "bytes": "418"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "bab72acbf689665e13068a746ac2c89db75dde4598da767253670a0b42fba2d7",
+   "image": "images/bab72acbf689665e13068a746ac2c89db75dde4598da767253670a0b42fba2d7.png",
+   "pixel": {
+    "size": [
+     16,
+     16
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 144,
+    "top_colors": [
+     [
+      [
+       192,
+       0,
+       32
+      ],
+      40.2
+     ],
+     [
+      [
+       224,
+       0,
+       32
+      ],
+      18.0
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      10.9
+     ]
+    ],
+    "near_white_pct": 14.5
+   },
+   "units": [
+    {
+     "key": "pub-055|bab72acbf689665e13068a746ac2c89db75dde4598da767253670a0b42fba2d7",
+     "input_url": "https://www.aliexpress.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "16",
+     "h": "16",
+     "bytes": "674"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "b7e78861f1819a37fb02577a9d327a28f084df8dcdfbd8ceb5f59ab7261c4668",
+   "image": "images/b7e78861f1819a37fb02577a9d327a28f084df8dcdfbd8ceb5f59ab7261c4668.png",
+   "pixel": {
+    "size": [
+     57,
+     57
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 16,
+    "top_colors": [
+     [
+      [
+       224,
+       96,
+       0
+      ],
+      83.9
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      11.1
+     ],
+     [
+      [
+       224,
+       224,
+       192
+      ],
+      1.1
+     ]
+    ],
+    "near_white_pct": 12.2
+   },
+   "units": [
+    {
+     "key": "pub-056|b7e78861f1819a37fb02577a9d327a28f084df8dcdfbd8ceb5f59ab7261c4668",
+     "input_url": "https://www.etsy.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "57",
+     "h": "57",
+     "bytes": "682"
+    },
+    {
+     "key": "pub-151|b7e78861f1819a37fb02577a9d327a28f084df8dcdfbd8ceb5f59ab7261c4668",
+     "input_url": "https://www.etsy.com/shop/TinyWorkshop",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "57",
+     "h": "57",
+     "bytes": "682"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "0e4baaeb41d23873b35dcd18e33af90ce08f06610b08df4f3f5f2ba2b4d0ff23",
+   "image": "images/0e4baaeb41d23873b35dcd18e33af90ce08f06610b08df4f3f5f2ba2b4d0ff23.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 702,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      44.9
+     ],
+     [
+      [
+       128,
+       160,
+       64
+      ],
+      30.2
+     ],
+     [
+      [
+       64,
+       128,
+       32
+      ],
+      15.8
+     ]
+    ],
+    "near_white_pct": 45.9
+   },
+   "units": [
+    {
+     "key": "pub-057|0e4baaeb41d23873b35dcd18e33af90ce08f06610b08df4f3f5f2ba2b4d0ff23",
+     "input_url": "https://www.shopify.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "6894"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "92697546c7807706c2ea2cc7fd77d27967104b110be510a77de46e59c287e6dc",
+   "image": "images/92697546c7807706c2ea2cc7fd77d27967104b110be510a77de46e59c287e6dc.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 543,
+    "top_colors": [
+     [
+      [
+       32,
+       224,
+       160
+      ],
+      76.2
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      17.5
+     ],
+     [
+      [
+       32,
+       192,
+       160
+      ],
+      1.7
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-058|92697546c7807706c2ea2cc7fd77d27967104b110be510a77de46e59c287e6dc",
+     "input_url": "https://www.tripadvisor.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "5708"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "30585966c85e90a615a4f40519bc3d9c159536482ed278075a6518ba016e5f7f",
+   "image": "images/30585966c85e90a615a4f40519bc3d9c159536482ed278075a6518ba016e5f7f.png",
+   "pixel": {
+    "size": [
+     57,
+     57
+    ],
+    "opaque_pct": 97.2,
+    "unique_colors": 98,
+    "top_colors": [
+     [
+      [
+       224,
+       192,
+       32
+      ],
+      75.5
+     ],
+     [
+      [
+       0,
+       0,
+       32
+      ],
+      18.1
+     ],
+     [
+      [
+       64,
+       64,
+       32
+      ],
+      2.2
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-059|30585966c85e90a615a4f40519bc3d9c159536482ed278075a6518ba016e5f7f",
+     "input_url": "https://www.expedia.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "57",
+     "h": "57",
+     "bytes": "1061"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "01f8f925052595e8560f13c7030a402dfac5be0440aca45e358b4d1b14db5a8d",
+   "image": "images/01f8f925052595e8560f13c7030a402dfac5be0440aca45e358b4d1b14db5a8d.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 83.6,
+    "unique_colors": 360,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       224
+      ],
+      22.0
+     ],
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      21.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      18.2
+     ]
+    ],
+    "near_white_pct": 21.4
+   },
+   "units": [
+    {
+     "key": "pub-060|01f8f925052595e8560f13c7030a402dfac5be0440aca45e358b4d1b14db5a8d",
+     "input_url": "https://www.shazam.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "32",
+     "h": "32",
+     "bytes": "1627"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "74abd4c9af9c27e514ff842be0b646138305642fa5df7f101a358c8352e89016",
+   "image": "images/74abd4c9af9c27e514ff842be0b646138305642fa5df7f101a358c8352e89016.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 83.6,
+    "unique_colors": 360,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       224
+      ],
+      22.0
+     ],
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      21.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      18.2
+     ]
+    ],
+    "near_white_pct": 21.4
+   },
+   "units": [
+    {
+     "key": "pub-060|74abd4c9af9c27e514ff842be0b646138305642fa5df7f101a358c8352e89016",
+     "input_url": "https://www.shazam.com/",
+     "category": "global-brand",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "32",
+     "h": "32",
+     "bytes": "1627"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "db8bbe1d90760c43bcfd5a4eac30383a9d2fc182812e4b43fbf554c9d049c74a",
+   "image": "images/db8bbe1d90760c43bcfd5a4eac30383a9d2fc182812e4b43fbf554c9d049c74a.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 79.9,
+    "unique_colors": 28,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       224
+      ],
+      27.9
+     ],
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      26.5
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      24.2
+     ]
+    ],
+    "near_white_pct": 24.8
+   },
+   "units": [
+    {
+     "key": "pub-060|db8bbe1d90760c43bcfd5a4eac30383a9d2fc182812e4b43fbf554c9d049c74a",
+     "input_url": "https://www.shazam.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "3752"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "ef5f8a25aab8ed1dc4a56c35c96061c367648135dfe58fdc8c354da16d4d8fc1",
+   "image": "images/ef5f8a25aab8ed1dc4a56c35c96061c367648135dfe58fdc8c354da16d4d8fc1.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 79.8,
+    "unique_colors": 1735,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      24.8
+     ],
+     [
+      [
+       0,
+       128,
+       224
+      ],
+      24.7
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      24.1
+     ]
+    ],
+    "near_white_pct": 24.7
+   },
+   "units": [
+    {
+     "key": "pub-060|ef5f8a25aab8ed1dc4a56c35c96061c367648135dfe58fdc8c354da16d4d8fc1",
+     "input_url": "https://www.shazam.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "11009"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "cdb4554c4e635b35c380cfddef1e84f55123c6659edf82da927ee5f1b482ef09",
+   "image": "images/cdb4554c4e635b35c380cfddef1e84f55123c6659edf82da927ee5f1b482ef09.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 697,
+    "top_colors": [
+     [
+      [
+       192,
+       64,
+       32
+      ],
+      71.8
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      20.7
+     ],
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      2.3
+     ]
+    ],
+    "near_white_pct": 21.3
+   },
+   "units": [
+    {
+     "key": "pub-253|cdb4554c4e635b35c380cfddef1e84f55123c6659edf82da927ee5f1b482ef09",
+     "input_url": "https://expired.badssl.com/",
+     "category": "missing-or-invalid",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 3,
+     "w": "128",
+     "h": "128",
+     "bytes": "5194"
+    },
+    {
+     "key": "pub-254|cdb4554c4e635b35c380cfddef1e84f55123c6659edf82da927ee5f1b482ef09",
+     "input_url": "https://self-signed.badssl.com/",
+     "category": "missing-or-invalid",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 3,
+     "w": "128",
+     "h": "128",
+     "bytes": "5194"
+    },
+    {
+     "key": "pub-255|cdb4554c4e635b35c380cfddef1e84f55123c6659edf82da927ee5f1b482ef09",
+     "input_url": "https://untrusted-root.badssl.com/",
+     "category": "missing-or-invalid",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 3,
+     "w": "128",
+     "h": "128",
+     "bytes": "5194"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f7dda0aa57d447c010aa1e66b22271dfd75a8f5aab0f4cefd312909f818d0a37",
+   "image": "images/f7dda0aa57d447c010aa1e66b22271dfd75a8f5aab0f4cefd312909f818d0a37.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 65,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      94.4
+     ],
+     [
+      [
+       96,
+       96,
+       96
+      ],
+      4.5
+     ],
+     [
+      [
+       160,
+       160,
+       160
+      ],
+      0.6
+     ]
+    ],
+    "near_white_pct": 94.9
+   },
+   "units": [
+    {
+     "key": "pub-258|f7dda0aa57d447c010aa1e66b22271dfd75a8f5aab0f4cefd312909f818d0a37",
+     "input_url": "https://thissitedoesnotexist12345abc.com/",
+     "category": "missing-or-invalid",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 3,
+     "w": "128",
+     "h": "128",
+     "bytes": "959"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "d4868ad44b1733b94e16f04a6861d78dd21bffb7eaf5731a5e29205325cb70f6",
+   "image": "images/d4868ad44b1733b94e16f04a6861d78dd21bffb7eaf5731a5e29205325cb70f6.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 113,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      90.9
+     ],
+     [
+      [
+       96,
+       96,
+       96
+      ],
+      7.4
+     ],
+     [
+      [
+       160,
+       160,
+       160
+      ],
+      1.1
+     ]
+    ],
+    "near_white_pct": 91.3
+   },
+   "units": [
+    {
+     "key": "pub-259|d4868ad44b1733b94e16f04a6861d78dd21bffb7eaf5731a5e29205325cb70f6",
+     "input_url": "https://nonexistentdomain99999example.org/",
+     "category": "missing-or-invalid",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 3,
+     "w": "128",
+     "h": "128",
+     "bytes": "1649"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "151be33adc6875b0eb926fd247a4c7734fe5461fdf00b72008905778044ae453",
+   "image": "images/151be33adc6875b0eb926fd247a4c7734fe5461fdf00b72008905778044ae453.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 416,
+    "top_colors": [
+     [
+      [
+       0,
+       192,
+       160
+      ],
+      65.3
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      28.8
+     ],
+     [
+      [
+       0,
+       192,
+       192
+      ],
+      3.4
+     ]
+    ],
+    "near_white_pct": 29.3
+   },
+   "units": [
+    {
+     "key": "pub-062|151be33adc6875b0eb926fd247a4c7734fe5461fdf00b72008905778044ae453",
+     "input_url": "https://www.deliveroo.co.uk/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3888"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "604acf761783d4722f217a8629c4a6692c0eb1428af9a5dcb5a79c11c0b6a26f",
+   "image": "images/604acf761783d4722f217a8629c4a6692c0eb1428af9a5dcb5a79c11c0b6a26f.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 853,
+    "top_colors": [
+     [
+      [
+       192,
+       32,
+       0
+      ],
+      37.0
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      20.8
+     ],
+     [
+      [
+       192,
+       0,
+       0
+      ],
+      16.5
+     ]
+    ],
+    "near_white_pct": 22.9
+   },
+   "units": [
+    {
+     "key": "pub-063|604acf761783d4722f217a8629c4a6692c0eb1428af9a5dcb5a79c11c0b6a26f",
+     "input_url": "https://www.argos.co.uk/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "3001"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "e4e9a4259b57c466d5f89b5eeb4529a37807ac500822e35a977f296e7cbaefab",
+   "image": "images/e4e9a4259b57c466d5f89b5eeb4529a37807ac500822e35a977f296e7cbaefab.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 97.4,
+    "unique_colors": 233,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      77.2
+     ],
+     [
+      [
+       0,
+       192,
+       160
+      ],
+      12.7
+     ],
+     [
+      [
+       96,
+       224,
+       192
+      ],
+      2.5
+     ]
+    ],
+    "near_white_pct": 78.5
+   },
+   "units": [
+    {
+     "key": "pub-064|e4e9a4259b57c466d5f89b5eeb4529a37807ac500822e35a977f296e7cbaefab",
+     "input_url": "https://www.rightmove.co.uk/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "1489"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "258d72913752b312cdfe0f01439da3449532c7895270886c24786aa3d53224d6",
+   "image": "images/258d72913752b312cdfe0f01439da3449532c7895270886c24786aa3d53224d6.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 597,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      90.6
+     ],
+     [
+      [
+       224,
+       32,
+       32
+      ],
+      2.8
+     ],
+     [
+      [
+       224,
+       192,
+       192
+      ],
+      0.7
+     ]
+    ],
+    "near_white_pct": 91.7
+   },
+   "units": [
+    {
+     "key": "pub-065|258d72913752b312cdfe0f01439da3449532c7895270886c24786aa3d53224d6",
+     "input_url": "https://www.tesco.com/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "4285"
+    }
+   ]
+  }
+ ]
+}

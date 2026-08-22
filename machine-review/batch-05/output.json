@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "mode": "review_batch",
+  "repo": "C:\\Dev\\KeeFetch",
+  "results": [
+    {
+      "schema_version": "1.0",
+      "run_id": "20260822-171550-review-antigravity-0ef368",
+      "mode": "review",
+      "role": "google",
+      "worker": "antigravity",
+      "status": "ok",
+      "repo": {
+        "root": "C:\\Dev\\KeeFetch",
+        "base_commit": "e74a343adb253a317bf582f78242f7c235503200",
+        "dirty_source_included": true
+      },
+      "workspace": {
+        "path": "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-171550-review-antigravity-0ef368",
+        "ephemeral": true,
+        "branch": null,
+        "removed": true
+      },
+      "command": {
+        "argv": [
+          "C:\\Users\\zxcv0\\AppData\\Local\\agy\\bin\\agy.EXE",
+          "--model",
+          "gemini-3.7-flash-high",
+          "--effort",
+          "high",
+          "--mode",
+          "plan",
+          "--dangerously-skip-permissions",
+          "--print-timeout",
+          "35m",
+          "-p",
+          "<PROMPT>",
+          "--add-dir",
+          "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-171550-review-antigravity-0ef368",
+          "--output-format",
+          "json"
+        ],
+        "exit_code": 0
+      },
+      "result": {
+        "summary": "{\"conversation_id\":\"13074cb1-0ea4-4dfb-90fb-4044dc0f1ad2\",\"status\":\"SUCCESS\",\"response\":\"[\\n  {\\n    \\\"key\\\": \\\"pub-066|0d3af18eae1b024b64866bb156b7c3a8a6fd9689a50fd67f4578f3578cb026f9\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Zalando orange triangular logo on a white background for https://www.zalando.de/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-067|08ef0dce08952688cbb85a4f52a6f961d87e0ed2cc8f6ef0d69a8fd4181f5995\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine red OTTO wordmark logo on a white background for https://www.otto.de/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-068|02b387f15ab04efa4cd42e42409f850534c191507979697ff2eb7716e46042bd\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Der Spiegel stylized 'S' brand icon on an orange-red background for https://www.spiegel.de/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-069|104d54ac188c5790b6f871ec2dfb1107e193623e53dc84a44fc25a910667e3f6\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine red Deutsche Bahn 'DB' brand logo on a white background for https://www.bahn.de/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-070|416afbcb746901f9c1988df34fd6c400256d50554f409b649cbe7905fa173e55\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine green circle with white 'S' brand logo for https://www.s-bahn-berlin.de/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-071|803844f8f611a9302752a171a9c0d07a7acc055861813cd1439b4a88398e4e60\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Leboncoin orange isometric cube brand logo on a white background for https://www.leboncoin.fr/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-072|c3d7fbfd472f24bc1fd947482afe1123ca6de39aa6eac4201ce9a27a75ef3bd6\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Le Monde gothic 'M' brand favicon on a black background for https://www.lemonde.fr/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-073|ca4433b5486ca287b12a4471ac35c2ea914a1d416f0a2fb0218fabc997d00310\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine SFR white text on red background brand logo for https://www.sfr.fr/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-074|305e4101ae5dfd384d1d5040f48f26c312a509aec64d0c086d27f1d9b37f7ad5\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Orange telecom brand logo featuring white lettering on an orange square for https://www.orange.fr/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-074|3e4906736ef3a4c49d2bcd6fe88989778abc190d6490e3d846b1310b5f14e589\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Orange telecom brand logo featuring white lettering on an orange square for https://www.orange.fr/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-075|8da16b0844b0df7ad41070aab70103673b30c26b5f8e2204dcd83d72ee745d95\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Carrefour red and blue brand logo on a white background for https://www.carrefour.fr/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-076|7c65fd4545de6e5da9474305a03e9237ae1ba652260f0bc9d1438a6fb075ad5a\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Rakuten red 'R' logo with underline on a white background for https://www.rakuten.co.jp/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-076|905a7c7f6c824e086beec6de5bd9f35b61a075b047302e1069777da2ed3a339e\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Rakuten red 'R' logo with underline on a white background for https://www.rakuten.co.jp/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-077|84d18a20e62ddd2afbc46058e8cdc9056e6007bfc25f22fed35381f9d300ea40\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Mercari brand icon for https://www.mercari.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-078|c93cb1a1c893110d3b49c36355ab4ec9c580fa2968823f1ba537c010d789919e\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Yahoo! Japan red 'Y!' logo on a white background for https://www.yahoo.co.jp/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-078|fb43bf3e05cc9f99dcb8440bbaef4f6926fcfeb72b4211d8b23a8aad3491d262\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Yahoo! Japan red 'Y!' brand icon on a transparent background, contradicting the synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-079|9b98b61ca5d58c58cce49bb7d89e62f7bf0f6998bbe8fa8a45a9eb0aa4009119\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Naver white 'N' on green background brand logo for https://www.naver.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-079|ec1b0d74c2b6d689a7ad9d5195bdca7fcd4ff86c2a0a3ab9fecd4d5226891262\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Naver white 'N' on green background brand favicon for https://www.naver.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-080|632a178229b21b6e21d80f4808cfd4d1f65d617642938d70713e881b11beca96\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Coupang red badge brand logo for https://www.coupang.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-080|76f1aef9e05ca29e566188ae80516e503b545a5b5b229eb8eaff4274d0c5087c\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Coupang red badge brand favicon for https://www.coupang.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-081|0b3763d4b97aa93507cdf7e7afca74977bf63b3b62738c55a247e47173ae7461\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Flipkart shopping bag brand icon on a transparent background, contradicting synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-081|16d7e47c230affbdeb75924463ab750d2de4a969f59ddafe58baa7f2365a3692\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Flipkart shopping bag brand icon on a transparent background for https://www.flipkart.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-081|42b7e14b64e26aa616a0b743979bf16356bbe8996123bc613fcb302637fa6b83\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Flipkart shopping bag brand favicon for https://www.flipkart.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-081|52aa8bff32a1423c903dbda9e0c5e497e1104e8d6807e2e61f6ba94ca1c9fe47\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Flipkart blue cart brand icon on a yellow background for https://www.flipkart.com/.\\\",\\n    \\\"verified_live\\\": true\\n  }\\n]\\n\",\"duration_seconds\":153.5685203,\"num_turns\":1,\"usage\":{\"input_tokens\":263413,\"output_tokens\":32460,\"thinking_tokens\":13511,\"cache_read_tokens\":3737348,\"total_tokens\":295873}}",
+        "summary_truncated": false,
+        "stdout_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-171550-review-antigravity-0ef368\\stdout.txt",
+        "stderr_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-171550-review-antigravity-0ef368\\stderr.txt"
+      },
+      "safety": {
+        "isolated": true,
+        "unexpected_review_mutation": false,
+        "auto_integrated": false,
+        "pushed_or_published_by_crew": false
+      },
+      "duration_ms": 159834
+    }
+  ]
+}

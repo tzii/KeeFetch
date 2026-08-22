@@ -1,3 +1,4 @@
+- 2026-08-22 · ZCode · machine-review · Owner approved machine census labeling by agy (gemini-3.7-flash-high): 14/14 batches over 328 unique hashes, collector clean (pixel cross-checks, same-hash/same-domain consistency), 456/456 labeled in machine-review/review-queue.machine.csv (correct 407, acceptable-synthetic 22, generic 17, wrong-brand 6, ambiguous 3, blank 1); spot-check sheet at machine-review/spot-check.html; real queue untouched pending owner confirmation.
 # Handoff log — newest first, keep the last 20
 - 2026-08-22 · ZCode · f584908 (tree) · Built review kit for the census gate: `eng/benchmark-runs/profile-candidates-v13/review-kit/` (gitignored, additive only) — self-contained `index.html`, all 456 units with embedded artifacts + filters + label transcription; export format proven against `prepare-review.ps1 -Validate` both ways (full pass, one-missing rejected). Gate unchanged: human labels still required; queue untouched.
 

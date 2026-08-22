@@ -66,3 +66,7 @@ eng/benchmark-runs/
 
 # Separate external tooling checkout (not a KeeFetch submodule)
 better-harness/
+
+# machine census labeling: staged image copies duplicate fingerprinted evidence artifacts
+machine-review/*/images/
+__pycache__/

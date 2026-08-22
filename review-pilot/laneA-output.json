@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "mode": "review_batch",
+  "repo": "C:\\Dev\\KeeFetch",
+  "results": [
+    {
+      "schema_version": "1.0",
+      "run_id": "20260822-164336-review-antigravity-d807bd",
+      "mode": "review",
+      "role": "google",
+      "worker": "antigravity",
+      "status": "ok",
+      "repo": {
+        "root": "C:\\Dev\\KeeFetch",
+        "base_commit": "e74a343adb253a317bf582f78242f7c235503200",
+        "dirty_source_included": true
+      },
+      "workspace": {
+        "path": "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-164336-review-antigravity-d807bd",
+        "ephemeral": true,
+        "branch": null,
+        "removed": true
+      },
+      "command": {
+        "argv": [
+          "C:\\Users\\zxcv0\\AppData\\Local\\agy\\bin\\agy.EXE",
+          "--model",
+          "gemini-3.7-flash-high",
+          "--effort",
+          "high",
+          "--mode",
+          "plan",
+          "--dangerously-skip-permissions",
+          "--print-timeout",
+          "35m",
+          "-p",
+          "<PROMPT>",
+          "--add-dir",
+          "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-164336-review-antigravity-d807bd",
+          "--output-format",
+          "json"
+        ],
+        "exit_code": 0
+      },
+      "result": {
+        "summary": "{\"conversation_id\":\"b12e706f-9313-44da-aaf9-13f13e059cf8\",\"status\":\"ERROR\",\"response\":\"[\\n  {\\n    \\\"key\\\": \\\"pub-277|0a56eb98ce92c0a433843e458014fbecbe3b91f9b4270936c38694f7695c21b7\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine GitHub Octocat logo inside a white circle, which is the official brand icon for the GitHub Android application (com.github.android). Visual matches the census flag with no contradictions.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-266|eb8703e9dbbacdf4a8c1449213440559109a635e2f7ba3eb4b5860011c8e167a\\\",\\n    \\\"label\\\": \\\"wrong-brand\\\",\\n    \\\"reason\\\": \\\"The input URL corresponds to Gmail (com.google.android.gm), but the image displays the general Google 'G' search logo rather than the official Gmail envelope/M app logo. This is a wrong app icon for this package ID. Flagged as profile-differing.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-289|ce4a0b27a41014bc4c5ddc526a0044bce4a25c500825421fbc96ececb2255e12\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image displays the genuine Stack Overflow brand icon (black stack on orange background) for https://stackoverflow.com/. As a deduplication fixture sharing the canonical site's icon, this is correct. Flagged as profile-differing.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-294|90ba0a000e66b8c9a9d27b275071e3a129b4b31759724aaaeabc4f809d302d52\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine multi-color Google 'G' brand favicon for https://www.google.com:443/. For a deduplication fixture with an explicit port, this canonical icon is correct. Matches census flag with no contradictions.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-032|ce4a0b27a41014bc4c5ddc526a0044bce4a25c500825421fbc96ececb2255e12\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine, authentic brand favicon of Stack Overflow (black stack on orange square) for https://stackoverflow.com/. Flagged as profile-differing.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-044|9f0fb162139e74ef01631b70ee9a58b525f60fab64173a54d4f6e74a5f503ee7\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Hulu brand favicon featuring the signature green 'h' mark on a black background for https://www.hulu.com/. Flagged as profile-differing.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-255|cdb4554c4e635b35c380cfddef1e84f55123c6659edf82da927ee5f1b482ef09\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine red padlock with an 'X' favicon used by badssl.com on its 'bad' test suites including untrusted-root.badssl.com. The heuristic flags contradict this by marking it placeholder_suspected and synthetic.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-258|f7dda0aa57d447c010aa1e66b22271dfd75a8f5aab0f4cefd312909f818d0a37\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a generated synthetic letter mark 'T' derived from the first letter of nonexistent domain thissitedoesnotexist12345abc.com. Flags correctly identify placeholder_suspected and synthetic.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-073|ca4433b5486ca287b12a4471ac35c2ea914a1d416f0a2fb0218fabc997d00310\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine, recognizable brand logo/favicon for French telecommunications provider SFR (white 'SFR' lettering on red background). Matches census flag with no contradictions.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-089|503181088578ee71b104fe9744f4409eefb25f08c919d7668c49be484cc244e7\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine brand favicon of Magazine Luiza (magazineluiza.com.br), featuring the white 'ml' mark on blue with the signature multi-colored accent stripe at the bottom. Matches census flag with no contradictions.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-194|392659a7d64cb9fc3ef8951981ce315869117bcd6d0f5f740a5345843a96c4b4\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine green leaf favicon of Paperless-ngx used on docs.paperless-ngx.com. Flagged as profile-differing.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-193|bbc30e0757ebc2a30479a71ab8c8b19d5a0a326038da87550e66b2a24dc3b9c2\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine, official BookStack brand logo (blue isometric book stack with bookmark) for bookstackapp.com. Matches census flag with no contradictions.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-125|077cc9ab1426247f4c520fecbd370741eaaa239e7df3cf8dddba0f3d6c39aa65\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is Joel Spolsky's portrait, which is the genuine official favicon declared in the HTML of joelonsoftware.com. Flagged as profile-differing, with manifest dimension metadata differing from the actual 32x32 image file.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-145|37b384fd78aa1d8e6f15bceb48f3682733d8ab43e033a7ae1432a5d7d6ecd65f\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine and widely recognized Raspberry Pi brand logo (red raspberry with green leaves) for raspberrypi.org. Flagged as profile-differing.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-229|69f8385d7eb75259b1f082b6b7de41d2504be9687606900f648e941107cc1672\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine modern web.dev brand logo (angled geometric bracket in blue and purple) for web.dev. Matches census flag with no contradictions.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-238|4791a2272074046deebeeb7765653d1ad601a6d7b7190f47b66a85801bb8cd27\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine KDE brand favicon (white gear and 'K' inside a blue rounded rectangle) for kde.org. Matches census flag with no contradictions.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-211|a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a generated letter mark 'H' derived from httpstat.us, serving as a plausible synthetic placeholder. Flags correctly note placeholder_suspected and synthetic, though manifest metadata lists 0 bytes/dimensions while the actual file is 128x128.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-216|e9f3a5c52356250942300f1220f9f3b69822c9d85b835f99a4112f6c776747cf\\\",\\n    \\\"label\\\": \\\"ambiguous\\\",\\n    \\\"reason\\\": \\\"The image is a cropped two-tone blue and white banner from neverssl.com's header rather than a brand favicon or synthetic letter mark. While flagged blank_suspected, it contains visible non-white pixels. Conservative labeling as ambiguous applies.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-076|7c65fd4545de6e5da9474305a03e9237ae1ba652260f0bc9d1438a6fb075ad5a\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine, official Rakuten brand favicon (red 'R' with red underline stripe) for rakuten.co.jp. Flagged as profile-differing.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-246|6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a generated synthetic letter mark 'E' derived from example.invalid. Flags correctly note placeholder_suspected and synthetic.\\\",\\n    \\\"verified_live\\\": false\\n  }\\n]\\n\",\"error\":\"Failed to fetch document content at https://docs.paperless-ngx.com/: failed to get URL https://docs.paperless-ngx.com/: status code 403\",\"duration_seconds\":318.9851738,\"num_turns\":1,\"usage\":{\"input_tokens\":401073,\"output_tokens\":38952,\"thinking_tokens\":23174,\"cache_read_tokens\":5778984,\"total_tokens\":440025}}",
+        "summary_truncated": false,
+        "stdout_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-164336-review-antigravity-d807bd\\stdout.txt",
+        "stderr_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-164336-review-antigravity-d807bd\\stderr.txt"
+      },
+      "safety": {
+        "isolated": true,
+        "unexpected_review_mutation": false,
+        "auto_integrated": false,
+        "pushed_or_published_by_crew": false
+      },
+      "duration_ms": 325170
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "mode": "review_batch",
+  "repo": "C:\\Dev\\KeeFetch",
+  "results": [
+    {
+      "schema_version": "1.0",
+      "run_id": "20260822-171831-review-antigravity-8f4913",
+      "mode": "review",
+      "role": "google",
+      "worker": "antigravity",
+      "status": "ok",
+      "repo": {
+        "root": "C:\\Dev\\KeeFetch",
+        "base_commit": "e74a343adb253a317bf582f78242f7c235503200",
+        "dirty_source_included": true
+      },
+      "workspace": {
+        "path": "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-171831-review-antigravity-8f4913",
+        "ephemeral": true,
+        "branch": null,
+        "removed": true
+      },
+      "command": {
+        "argv": [
+          "C:\\Users\\zxcv0\\AppData\\Local\\agy\\bin\\agy.EXE",
+          "--model",
+          "gemini-3.7-flash-high",
+          "--effort",
+          "high",
+          "--mode",
+          "plan",
+          "--dangerously-skip-permissions",
+          "--print-timeout",
+          "35m",
+          "-p",
+          "<PROMPT>",
+          "--add-dir",
+          "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-171831-review-antigravity-8f4913",
+          "--output-format",
+          "json"
+        ],
+        "exit_code": 0
+      },
+      "result": {
+        "summary": "{\"conversation_id\":\"8abeab51-1989-4705-958b-24c5f6637bfb\",\"status\":\"SUCCESS\",\"response\":\"[\\n  {\\n    \\\"key\\\": \\\"pub-081|5628e56500699755861214efa56acaacc8454b78a83c9bc4c478cf2f7583515e\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Flipkart 'f' brand icon inside a yellow circle.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-081|b944b09d7f6d68753abbed7f793d8d0a6a8bf5e987cedcf583b00e157324f033\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Flipkart 'f' brand icon inside a yellow circle.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-082|22568dce45d1cdcadd24eeae722cd72cd6a6f311744ef6081f020ccb5d135f3a\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine black 'OLA' wordmark logo for Ola Cabs.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-083|e1c40a8001a7ffcbd8c8c94c5af25742f275c974efd3286ce5c41311cfe84d46\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Zomato wordmark logo on a red rounded square.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-084|0e11e9784d034b264b1a3d74bf9ddf22e520cfb9cc15201bd2aec051c0a5215b\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Reliance Jio brand logo in a blue circle.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-084|71d7a043641e608176f8690e0bf1e9674f7a5d65b665726764757c66903e5d14\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Reliance Jio brand logo in a blue circle.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-084|97c49fb9af254b202802836cbdf7445a1299d7840fb2de5b3a273be8534a8483\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Reliance Jio logo in a blue circle, contradicting the synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-085|46b2c8570657226abae8b9d47125661badb832e6da5aa68e0c7325e1a2cace66\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Mercado Libre handshake logo on a yellow square.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-085|7ad459162b979c5e611d666e02e8ae3f9eb0dbcfd0be7889f4ac6e192debb821\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Mercado Libre handshake logo.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-086|7ad459162b979c5e611d666e02e8ae3f9eb0dbcfd0be7889f4ac6e192debb821\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Mercado Livre handshake logo.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-087|e816cd8c5871a314b4bee6bc1f6e0865295887ef17d4283ca874506cf2e3c6d4\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Globo.com lowercase 'g' favicon on a blue background.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-088|bd7e0ab4e200fe9945cc79a2d90ee295af41fc05d3c7c8e7c2e8de891770e152\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Americanas lowercase 'a' logo on a red background.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-089|503181088578ee71b104fe9744f4409eefb25f08c919d7668c49be484cc244e7\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Magazine Luiza 'ml' favicon with a rainbow accent on a blue background.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-090|bc26513e508507d0ee1b3eca9a81b8b35ab6e0f4f8483707690c1222645c44fd\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Yandex Cyrillic 'Я' logo on a red square.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-091|ac22099e42b6b79a4fb1b0140ce88b6f33bd22c74a5011a2b4021eec53b59c55\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Wildberries 'wb' logo on a purple gradient rounded square.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-092|57c9279cc70433e3391c4229fa3262f9bfa3a308d220fe32c763d3e7b0ff2843\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Ozon brand icon featuring the white tilted 'O' ring on a blue and pink background.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-092|6f4701b305e642fd2473bacf865c886ae12470f26e1045e452a7fb6388a7c13b\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Ozon brand icon featuring the white tilted 'O' ring on a blue and pink background.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-093|4ac5609e3986158cb87810f8bff552c0ed5e357b77812b6b052ef740dbb97629\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Avito four colored circles logo on a white background.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-094|e263f765eabea092a7ba22654061e274ac84355b657bfdaf5fa520a114da6689\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Trendyol orange circular 't' favicon.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-095|f720305eb6507b70dc45831c9de4c18868593a4735887f4ed7045902e2e95b6c\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Hepsiburada 'hb' logo on an orange rounded square.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-096|a644fa0e8ceac3dd60d8b9520936c076c9691ffcd27cea6c9c23c1265bb2bd60\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Woolworths Australia green apple 'W' brand icon.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-097|4827e5df522d88f1c9a2acf3157f51aba5bcd622a766d074ab5c9fa57245b6a0\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Commonwealth Bank yellow and black diamond logo on a white background.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-098|72affb6d7328515082baeb506ce1a4659c23a16247a9334f4cd27c58ba21c3f4\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Australian Broadcasting Corporation (ABC) Lissajous curve logo with wordmark.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-099|af8ccd3c8c2507c379ac446ba1ac49a013ff47cfb376bbfb1b226ad208878fdf\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Qantas red tail and flying kangaroo logo on a white background.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-100|f9f4a49a2835d7d841daeadf5e08908e7ad70ec87b661cd47e6ac28f06bf65c4\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Air Canada red maple leaf rondelle logo with wordmark on a white background.\\\",\\n    \\\"verified_live\\\": true\\n  }\\n]\\n\",\"duration_seconds\":338.5190502,\"num_turns\":1,\"usage\":{\"input_tokens\":406253,\"output_tokens\":44400,\"thinking_tokens\":20335,\"cache_read_tokens\":7272529,\"total_tokens\":450653}}",
+        "summary_truncated": false,
+        "stdout_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-171831-review-antigravity-8f4913\\stdout.txt",
+        "stderr_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-171831-review-antigravity-8f4913\\stderr.txt"
+      },
+      "safety": {
+        "isolated": true,
+        "unexpected_review_mutation": false,
+        "auto_integrated": false,
+        "pushed_or_published_by_crew": false
+      },
+      "duration_ms": 345319
+    }
+  ]
+}

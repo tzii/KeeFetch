@@ -1,0 +1,1528 @@
+{
+ "batch": "02",
+ "image_count": 24,
+ "images": [
+  {
+   "artifact_hash": "22d4a8ad021dfb1ccfc1f72dbd99aba4d07033375cca62e2f7f09319ab9a65d6",
+   "image": "images/22d4a8ad021dfb1ccfc1f72dbd99aba4d07033375cca62e2f7f09319ab9a65d6.png",
+   "pixel": {
+    "size": [
+     72,
+     72
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 562,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      43.0
+     ],
+     [
+      [
+       0,
+       64,
+       224
+      ],
+      29.2
+     ],
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      8.7
+     ]
+    ],
+    "near_white_pct": 43.7
+   },
+   "units": [
+    {
+     "key": "pub-016|22d4a8ad021dfb1ccfc1f72dbd99aba4d07033375cca62e2f7f09319ab9a65d6",
+     "input_url": "https://zoom.us/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "72",
+     "h": "72",
+     "bytes": "4314"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "683fb78717b173bc0daf2b4708bc8c78d3d97e8e31264d6321fbcdf4b6c00099",
+   "image": "images/683fb78717b173bc0daf2b4708bc8c78d3d97e8e31264d6321fbcdf4b6c00099.png",
+   "pixel": {
+    "size": [
+     57,
+     57
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 404,
+    "top_colors": [
+     [
+      [
+       32,
+       192,
+       64
+      ],
+      49.1
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      31.2
+     ],
+     [
+      [
+       0,
+       192,
+       64
+      ],
+      8.2
+     ]
+    ],
+    "near_white_pct": 33.2
+   },
+   "units": [
+    {
+     "key": "pub-017|683fb78717b173bc0daf2b4708bc8c78d3d97e8e31264d6321fbcdf4b6c00099",
+     "input_url": "https://www.spotify.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "57",
+     "h": "57",
+     "bytes": "2704"
+    },
+    {
+     "key": "pub-234|683fb78717b173bc0daf2b4708bc8c78d3d97e8e31264d6321fbcdf4b6c00099",
+     "input_url": "https://www.spotify.com/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "57",
+     "h": "57",
+     "bytes": "2704"
+    },
+    {
+     "key": "pub-271|683fb78717b173bc0daf2b4708bc8c78d3d97e8e31264d6321fbcdf4b6c00099",
+     "input_url": "androidapp://com.spotify.music",
+     "category": "android-app",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "57",
+     "h": "57",
+     "bytes": "2704"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "6c161dfb2b6c065a91bf647ea481de6a5b483107d2be8650eb6fcff128a597d5",
+   "image": "images/6c161dfb2b6c065a91bf647ea481de6a5b483107d2be8650eb6fcff128a597d5.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 1888,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      82.8
+     ],
+     [
+      [
+       192,
+       192,
+       192
+      ],
+      8.1
+     ],
+     [
+      [
+       32,
+       0,
+       0
+      ],
+      1.9
+     ]
+    ],
+    "near_white_pct": 91.2
+   },
+   "units": [
+    {
+     "key": "pub-018|6c161dfb2b6c065a91bf647ea481de6a5b483107d2be8650eb6fcff128a597d5",
+     "input_url": "https://www.adobe.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "13248"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "d87d0ca42a0b67af71c7c7b9a078a11b1c6dd482c3bbae9df53ec0c3dccff9d5",
+   "image": "images/d87d0ca42a0b67af71c7c7b9a078a11b1c6dd482c3bbae9df53ec0c3dccff9d5.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 36.3,
+    "unique_colors": 63,
+    "top_colors": [
+     [
+      [
+       0,
+       32,
+       128
+      ],
+      40.9
+     ],
+     [
+      [
+       96,
+       192,
+       224
+      ],
+      30.4
+     ],
+     [
+      [
+       0,
+       128,
+       224
+      ],
+      15.6
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-019|d87d0ca42a0b67af71c7c7b9a078a11b1c6dd482c3bbae9df53ec0c3dccff9d5",
+     "input_url": "https://www.paypal.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 1,
+     "w": "32",
+     "h": "32",
+     "bytes": "572"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "db74ca3bba762c6b871ffd2527a5a10b486f7e4099148f7a310be3f4a2acc09b",
+   "image": "images/db74ca3bba762c6b871ffd2527a5a10b486f7e4099148f7a310be3f4a2acc09b.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 33.7,
+    "unique_colors": 525,
+    "top_colors": [
+     [
+      [
+       0,
+       32,
+       128
+      ],
+      41.8
+     ],
+     [
+      [
+       96,
+       192,
+       224
+      ],
+      35.2
+     ],
+     [
+      [
+       0,
+       128,
+       224
+      ],
+      18.7
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-019|db74ca3bba762c6b871ffd2527a5a10b486f7e4099148f7a310be3f4a2acc09b",
+     "input_url": "https://www.paypal.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 53,
+     "w": "128",
+     "h": "128",
+     "bytes": "3655"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "9c677501719471d174b427698e9412f56670f6f598afbb141a98a2e52e23fbc5",
+   "image": "images/9c677501719471d174b427698e9412f56670f6f598afbb141a98a2e52e23fbc5.png",
+   "pixel": {
+    "size": [
+     60,
+     60
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 500,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      87.3
+     ],
+     [
+      [
+       224,
+       160,
+       0
+      ],
+      1.5
+     ],
+     [
+      [
+       0,
+       64,
+       192
+      ],
+      1.1
+     ]
+    ],
+    "near_white_pct": 88.6
+   },
+   "units": [
+    {
+     "key": "pub-020|9c677501719471d174b427698e9412f56670f6f598afbb141a98a2e52e23fbc5",
+     "input_url": "https://www.ebay.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "60",
+     "h": "60",
+     "bytes": "2393"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "cf8af426942e39ac09a953a1acd38dcbbb27149a4dda5457b73dc1ae056aea97",
+   "image": "images/cf8af426942e39ac09a953a1acd38dcbbb27149a4dda5457b73dc1ae056aea97.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 238,
+    "top_colors": [
+     [
+      [
+       96,
+       64,
+       160
+      ],
+      72.9
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      19.6
+     ],
+     [
+      [
+       64,
+       32,
+       160
+      ],
+      2.1
+     ]
+    ],
+    "near_white_pct": 20.0
+   },
+   "units": [
+    {
+     "key": "pub-021|cf8af426942e39ac09a953a1acd38dcbbb27149a4dda5457b73dc1ae056aea97",
+     "input_url": "https://www.twitch.tv/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "2277"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "fc47e231ae5c09b24cb13c9c2d91370a992345972060a6f886df05d6d08a5849",
+   "image": "images/fc47e231ae5c09b24cb13c9c2d91370a992345972060a6f886df05d6d08a5849.png",
+   "pixel": {
+    "size": [
+     57,
+     57
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 8,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      79.2
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      15.6
+     ],
+     [
+      [
+       96,
+       96,
+       96
+      ],
+      3.3
+     ]
+    ],
+    "near_white_pct": 79.2
+   },
+   "units": [
+    {
+     "key": "pub-026|fc47e231ae5c09b24cb13c9c2d91370a992345972060a6f886df05d6d08a5849",
+     "input_url": "https://www.bbc.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "57",
+     "h": "57",
+     "bytes": "281"
+    },
+    {
+     "key": "pub-061|fc47e231ae5c09b24cb13c9c2d91370a992345972060a6f886df05d6d08a5849",
+     "input_url": "https://www.bbc.co.uk/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "57",
+     "h": "57",
+     "bytes": "281"
+    },
+    {
+     "key": "pub-204|fc47e231ae5c09b24cb13c9c2d91370a992345972060a6f886df05d6d08a5849",
+     "input_url": "https://www.bbc.com/news/technology",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "57",
+     "h": "57",
+     "bytes": "281"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "943462082ffa27bc40cf4ef668b302359124154cf4104f2e769645f2f2bff0f2",
+   "image": "images/943462082ffa27bc40cf4ef668b302359124154cf4104f2e769645f2f2bff0f2.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 589,
+    "top_colors": [
+     [
+      [
+       192,
+       0,
+       0
+      ],
+      35.9
+     ],
+     [
+      [
+       160,
+       0,
+       0
+      ],
+      29.9
+     ],
+     [
+      [
+       224,
+       0,
+       0
+      ],
+      10.2
+     ]
+    ],
+    "near_white_pct": 12.2
+   },
+   "units": [
+    {
+     "key": "pub-027|943462082ffa27bc40cf4ef668b302359124154cf4104f2e769645f2f2bff0f2",
+     "input_url": "https://www.cnn.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "3767"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "04b43a90684961b8c69507eba885ab0597e253be73b3942bffc8aeb16b97b095",
+   "image": "images/04b43a90684961b8c69507eba885ab0597e253be73b3942bffc8aeb16b97b095.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 31.9,
+    "unique_colors": 152,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      100.0
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-028|04b43a90684961b8c69507eba885ab0597e253be73b3942bffc8aeb16b97b095",
+     "input_url": "https://www.nytimes.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "1196"
+    },
+    {
+     "key": "pub-205|04b43a90684961b8c69507eba885ab0597e253be73b3942bffc8aeb16b97b095",
+     "input_url": "https://www.nytimes.com/section/technology",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "1196"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "2ae11ebc2fd4904ef842c97b7b2691c06cac67160135c2cba593b61eb4fd4a33",
+   "image": "images/2ae11ebc2fd4904ef842c97b7b2691c06cac67160135c2cba593b61eb4fd4a33.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 56.4,
+    "unique_colors": 1090,
+    "top_colors": [
+     [
+      [
+       192,
+       64,
+       160
+      ],
+      6.9
+     ],
+     [
+      [
+       0,
+       128,
+       224
+      ],
+      6.8
+     ],
+     [
+      [
+       224,
+       128,
+       96
+      ],
+      6.5
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-029|2ae11ebc2fd4904ef842c97b7b2691c06cac67160135c2cba593b61eb4fd4a33",
+     "input_url": "https://www.office.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 9,
+     "w": "48",
+     "h": "48",
+     "bytes": "4369"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "3c5ee75500e6b33456fe8f07bd80f20db317b40ff7fc17870ebe25d1a6f9fb9e",
+   "image": "images/3c5ee75500e6b33456fe8f07bd80f20db317b40ff7fc17870ebe25d1a6f9fb9e.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 56.4,
+    "unique_colors": 1090,
+    "top_colors": [
+     [
+      [
+       192,
+       64,
+       160
+      ],
+      7.0
+     ],
+     [
+      [
+       0,
+       128,
+       224
+      ],
+      6.8
+     ],
+     [
+      [
+       224,
+       64,
+       128
+      ],
+      6.3
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-029|3c5ee75500e6b33456fe8f07bd80f20db317b40ff7fc17870ebe25d1a6f9fb9e",
+     "input_url": "https://www.office.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 12,
+     "w": "48",
+     "h": "48",
+     "bytes": "4372"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f291270a3df7fabcbe7cf7603507f82190e73f75f43d193f094351be60114ae2",
+   "image": "images/f291270a3df7fabcbe7cf7603507f82190e73f75f43d193f094351be60114ae2.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 60.4,
+    "unique_colors": 610,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       224
+      ],
+      6.5
+     ],
+     [
+      [
+       192,
+       64,
+       160
+      ],
+      6.0
+     ],
+     [
+      [
+       224,
+       64,
+       128
+      ],
+      5.8
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-029|f291270a3df7fabcbe7cf7603507f82190e73f75f43d193f094351be60114ae2",
+     "input_url": "https://www.office.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "32",
+     "h": "32",
+     "bytes": "2800"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "fa0f7033bf2ebf61c52bd203b4b9166737eed9b566c54f9de3d3618e8a19b138",
+   "image": "images/fa0f7033bf2ebf61c52bd203b4b9166737eed9b566c54f9de3d3618e8a19b138.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 73.6,
+    "unique_colors": 10709,
+    "top_colors": [
+     [
+      [
+       224,
+       128,
+       96
+      ],
+      9.4
+     ],
+     [
+      [
+       0,
+       160,
+       224
+      ],
+      7.9
+     ],
+     [
+      [
+       32,
+       160,
+       224
+      ],
+      6.5
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-029|fa0f7033bf2ebf61c52bd203b4b9166737eed9b566c54f9de3d3618e8a19b138",
+     "input_url": "https://www.office.com/",
+     "category": "global-brand",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "49532"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "7a773a1e6f0a81591cf1d9d154cd1c6088b40530bca82e8e0876811fd0de4746",
+   "image": "images/7a773a1e6f0a81591cf1d9d154cd1c6088b40530bca82e8e0876811fd0de4746.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 4777,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      51.8
+     ],
+     [
+      [
+       32,
+       192,
+       224
+      ],
+      6.1
+     ],
+     [
+      [
+       0,
+       64,
+       160
+      ],
+      4.6
+     ]
+    ],
+    "near_white_pct": 52.2
+   },
+   "units": [
+    {
+     "key": "pub-030|7a773a1e6f0a81591cf1d9d154cd1c6088b40530bca82e8e0876811fd0de4746",
+     "input_url": "https://outlook.live.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "19785"
+    },
+    {
+     "key": "pub-274|7a773a1e6f0a81591cf1d9d154cd1c6088b40530bca82e8e0876811fd0de4746",
+     "input_url": "androidapp://com.microsoft.office.outlook",
+     "category": "android-app",
+     "flags": "profile-differing",
+     "occurrences": 53,
+     "w": "128",
+     "h": "128",
+     "bytes": "19785"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "0a56eb98ce92c0a433843e458014fbecbe3b91f9b4270936c38694f7695c21b7",
+   "image": "images/0a56eb98ce92c0a433843e458014fbecbe3b91f9b4270936c38694f7695c21b7.png",
+   "pixel": {
+    "size": [
+     120,
+     120
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 396,
+    "top_colors": [
+     [
+      [
+       32,
+       0,
+       32
+      ],
+      63.1
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      31.0
+     ],
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      1.5
+     ]
+    ],
+    "near_white_pct": 31.8
+   },
+   "units": [
+    {
+     "key": "pub-031|0a56eb98ce92c0a433843e458014fbecbe3b91f9b4270936c38694f7695c21b7",
+     "input_url": "https://github.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "120",
+     "h": "120",
+     "bytes": "8912"
+    },
+    {
+     "key": "pub-196|0a56eb98ce92c0a433843e458014fbecbe3b91f9b4270936c38694f7695c21b7",
+     "input_url": "https://github.com/KeePass/KeePass",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "120",
+     "h": "120",
+     "bytes": "8912"
+    },
+    {
+     "key": "pub-197|0a56eb98ce92c0a433843e458014fbecbe3b91f9b4270936c38694f7695c21b7",
+     "input_url": "https://github.com/keepassxreboot/keepassxc/wiki",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "120",
+     "h": "120",
+     "bytes": "8912"
+    },
+    {
+     "key": "pub-226|0a56eb98ce92c0a433843e458014fbecbe3b91f9b4270936c38694f7695c21b7",
+     "input_url": "https://www.github.com/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "120",
+     "h": "120",
+     "bytes": "8912"
+    },
+    {
+     "key": "pub-252|0a56eb98ce92c0a433843e458014fbecbe3b91f9b4270936c38694f7695c21b7",
+     "input_url": "https://github.com/nonexistentuser123456/nonexistentrepo999",
+     "category": "missing-or-invalid",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "120",
+     "h": "120",
+     "bytes": "8912"
+    },
+    {
+     "key": "pub-277|0a56eb98ce92c0a433843e458014fbecbe3b91f9b4270936c38694f7695c21b7",
+     "input_url": "androidapp://com.github.android",
+     "category": "android-app",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "120",
+     "h": "120",
+     "bytes": "8912"
+    },
+    {
+     "key": "pub-286|0a56eb98ce92c0a433843e458014fbecbe3b91f9b4270936c38694f7695c21b7",
+     "input_url": "https://github.com/",
+     "category": "deduplication",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "120",
+     "h": "120",
+     "bytes": "8912"
+    },
+    {
+     "key": "pub-287|0a56eb98ce92c0a433843e458014fbecbe3b91f9b4270936c38694f7695c21b7",
+     "input_url": "https://www.github.com/",
+     "category": "deduplication",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "120",
+     "h": "120",
+     "bytes": "8912"
+    },
+    {
+     "key": "pub-288|0a56eb98ce92c0a433843e458014fbecbe3b91f9b4270936c38694f7695c21b7",
+     "input_url": "https://github.com:443/",
+     "category": "deduplication",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "120",
+     "h": "120",
+     "bytes": "8912"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "0070e9d122c06ffd59e2368b09eeb73e63ca8c4122be41cd8a75a000f85479ae",
+   "image": "images/0070e9d122c06ffd59e2368b09eeb73e63ca8c4122be41cd8a75a000f85479ae.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 28,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      83.1
+     ],
+     [
+      [
+       32,
+       0,
+       0
+      ],
+      11.5
+     ],
+     [
+      [
+       32,
+       32,
+       0
+      ],
+      2.2
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-032|0070e9d122c06ffd59e2368b09eeb73e63ca8c4122be41cd8a75a000f85479ae",
+     "input_url": "https://stackoverflow.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "48",
+     "h": "48",
+     "bytes": "631"
+    },
+    {
+     "key": "pub-201|0070e9d122c06ffd59e2368b09eeb73e63ca8c4122be41cd8a75a000f85479ae",
+     "input_url": "https://stackoverflow.com/questions/tagged/keepass",
+     "category": "url-variant",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "48",
+     "h": "48",
+     "bytes": "631"
+    },
+    {
+     "key": "pub-289|0070e9d122c06ffd59e2368b09eeb73e63ca8c4122be41cd8a75a000f85479ae",
+     "input_url": "https://stackoverflow.com/",
+     "category": "deduplication",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "48",
+     "h": "48",
+     "bytes": "631"
+    },
+    {
+     "key": "pub-290|0070e9d122c06ffd59e2368b09eeb73e63ca8c4122be41cd8a75a000f85479ae",
+     "input_url": "https://www.stackoverflow.com/",
+     "category": "deduplication",
+     "flags": "profile-differing",
+     "occurrences": 9,
+     "w": "48",
+     "h": "48",
+     "bytes": "631"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "62d5f9dce044f6dbbd9b1d51fcff8190bfcb87fe936bb2861d4d0128c0f7ebbc",
+   "image": "images/62d5f9dce044f6dbbd9b1d51fcff8190bfcb87fe936bb2861d4d0128c0f7ebbc.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 620,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      74.4
+     ],
+     [
+      [
+       64,
+       32,
+       0
+      ],
+      5.0
+     ],
+     [
+      [
+       32,
+       32,
+       0
+      ],
+      4.3
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-032|62d5f9dce044f6dbbd9b1d51fcff8190bfcb87fe936bb2861d4d0128c0f7ebbc",
+     "input_url": "https://stackoverflow.com/",
+     "category": "global-brand",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "9811"
+    },
+    {
+     "key": "pub-201|62d5f9dce044f6dbbd9b1d51fcff8190bfcb87fe936bb2861d4d0128c0f7ebbc",
+     "input_url": "https://stackoverflow.com/questions/tagged/keepass",
+     "category": "url-variant",
+     "flags": "profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "9811"
+    },
+    {
+     "key": "pub-289|62d5f9dce044f6dbbd9b1d51fcff8190bfcb87fe936bb2861d4d0128c0f7ebbc",
+     "input_url": "https://stackoverflow.com/",
+     "category": "deduplication",
+     "flags": "profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "9811"
+    },
+    {
+     "key": "pub-290|62d5f9dce044f6dbbd9b1d51fcff8190bfcb87fe936bb2861d4d0128c0f7ebbc",
+     "input_url": "https://www.stackoverflow.com/",
+     "category": "deduplication",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 9,
+     "w": "128",
+     "h": "128",
+     "bytes": "9811"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "c3bf7d38a74dc1aedc4f646c1e9f2125b1f161316c9c04cbb91f7dffbf1a53d3",
+   "image": "images/c3bf7d38a74dc1aedc4f646c1e9f2125b1f161316c9c04cbb91f7dffbf1a53d3.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 14.4,
+    "unique_colors": 578,
+    "top_colors": [
+     [
+      [
+       224,
+       128,
+       32
+      ],
+      41.7
+     ],
+     [
+      [
+       160,
+       160,
+       160
+      ],
+      31.4
+     ],
+     [
+      [
+       224,
+       96,
+       32
+      ],
+      19.0
+     ]
+    ],
+    "near_white_pct": 6.6
+   },
+   "units": [
+    {
+     "key": "pub-032|c3bf7d38a74dc1aedc4f646c1e9f2125b1f161316c9c04cbb91f7dffbf1a53d3",
+     "input_url": "https://stackoverflow.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 19,
+     "w": "128",
+     "h": "128",
+     "bytes": "4631"
+    },
+    {
+     "key": "pub-201|c3bf7d38a74dc1aedc4f646c1e9f2125b1f161316c9c04cbb91f7dffbf1a53d3",
+     "input_url": "https://stackoverflow.com/questions/tagged/keepass",
+     "category": "url-variant",
+     "flags": "profile-differing",
+     "occurrences": 19,
+     "w": "128",
+     "h": "128",
+     "bytes": "4631"
+    },
+    {
+     "key": "pub-289|c3bf7d38a74dc1aedc4f646c1e9f2125b1f161316c9c04cbb91f7dffbf1a53d3",
+     "input_url": "https://stackoverflow.com/",
+     "category": "deduplication",
+     "flags": "profile-differing",
+     "occurrences": 19,
+     "w": "128",
+     "h": "128",
+     "bytes": "4631"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "c4c7cb660d3d36e673fd81fd5398ddddaaf50620482984d133c7151dcf607440",
+   "image": "images/c4c7cb660d3d36e673fd81fd5398ddddaaf50620482984d133c7151dcf607440.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 401,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      78.8
+     ],
+     [
+      [
+       32,
+       0,
+       0
+      ],
+      10.4
+     ],
+     [
+      [
+       224,
+       96,
+       0
+      ],
+      4.8
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-032|c4c7cb660d3d36e673fd81fd5398ddddaaf50620482984d133c7151dcf607440",
+     "input_url": "https://stackoverflow.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "3922"
+    },
+    {
+     "key": "pub-201|c4c7cb660d3d36e673fd81fd5398ddddaaf50620482984d133c7151dcf607440",
+     "input_url": "https://stackoverflow.com/questions/tagged/keepass",
+     "category": "url-variant",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "3922"
+    },
+    {
+     "key": "pub-289|c4c7cb660d3d36e673fd81fd5398ddddaaf50620482984d133c7151dcf607440",
+     "input_url": "https://stackoverflow.com/",
+     "category": "deduplication",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "3922"
+    },
+    {
+     "key": "pub-290|c4c7cb660d3d36e673fd81fd5398ddddaaf50620482984d133c7151dcf607440",
+     "input_url": "https://www.stackoverflow.com/",
+     "category": "deduplication",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "3922"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "ce4a0b27a41014bc4c5ddc526a0044bce4a25c500825421fbc96ececb2255e12",
+   "image": "images/ce4a0b27a41014bc4c5ddc526a0044bce4a25c500825421fbc96ececb2255e12.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 42,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      83.1
+     ],
+     [
+      [
+       32,
+       0,
+       0
+      ],
+      11.5
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      2.6
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-032|ce4a0b27a41014bc4c5ddc526a0044bce4a25c500825421fbc96ececb2255e12",
+     "input_url": "https://stackoverflow.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 12,
+     "w": "128",
+     "h": "128",
+     "bytes": "2385"
+    },
+    {
+     "key": "pub-201|ce4a0b27a41014bc4c5ddc526a0044bce4a25c500825421fbc96ececb2255e12",
+     "input_url": "https://stackoverflow.com/questions/tagged/keepass",
+     "category": "url-variant",
+     "flags": "profile-differing",
+     "occurrences": 12,
+     "w": "128",
+     "h": "128",
+     "bytes": "2385"
+    },
+    {
+     "key": "pub-289|ce4a0b27a41014bc4c5ddc526a0044bce4a25c500825421fbc96ececb2255e12",
+     "input_url": "https://stackoverflow.com/",
+     "category": "deduplication",
+     "flags": "profile-differing",
+     "occurrences": 12,
+     "w": "128",
+     "h": "128",
+     "bytes": "2385"
+    },
+    {
+     "key": "pub-290|ce4a0b27a41014bc4c5ddc526a0044bce4a25c500825421fbc96ececb2255e12",
+     "input_url": "https://www.stackoverflow.com/",
+     "category": "deduplication",
+     "flags": "profile-differing",
+     "occurrences": 23,
+     "w": "128",
+     "h": "128",
+     "bytes": "2385"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "8113e820b8506211f5434b0d5db005a7cd56d8640ff64b496de72b0e907ed438",
+   "image": "images/8113e820b8506211f5434b0d5db005a7cd56d8640ff64b496de72b0e907ed438.png",
+   "pixel": {
+    "size": [
+     99,
+     96
+    ],
+    "opaque_pct": 96.3,
+    "unique_colors": 18,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      77.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      20.5
+     ],
+     [
+      [
+       224,
+       160,
+       128
+      ],
+      0.4
+     ]
+    ],
+    "near_white_pct": 20.6
+   },
+   "units": [
+    {
+     "key": "pub-033|8113e820b8506211f5434b0d5db005a7cd56d8640ff64b496de72b0e907ed438",
+     "input_url": "https://www.cloudflare.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "99",
+     "h": "96",
+     "bytes": "1524"
+    },
+    {
+     "key": "pub-219|8113e820b8506211f5434b0d5db005a7cd56d8640ff64b496de72b0e907ed438",
+     "input_url": "https://www.cloudflare.com/case-studies/",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "99",
+     "h": "96",
+     "bytes": "1524"
+    },
+    {
+     "key": "pub-265|8113e820b8506211f5434b0d5db005a7cd56d8640ff64b496de72b0e907ed438",
+     "input_url": "https://www.cloudflare.com/nonexistent12345",
+     "category": "missing-or-invalid",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "99",
+     "h": "96",
+     "bytes": "1524"
+    },
+    {
+     "key": "pub-300|8113e820b8506211f5434b0d5db005a7cd56d8640ff64b496de72b0e907ed438",
+     "input_url": "https://www.cloudflare.com/",
+     "category": "deduplication",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "99",
+     "h": "96",
+     "bytes": "1524"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "30e62d8a690d32b9f996e7ff2c5b3ea166bdc0cfd7120c29fc3dcede6017a90a",
+   "image": "images/30e62d8a690d32b9f996e7ff2c5b3ea166bdc0cfd7120c29fc3dcede6017a90a.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 53.1,
+    "unique_colors": 99,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       192
+      ],
+      100.0
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-034|30e62d8a690d32b9f996e7ff2c5b3ea166bdc0cfd7120c29fc3dcede6017a90a",
+     "input_url": "https://www.salesforce.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "696"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "2c26b0a0b0e1805cdfe31c2c99c28a2e2be0304f380be6ca50d2a63c2dad23cb",
+   "image": "images/2c26b0a0b0e1805cdfe31c2c99c28a2e2be0304f380be6ca50d2a63c2dad23cb.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 211,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      64.2
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      14.4
+     ],
+     [
+      [
+       0,
+       64,
+       224
+      ],
+      11.2
+     ]
+    ],
+    "near_white_pct": 16.6
+   },
+   "units": [
+    {
+     "key": "pub-035|2c26b0a0b0e1805cdfe31c2c99c28a2e2be0304f380be6ca50d2a63c2dad23cb",
+     "input_url": "https://www.dropbox.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "32",
+     "h": "32",
+     "bytes": "1281"
+    },
+    {
+     "key": "pub-220|2c26b0a0b0e1805cdfe31c2c99c28a2e2be0304f380be6ca50d2a63c2dad23cb",
+     "input_url": "https://www.dropbox.com/scl/fi/example",
+     "category": "url-variant",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "32",
+     "h": "32",
+     "bytes": "1281"
+    },
+    {
+     "key": "pub-275|2c26b0a0b0e1805cdfe31c2c99c28a2e2be0304f380be6ca50d2a63c2dad23cb",
+     "input_url": "androidapp://com.dropbox.android",
+     "category": "android-app",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "32",
+     "h": "32",
+     "bytes": "1281"
+    }
+   ]
+  }
+ ]
+}

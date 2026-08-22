@@ -1,0 +1,1162 @@
+{
+ "batch": "10",
+ "image_count": 24,
+ "images": [
+  {
+   "artifact_hash": "3f495c6a1e4445bc564557a1c85d9132eccf6ab603f2e962add077c549266cab",
+   "image": "images/3f495c6a1e4445bc564557a1c85d9132eccf6ab603f2e962add077c549266cab.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 410,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      93.4
+     ],
+     [
+      [
+       224,
+       64,
+       96
+      ],
+      4.3
+     ],
+     [
+      [
+       224,
+       96,
+       128
+      ],
+      0.6
+     ]
+    ],
+    "near_white_pct": 93.9
+   },
+   "units": [
+    {
+     "key": "pub-189|3f495c6a1e4445bc564557a1c85d9132eccf6ab603f2e962add077c549266cab",
+     "input_url": "https://www.n8n.io/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3577"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "501783205f8fed60aee32f2081ffdab63da0081a33ecd689774fd828455f5c9b",
+   "image": "images/501783205f8fed60aee32f2081ffdab63da0081a33ecd689774fd828455f5c9b.png",
+   "pixel": {
+    "size": [
+     16,
+     16
+    ],
+    "opaque_pct": 64.5,
+    "unique_colors": 146,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      28.5
+     ],
+     [
+      [
+       224,
+       128,
+       32
+      ],
+      26.7
+     ],
+     [
+      [
+       224,
+       96,
+       32
+      ],
+      20.6
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-190|501783205f8fed60aee32f2081ffdab63da0081a33ecd689774fd828455f5c9b",
+     "input_url": "https://www.grafana.com/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "16",
+     "h": "16",
+     "bytes": "824"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "33803e13fdff051aa4e5c18dea805b4646eca9f99e8f9a9f0b0dbe2b2a75e882",
+   "image": "images/33803e13fdff051aa4e5c18dea805b4646eca9f99e8f9a9f0b0dbe2b2a75e882.png",
+   "pixel": {
+    "size": [
+     113,
+     113
+    ],
+    "opaque_pct": 56.6,
+    "unique_colors": 212,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      100.0
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-191|33803e13fdff051aa4e5c18dea805b4646eca9f99e8f9a9f0b0dbe2b2a75e882",
+     "input_url": "https://prometheus.io/",
+     "category": "self-hosted-software",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 9,
+     "w": "113",
+     "h": "113",
+     "bytes": "3476"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "606d38712d9a5538edc11da9f8579711969917c933b4e454cd825e4bf7b0b6b4",
+   "image": "images/606d38712d9a5538edc11da9f8579711969917c933b4e454cd825e4bf7b0b6b4.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 56.2,
+    "unique_colors": 221,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      100.0
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-191|606d38712d9a5538edc11da9f8579711969917c933b4e454cd825e4bf7b0b6b4",
+     "input_url": "https://prometheus.io/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "3951"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "a97b0848414af15780574e8ba0edff365c6adb8aa3a73285b657bdc075c25f21",
+   "image": "images/a97b0848414af15780574e8ba0edff365c6adb8aa3a73285b657bdc075c25f21.png",
+   "pixel": {
+    "size": [
+     113,
+     113
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 36,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      51.0
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      44.0
+     ],
+     [
+      [
+       224,
+       160,
+       128
+      ],
+      1.6
+     ]
+    ],
+    "near_white_pct": 44.8
+   },
+   "units": [
+    {
+     "key": "pub-191|a97b0848414af15780574e8ba0edff365c6adb8aa3a73285b657bdc075c25f21",
+     "input_url": "https://prometheus.io/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "113",
+     "h": "113",
+     "bytes": "2611"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f1295ace8f43de118f30d162d6aaac16959c637ea6eb29221071368fb9fca7a7",
+   "image": "images/f1295ace8f43de118f30d162d6aaac16959c637ea6eb29221071368fb9fca7a7.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 1075,
+    "top_colors": [
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      50.8
+     ],
+     [
+      [
+       160,
+       0,
+       0
+      ],
+      28.0
+     ],
+     [
+      [
+       224,
+       192,
+       128
+      ],
+      10.7
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-192|f1295ace8f43de118f30d162d6aaac16959c637ea6eb29221071368fb9fca7a7",
+     "input_url": "https://hedgedoc.org/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "8977"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "bbc30e0757ebc2a30479a71ab8c8b19d5a0a326038da87550e66b2a24dc3b9c2",
+   "image": "images/bbc30e0757ebc2a30479a71ab8c8b19d5a0a326038da87550e66b2a24dc3b9c2.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 66.5,
+    "unique_colors": 1208,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       192
+      ],
+      65.8
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      22.0
+     ],
+     [
+      [
+       192,
+       224,
+       224
+      ],
+      2.1
+     ]
+    ],
+    "near_white_pct": 24.8
+   },
+   "units": [
+    {
+     "key": "pub-193|bbc30e0757ebc2a30479a71ab8c8b19d5a0a326038da87550e66b2a24dc3b9c2",
+     "input_url": "https://www.bookstackapp.com/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "13642"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "1ac578966d900a121322dd45fc5f2aa6b51c7d426554d1d47d6dc6660af73d27",
+   "image": "images/1ac578966d900a121322dd45fc5f2aa6b51c7d426554d1d47d6dc6660af73d27.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 29.0,
+    "unique_colors": 15,
+    "top_colors": [
+     [
+      [
+       0,
+       64,
+       0
+      ],
+      100.0
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-194|1ac578966d900a121322dd45fc5f2aa6b51c7d426554d1d47d6dc6660af73d27",
+     "input_url": "https://docs.paperless-ngx.com/",
+     "category": "self-hosted-software",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "48",
+     "h": "48",
+     "bytes": "651"
+    },
+    {
+     "key": "pub-195|1ac578966d900a121322dd45fc5f2aa6b51c7d426554d1d47d6dc6660af73d27",
+     "input_url": "https://paperless-ngx.com/",
+     "category": "self-hosted-software",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 9,
+     "w": "48",
+     "h": "48",
+     "bytes": "651"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "392659a7d64cb9fc3ef8951981ce315869117bcd6d0f5f740a5345843a96c4b4",
+   "image": "images/392659a7d64cb9fc3ef8951981ce315869117bcd6d0f5f740a5345843a96c4b4.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 29.0,
+    "unique_colors": 15,
+    "top_colors": [
+     [
+      [
+       0,
+       64,
+       0
+      ],
+      100.0
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-194|392659a7d64cb9fc3ef8951981ce315869117bcd6d0f5f740a5345843a96c4b4",
+     "input_url": "https://docs.paperless-ngx.com/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "48",
+     "h": "48",
+     "bytes": "651"
+    },
+    {
+     "key": "pub-195|392659a7d64cb9fc3ef8951981ce315869117bcd6d0f5f740a5345843a96c4b4",
+     "input_url": "https://paperless-ngx.com/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 36,
+     "w": "48",
+     "h": "48",
+     "bytes": "651"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "45b9591b4eacb926d52a4ff66c29e0911c97bc26a84ba976975abf99c7b0a8c7",
+   "image": "images/45b9591b4eacb926d52a4ff66c29e0911c97bc26a84ba976975abf99c7b0a8c7.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 36.9,
+    "unique_colors": 824,
+    "top_colors": [
+     [
+      [
+       0,
+       64,
+       0
+      ],
+      92.2
+     ],
+     [
+      [
+       0,
+       64,
+       32
+      ],
+      7.8
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-194|45b9591b4eacb926d52a4ff66c29e0911c97bc26a84ba976975abf99c7b0a8c7",
+     "input_url": "https://docs.paperless-ngx.com/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "7572"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "5081346b413bb7c1df15ee912ae105be0a80b75750cee3c41bb64cd8620f1b7e",
+   "image": "images/5081346b413bb7c1df15ee912ae105be0a80b75750cee3c41bb64cd8620f1b7e.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 439,
+    "top_colors": [
+     [
+      [
+       64,
+       64,
+       64
+      ],
+      84.4
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      12.3
+     ],
+     [
+      [
+       32,
+       64,
+       64
+      ],
+      0.8
+     ]
+    ],
+    "near_white_pct": 13.1
+   },
+   "units": [
+    {
+     "key": "pub-121|5081346b413bb7c1df15ee912ae105be0a80b75750cee3c41bb64cd8620f1b7e",
+     "input_url": "https://daringfireball.net/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "4420"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "215e9d3e7c6bb3b46e5747ae1f86f3cd52a011bbc529b4bc094e015f635609e8",
+   "image": "images/215e9d3e7c6bb3b46e5747ae1f86f3cd52a011bbc529b4bc094e015f635609e8.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 242,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      23.0
+     ],
+     [
+      [
+       224,
+       192,
+       128
+      ],
+      8.6
+     ],
+     [
+      [
+       224,
+       192,
+       96
+      ],
+      8.3
+     ]
+    ],
+    "near_white_pct": 24.3
+   },
+   "units": [
+    {
+     "key": "pub-122|215e9d3e7c6bb3b46e5747ae1f86f3cd52a011bbc529b4bc094e015f635609e8",
+     "input_url": "https://kottke.org/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "2842"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "bf99f222c48f6980e999c61bfd533a1038e3824d028d1eb61aafe2d2d9d85448",
+   "image": "images/bf99f222c48f6980e999c61bfd533a1038e3824d028d1eb61aafe2d2d9d85448.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 3281,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      24.6
+     ],
+     [
+      [
+       64,
+       64,
+       64
+      ],
+      21.7
+     ],
+     [
+      [
+       96,
+       96,
+       96
+      ],
+      11.7
+     ]
+    ],
+    "near_white_pct": 6.2
+   },
+   "units": [
+    {
+     "key": "pub-123|bf99f222c48f6980e999c61bfd533a1038e3824d028d1eb61aafe2d2d9d85448",
+     "input_url": "https://www.jwz.org/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "25313"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "fd4be62c7d7846c10c1f12affeacd92f9431757c8fd79edb05075a1c510a7d7b",
+   "image": "images/fd4be62c7d7846c10c1f12affeacd92f9431757c8fd79edb05075a1c510a7d7b.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 53.1,
+    "unique_colors": 199,
+    "top_colors": [
+     [
+      [
+       128,
+       32,
+       32
+      ],
+      35.3
+     ],
+     [
+      [
+       96,
+       32,
+       32
+      ],
+      17.6
+     ],
+     [
+      [
+       128,
+       64,
+       32
+      ],
+      12.1
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-124|fd4be62c7d7846c10c1f12affeacd92f9431757c8fd79edb05075a1c510a7d7b",
+     "input_url": "https://www.tbray.org/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "1463"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "077cc9ab1426247f4c520fecbd370741eaaa239e7df3cf8dddba0f3d6c39aa65",
+   "image": "images/077cc9ab1426247f4c520fecbd370741eaaa239e7df3cf8dddba0f3d6c39aa65.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 1005,
+    "top_colors": [
+     [
+      [
+       192,
+       192,
+       192
+      ],
+      12.3
+     ],
+     [
+      [
+       224,
+       160,
+       128
+      ],
+      4.7
+     ],
+     [
+      [
+       64,
+       32,
+       64
+      ],
+      4.4
+     ]
+    ],
+    "near_white_pct": 16.9
+   },
+   "units": [
+    {
+     "key": "pub-125|077cc9ab1426247f4c520fecbd370741eaaa239e7df3cf8dddba0f3d6c39aa65",
+     "input_url": "https://www.joelonsoftware.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 7,
+     "w": "32",
+     "h": "32",
+     "bytes": "3633"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "5b768225e4cd1a3db3eecc7de6af35a3a9903477b089c6738d4898b040db8ea0",
+   "image": "images/5b768225e4cd1a3db3eecc7de6af35a3a9903477b089c6738d4898b040db8ea0.png",
+   "pixel": {
+    "size": [
+     100,
+     100
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 1,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      100.0
+     ]
+    ],
+    "near_white_pct": 100.0
+   },
+   "units": [
+    {
+     "key": "pub-125|5b768225e4cd1a3db3eecc7de6af35a3a9903477b089c6738d4898b040db8ea0",
+     "input_url": "https://www.joelonsoftware.com/",
+     "category": "small-site",
+     "flags": "blank_suspected;profile-differing",
+     "occurrences": 18,
+     "w": "100",
+     "h": "100",
+     "bytes": "359"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "7132d3623190c0c0f51918d35d0abb2c1385bb04f5b51b5182d5f1ad45a6b999",
+   "image": "images/7132d3623190c0c0f51918d35d0abb2c1385bb04f5b51b5182d5f1ad45a6b999.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 13335,
+    "top_colors": [
+     [
+      [
+       192,
+       192,
+       192
+      ],
+      13.4
+     ],
+     [
+      [
+       224,
+       160,
+       128
+      ],
+      6.7
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      4.9
+     ]
+    ],
+    "near_white_pct": 18.2
+   },
+   "units": [
+    {
+     "key": "pub-125|7132d3623190c0c0f51918d35d0abb2c1385bb04f5b51b5182d5f1ad45a6b999",
+     "input_url": "https://www.joelonsoftware.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 23,
+     "w": "128",
+     "h": "128",
+     "bytes": "49996"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "ec3995315bff6e54b3d3a942167ece0afb2843a423a4d0840f3d2846cb28c0f8",
+   "image": "images/ec3995315bff6e54b3d3a942167ece0afb2843a423a4d0840f3d2846cb28c0f8.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 11198,
+    "top_colors": [
+     [
+      [
+       192,
+       192,
+       192
+      ],
+      13.3
+     ],
+     [
+      [
+       224,
+       160,
+       128
+      ],
+      6.6
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      4.9
+     ]
+    ],
+    "near_white_pct": 18.0
+   },
+   "units": [
+    {
+     "key": "pub-125|ec3995315bff6e54b3d3a942167ece0afb2843a423a4d0840f3d2846cb28c0f8",
+     "input_url": "https://www.joelonsoftware.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "46404"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "1700fdebb3158fdd1ff40e7fd8fc42d5f206452d1edd08f9b91bf368bf153c94",
+   "image": "images/1700fdebb3158fdd1ff40e7fd8fc42d5f206452d1edd08f9b91bf368bf153c94.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 920,
+    "top_colors": [
+     [
+      [
+       192,
+       192,
+       160
+      ],
+      18.1
+     ],
+     [
+      [
+       192,
+       192,
+       192
+      ],
+      11.1
+     ],
+     [
+      [
+       160,
+       160,
+       160
+      ],
+      8.9
+     ]
+    ],
+    "near_white_pct": 18.8
+   },
+   "units": [
+    {
+     "key": "pub-126|1700fdebb3158fdd1ff40e7fd8fc42d5f206452d1edd08f9b91bf368bf153c94",
+     "input_url": "https://www.manton.org/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "3417"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "4036a0c949af7de38d131a7d4cac425455e9ddd8f8c187d20579ebfa1dae65aa",
+   "image": "images/4036a0c949af7de38d131a7d4cac425455e9ddd8f8c187d20579ebfa1dae65aa.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 51.1,
+    "unique_colors": 1019,
+    "top_colors": [
+     [
+      [
+       224,
+       160,
+       0
+      ],
+      57.2
+     ],
+     [
+      [
+       224,
+       128,
+       0
+      ],
+      22.8
+     ],
+     [
+      [
+       224,
+       192,
+       0
+      ],
+      6.4
+     ]
+    ],
+    "near_white_pct": 0.1
+   },
+   "units": [
+    {
+     "key": "pub-127|4036a0c949af7de38d131a7d4cac425455e9ddd8f8c187d20579ebfa1dae65aa",
+     "input_url": "https://micro.blog/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "7394"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "d9315da2af2e2a3081e75dfbcb76f4fae5a539b35b29858c5e9556a6e6d5e4a1",
+   "image": "images/d9315da2af2e2a3081e75dfbcb76f4fae5a539b35b29858c5e9556a6e6d5e4a1.png",
+   "pixel": {
+    "size": [
+     16,
+     16
+    ],
+    "opaque_pct": 29.7,
+    "unique_colors": 21,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      81.6
+     ],
+     [
+      [
+       160,
+       160,
+       160
+      ],
+      5.3
+     ],
+     [
+      [
+       64,
+       64,
+       64
+      ],
+      3.9
+     ]
+    ],
+    "near_white_pct": 1.3
+   },
+   "units": [
+    {
+     "key": "pub-128|d9315da2af2e2a3081e75dfbcb76f4fae5a539b35b29858c5e9556a6e6d5e4a1",
+     "input_url": "https://www.bunniestudios.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 54,
+     "w": "16",
+     "h": "16",
+     "bytes": "277"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "6fce4ca0b3cbf9c2020f7ffc2bb38003f70107c0f1c2dabf2af4903475169149",
+   "image": "images/6fce4ca0b3cbf9c2020f7ffc2bb38003f70107c0f1c2dabf2af4903475169149.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 219,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      56.1
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      35.5
+     ],
+     [
+      [
+       128,
+       128,
+       128
+      ],
+      1.7
+     ]
+    ],
+    "near_white_pct": 37.1
+   },
+   "units": [
+    {
+     "key": "pub-129|6fce4ca0b3cbf9c2020f7ffc2bb38003f70107c0f1c2dabf2af4903475169149",
+     "input_url": "https://www.eevblog.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "64",
+     "h": "64",
+     "bytes": "2269"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "65f243838573eacee9750558ae216f17dd83bc81c65d895c69f47be3120d7ba5",
+   "image": "images/65f243838573eacee9750558ae216f17dd83bc81c65d895c69f47be3120d7ba5.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 246,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      80.7
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      16.1
+     ],
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      0.7
+     ]
+    ],
+    "near_white_pct": 16.7
+   },
+   "units": [
+    {
+     "key": "pub-130|65f243838573eacee9750558ae216f17dd83bc81c65d895c69f47be3120d7ba5",
+     "input_url": "https://hackaday.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3758"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "188a35fe121b7d5977705309e65c5ea53e4e0bf1c0117ce599a0db4f962a0c5c",
+   "image": "images/188a35fe121b7d5977705309e65c5ea53e4e0bf1c0117ce599a0db4f962a0c5c.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 99.5,
+    "unique_colors": 13,
+    "top_colors": [
+     [
+      [
+       224,
+       0,
+       0
+      ],
+      72.4
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      22.5
+     ],
+     [
+      [
+       224,
+       160,
+       160
+      ],
+      2.1
+     ]
+    ],
+    "near_white_pct": 22.5
+   },
+   "units": [
+    {
+     "key": "pub-131|188a35fe121b7d5977705309e65c5ea53e4e0bf1c0117ce599a0db4f962a0c5c",
+     "input_url": "https://www.theregister.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "618"
+    }
+   ]
+  }
+ ]
+}

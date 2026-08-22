@@ -1,4 +1,6 @@
 # Handoff log — newest first, keep the last 20
+- 2026-08-22 · ZCode · f584908 (tree) · Built review kit for the census gate: `eng/benchmark-runs/profile-candidates-v13/review-kit/` (gitignored, additive only) — self-contained `index.html`, all 456 units with embedded artifacts + filters + label transcription; export format proven against `prepare-review.ps1 -Validate` both ways (full pass, one-missing rejected). Gate unchanged: human labels still required; queue untouched.
+
 - 2026-08-22 · ZCode · 0840588 · Study complete & verified: 126/126 cells uniform on gate fingerprints (0 resumed); census queue (456 units) independently regenerated - identical keys/occurrences, all not-reviewed; monitor automation-07cd5199 deleted per owner agreement; STOPPED at the human-review census gate awaiting labels.
 
 - 2026-08-21 · ZCode · b96b1ef · Launch gate recorded at b96b1ef (binary/experiment/corpus/harness fingerprints in handoff item 5; smokes rerun green on the recorded binary); next action: launch the profile-candidates-v13 study from a clean root, then STOP at the human-review census gate.

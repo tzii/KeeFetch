@@ -494,6 +494,7 @@ if ($queueRows.Count -eq 0) { throw "Review queue empty: $reviewQueueResolved" }
 
 $reviewMap = @{}
 $queueKeys = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+$queueReviewers = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
 foreach ($qr in $queueRows) {
     $fid = ""
     if ($qr.PSObject.Properties.Name -contains "fixture_id") { $fid = [string]$qr.fixture_id }
@@ -509,7 +510,7 @@ foreach ($qr in $queueRows) {
     $label = ""
     if ($qr.PSObject.Properties.Name -contains "review_label") { $label = ([string]$qr.review_label).Trim().ToLowerInvariant() }
     if ($label -eq "not-reviewed" -or [string]::IsNullOrWhiteSpace($label)) {
-        throw "Unreviewed rows remain in the queue ($key). Complete the human review first."
+        throw "Unreviewed rows remain in the queue ($key). Complete the review (human, or owner-approved machine review with machine: reviewer provenance) first."
     }
     if ($allowedLabels -notcontains $label) { throw "Invalid review label '$label' for $key" }
     $reviewer = ""
@@ -524,7 +525,29 @@ foreach ($qr in $queueRows) {
     if (-not [DateTime]::TryParse($reviewedAt, [System.Globalization.CultureInfo]::InvariantCulture, $styles, [ref]$dt)) {
         throw "Unparseable reviewed_at_utc for ${key}: '$reviewedAt'"
     }
+    if (-not [string]::IsNullOrWhiteSpace($reviewer)) { [void]$queueReviewers.Add($reviewer.Trim()) }
     $reviewMap[$key] = $label
+}
+
+# Review provenance is derived from the queue itself, never asserted: a
+# machine reviewer (machine: prefix) must be disclosed as machine review in
+# the evidence report; mixed provenance is listed verbatim.
+$machineReviewers = @($queueReviewers | Where-Object { $_ -match '^machine:' } | Sort-Object)
+$humanReviewers = @($queueReviewers | Where-Object { $_ -notmatch '^machine:' } | Sort-Object)
+$isMachineReview = ($machineReviewers.Count -gt 0 -and $humanReviewers.Count -eq 0)
+$reviewerList = (@($queueReviewers | Sort-Object) -join ', ')
+$reviewKindPhrase = "human-reviewed"
+$reviewDisclosureLines = @()
+if ($isMachineReview) {
+    $reviewKindPhrase = "machine-reviewed"
+    $reviewDisclosureLines = @(
+        "- Review provenance: every census label was produced by MACHINE REVIEW, not a human reviewer. Reviewer of record: ``$reviewerList``. The owner approved this methodology amendment on 2026-08-22; the labeling pipeline, dual-lane pilot with pixel arbitration, prompts, batch outputs, and the owner's stratified spot-check are recorded under ``machine-review/`` in the selecting repository. These labels must never be presented as human review."
+    )
+} elseif ($machineReviewers.Count -gt 0) {
+    $reviewKindPhrase = "reviewed (mixed human and machine provenance)"
+    $reviewDisclosureLines = @(
+        "- Review provenance is MIXED - human reviewers and machine reviewers both appear in the queue. Reviewers of record: ``$reviewerList``. Machine labels (machine: prefix) and their pipeline evidence are recorded under ``machine-review/``; they must never be presented as human review."
+    )
 }
 
 # Regenerate the cold census independently from the evidence (same definition
@@ -966,7 +989,7 @@ $roles = @(
     @{ Id = "bulk-fast";      DisplayName = "Fast";      IntendedUse = "Large batch fetching with reduced latency";                 Winner = $bulkWinner },
     @{ Id = "everyday";       DisplayName = "Balanced";  IntendedUse = "Default everyday use balancing coverage and speed";        Winner = $everydayWinner },
     @{ Id = "privacy";        DisplayName = "Privacy";   IntendedUse = "Privacy-sensitive fetching without third-party providers"; Winner = $privacyWinner },
-    @{ Id = "max-coverage";   DisplayName = "Thorough";  IntendedUse = "Maximum coverage with the full resolver chain";            Winner = $maxCoverageWinner }
+    @{ Id = "max-coverage";   DisplayName = "Thorough";  IntendedUse = "Maximum coverage with the study-selected resolver chain";        Winner = $maxCoverageWinner }
 )
 
 foreach ($role in $roles) {
@@ -992,6 +1015,7 @@ foreach ($role in $roles) {
     $chainLiteral = "new string[] { " + (($chain | ForEach-Object { Convert-ToCsStringLiteral -Value ([string]$_) }) -join ", ") + " }"
     $synthetic = if ([bool]$def.allowSynthetic) { "true" } else { "false" }
     $stop = if ([bool]$def.stopAfterStrongResolved) { "true" } else { "false" }
+    $androidStore = if ($def.PSObject.Properties.Name -contains 'allowAndroidStoreLookup' -and [bool]$def.allowAndroidStoreLookup) { "true" } else { "false" }
     $generatedLines.Add("            profiles.Add(new FetchProfileDefinition(")
     $generatedLines.Add("                " + (Convert-ToCsStringLiteral -Value $role.Id) + ",")
     $generatedLines.Add("                " + (Convert-ToCsStringLiteral -Value $role.DisplayName) + ",")
@@ -1003,6 +1027,7 @@ foreach ($role in $roles) {
     $generatedLines.Add("                " + ([int]$def.cumulativeTimeout) + ",")
     $generatedLines.Add("                " + $synthetic + ",")
     $generatedLines.Add("                " + $stop + ",")
+    $generatedLines.Add("                " + $androidStore + ",")
     $generatedLines.Add("                true,")
     $generatedLines.Add("                " + (Convert-ToCsStringLiteral -Value "docs/benchmarks/v1.3-provider-study.md") + "));")
     $generatedLines.Add("")
@@ -1036,8 +1061,9 @@ $evidenceLines.Add("")
 $evidenceLines.Add("- Execution policies: every candidate executed its recorded provider chain, per-provider and cumulative budgets, synthetic flag, and early-stop flag; run.json policy fingerprints were verified against the experiment definition, and the execution-harness fingerprint was verified uniform and current.")
 $evidenceLines.Add("- Cold/warm: cold runs clear all caches before every measured run. Warm blocks clear once, perform an unmeasured warm-up over the full corpus, then run measured warm repetitions without clearing. Warm-up runs are marked and excluded from all metrics.")
 $evidenceLines.Add("- Scoring is cold-only: machine availability, label rates, provider calls, third-party disclosure, and latency statistics are computed over measured cold cells; warm rows appear only as informational latency percentiles and never enter a winner rule.")
-$evidenceLines.Add("- Review is a CENSUS: every unique cold (fixture_id, artifact_hash) unit is human-reviewed exactly once and the label propagates to every occurrence of that exact artifact across repetitions and candidates. There is no sampling, no stratification, and no design weighting; the selection verifies that the review queue equals the cold census exactly (no missing unit, no extra key).")
-$evidenceLines.Add("- Statistics: machine availability and human labels are separate evidence; an unreviewed success is never counted as correct. Reported label rates are exact proportions over the reviewed census population - with a complete census there is no sampling error to estimate, so no interval estimates are reported anywhere.")
+$evidenceLines.Add("- Review is a CENSUS: every unique cold (fixture_id, artifact_hash) unit is $reviewKindPhrase exactly once and the label propagates to every occurrence of that exact artifact across repetitions and candidates. There is no sampling, no stratification, and no design weighting; the selection verifies that the review queue equals the cold census exactly (no missing unit, no extra key).")
+$evidenceLines.Add("- Statistics: machine availability and census labels are separate evidence; an unreviewed success is never counted as correct. Reported label rates are exact proportions over the reviewed census population - with a complete census there is no sampling error to estimate, so no interval estimates are reported anywhere.")
+foreach ($disclosureLine in $reviewDisclosureLines) { $evidenceLines.Add($disclosureLine) }
 $evidenceLines.Add("- Correctness excludes ambiguous labels from numerator and denominator. Rows without an artifact hash cannot carry exact identity and remain machine evidence only.")
 $evidenceLines.Add("- provider_metrics is parsed strictly: every entry must name a known provider and outcome with integral counts, and every successful fetch must record at least one provider activity; violations reject the selection.")
 $evidenceLines.Add("- Batch speed uses active wall-clock duration per cell from run.json (resumed runs accumulate active time only; wall-clock across interruptions is never used).")
@@ -1065,7 +1091,7 @@ $evidenceLines.Add("")
 $evidenceLines.Add("## Limitations")
 $evidenceLines.Add("")
 $evidenceLines.Add("- Live-network measurements reflect the environment and time of the run; absolute latencies vary, rankings are the decision evidence.")
-$evidenceLines.Add("- The census removes sampling error from label rates, not reviewer judgment error: each label is one human decision per unique artifact.")
+$evidenceLines.Add("- The census removes sampling error from label rates, not reviewer judgment error: each label is one $($reviewKindPhrase.Replace('-reviewed','').Replace('reviewed (','').Replace(')','')) decision per unique artifact" + $(if ($isMachineReview) { " (machine judgment error characteristics differ from human judgment error)" } else { "" }) + ".")
 $evidenceLines.Add("- Privacy is measured by observed third-party call evidence, not by the configured chain alone.")
 $evidenceLines.Add("")
 $evidenceLines.Add("## Reproduction")
@@ -1074,7 +1100,7 @@ $evidenceLines.Add("``````powershell")
 $evidenceLines.Add("dotnet build KeeFetch.csproj --configuration Release -p:KeePassPath=<KeePass dir>")
 $evidenceLines.Add("powershell -NoProfile -ExecutionPolicy Bypass -File eng/benchmark-presets.ps1 -Experiment eng/benchmark/experiments/$experimentId.json")
 $evidenceLines.Add("powershell -NoProfile -ExecutionPolicy Bypass -File eng/benchmark/prepare-review.ps1 -RunDir <output root>")
-$evidenceLines.Add("# human review of the complete cold census, then:")
+$evidenceLines.Add("# review of the complete cold census (this report's provenance: $reviewKindPhrase), then:")
 $evidenceLines.Add("powershell -NoProfile -ExecutionPolicy Bypass -File eng/benchmark/select-profiles.ps1 -RunDir <output root>")
 $evidenceLines.Add("``````")
 $evidenceLines.Add("")

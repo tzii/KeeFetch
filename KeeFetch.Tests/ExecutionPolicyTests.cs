@@ -72,40 +72,42 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
-        public void EverydayProfile_ResolvesExactBudgetsChainSyntheticAndStop()
+        public void EverydayProfile_ResolvesExactBudgetsChainSyntheticAndFullChain()
         {
             var policy = Resolve(ManagedConfig("everyday"));
-            Assert.AreEqual(6000, policy.PrimaryTimeoutMs);
-            Assert.AreEqual(3500, policy.FallbackTimeoutMs);
-            Assert.AreEqual(22000, policy.CumulativeTimeoutMs);
-            Assert.IsTrue(policy.AllowSyntheticFallbacks);
-            Assert.IsTrue(policy.StopAfterStrongResolved);
-            CollectionAssert.AreEqual(
-                new[] { "direct-site", "google", "favicone" },
-                (System.Collections.ICollection)policy.ProviderIds);
-        }
-
-        [TestMethod]
-        public void ThoroughProfile_ResolvesExactBudgetsAndNoEarlyStop()
-        {
-            var policy = Resolve(ManagedConfig("max-coverage"));
             Assert.AreEqual(10000, policy.PrimaryTimeoutMs);
             Assert.AreEqual(5000, policy.FallbackTimeoutMs);
             Assert.AreEqual(45000, policy.CumulativeTimeoutMs);
             Assert.IsTrue(policy.AllowSyntheticFallbacks);
             Assert.IsFalse(policy.StopAfterStrongResolved);
-            Assert.AreEqual(7, policy.ProviderIds.Count);
+            CollectionAssert.AreEqual(
+                new[] { "direct-site", "twenty-icons", "duckduckgo", "google", "yandex", "icon-horse" },
+                (System.Collections.ICollection)policy.ProviderIds);
         }
 
         [TestMethod]
-        public void PrivacyProfile_ResolvesDirectOnlyWithoutSyntheticOrEarlyStop()
+        public void ThoroughProfile_ResolvesExactBudgetsChainAndEarlyStop()
+        {
+            var policy = Resolve(ManagedConfig("max-coverage"));
+            Assert.AreEqual(6000, policy.PrimaryTimeoutMs);
+            Assert.AreEqual(3500, policy.FallbackTimeoutMs);
+            Assert.AreEqual(22000, policy.CumulativeTimeoutMs);
+            Assert.IsFalse(policy.AllowSyntheticFallbacks);
+            Assert.IsTrue(policy.StopAfterStrongResolved);
+            CollectionAssert.AreEqual(
+                new[] { "direct-site", "yandex" },
+                (System.Collections.ICollection)policy.ProviderIds);
+        }
+
+        [TestMethod]
+        public void PrivacyProfile_ResolvesDirectOnlyWithoutSynthetic()
         {
             var policy = Resolve(ManagedConfig("privacy"));
             CollectionAssert.AreEqual(
                 new[] { "direct-site" },
                 (System.Collections.ICollection)policy.ProviderIds);
             Assert.IsFalse(policy.AllowSyntheticFallbacks);
-            Assert.IsFalse(policy.StopAfterStrongResolved);
+            Assert.IsTrue(policy.StopAfterStrongResolved);
             Assert.AreEqual(6000, policy.PrimaryTimeoutMs);
             Assert.AreEqual(22000, policy.CumulativeTimeoutMs);
         }

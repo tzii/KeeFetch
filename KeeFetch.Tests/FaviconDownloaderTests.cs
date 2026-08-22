@@ -76,19 +76,21 @@ namespace KeeFetch.Tests
             var names = GetPipelineProviderNames(config);
 
             CollectionAssert.AreEqual(
-                new[] { "Direct Site", "Google", "Favicone" },
+                new[] { "Direct Site", "Twenty Icons", "DuckDuckGo", "Google", "Yandex", "Icon Horse" },
                 names);
         }
 
         [TestMethod]
-        public void BuildProviderPipeline_UsesFullProviderSetForThoroughPreset()
+        public void BuildProviderPipeline_UsesStudyWinnerSetForThoroughPreset()
         {
             var config = new Configuration(new AceCustomConfig());
             config.FetchPresetMode = FetchPresetMode.Thorough;
 
             var names = GetPipelineProviderNames(config);
 
-            CollectionAssert.AreEqual(FaviconDownloader.DefaultProviderOrder, names);
+            CollectionAssert.AreEqual(
+                new[] { "Direct Site", "Yandex" },
+                names);
         }
 
         private static string[] GetPipelineProviderNames(Configuration config)

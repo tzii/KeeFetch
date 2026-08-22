@@ -157,54 +157,45 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
-        public void Configuration_PresetProviderOrders_AreDistinct()
+        public void Configuration_PresetProviderOrders_MatchPublishedCatalog()
         {
             CollectionAssert.AreEqual(
                 new[] { "Direct Site", "Google", "Twenty Icons" },
                 Configuration.GetPresetProviderOrderList(FetchPresetMode.Fast));
 
             CollectionAssert.AreEqual(
-                new[] { "Direct Site", "Google", "Favicone" },
+                new[] { "Direct Site", "Twenty Icons", "DuckDuckGo", "Google", "Yandex", "Icon Horse" },
                 Configuration.GetPresetProviderOrderList(FetchPresetMode.Balanced));
 
             CollectionAssert.AreEqual(
-                FaviconDownloader.DefaultProviderOrder,
+                new[] { "Direct Site", "Yandex" },
                 Configuration.GetPresetProviderOrderList(FetchPresetMode.Thorough));
         }
 
         [TestMethod]
-        public void Configuration_PresetTimeoutBudgets_AreMonotonic()
+        public void Configuration_PresetTimeoutBudgets_MatchPublishedCatalog()
         {
-            Assert.IsTrue(
-                Configuration.GetPresetPrimaryProviderTimeoutMs(FetchPresetMode.Fast) <
-                Configuration.GetPresetPrimaryProviderTimeoutMs(FetchPresetMode.Balanced));
-            Assert.IsTrue(
-                Configuration.GetPresetPrimaryProviderTimeoutMs(FetchPresetMode.Balanced) <
-                Configuration.GetPresetPrimaryProviderTimeoutMs(FetchPresetMode.Thorough));
+            Assert.AreEqual(4000, Configuration.GetPresetPrimaryProviderTimeoutMs(FetchPresetMode.Fast));
+            Assert.AreEqual(2500, Configuration.GetPresetFallbackProviderTimeoutMs(FetchPresetMode.Fast));
+            Assert.AreEqual(15000, Configuration.GetPresetMaxCumulativeTimeoutMs(FetchPresetMode.Fast));
 
-            Assert.IsTrue(
-                Configuration.GetPresetFallbackProviderTimeoutMs(FetchPresetMode.Fast) <
-                Configuration.GetPresetFallbackProviderTimeoutMs(FetchPresetMode.Balanced));
-            Assert.IsTrue(
-                Configuration.GetPresetFallbackProviderTimeoutMs(FetchPresetMode.Balanced) <
-                Configuration.GetPresetFallbackProviderTimeoutMs(FetchPresetMode.Thorough));
+            Assert.AreEqual(10000, Configuration.GetPresetPrimaryProviderTimeoutMs(FetchPresetMode.Balanced));
+            Assert.AreEqual(5000, Configuration.GetPresetFallbackProviderTimeoutMs(FetchPresetMode.Balanced));
+            Assert.AreEqual(45000, Configuration.GetPresetMaxCumulativeTimeoutMs(FetchPresetMode.Balanced));
 
-            Assert.IsTrue(
-                Configuration.GetPresetMaxCumulativeTimeoutMs(FetchPresetMode.Fast) <
-                Configuration.GetPresetMaxCumulativeTimeoutMs(FetchPresetMode.Balanced));
-            Assert.IsTrue(
-                Configuration.GetPresetMaxCumulativeTimeoutMs(FetchPresetMode.Balanced) <
-                Configuration.GetPresetMaxCumulativeTimeoutMs(FetchPresetMode.Thorough));
+            Assert.AreEqual(6000, Configuration.GetPresetPrimaryProviderTimeoutMs(FetchPresetMode.Thorough));
+            Assert.AreEqual(3500, Configuration.GetPresetFallbackProviderTimeoutMs(FetchPresetMode.Thorough));
+            Assert.AreEqual(22000, Configuration.GetPresetMaxCumulativeTimeoutMs(FetchPresetMode.Thorough));
         }
 
         [TestMethod]
-        public void Configuration_BalancedPreset_UsesSyntheticFallbackWithoutIconHorse()
+        public void Configuration_BalancedPreset_UsesSyntheticFallbackWithoutFavicone()
         {
             Assert.IsTrue(Configuration.GetPresetAllowSyntheticFallbacks(FetchPresetMode.Balanced));
-            Assert.IsTrue(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "Favicone"));
-            Assert.IsFalse(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "Twenty Icons"));
-            Assert.IsFalse(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "DuckDuckGo"));
-            Assert.IsFalse(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "Icon Horse"));
+            Assert.IsFalse(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "Favicone"));
+            Assert.IsTrue(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "Twenty Icons"));
+            Assert.IsTrue(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "DuckDuckGo"));
+            Assert.IsTrue(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "Icon Horse"));
         }
 
         [TestMethod]

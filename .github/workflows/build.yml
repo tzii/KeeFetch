@@ -92,6 +92,7 @@ jobs:
           Copy-Item -Path "FetchProfiles" -Destination $plgxSrc -Recurse
           Copy-Item -Path "IconSelection" -Destination $plgxSrc -Recurse
           Copy-Item -Path "Batch" -Destination $plgxSrc -Recurse
+          Copy-Item -Path "Settings" -Destination $plgxSrc -Recurse
           Copy-Item -Path "Assets" -Destination $plgxSrc -Recurse
 
           # KeePass plgx-create needs a legacy-style .csproj — SDK-style won't work.
@@ -113,7 +114,8 @@ jobs:
             "FetchProfiles\FetchProfileCatalog.Generated.cs",
             "FetchProfiles\LegacyProfileMigration.cs",
             "Batch\BatchEntryOutcome.cs",
-            "Batch\BatchRunResult.cs"
+            "Batch\BatchRunResult.cs",
+            "Settings\SettingsDraft.cs"
           )
           $missing = $expectedFiles | Where-Object { !(Test-Path (Join-Path $plgxSrc $_)) }
           if ($missing) {

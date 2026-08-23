@@ -44,6 +44,8 @@
     <!-- Batch folder -->
     <Compile Include="Batch\BatchEntryOutcome.cs" />
     <Compile Include="Batch\BatchRunResult.cs" />
+    <!-- Settings folder -->
+    <Compile Include="Settings\SettingsDraft.cs" />
     <!-- IconProviders folder -->
     <Compile Include="IconProviders\DirectSiteProvider.cs" />
     <Compile Include="IconProviders\DuckDuckGoProvider.cs" />

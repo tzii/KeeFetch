@@ -1,12 +1,12 @@
 # KeeFetch current state
 
-Status:  REVIEW
-Agent:   ZCode
+Status:  DONE
+Agent:   Codex
 
-Focus:   PR #4 review pass complete (2026-08-23): all local gates re-verified green and CI green on the final commit; review fixes applied (prep -Validate fail-closed, selector duplicate-id rejection + throughput divisor, study-doc re-ask disclosure); all four winners reproduce end-to-end from HEAD with the fixed selector and the generated catalog is byte-identical. Awaiting human review / the merge decision.
-Next:    Human review / merge of PR #4. Parked harness fixes for the next study live in docs/benchmarks/v1.3-harness-followups.md - do not touch the fingerprinted runner/harness files before merge.
+Focus:   PR #4 merged into master as e2bee2d (2026-08-23) after the completed review pass: the reviewed head de4f871 was mergeable with CI green, all local gates had been re-verified, and all four published winners reproduced end-to-end.
+Next:    None - this focus is complete. Parked harness fixes for a future study remain in docs/benchmarks/v1.3-harness-followups.md.
 Pointer: https://github.com/tzii/KeeFetch/pull/4
-As-of:   2026-08-23 · review pass done
+As-of:   2026-08-23 · merged as e2bee2d
 
 Notes:
 - Review provenance: census labels are MACHINE review (`machine:antigravity-1.1.18/gemini-3.7-flash-high`), owner-approved after the dual-lane pilot + pixel arbitration and an owner spot-check; disclosed in `docs/benchmarks/v1.3-provider-study.md` and `machine-review/`. Never present them as human review.

@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "mode": "review_batch",
+  "repo": "C:\\Dev\\KeeFetch",
+  "results": [
+    {
+      "schema_version": "1.0",
+      "run_id": "20260822-172342-review-antigravity-9f95e1",
+      "mode": "review",
+      "role": "google",
+      "worker": "antigravity",
+      "status": "ok",
+      "repo": {
+        "root": "C:\\Dev\\KeeFetch",
+        "base_commit": "e74a343adb253a317bf582f78242f7c235503200",
+        "dirty_source_included": true
+      },
+      "workspace": {
+        "path": "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-172342-review-antigravity-9f95e1",
+        "ephemeral": true,
+        "branch": null,
+        "removed": true
+      },
+      "command": {
+        "argv": [
+          "C:\\Users\\zxcv0\\AppData\\Local\\agy\\bin\\agy.EXE",
+          "--model",
+          "gemini-3.7-flash-high",
+          "--effort",
+          "high",
+          "--mode",
+          "plan",
+          "--dangerously-skip-permissions",
+          "--print-timeout",
+          "35m",
+          "-p",
+          "<PROMPT>",
+          "--add-dir",
+          "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-172342-review-antigravity-9f95e1",
+          "--output-format",
+          "json"
+        ],
+        "exit_code": 0
+      },
+      "result": {
+        "summary": "{\"conversation_id\":\"1e1e8e6f-a2ec-49bb-8912-bc5983953fcf\",\"status\":\"ERROR\",\"response\":\"[\\n  {\\n    \\\"key\\\": \\\"pub-239|5b9e7be1e6df29437b326fb578302a8808745f24f38f30357e9ac3b8febbbf20\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Ubuntu 'Circle of Friends' logo on an orange background for https://www.ubuntu.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-240|3e20b5d65b2af9b227a771078cdf1760fecadf92116d35f0a51ed1c9634f42d6\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine red swirl brand favicon for https://www.debian.org/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-241|e6a6d074761b5663e4453ec96f8df6c36d03a42e4b5e2c09c006c859f1a33ce8\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine modern Angular shield brand icon with magenta-violet gradient for https://angular.io/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-242|3f6f184ed3b3870eb642e83330c26e64a39f0ce68629a79f8066939c2f81120a\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine cyan atom orbit brand icon for https://react.dev/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-243|5cf0eeca6391e95fd5a302e147196bf058a65af868ee27d8e6630841669d8d76\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine green and slate 'V' brand icon for https://vuejs.org/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-243|61f72c50455d21bbea70a281abd7d9ba730c4c4857ef92a3658fc84b5ce7ab57\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine green and slate 'V' brand icon for https://vuejs.org/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-243|aed14a90a5504fd512319cc0b8569742b7e7683f707c9dc9793a568ea4b60a28\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Vue 'V' brand logo on a white background for https://vuejs.org/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-244|e2ebd0404a05c6e7c15cde882dbe4ad6657f882feed9c2bb196be9106fa3aee9\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine orange stylized 'S' swirl brand icon for https://svelte.dev/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-245|793e9e2c1c9793f5d138e8675dbdca0ff385785c9ee3d35688193b027d1ce3e5\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine teal orbital electron brand icon for https://www.electronjs.org/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-210|a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated letter mark 'H' derived from domain httpstat.us.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-211|a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated letter mark 'H' derived from domain httpstat.us.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-247|a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated letter mark 'H' derived from domain httpstat.us.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-248|a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated letter mark 'H' derived from domain httpstat.us.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-249|a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated letter mark 'H' derived from domain httpstat.us.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-256|a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated letter mark 'H' derived from domain httpstat.us.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-257|a014ce17a375ab2673aad2496a11d1efc0f931f6e3da24475cdc4a30b5ee5b1a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated letter mark 'H' derived from domain httpstat.us.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-212|f1afd148adc7ef455eac149d951d2278254b0ce12c4c20a4a5bf8a60d7058a34\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Bitly orange 'b' brand favicon for URL shortener variant https://bit.ly/3testkeep.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-213|daa7043a9bf46c61b99251a9ea363a1e25ac52e87168ef01aadd8f9bc56662bc\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine TinyURL green and blue link brand favicon for URL shortener variant https://tinyurl.com/testkeep.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-215|6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated letter mark 'E' derived from http://example.com/.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-217|6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated letter mark 'E' derived from https://example.com/.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-218|6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated letter mark 'E' derived from https://example.com:443/path?q=1#frag.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-246|6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated letter mark 'E' derived from https://example.invalid/.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-250|6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated letter mark 'E' derived from https://example.com/nonexistent-favicon-xyz123.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-284|6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated letter mark 'E' derived from androidapp://com.example.app.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-285|6efb5e6d61b69125f7a45512ebbacf9ab996d0a78d76cca255472bfee820342a\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated letter mark 'E' derived from androidapp://io.example.todo.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-216|dd47a855b83b74fb64951af53cc3899064a61b9933768161ad1721271bf65d3b\\\",\\n    \\\"label\\\": \\\"ambiguous\\\",\\n    \\\"reason\\\": \\\"The image is a cropped two-tone blue and white banner from neverssl.com's header rather than a brand favicon or synthetic letter mark.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-216|e9f3a5c52356250942300f1220f9f3b69822c9d85b835f99a4112f6c776747cf\\\",\\n    \\\"label\\\": \\\"ambiguous\\\",\\n    \\\"reason\\\": \\\"The image is a cropped two-tone blue and white banner from neverssl.com's header rather than a brand favicon or synthetic letter mark.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-216|f33b3a686ad38bf890e2aeb47a2e38a330b8fe7d0c80a5190a508f17900ce7ff\\\",\\n    \\\"label\\\": \\\"ambiguous\\\",\\n    \\\"reason\\\": \\\"The image is a cropped two-tone blue and white banner from neverssl.com's header rather than a brand favicon or synthetic letter mark.\\\",\\n    \\\"verified_live\\\": false\\n  }\\n]\\n\",\"error\":\"ContentOffset 15000 exceeds line range size 2740\",\"duration_seconds\":241.8471183,\"num_turns\":1,\"usage\":{\"input_tokens\":333395,\"output_tokens\":35497,\"thinking_tokens\":15684,\"cache_read_tokens\":5130336,\"total_tokens\":368892}}",
+        "summary_truncated": false,
+        "stdout_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-172342-review-antigravity-9f95e1\\stdout.txt",
+        "stderr_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-172342-review-antigravity-9f95e1\\stderr.txt"
+      },
+      "safety": {
+        "isolated": true,
+        "unexpected_review_mutation": false,
+        "auto_integrated": false,
+        "pushed_or_published_by_crew": false
+      },
+      "duration_ms": 248243
+    }
+  ]
+}

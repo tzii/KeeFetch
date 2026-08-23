@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "mode": "review_batch",
+  "repo": "C:\\Dev\\KeeFetch",
+  "results": [
+    {
+      "schema_version": "1.0",
+      "run_id": "20260822-171310-review-antigravity-d36c08",
+      "mode": "review",
+      "role": "google",
+      "worker": "antigravity",
+      "status": "ok",
+      "repo": {
+        "root": "C:\\Dev\\KeeFetch",
+        "base_commit": "e74a343adb253a317bf582f78242f7c235503200",
+        "dirty_source_included": true
+      },
+      "workspace": {
+        "path": "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-171310-review-antigravity-d36c08",
+        "ephemeral": true,
+        "branch": null,
+        "removed": true
+      },
+      "command": {
+        "argv": [
+          "C:\\Users\\zxcv0\\AppData\\Local\\agy\\bin\\agy.EXE",
+          "--model",
+          "gemini-3.7-flash-high",
+          "--effort",
+          "high",
+          "--mode",
+          "plan",
+          "--dangerously-skip-permissions",
+          "--print-timeout",
+          "35m",
+          "-p",
+          "<PROMPT>",
+          "--add-dir",
+          "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-171310-review-antigravity-d36c08",
+          "--output-format",
+          "json"
+        ],
+        "exit_code": 0
+      },
+      "result": {
+        "summary": "{\"conversation_id\":\"0c3e7d2c-c65a-4997-b6fe-7912f47d36ea\",\"status\":\"ERROR\",\"response\":\"[\\n  {\\n    \\\"key\\\": \\\"pub-049|8759579205601518cf54ac6f3945b47f790cdbb528a3ef30bba5e3bb56de8bdf\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine OpenAI spiral flower logo for https://openai.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-049|a77f187abb995affcdfdaeb254b2ec36f23d526343a7706ba10e4f90bf3ecab5\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine OpenAI spiral logo for https://openai.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-050|aee21edcbfb9f135f03efb473d98bad0db56f32eeb72bcc5528cb331bd524f8e\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Anthropic stylized 'A\\\\\\\\' mark favicon for https://www.anthropic.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-051|c967592661ad66bfbb219afdfb42cdedb377dd771ed3a93e553513cc83173920\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Microsoft Bing blue ribbon 'b' favicon for https://www.bing.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-261|c967592661ad66bfbb219afdfb42cdedb377dd771ed3a93e553513cc83173920\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Bing logo served on Bing 404 pages.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-052|9ea16df66728befed2c5344b61f3d1ec34afb25e7fc984df0bca04e14094c710\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Yandex white 'Y' on red background logo for https://www.yandex.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-053|d8c82eaacb94bb2888c08abeb1ee6098623aadf20e94ff9db0286d15866f1983\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Baidu blue bear paw logo for https://www.baidu.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-053|f888096e550bd7f8e7c11e893c55b59e5c7e2de8a0aea6393e4e855245b791ad\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Baidu blue bear paw logo for https://www.baidu.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-054|ca9c41f148a2b98aa01cfde7a410fc7f8137e18bb0975283c856381ee506b098\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Alibaba smiling 'a' favicon for https://www.alibaba.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-055|bab72acbf689665e13068a746ac2c89db75dde4598da767253670a0b42fba2d7\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine AliExpress white shopping cart on red background favicon for https://www.aliexpress.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-056|b7e78861f1819a37fb02577a9d327a28f084df8dcdfbd8ceb5f59ab7261c4668\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Etsy white 'E' on orange background logo for https://www.etsy.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-151|b7e78861f1819a37fb02577a9d327a28f084df8dcdfbd8ceb5f59ab7261c4668\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Etsy brand favicon for this Etsy shop page.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-057|0e4baaeb41d23873b35dcd18e33af90ce08f06610b08df4f3f5f2ba2b4d0ff23\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Shopify green shopping bag logo for https://www.shopify.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-058|92697546c7807706c2ea2cc7fd77d27967104b110be510a77de46e59c287e6dc\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine TripAdvisor owl logo on teal background for https://www.tripadvisor.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-059|30585966c85e90a615a4f40519bc3d9c159536482ed278075a6518ba016e5f7f\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Expedia yellow rounded square with navy arrow logo for https://www.expedia.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-060|01f8f925052595e8560f13c7030a402dfac5be0440aca45e358b4d1b14db5a8d\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Shazam blue circle logo for https://www.shazam.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-060|74abd4c9af9c27e514ff842be0b646138305642fa5df7f101a358c8352e89016\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Shazam logo for https://www.shazam.com/, contradicting the synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-060|db8bbe1d90760c43bcfd5a4eac30383a9d2fc182812e4b43fbf554c9d049c74a\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Shazam blue circle logo for https://www.shazam.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-060|ef5f8a25aab8ed1dc4a56c35c96061c367648135dfe58fdc8c354da16d4d8fc1\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Shazam blue gradient circle logo for https://www.shazam.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-253|cdb4554c4e635b35c380cfddef1e84f55123c6659edf82da927ee5f1b482ef09\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine badssl service icon featuring a red padlock with an 'X' on an expired certificate subdomain.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-254|cdb4554c4e635b35c380cfddef1e84f55123c6659edf82da927ee5f1b482ef09\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine badssl service icon featuring a red padlock with an 'X' on a self-signed certificate subdomain.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-255|cdb4554c4e635b35c380cfddef1e84f55123c6659edf82da927ee5f1b482ef09\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine badssl service icon featuring a red padlock with an 'X' on an untrusted root subdomain.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-258|f7dda0aa57d447c010aa1e66b22271dfd75a8f5aab0f4cefd312909f818d0a37\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated letter mark 'T' derived from the domain name.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-259|d4868ad44b1733b94e16f04a6861d78dd21bffb7eaf5731a5e29205325cb70f6\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated letter mark 'N' derived from the domain name.\\\",\\n    \\\"verified_live\\\": false\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-062|151be33adc6875b0eb926fd247a4c7734fe5461fdf00b72008905778044ae453\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Deliveroo kangaroo head logo on turquoise background for https://www.deliveroo.co.uk/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-063|604acf761783d4722f217a8629c4a6692c0eb1428af9a5dcb5a79c11c0b6a26f\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Argos white italic 'A' on red background logo for https://www.argos.co.uk/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-064|e4e9a4259b57c466d5f89b5eeb4529a37807ac500822e35a977f296e7cbaefab\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Rightmove green house outline logo for https://www.rightmove.co.uk/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-065|258d72913752b312cdfe0f01439da3449532c7895270886c24786aa3d53224d6\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Tesco red text and blue dashes logo for https://www.tesco.com/.\\\",\\n    \\\"verified_live\\\": true\\n  }\\n]\\n\",\"error\":\"declaring permissions: cortex tool view_file: convert tool call for permissions: model output error: invalid tool call error (invalid_args) unsupported mime type text/plain; charset=utf-16le\",\"duration_seconds\":153.8752494,\"num_turns\":1,\"usage\":{\"input_tokens\":336143,\"output_tokens\":28285,\"thinking_tokens\":11344,\"cache_read_tokens\":3892258,\"total_tokens\":364428}}",
+        "summary_truncated": false,
+        "stdout_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-171310-review-antigravity-d36c08\\stdout.txt",
+        "stderr_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-171310-review-antigravity-d36c08\\stderr.txt"
+      },
+      "safety": {
+        "isolated": true,
+        "unexpected_review_mutation": false,
+        "auto_integrated": false,
+        "pushed_or_published_by_crew": false
+      },
+      "duration_ms": 159696
+    }
+  ]
+}

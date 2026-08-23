@@ -508,8 +508,44 @@ namespace KeeFetch
         public bool ShouldStopAfterStrongResolvedProvider()
         {
             string pid = FetchProfileId;
-            return pid.Equals("bulk-fast", StringComparison.OrdinalIgnoreCase) ||
-                   pid.Equals("everyday", StringComparison.OrdinalIgnoreCase);
+            if (pid.Equals("custom", StringComparison.OrdinalIgnoreCase))
+                return CustomStopAfterStrongResolvedOverride > 0;
+            try { return FetchProfileCatalog.GetRequiredProfile(pid).StopAfterStrongResolved; }
+            catch (InvalidOperationException) { return false; }
+        }
+
+        // Benchmark override keys: when present in custom mode they pin the
+        // exact execution policy a benchmark candidate runs with (see
+        // FetchExecutionPolicy.Resolve). Real user configs never set them.
+        internal long CustomPrimaryTimeoutMsOverride
+        {
+            get { return config.GetLong(Prefix + "CustomPrimaryTimeoutMs", 0); }
+        }
+
+        internal long CustomFallbackTimeoutMsOverride
+        {
+            get { return config.GetLong(Prefix + "CustomFallbackTimeoutMs", 0); }
+        }
+
+        internal long CustomCumulativeTimeoutMsOverride
+        {
+            get { return config.GetLong(Prefix + "CustomCumulativeTimeoutMs", 0); }
+        }
+
+        internal int CustomStopAfterStrongResolvedOverride
+        {
+            get { return (int)config.GetLong(Prefix + "CustomStopAfterStrongResolved", -1); }
+        }
+
+        /// <summary>
+        /// Benchmark override for the Android store (Google Play) lookup permission
+        /// of a custom execution policy: negative = derive from
+        /// UseThirdPartyFallbacks, 0 = deny, positive = allow. Participates in the
+        /// policy fingerprint.
+        /// </summary>
+        internal long CustomAllowAndroidStoreLookupOverride
+        {
+            get { return config.GetLong(Prefix + "CustomAllowAndroidStoreLookup", -1); }
         }
 
         private static bool TryGetProfileForMode(FetchPresetMode mode, out FetchProfileDefinition profile)

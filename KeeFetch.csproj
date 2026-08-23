@@ -9,7 +9,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWindowsForms>true</UseWindowsForms>
     <LangVersion>5</LangVersion>
-    <DefaultItemExcludes>$(DefaultItemExcludes);KeeFetch.Tests\**;plgx_staging\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);KeeFetch.Tests\**;plgx_staging\**;eng\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

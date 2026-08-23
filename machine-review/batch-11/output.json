@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "mode": "review_batch",
+  "repo": "C:\\Dev\\KeeFetch",
+  "results": [
+    {
+      "schema_version": "1.0",
+      "run_id": "20260822-171131-review-antigravity-ebc84b",
+      "mode": "review",
+      "role": "google",
+      "worker": "antigravity",
+      "status": "ok",
+      "repo": {
+        "root": "C:\\Dev\\KeeFetch",
+        "base_commit": "e74a343adb253a317bf582f78242f7c235503200",
+        "dirty_source_included": true
+      },
+      "workspace": {
+        "path": "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-171131-review-antigravity-ebc84b",
+        "ephemeral": true,
+        "branch": null,
+        "removed": true
+      },
+      "command": {
+        "argv": [
+          "C:\\Users\\zxcv0\\AppData\\Local\\agy\\bin\\agy.EXE",
+          "--model",
+          "gemini-3.7-flash-high",
+          "--effort",
+          "high",
+          "--mode",
+          "plan",
+          "--dangerously-skip-permissions",
+          "--print-timeout",
+          "35m",
+          "-p",
+          "<PROMPT>",
+          "--add-dir",
+          "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-171131-review-antigravity-ebc84b",
+          "--output-format",
+          "json"
+        ],
+        "exit_code": 0
+      },
+      "result": {
+        "summary": "{\"conversation_id\":\"a7c2f231-7e91-4af0-aa71-56d118324f72\",\"status\":\"SUCCESS\",\"response\":\"[\\n  {\\n    \\\"key\\\": \\\"pub-132|650b0c21efa502a0b93896701efc08c64601e7c9c3355c4e1e3cddccba4b2cdc\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine white 'L' on red background favicon for https://lobste.rs/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-133|2f874f6b0131692857eb8a95c29929b2aaa41509edae457c210bb3b9becf22a8\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine MetaFilter 'MeFi' brand logo on a blue background for https://www.metafilter.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-133|3667612558ee69831c8b088d951d745d5a36036801ebf0db21ac58c37a8a813b\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine 32x32 MetaFilter 'MeFi' favicon on a blue background for https://www.metafilter.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-133|8356fb083aa87e864c9d6b94b8c69a12b4bddf134d92a0016b0a77efdf2b6cde\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine MetaFilter 'MeFi' brand logo on a blue background for https://www.metafilter.com/, contradicting synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-133|f5cc162d5d8d3754f89075e7e6309fc2c9eaa48782f52331e0a0098b97d2eaed\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine MetaFilter 'MeFi' brand icon on a blue background for https://www.metafilter.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-134|0248eee91b4593b11f91b71ecfd8caefc4876efe544865d8800161c061a6f98b\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine white 'CM' monogram favicon on a black background for https://www.craigmod.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-134|09dfdcef812455aea0de319146b1d533ddbfdfc22ae526c2ae8c4eb9fbaae26e\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine white 'CM' monogram brand icon on a black background for https://www.craigmod.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-134|3e3dc917b33037f4a5196df278fbe4d2cc6e4996f28f777a3a60b9eb7298d6f2\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine white 'CM' monogram brand icon on a black background for https://www.craigmod.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-134|64a53ed177f81872093f4e00d85c9b9ea017038d4936d999cfa4e48450752782\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine white 'CM' monogram brand icon on a black background for https://www.craigmod.com/, contradicting synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-135|6c69e521cf20585a72946b1f4e5b564cd2efadf489964c62bcc6d1569ce65e2d\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine stylized typography favicon for https://www.neilgaiman.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-136|ecd60ddc15e7b1e4a0899091f1f5d83fbb9f9954dec3121885b6215591f795f2\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine white Arc block glyph on a blue background favicon for https://www.paulgraham.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-137|4de0747ca489e9e02bc52cc0bee9a2bc89511bc979c2efb9d223154100ab46a4\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine orange-red 'BE' monogram brand icon on a transparent background for https://www.ben-evans.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-137|a5d2fd079dfd8af2e65b648f8d143c5532fb0158348d85eea55c2c72075e761a\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine orange-red 'BE' monogram brand icon for https://www.ben-evans.com/, contradicting synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-137|b51d3bd5b9128856e7f103dd2cad68bb30283e8428956e27b775cee6adcd1dd9\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine orange-red 'BE' monogram brand icon on a transparent background for https://www.ben-evans.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-138|0ceb70584aeb7791a5cc882cf211012834ca4e97ea09002899776fde544ee1ee\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine orange square and white 'S' brand favicon for https://stratechery.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-139|5cca1fe8dc4783448f84f852acc179b3b25ab38e0c18b182f0724d67611c50a4\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine square photographic portrait favicon for https://www.troyhunt.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-140|5612caeefe12169fc5b3e37e76cf250c76c7847a5bab0afe13e9e14ab767b765\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine black brand emblem favicon for https://krebsonsecurity.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-141|a23e78c839fbb3a3546b7a829e36dba6c733c04d47ba1c29b8e7080d09a52f51\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine white 'S' cipher brand icon on a maroon background for https://www.schneier.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-142|d0ab880ea17bb20412851b0a0ff7032469e2a502c4f8ef1fc042fce2bb164aa1\\\",\\n    \\\"label\\\": \\\"acceptable-synthetic\\\",\\n    \\\"reason\\\": \\\"The image is a machine-generated 'D' lettermark on a light background derived for https://danluu.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-143|797a3beb2666bcaa7044a7f26d35c19e6e33feeafad78cd841c2b544a9a75176\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine circular emblem favicon for https://www.mattcutts.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-145|37b384fd78aa1d8e6f15bceb48f3682733d8ab43e033a7ae1432a5d7d6ecd65f\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine official Raspberry Pi raspberry brand logo for https://www.raspberrypi.org/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-145|51b7a769a86d91c0bf2ef2622d4ddefb4371132f109a9b4cb3685ac71bcdf3c2\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine official Raspberry Pi raspberry brand icon for https://www.raspberrypi.org/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-145|67b69342d668e553f0090f1a250275b7f54de4c19154afbd9db7b82ee0bf0c48\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine photographic icon of the Raspberry Pi board for https://www.raspberrypi.org/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-145|a38c414a8ac1e50a196c8dae745ae061492e6f8558630fa5fecb6f981481a6e1\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine official Raspberry Pi raspberry brand icon for https://www.raspberrypi.org/.\\\",\\n    \\\"verified_live\\\": true\\n  }\\n]\\n\",\"duration_seconds\":296.9003865,\"num_turns\":1,\"usage\":{\"input_tokens\":489224,\"output_tokens\":56195,\"thinking_tokens\":19044,\"cache_read_tokens\":10875830,\"total_tokens\":545419}}",
+        "summary_truncated": false,
+        "stdout_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-171131-review-antigravity-ebc84b\\stdout.txt",
+        "stderr_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-171131-review-antigravity-ebc84b\\stderr.txt"
+      },
+      "safety": {
+        "isolated": true,
+        "unexpected_review_mutation": false,
+        "auto_integrated": false,
+        "pushed_or_published_by_crew": false
+      },
+      "duration_ms": 303183
+    }
+  ]
+}

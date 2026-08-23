@@ -35,6 +35,7 @@
     <Compile Include="Util.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <!-- FetchProfiles folder -->
+    <Compile Include="FetchProfiles\FetchExecutionPolicy.cs" />
     <Compile Include="FetchProfiles\ProviderDefinition.cs" />
     <Compile Include="FetchProfiles\FetchProfileCatalog.cs" />
     <Compile Include="FetchProfiles\FetchProfileDefinition.cs" />

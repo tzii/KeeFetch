@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "mode": "review_batch",
+  "repo": "C:\\Dev\\KeeFetch",
+  "results": [
+    {
+      "schema_version": "1.0",
+      "run_id": "20260822-170846-review-antigravity-eabacb",
+      "mode": "review",
+      "role": "google",
+      "worker": "antigravity",
+      "status": "ok",
+      "repo": {
+        "root": "C:\\Dev\\KeeFetch",
+        "base_commit": "e74a343adb253a317bf582f78242f7c235503200",
+        "dirty_source_included": true
+      },
+      "workspace": {
+        "path": "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-170846-review-antigravity-eabacb",
+        "ephemeral": true,
+        "branch": null,
+        "removed": true
+      },
+      "command": {
+        "argv": [
+          "C:\\Users\\zxcv0\\AppData\\Local\\agy\\bin\\agy.EXE",
+          "--model",
+          "gemini-3.7-flash-high",
+          "--effort",
+          "high",
+          "--mode",
+          "plan",
+          "--dangerously-skip-permissions",
+          "--print-timeout",
+          "35m",
+          "-p",
+          "<PROMPT>",
+          "--add-dir",
+          "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-170846-review-antigravity-eabacb",
+          "--output-format",
+          "json"
+        ],
+        "exit_code": 0
+      },
+      "result": {
+        "summary": "{\"conversation_id\":\"181d08fd-2e12-44ca-8103-8a5cf39ae6f7\",\"status\":\"SUCCESS\",\"response\":\"I have launched the background task to check live URL connectivity and will inspect the batch-10 manifest images.\\nWaiting for URL check to complete.\\nWaiting for the background URL verification to complete.\\nI have started fetching the live favicons to verify the batch-10 domains against live sites.\\nWaiting for favicon fetch to complete.\\n[\\n  {\\n    \\\"key\\\": \\\"pub-189|3f495c6a1e4445bc564557a1c85d9132eccf6ab603f2e962add077c549266cab\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine n8n workflow node network logo on a white background.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-190|501783205f8fed60aee32f2081ffdab63da0081a33ecd689774fd828455f5c9b\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine orange and red spiral logo for Grafana.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-191|33803e13fdff051aa4e5c18dea805b4646eca9f99e8f9a9f0b0dbe2b2a75e882\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Prometheus flame logo on a transparent background, contradicting the synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-191|606d38712d9a5538edc11da9f8579711969917c933b4e454cd825e4bf7b0b6b4\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine high-resolution Prometheus flame logo on a transparent background.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-191|a97b0848414af15780574e8ba0edff365c6adb8aa3a73285b657bdc075c25f21\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Prometheus flame logo rendered on an opaque white background.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-192|f1295ace8f43de118f30d162d6aaac16959c637ea6eb29221071368fb9fca7a7\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine HedgeDoc hedgehog logo on a dark circular background.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-193|bbc30e0757ebc2a30479a71ab8c8b19d5a0a326038da87550e66b2a24dc3b9c2\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine BookStack three-tiered book stack icon.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-194|1ac578966d900a121322dd45fc5f2aa6b51c7d426554d1d47d6dc6660af73d27\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine green folded document scanner logo for Paperless-ngx, contradicting the synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-195|1ac578966d900a121322dd45fc5f2aa6b51c7d426554d1d47d6dc6660af73d27\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine green folded document scanner logo for Paperless-ngx, contradicting the synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-194|392659a7d64cb9fc3ef8951981ce315869117bcd6d0f5f740a5345843a96c4b4\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine green folded document scanner logo for Paperless-ngx.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-195|392659a7d64cb9fc3ef8951981ce315869117bcd6d0f5f740a5345843a96c4b4\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine green folded document scanner logo for Paperless-ngx.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-194|45b9591b4eacb926d52a4ff66c29e0911c97bc26a84ba976975abf99c7b0a8c7\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine high-resolution green document scanner logo for Paperless-ngx documentation.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-121|5081346b413bb7c1df15ee912ae105be0a80b75750cee3c41bb64cd8620f1b7e\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Daring Fireball star logo on a dark background.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-122|215e9d3e7c6bb3b46e5747ae1f86f3cd52a011bbc529b4bc094e015f635609e8\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine brand logo favicon for kottke.org.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-123|bf99f222c48f6980e999c61bfd533a1038e3824d028d1eb61aafe2d2d9d85448\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine jwz DNA Lounge monster avatar favicon for jwz.org.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-124|fd4be62c7d7846c10c1f12affeacd92f9431757c8fd79edb05075a1c510a7d7b\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine ongoing coffee cup logo for tbray.org.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-125|077cc9ab1426247f4c520fecbd370741eaaa239e7df3cf8dddba0f3d6c39aa65\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Joel Spolsky photo avatar favicon for joelonsoftware.com.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-125|5b768225e4cd1a3db3eecc7de6af35a3a9903477b089c6738d4898b040db8ea0\\\",\\n    \\\"label\\\": \\\"blank\\\",\\n    \\\"reason\\\": \\\"The image is completely uniform white containing no visible content.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-125|7132d3623190c0c0f51918d35d0abb2c1385bb04f5b51b5182d5f1ad45a6b999\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine high-resolution Joel Spolsky avatar icon for joelonsoftware.com.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-125|ec3995315bff6e54b3d3a942167ece0afb2843a423a4d0840f3d2846cb28c0f8\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Joel Spolsky avatar icon for joelonsoftware.com.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-126|1700fdebb3158fdd1ff40e7fd8fc42d5f206452d1edd08f9b91bf368bf153c94\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Manton Reece photo avatar favicon for manton.org.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-127|4036a0c949af7de38d131a7d4cac425455e9ddd8f8c187d20579ebfa1dae65aa\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine yellow speech bubble icon for micro.blog.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-128|d9315da2af2e2a3081e75dfbcb76f4fae5a539b35b29858c5e9556a6e6d5e4a1\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine bunnie silhouette logo favicon for bunniestudios.com.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-129|6fce4ca0b3cbf9c2020f7ffc2bb38003f70107c0f1c2dabf2af4903475169149\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine kangaroo and oscilloscope logo favicon for eevblog.com.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-130|65f243838573eacee9750558ae216f17dd83bc81c65d895c69f47be3120d7ba5\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine skull and crossed wrenches logo for hackaday.com.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-131|188a35fe121b7d5977705309e65c5ea53e4e0bf1c0117ce599a0db4f962a0c5c\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine white vulture silhouette on red background favicon for theregister.com.\\\",\\n    \\\"verified_live\\\": true\\n  }\\n]\\n\",\"duration_seconds\":158.1559513,\"num_turns\":1,\"usage\":{\"input_tokens\":257877,\"output_tokens\":38712,\"thinking_tokens\":21862,\"cache_read_tokens\":2959247,\"total_tokens\":296589}}",
+        "summary_truncated": false,
+        "stdout_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-170846-review-antigravity-eabacb\\stdout.txt",
+        "stderr_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-170846-review-antigravity-eabacb\\stderr.txt"
+      },
+      "safety": {
+        "isolated": true,
+        "unexpected_review_mutation": false,
+        "auto_integrated": false,
+        "pushed_or_published_by_crew": false
+      },
+      "duration_ms": 164271
+    }
+  ]
+}

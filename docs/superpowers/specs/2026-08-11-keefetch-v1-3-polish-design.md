@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-11
 
-**Status:** Proposed for user review
+**Status:** Proposed for user review. The benchmark review methodology in section 6.3.1 was superseded on 2026-08-17 by the cold-artifact CENSUS directive (see `docs/handoff-2026-08-17.md`): every unique cold `(fixture_id, artifact_hash)` unit is reviewed exactly once; there is no sampling, no stratification, and no interval estimation anywhere downstream.
 
 **Target release:** v1.3.0
 
@@ -172,7 +172,7 @@ Machine signals and human judgments remain separate:
 - `review_label` is one of `correct`, `acceptable-synthetic`, `generic`, `wrong-brand`, `blank`, `unusable`, `ambiguous`, or `not-reviewed`.
 - Human review records reviewer, review timestamp, optional notes, and the result artifact hash so labels remain traceable when live artwork changes.
 
-Human review covers every synthetic, placeholder-suspected, blank-suspected, or profile-differing selection, plus a deterministic stratified 10% sample of remaining successes. `ambiguous` is reported separately and excluded from correctness numerators and denominators. If unresolved ambiguous results could reverse the ranking of two candidate profiles, expand the review sample or conservatively count those results as failures for the decision. The full corpus does not wait on manual review of every ordinary success.
+Human review is a CENSUS over the measured cold cells, not a sample (superseding the original stratified-sample design): every unique cold `(fixture_id, artifact_hash)` unit is reviewed exactly once, and the label propagates to every occurrence of that exact artifact across repetitions and candidates. The review queue is regenerated from the evidence and must equal the census exactly - a missing unit or a fabricated key fails closed. `ambiguous` is reported separately and excluded from correctness numerators and denominators. If unresolved ambiguous results could reverse a ranking, expand the review to resolve them or conservatively count them as failures for the decision; the selector replays every winner rule under ambiguity-as-failure and ambiguity-as-usable and rejects any selection whose winner is not stable across both scenarios. Label rates are exact proportions of the reviewed census population; no interval estimates are reported.
 
 ### 6.4 Profile outcomes
 
@@ -567,7 +567,7 @@ v1.3 is ready when:
 | Risk | Mitigation |
 | --- | --- |
 | Live provider results vary by time and network | Use repetitions, environment metadata, percentiles, and versioned snapshots; do not make live runs required PR CI. |
-| Visual correctness is hard to automate | Use explicit review labels, sampled human review, and deterministic placeholder/format tests. |
+| Visual correctness is hard to automate | Use explicit review labels, complete-census human review of every unique cold artifact, and deterministic placeholder/format tests. |
 | UI redesign breaks PLGX or C# 5 compatibility | Keep WinForms and existing host integration; validate C# 5 and PLGX loading throughout Milestone 3. |
 | Renamed profiles surprise existing users | Use stable identifiers, migration aliases, idempotent migration, and clear upgrade notes. |
 | Website and plugin descriptions drift | Generate/check website profile data from the shared catalog and gate the release on factual review. |

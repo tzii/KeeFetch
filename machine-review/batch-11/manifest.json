@@ -1,0 +1,1230 @@
+{
+ "batch": "11",
+ "image_count": 24,
+ "images": [
+  {
+   "artifact_hash": "650b0c21efa502a0b93896701efc08c64601e7c9c3355c4e1e3cddccba4b2cdc",
+   "image": "images/650b0c21efa502a0b93896701efc08c64601e7c9c3355c4e1e3cddccba4b2cdc.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 404,
+    "top_colors": [
+     [
+      [
+       160,
+       0,
+       0
+      ],
+      90.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      7.2
+     ],
+     [
+      [
+       224,
+       192,
+       192
+      ],
+      0.8
+     ]
+    ],
+    "near_white_pct": 8.0
+   },
+   "units": [
+    {
+     "key": "pub-132|650b0c21efa502a0b93896701efc08c64601e7c9c3355c4e1e3cddccba4b2cdc",
+     "input_url": "https://lobste.rs/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "5652"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "2f874f6b0131692857eb8a95c29929b2aaa41509edae457c210bb3b9becf22a8",
+   "image": "images/2f874f6b0131692857eb8a95c29929b2aaa41509edae457c210bb3b9becf22a8.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 1434,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       128
+      ],
+      59.5
+     ],
+     [
+      [
+       192,
+       192,
+       0
+      ],
+      21.5
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      11.1
+     ]
+    ],
+    "near_white_pct": 11.5
+   },
+   "units": [
+    {
+     "key": "pub-133|2f874f6b0131692857eb8a95c29929b2aaa41509edae457c210bb3b9becf22a8",
+     "input_url": "https://www.metafilter.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "10851"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "3667612558ee69831c8b088d951d745d5a36036801ebf0db21ac58c37a8a813b",
+   "image": "images/3667612558ee69831c8b088d951d745d5a36036801ebf0db21ac58c37a8a813b.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 31,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       128
+      ],
+      55.5
+     ],
+     [
+      [
+       192,
+       192,
+       0
+      ],
+      18.8
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      10.0
+     ]
+    ],
+    "near_white_pct": 12.0
+   },
+   "units": [
+    {
+     "key": "pub-133|3667612558ee69831c8b088d951d745d5a36036801ebf0db21ac58c37a8a813b",
+     "input_url": "https://www.metafilter.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "32",
+     "h": "32",
+     "bytes": "733"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "8356fb083aa87e864c9d6b94b8c69a12b4bddf134d92a0016b0a77efdf2b6cde",
+   "image": "images/8356fb083aa87e864c9d6b94b8c69a12b4bddf134d92a0016b0a77efdf2b6cde.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 5736,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       128
+      ],
+      52.9
+     ],
+     [
+      [
+       128,
+       160,
+       64
+      ],
+      5.9
+     ],
+     [
+      [
+       160,
+       160,
+       32
+      ],
+      4.9
+     ]
+    ],
+    "near_white_pct": 5.7
+   },
+   "units": [
+    {
+     "key": "pub-133|8356fb083aa87e864c9d6b94b8c69a12b4bddf134d92a0016b0a77efdf2b6cde",
+     "input_url": "https://www.metafilter.com/",
+     "category": "small-site",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "26761"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f5cc162d5d8d3754f89075e7e6309fc2c9eaa48782f52331e0a0098b97d2eaed",
+   "image": "images/f5cc162d5d8d3754f89075e7e6309fc2c9eaa48782f52331e0a0098b97d2eaed.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 53,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       128
+      ],
+      60.1
+     ],
+     [
+      [
+       192,
+       192,
+       0
+      ],
+      21.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      11.3
+     ]
+    ],
+    "near_white_pct": 11.6
+   },
+   "units": [
+    {
+     "key": "pub-133|f5cc162d5d8d3754f89075e7e6309fc2c9eaa48782f52331e0a0098b97d2eaed",
+     "input_url": "https://www.metafilter.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "4365"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "0248eee91b4593b11f91b71ecfd8caefc4876efe544865d8800161c061a6f98b",
+   "image": "images/0248eee91b4593b11f91b71ecfd8caefc4876efe544865d8800161c061a6f98b.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 95,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      74.8
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      14.3
+     ],
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      3.1
+     ]
+    ],
+    "near_white_pct": 15.1
+   },
+   "units": [
+    {
+     "key": "pub-134|0248eee91b4593b11f91b71ecfd8caefc4876efe544865d8800161c061a6f98b",
+     "input_url": "https://www.craigmod.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "32",
+     "h": "32",
+     "bytes": "757"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "09dfdcef812455aea0de319146b1d533ddbfdfc22ae526c2ae8c4eb9fbaae26e",
+   "image": "images/09dfdcef812455aea0de319146b1d533ddbfdfc22ae526c2ae8c4eb9fbaae26e.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 33,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      79.1
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      17.6
+     ],
+     [
+      [
+       64,
+       64,
+       64
+      ],
+      0.8
+     ]
+    ],
+    "near_white_pct": 18.1
+   },
+   "units": [
+    {
+     "key": "pub-134|09dfdcef812455aea0de319146b1d533ddbfdfc22ae526c2ae8c4eb9fbaae26e",
+     "input_url": "https://www.craigmod.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "2773"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "3e3dc917b33037f4a5196df278fbe4d2cc6e4996f28f777a3a60b9eb7298d6f2",
+   "image": "images/3e3dc917b33037f4a5196df278fbe4d2cc6e4996f28f777a3a60b9eb7298d6f2.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 250,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      78.3
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      16.0
+     ],
+     [
+      [
+       96,
+       96,
+       96
+      ],
+      1.3
+     ]
+    ],
+    "near_white_pct": 17.2
+   },
+   "units": [
+    {
+     "key": "pub-134|3e3dc917b33037f4a5196df278fbe4d2cc6e4996f28f777a3a60b9eb7298d6f2",
+     "input_url": "https://www.craigmod.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "4671"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "64a53ed177f81872093f4e00d85c9b9ea017038d4936d999cfa4e48450752782",
+   "image": "images/64a53ed177f81872093f4e00d85c9b9ea017038d4936d999cfa4e48450752782.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 203,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      79.8
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      17.8
+     ],
+     [
+      [
+       64,
+       64,
+       64
+      ],
+      0.6
+     ]
+    ],
+    "near_white_pct": 18.1
+   },
+   "units": [
+    {
+     "key": "pub-134|64a53ed177f81872093f4e00d85c9b9ea017038d4936d999cfa4e48450752782",
+     "input_url": "https://www.craigmod.com/",
+     "category": "small-site",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "2731"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "6c69e521cf20585a72946b1f4e5b564cd2efadf489964c62bcc6d1569ce65e2d",
+   "image": "images/6c69e521cf20585a72946b1f4e5b564cd2efadf489964c62bcc6d1569ce65e2d.png",
+   "pixel": {
+    "size": [
+     16,
+     16
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 102,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      71.5
+     ],
+     [
+      [
+       160,
+       160,
+       160
+      ],
+      6.6
+     ],
+     [
+      [
+       128,
+       128,
+       128
+      ],
+      6.2
+     ]
+    ],
+    "near_white_pct": 76.6
+   },
+   "units": [
+    {
+     "key": "pub-135|6c69e521cf20585a72946b1f4e5b564cd2efadf489964c62bcc6d1569ce65e2d",
+     "input_url": "https://www.neilgaiman.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "16",
+     "h": "16",
+     "bytes": "579"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "ecd60ddc15e7b1e4a0899091f1f5d83fbb9f9954dec3121885b6215591f795f2",
+   "image": "images/ecd60ddc15e7b1e4a0899091f1f5d83fbb9f9954dec3121885b6215591f795f2.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 62,
+    "top_colors": [
+     [
+      [
+       64,
+       64,
+       224
+      ],
+      66.4
+     ],
+     [
+      [
+       192,
+       192,
+       224
+      ],
+      9.2
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      9.2
+     ]
+    ],
+    "near_white_pct": 18.5
+   },
+   "units": [
+    {
+     "key": "pub-136|ecd60ddc15e7b1e4a0899091f1f5d83fbb9f9954dec3121885b6215591f795f2",
+     "input_url": "https://www.paulgraham.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "483"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "4de0747ca489e9e02bc52cc0bee9a2bc89511bc979c2efb9d223154100ab46a4",
+   "image": "images/4de0747ca489e9e02bc52cc0bee9a2bc89511bc979c2efb9d223154100ab46a4.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 17.3,
+    "unique_colors": 281,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      65.3
+     ],
+     [
+      [
+       160,
+       32,
+       32
+      ],
+      8.8
+     ],
+     [
+      [
+       128,
+       32,
+       32
+      ],
+      6.6
+     ]
+    ],
+    "near_white_pct": 1.1
+   },
+   "units": [
+    {
+     "key": "pub-137|4de0747ca489e9e02bc52cc0bee9a2bc89511bc979c2efb9d223154100ab46a4",
+     "input_url": "https://www.ben-evans.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "64",
+     "h": "64",
+     "bytes": "1896"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "a5d2fd079dfd8af2e65b648f8d143c5532fb0158348d85eea55c2c72075e761a",
+   "image": "images/a5d2fd079dfd8af2e65b648f8d143c5532fb0158348d85eea55c2c72075e761a.png",
+   "pixel": {
+    "size": [
+     100,
+     100
+    ],
+    "opaque_pct": 15.0,
+    "unique_colors": 49,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      71.2
+     ],
+     [
+      [
+       64,
+       0,
+       0
+      ],
+      10.1
+     ],
+     [
+      [
+       128,
+       32,
+       32
+      ],
+      5.9
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-137|a5d2fd079dfd8af2e65b648f8d143c5532fb0158348d85eea55c2c72075e761a",
+     "input_url": "https://www.ben-evans.com/",
+     "category": "small-site",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 9,
+     "w": "100",
+     "h": "100",
+     "bytes": "1499"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "b51d3bd5b9128856e7f103dd2cad68bb30283e8428956e27b775cee6adcd1dd9",
+   "image": "images/b51d3bd5b9128856e7f103dd2cad68bb30283e8428956e27b775cee6adcd1dd9.png",
+   "pixel": {
+    "size": [
+     100,
+     100
+    ],
+    "opaque_pct": 15.0,
+    "unique_colors": 309,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      70.7
+     ],
+     [
+      [
+       64,
+       0,
+       0
+      ],
+      9.3
+     ],
+     [
+      [
+       128,
+       32,
+       32
+      ],
+      5.5
+     ]
+    ],
+    "near_white_pct": 0.1
+   },
+   "units": [
+    {
+     "key": "pub-137|b51d3bd5b9128856e7f103dd2cad68bb30283e8428956e27b775cee6adcd1dd9",
+     "input_url": "https://www.ben-evans.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "100",
+     "h": "100",
+     "bytes": "2644"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "0ceb70584aeb7791a5cc882cf211012834ca4e97ea09002899776fde544ee1ee",
+   "image": "images/0ceb70584aeb7791a5cc882cf211012834ca4e97ea09002899776fde544ee1ee.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 600,
+    "top_colors": [
+     [
+      [
+       224,
+       160,
+       32
+      ],
+      78.4
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      12.1
+     ],
+     [
+      [
+       224,
+       160,
+       0
+      ],
+      2.8
+     ]
+    ],
+    "near_white_pct": 13.5
+   },
+   "units": [
+    {
+     "key": "pub-138|0ceb70584aeb7791a5cc882cf211012834ca4e97ea09002899776fde544ee1ee",
+     "input_url": "https://stratechery.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "8143"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "5cca1fe8dc4783448f84f852acc179b3b25ab38e0c18b182f0724d67611c50a4",
+   "image": "images/5cca1fe8dc4783448f84f852acc179b3b25ab38e0c18b182f0724d67611c50a4.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 14487,
+    "top_colors": [
+     [
+      [
+       192,
+       128,
+       96
+      ],
+      8.8
+     ],
+     [
+      [
+       160,
+       160,
+       128
+      ],
+      6.7
+     ],
+     [
+      [
+       224,
+       160,
+       128
+      ],
+      5.2
+     ]
+    ],
+    "near_white_pct": 1.8
+   },
+   "units": [
+    {
+     "key": "pub-139|5cca1fe8dc4783448f84f852acc179b3b25ab38e0c18b182f0724d67611c50a4",
+     "input_url": "https://www.troyhunt.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "50502"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "5612caeefe12169fc5b3e37e76cf250c76c7847a5bab0afe13e9e14ab767b765",
+   "image": "images/5612caeefe12169fc5b3e37e76cf250c76c7847a5bab0afe13e9e14ab767b765.png",
+   "pixel": {
+    "size": [
+     16,
+     16
+    ],
+    "opaque_pct": 23.0,
+    "unique_colors": 5,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      64.4
+     ],
+     [
+      [
+       96,
+       96,
+       96
+      ],
+      13.6
+     ],
+     [
+      [
+       192,
+       192,
+       192
+      ],
+      11.9
+     ]
+    ],
+    "near_white_pct": 11.9
+   },
+   "units": [
+    {
+     "key": "pub-140|5612caeefe12169fc5b3e37e76cf250c76c7847a5bab0afe13e9e14ab767b765",
+     "input_url": "https://krebsonsecurity.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "16",
+     "h": "16",
+     "bytes": "198"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "a23e78c839fbb3a3546b7a829e36dba6c733c04d47ba1c29b8e7080d09a52f51",
+   "image": "images/a23e78c839fbb3a3546b7a829e36dba6c733c04d47ba1c29b8e7080d09a52f51.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 515,
+    "top_colors": [
+     [
+      [
+       96,
+       0,
+       0
+      ],
+      50.0
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      33.3
+     ],
+     [
+      [
+       128,
+       32,
+       32
+      ],
+      5.1
+     ]
+    ],
+    "near_white_pct": 38.0
+   },
+   "units": [
+    {
+     "key": "pub-141|a23e78c839fbb3a3546b7a829e36dba6c733c04d47ba1c29b8e7080d09a52f51",
+     "input_url": "https://www.schneier.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "7494"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "d0ab880ea17bb20412851b0a0ff7032469e2a502c4f8ef1fc042fce2bb164aa1",
+   "image": "images/d0ab880ea17bb20412851b0a0ff7032469e2a502c4f8ef1fc042fce2bb164aa1.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 115,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      90.9
+     ],
+     [
+      [
+       96,
+       96,
+       96
+      ],
+      7.4
+     ],
+     [
+      [
+       192,
+       192,
+       192
+      ],
+      0.9
+     ]
+    ],
+    "near_white_pct": 91.9
+   },
+   "units": [
+    {
+     "key": "pub-142|d0ab880ea17bb20412851b0a0ff7032469e2a502c4f8ef1fc042fce2bb164aa1",
+     "input_url": "https://danluu.com/",
+     "category": "small-site",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 3,
+     "w": "128",
+     "h": "128",
+     "bytes": "1798"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "797a3beb2666bcaa7044a7f26d35c19e6e33feeafad78cd841c2b544a9a75176",
+   "image": "images/797a3beb2666bcaa7044a7f26d35c19e6e33feeafad78cd841c2b544a9a75176.png",
+   "pixel": {
+    "size": [
+     16,
+     16
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 96,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      33.6
+     ],
+     [
+      [
+       160,
+       128,
+       128
+      ],
+      3.9
+     ],
+     [
+      [
+       192,
+       192,
+       192
+      ],
+      3.1
+     ]
+    ],
+    "near_white_pct": 40.6
+   },
+   "units": [
+    {
+     "key": "pub-143|797a3beb2666bcaa7044a7f26d35c19e6e33feeafad78cd841c2b544a9a75176",
+     "input_url": "https://www.mattcutts.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "16",
+     "h": "16",
+     "bytes": "664"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "37b384fd78aa1d8e6f15bceb48f3682733d8ab43e033a7ae1432a5d7d6ecd65f",
+   "image": "images/37b384fd78aa1d8e6f15bceb48f3682733d8ab43e033a7ae1432a5d7d6ecd65f.png",
+   "pixel": {
+    "size": [
+     100,
+     100
+    ],
+    "opaque_pct": 62.3,
+    "unique_colors": 554,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      38.7
+     ],
+     [
+      [
+       192,
+       0,
+       64
+      ],
+      34.3
+     ],
+     [
+      [
+       96,
+       160,
+       64
+      ],
+      14.6
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-145|37b384fd78aa1d8e6f15bceb48f3682733d8ab43e033a7ae1432a5d7d6ecd65f",
+     "input_url": "https://www.raspberrypi.org/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 4,
+     "w": "100",
+     "h": "100",
+     "bytes": "7724"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "51b7a769a86d91c0bf2ef2622d4ddefb4371132f109a9b4cb3685ac71bcdf3c2",
+   "image": "images/51b7a769a86d91c0bf2ef2622d4ddefb4371132f109a9b4cb3685ac71bcdf3c2.png",
+   "pixel": {
+    "size": [
+     25,
+     32
+    ],
+    "opaque_pct": 83.8,
+    "unique_colors": 84,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      37.3
+     ],
+     [
+      [
+       192,
+       32,
+       64
+      ],
+      18.4
+     ],
+     [
+      [
+       64,
+       160,
+       64
+      ],
+      9.7
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-145|51b7a769a86d91c0bf2ef2622d4ddefb4371132f109a9b4cb3685ac71bcdf3c2",
+     "input_url": "https://www.raspberrypi.org/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 9,
+     "w": "25",
+     "h": "32",
+     "bytes": "1040"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "67b69342d668e553f0090f1a250275b7f54de4c19154afbd9db7b82ee0bf0c48",
+   "image": "images/67b69342d668e553f0090f1a250275b7f54de4c19154afbd9db7b82ee0bf0c48.png",
+   "pixel": {
+    "size": [
+     128,
+     85
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 7679,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      25.6
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      12.2
+     ],
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      4.2
+     ]
+    ],
+    "near_white_pct": 31.9
+   },
+   "units": [
+    {
+     "key": "pub-145|67b69342d668e553f0090f1a250275b7f54de4c19154afbd9db7b82ee0bf0c48",
+     "input_url": "https://www.raspberrypi.org/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 12,
+     "w": "128",
+     "h": "85",
+     "bytes": "29934"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "a38c414a8ac1e50a196c8dae745ae061492e6f8558630fa5fecb6f981481a6e1",
+   "image": "images/a38c414a8ac1e50a196c8dae745ae061492e6f8558630fa5fecb6f981481a6e1.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 62.7,
+    "unique_colors": 588,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      50.6
+     ],
+     [
+      [
+       192,
+       32,
+       64
+      ],
+      26.4
+     ],
+     [
+      [
+       64,
+       160,
+       64
+      ],
+      13.5
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-145|a38c414a8ac1e50a196c8dae745ae061492e6f8558630fa5fecb6f981481a6e1",
+     "input_url": "https://www.raspberrypi.org/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "6848"
+    }
+   ]
+  }
+ ]
+}

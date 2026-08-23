@@ -48,6 +48,11 @@ namespace KeeFetch.FetchProfiles
             get { return Providers.Select(p => p.DisplayName).ToList(); }
         }
 
+        public static List<string> DefaultProviderIdOrder()
+        {
+            return Providers.Select(p => p.Id).ToList();
+        }
+
         public static List<string> NormalizeProviderOrder(IEnumerable<string> raw)
         {
             List<string> ordered = new List<string>();
@@ -179,6 +184,9 @@ namespace KeeFetch.FetchProfiles
                         if (provider != null && provider.IsThirdParty)
                             throw new InvalidOperationException("Privacy profile must not contain third-party provider: " + provider.Id);
                     }
+
+                    if (p.AllowAndroidStoreLookup)
+                        throw new InvalidOperationException("Privacy profile must not allow Android store lookups: " + p.Id);
                 }
             }
         }

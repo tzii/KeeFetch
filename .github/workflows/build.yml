@@ -18,10 +18,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '8.0.x'
 
@@ -48,6 +48,11 @@ jobs:
         shell: pwsh
         run: |
           dotnet build KeeFetch.csproj --configuration Release --no-restore -p:KeePassPath="$env:KEEPASS_DIR"
+
+      - name: Check profile data consistency
+        shell: pwsh
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File eng/export-profile-data.ps1 -Check
 
       - name: Verify C# 5 compatibility
         shell: pwsh
@@ -95,11 +100,12 @@ jobs:
           $expectedFiles = @(
             "KeeFetchExt.cs", "FaviconDownloader.cs", "FaviconDialog.cs",
             "Configuration.cs", "SettingsForm.cs", "SettingsForm.Designer.cs",
-            "Logger.cs", "Util.cs", "AndroidAppMapper.cs",
+            "Logger.cs", "Util.cs", "SharedHttp.cs", "AndroidAppMapper.cs",
             "Properties\AssemblyInfo.cs", "KeeFetch.csproj",
             "IconSelection\IconSelector.cs", "IconSelection\IconCandidate.cs",
             "Assets\Icons\keefetch-app.png", "Assets\Icons\keefetch-download.png",
             "Assets\Icons\keefetch-settings.png",
+            "FetchProfiles\FetchExecutionPolicy.cs",
             "FetchProfiles\ProviderDefinition.cs",
             "FetchProfiles\FetchProfileCatalog.cs",
             "FetchProfiles\FetchProfileDefinition.cs",
@@ -174,20 +180,20 @@ jobs:
           }
 
       - name: Upload DLL artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: KeeFetch.dll
           path: bin/Release/net48/KeeFetch.dll
 
       - name: Upload PLGX artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: KeeFetch.plgx
           path: ${{ env.PLGX_PATH }}
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             bin/Release/net48/KeeFetch.dll

@@ -1,0 +1,82 @@
+{
+  "schema": 2,
+  "source": "FetchProfileCatalog.ManagedProfiles",
+  "profiles": [
+    {
+      "id": "bulk-fast",
+      "displayName": "Fast",
+      "description": "tries 3 icon source(s) in order (the site itself, Google, Twenty Icons) within a 15s total budget; stops as soon as a strong resolver returns a high-confidence icon.",
+      "intendedUse": "Large batch fetching with reduced latency",
+      "providerIds": [
+        "direct-site",
+        "google",
+        "twenty-icons"
+      ],
+      "primaryTimeoutMs": 4000,
+      "fallbackTimeoutMs": 2500,
+      "cumulativeTimeoutMs": 15000,
+      "allowSyntheticFallbacks": false,
+      "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true,
+      "isVisible": true,
+      "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
+    },
+    {
+      "id": "everyday",
+      "displayName": "Balanced",
+      "description": "tries 6 icon source(s) in order (the site itself, Twenty Icons, DuckDuckGo, Google, Yandex, Icon Horse) within a 45s total budget; queries every source in the chain before selecting; allows a generated fallback icon when no real icon is found.",
+      "intendedUse": "Default everyday use balancing coverage and speed",
+      "providerIds": [
+        "direct-site",
+        "twenty-icons",
+        "duckduckgo",
+        "google",
+        "yandex",
+        "icon-horse"
+      ],
+      "primaryTimeoutMs": 10000,
+      "fallbackTimeoutMs": 5000,
+      "cumulativeTimeoutMs": 45000,
+      "allowSyntheticFallbacks": true,
+      "stopAfterStrongResolved": false,
+      "allowAndroidStoreLookup": true,
+      "isVisible": true,
+      "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
+    },
+    {
+      "id": "privacy",
+      "displayName": "Privacy",
+      "description": "tries 1 icon source(s) in order (the site itself) within a 22s total budget; stops as soon as a strong resolver returns a high-confidence icon.",
+      "intendedUse": "Privacy-sensitive fetching without third-party providers",
+      "providerIds": [
+        "direct-site"
+      ],
+      "primaryTimeoutMs": 6000,
+      "fallbackTimeoutMs": 3500,
+      "cumulativeTimeoutMs": 22000,
+      "allowSyntheticFallbacks": false,
+      "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": false,
+      "isVisible": true,
+      "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
+    },
+    {
+      "id": "max-coverage",
+      "displayName": "Thorough",
+      "description": "tries 2 icon source(s) in order (the site itself, Yandex) within a 22s total budget; stops as soon as a strong resolver returns a high-confidence icon.",
+      "intendedUse": "Maximum coverage with the study-selected resolver chain",
+      "providerIds": [
+        "direct-site",
+        "yandex"
+      ],
+      "primaryTimeoutMs": 6000,
+      "fallbackTimeoutMs": 3500,
+      "cumulativeTimeoutMs": 22000,
+      "allowSyntheticFallbacks": false,
+      "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true,
+      "isVisible": true,
+      "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
+    }
+  ]
+}

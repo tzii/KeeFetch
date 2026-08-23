@@ -1,0 +1,1206 @@
+{
+ "batch": "13",
+ "image_count": 24,
+ "images": [
+  {
+   "artifact_hash": "0f1f3555bb1ce130f6c886a00ca83e63220d0a25fbdae6a648c081fb3d81f59d",
+   "image": "images/0f1f3555bb1ce130f6c886a00ca83e63220d0a25fbdae6a648c081fb3d81f59d.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 446,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      66.3
+     ],
+     [
+      [
+       160,
+       0,
+       0
+      ],
+      30.7
+     ],
+     [
+      [
+       192,
+       64,
+       64
+      ],
+      0.8
+     ]
+    ],
+    "near_white_pct": 66.7
+   },
+   "units": [
+    {
+     "key": "pub-158|0f1f3555bb1ce130f6c886a00ca83e63220d0a25fbdae6a648c081fb3d81f59d",
+     "input_url": "https://www.macstories.net/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "4353"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "133f122a84babbb83ba2ff15bb6915b839697fa92dcc8f19c9c9ea8c08312117",
+   "image": "images/133f122a84babbb83ba2ff15bb6915b839697fa92dcc8f19c9c9ea8c08312117.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 95.2,
+    "unique_colors": 614,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      67.9
+     ],
+     [
+      [
+       224,
+       192,
+       0
+      ],
+      14.7
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      12.3
+     ]
+    ],
+    "near_white_pct": 68.1
+   },
+   "units": [
+    {
+     "key": "pub-159|133f122a84babbb83ba2ff15bb6915b839697fa92dcc8f19c9c9ea8c08312117",
+     "input_url": "https://www.imore.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "4374"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "1e0b25900abe4ffd0901586b310bc3ca24d4c5fa35dbf895d9e53a4406f6dadb",
+   "image": "images/1e0b25900abe4ffd0901586b310bc3ca24d4c5fa35dbf895d9e53a4406f6dadb.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 99.6,
+    "unique_colors": 709,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      76.4
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      9.5
+     ],
+     [
+      [
+       224,
+       0,
+       64
+      ],
+      7.8
+     ]
+    ],
+    "near_white_pct": 77.0
+   },
+   "units": [
+    {
+     "key": "pub-160|1e0b25900abe4ffd0901586b310bc3ca24d4c5fa35dbf895d9e53a4406f6dadb",
+     "input_url": "https://www.androidpolice.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "5475"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "511a3b92c7898939827323f684026e149cf52ba7e7ec641153d95e3be7570fe1",
+   "image": "images/511a3b92c7898939827323f684026e149cf52ba7e7ec641153d95e3be7570fe1.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 99.9,
+    "unique_colors": 24,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      77.5
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      9.8
+     ],
+     [
+      [
+       224,
+       0,
+       64
+      ],
+      8.7
+     ]
+    ],
+    "near_white_pct": 78.6
+   },
+   "units": [
+    {
+     "key": "pub-160|511a3b92c7898939827323f684026e149cf52ba7e7ec641153d95e3be7570fe1",
+     "input_url": "https://www.androidpolice.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 8,
+     "w": "128",
+     "h": "128",
+     "bytes": "2024"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "770330f882147d9d5b6c70cb6c0571e450a8413642f61b34b2ba827595ce49ad",
+   "image": "images/770330f882147d9d5b6c70cb6c0571e450a8413642f61b34b2ba827595ce49ad.png",
+   "pixel": {
+    "size": [
+     49,
+     49
+    ],
+    "opaque_pct": 97.8,
+    "unique_colors": 47,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      74.9
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      9.2
+     ],
+     [
+      [
+       224,
+       0,
+       64
+      ],
+      8.3
+     ]
+    ],
+    "near_white_pct": 75.8
+   },
+   "units": [
+    {
+     "key": "pub-160|770330f882147d9d5b6c70cb6c0571e450a8413642f61b34b2ba827595ce49ad",
+     "input_url": "https://www.androidpolice.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "49",
+     "h": "49",
+     "bytes": "925"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "8b8239f42a8587a00fa46f026d813b44ef7286e09c499fb42482be070f97f4ee",
+   "image": "images/8b8239f42a8587a00fa46f026d813b44ef7286e09c499fb42482be070f97f4ee.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 99.9,
+    "unique_colors": 485,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      77.3
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      9.7
+     ],
+     [
+      [
+       224,
+       0,
+       64
+      ],
+      8.5
+     ]
+    ],
+    "near_white_pct": 78.0
+   },
+   "units": [
+    {
+     "key": "pub-160|8b8239f42a8587a00fa46f026d813b44ef7286e09c499fb42482be070f97f4ee",
+     "input_url": "https://www.androidpolice.com/",
+     "category": "small-site",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "5109"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "95f287dc9dbcd6c605e28054822e13bd45c8f0fb589e2dde1e48356d6de71c29",
+   "image": "images/95f287dc9dbcd6c605e28054822e13bd45c8f0fb589e2dde1e48356d6de71c29.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 99.9,
+    "unique_colors": 26,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      77.3
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      9.5
+     ],
+     [
+      [
+       224,
+       0,
+       64
+      ],
+      9.1
+     ]
+    ],
+    "near_white_pct": 77.8
+   },
+   "units": [
+    {
+     "key": "pub-160|95f287dc9dbcd6c605e28054822e13bd45c8f0fb589e2dde1e48356d6de71c29",
+     "input_url": "https://www.androidpolice.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 7,
+     "w": "128",
+     "h": "128",
+     "bytes": "2184"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "e1b8454a7a6832035af0496c8520608889f58cad4dcb12cffcd1109261853d61",
+   "image": "images/e1b8454a7a6832035af0496c8520608889f58cad4dcb12cffcd1109261853d61.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 732,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      73.9
+     ],
+     [
+      [
+       0,
+       64,
+       96
+      ],
+      20.4
+     ],
+     [
+      [
+       0,
+       64,
+       128
+      ],
+      0.9
+     ]
+    ],
+    "near_white_pct": 74.8
+   },
+   "units": [
+    {
+     "key": "pub-161|e1b8454a7a6832035af0496c8520608889f58cad4dcb12cffcd1109261853d61",
+     "input_url": "https://9to5mac.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "7642"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "908f0070747bfa30a5b58c5860794d2a93c13523b6f2adb82d80b41e3aa7c063",
+   "image": "images/908f0070747bfa30a5b58c5860794d2a93c13523b6f2adb82d80b41e3aa7c063.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 41.5,
+    "unique_colors": 151,
+    "top_colors": [
+     [
+      [
+       64,
+       0,
+       224
+      ],
+      100.0
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-162|908f0070747bfa30a5b58c5860794d2a93c13523b6f2adb82d80b41e3aa7c063",
+     "input_url": "https://www.theverge.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "1180"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "dab24cfd168d0646c099566b3a5e4892778ee6b59f27d176934d9663ac8636a6",
+   "image": "images/dab24cfd168d0646c099566b3a5e4892778ee6b59f27d176934d9663ac8636a6.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 80.1,
+    "unique_colors": 360,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      89.1
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      4.9
+     ],
+     [
+      [
+       224,
+       96,
+       32
+      ],
+      1.5
+     ]
+    ],
+    "near_white_pct": 5.6
+   },
+   "units": [
+    {
+     "key": "pub-163|dab24cfd168d0646c099566b3a5e4892778ee6b59f27d176934d9663ac8636a6",
+     "input_url": "https://arstechnica.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "64",
+     "h": "64",
+     "bytes": "2213"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "b8a20ee504ed2114b663481f93ba18edf97a7d74c64413da3907e4bfddfbd47b",
+   "image": "images/b8a20ee504ed2114b663481f93ba18edf97a7d74c64413da3907e4bfddfbd47b.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 1200,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      79.2
+     ],
+     [
+      [
+       96,
+       96,
+       96
+      ],
+      8.3
+     ],
+     [
+      [
+       128,
+       128,
+       128
+      ],
+      6.6
+     ]
+    ],
+    "near_white_pct": 0.5
+   },
+   "units": [
+    {
+     "key": "pub-164|b8a20ee504ed2114b663481f93ba18edf97a7d74c64413da3907e4bfddfbd47b",
+     "input_url": "https://www.wired.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "9541"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "076cdbf074300a3348443a4757053ae2b15b13cab036ca6df2f5e8c6e184ad81",
+   "image": "images/076cdbf074300a3348443a4757053ae2b15b13cab036ca6df2f5e8c6e184ad81.png",
+   "pixel": {
+    "size": [
+     16,
+     16
+    ],
+    "opaque_pct": 73.0,
+    "unique_colors": 16,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       128
+      ],
+      89.3
+     ],
+     [
+      [
+       0,
+       96,
+       128
+      ],
+      10.7
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-165|076cdbf074300a3348443a4757053ae2b15b13cab036ca6df2f5e8c6e184ad81",
+     "input_url": "https://www.seriouseats.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "16",
+     "h": "16",
+     "bytes": "235"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "6c22ca5b8f8f9b5d8dc9942226b3a14cfcf8e20af70145ecb3dee02d20ded819",
+   "image": "images/6c22ca5b8f8f9b5d8dc9942226b3a14cfcf8e20af70145ecb3dee02d20ded819.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 1769,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      67.6
+     ],
+     [
+      [
+       0,
+       96,
+       128
+      ],
+      20.8
+     ],
+     [
+      [
+       128,
+       0,
+       0
+      ],
+      4.4
+     ]
+    ],
+    "near_white_pct": 68.4
+   },
+   "units": [
+    {
+     "key": "pub-222|6c22ca5b8f8f9b5d8dc9942226b3a14cfcf8e20af70145ecb3dee02d20ded819",
+     "input_url": "https://commons.wikimedia.org/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "10640"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "1a91df35d82d4c7da95c4d7bdfedfd52ce058660b076dba85dbf2be3c8ffda71",
+   "image": "images/1a91df35d82d4c7da95c4d7bdfedfd52ce058660b076dba85dbf2be3c8ffda71.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 244,
+    "top_colors": [
+     [
+      [
+       32,
+       0,
+       32
+      ],
+      78.4
+     ],
+     [
+      [
+       0,
+       192,
+       32
+      ],
+      12.2
+     ],
+     [
+      [
+       32,
+       0,
+       0
+      ],
+      3.6
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-223|1a91df35d82d4c7da95c4d7bdfedfd52ce058660b076dba85dbf2be3c8ffda71",
+     "input_url": "https://www.mozilla.org/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "2393"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "d29374a3ef77ef93148435445df768c423be26d1ac230668701ac401004791fb",
+   "image": "images/d29374a3ef77ef93148435445df768c423be26d1ac230668701ac401004791fb.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 337,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      83.2
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      13.0
+     ],
+     [
+      [
+       128,
+       128,
+       128
+      ],
+      1.2
+     ]
+    ],
+    "near_white_pct": 13.3
+   },
+   "units": [
+    {
+     "key": "pub-224|d29374a3ef77ef93148435445df768c423be26d1ac230668701ac401004791fb",
+     "input_url": "https://developer.mozilla.org/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3612"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "69f8385d7eb75259b1f082b6b7de41d2504be9687606900f648e941107cc1672",
+   "image": "images/69f8385d7eb75259b1f082b6b7de41d2504be9687606900f648e941107cc1672.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 358,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      67.4
+     ],
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      17.6
+     ],
+     [
+      [
+       96,
+       192,
+       224
+      ],
+      5.9
+     ]
+    ],
+    "near_white_pct": 67.5
+   },
+   "units": [
+    {
+     "key": "pub-229|69f8385d7eb75259b1f082b6b7de41d2504be9687606900f648e941107cc1672",
+     "input_url": "https://web.dev/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "2738"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "45a23ca6a5e9af23954e8f8923bcb52ee89de455f9a19e08ac3915cfef990cd6",
+   "image": "images/45a23ca6a5e9af23954e8f8923bcb52ee89de455f9a19e08ac3915cfef990cd6.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 79.6,
+    "unique_colors": 2131,
+    "top_colors": [
+     [
+      [
+       32,
+       128,
+       64
+      ],
+      18.2
+     ],
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      15.7
+     ],
+     [
+      [
+       192,
+       32,
+       32
+      ],
+      11.7
+     ]
+    ],
+    "near_white_pct": 7.8
+   },
+   "units": [
+    {
+     "key": "pub-230|45a23ca6a5e9af23954e8f8923bcb52ee89de455f9a19e08ac3915cfef990cd6",
+     "input_url": "https://developer.chrome.com/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "15043"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "bf49d76b447bf2eca119bc31267a46ce0c2183d8544d339e2ca98245d8ab0eda",
+   "image": "images/bf49d76b447bf2eca119bc31267a46ce0c2183d8544d339e2ca98245d8ab0eda.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 79.8,
+    "unique_colors": 942,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      75.1
+     ],
+     [
+      [
+       0,
+       64,
+       128
+      ],
+      19.6
+     ],
+     [
+      [
+       0,
+       96,
+       160
+      ],
+      0.7
+     ]
+    ],
+    "near_white_pct": 76.0
+   },
+   "units": [
+    {
+     "key": "pub-231|bf49d76b447bf2eca119bc31267a46ce0c2183d8544d339e2ca98245d8ab0eda",
+     "input_url": "https://www.w3.org/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "7565"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "40ebac3d857fc605537d4a193cba2c16fc1b91093c13ddd6410f1074cdd2cd8e",
+   "image": "images/40ebac3d857fc605537d4a193cba2c16fc1b91093c13ddd6410f1074cdd2cd8e.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 46,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      59.8
+     ],
+     [
+      [
+       224,
+       0,
+       96
+      ],
+      35.3
+     ],
+     [
+      [
+       224,
+       0,
+       64
+      ],
+      2.3
+     ]
+    ],
+    "near_white_pct": 60.0
+   },
+   "units": [
+    {
+     "key": "pub-232|40ebac3d857fc605537d4a193cba2c16fc1b91093c13ddd6410f1074cdd2cd8e",
+     "input_url": "https://svgjs.dev/",
+     "category": "svg-or-manifest",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "2481"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "724e01a071375514a29c14d2a2fd36b748110d6c73999a37d6a7e68abe26cce3",
+   "image": "images/724e01a071375514a29c14d2a2fd36b748110d6c73999a37d6a7e68abe26cce3.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 287,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      59.5
+     ],
+     [
+      [
+       224,
+       0,
+       96
+      ],
+      35.4
+     ],
+     [
+      [
+       224,
+       0,
+       64
+      ],
+      1.8
+     ]
+    ],
+    "near_white_pct": 59.9
+   },
+   "units": [
+    {
+     "key": "pub-232|724e01a071375514a29c14d2a2fd36b748110d6c73999a37d6a7e68abe26cce3",
+     "input_url": "https://svgjs.dev/",
+     "category": "svg-or-manifest",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "4302"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "1f5a95cb9d76de296126654c6a85e7b7e67bf3b7fdd354f365f20ba6f2997b68",
+   "image": "images/1f5a95cb9d76de296126654c6a85e7b7e67bf3b7fdd354f365f20ba6f2997b68.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 58.0,
+    "unique_colors": 745,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      51.9
+     ],
+     [
+      [
+       224,
+       96,
+       32
+      ],
+      38.0
+     ],
+     [
+      [
+       224,
+       160,
+       32
+      ],
+      8.7
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-236|1f5a95cb9d76de296126654c6a85e7b7e67bf3b7fdd354f365f20ba6f2997b68",
+     "input_url": "https://about.gitlab.com/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "5604"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "b2b80f8e3f8f791ac25c98a8fce64c072a20c6644ab39da61bf1f7cf252312f0",
+   "image": "images/b2b80f8e3f8f791ac25c98a8fce64c072a20c6644ab39da61bf1f7cf252312f0.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 381,
+    "top_colors": [
+     [
+      [
+       32,
+       128,
+       224
+      ],
+      85.4
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      11.4
+     ],
+     [
+      [
+       32,
+       96,
+       224
+      ],
+      1.0
+     ]
+    ],
+    "near_white_pct": 11.9
+   },
+   "units": [
+    {
+     "key": "pub-237|b2b80f8e3f8f791ac25c98a8fce64c072a20c6644ab39da61bf1f7cf252312f0",
+     "input_url": "https://www.gnome.org/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3751"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "4791a2272074046deebeeb7765653d1ad601a6d7b7190f47b66a85801bb8cd27",
+   "image": "images/4791a2272074046deebeeb7765653d1ad601a6d7b7190f47b66a85801bb8cd27.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 98.9,
+    "unique_colors": 656,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       224
+      ],
+      72.5
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      21.4
+     ],
+     [
+      [
+       0,
+       160,
+       224
+      ],
+      1.4
+     ]
+    ],
+    "near_white_pct": 22.1
+   },
+   "units": [
+    {
+     "key": "pub-238|4791a2272074046deebeeb7765653d1ad601a6d7b7190f47b66a85801bb8cd27",
+     "input_url": "https://www.kde.org/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "6665"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "23ccda02fc733511a55bafd597965e0b2f4b8e565c722dd1d86295805401769e",
+   "image": "images/23ccda02fc733511a55bafd597965e0b2f4b8e565c722dd1d86295805401769e.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 206,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      77.1
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      15.7
+     ],
+     [
+      [
+       224,
+       192,
+       192
+      ],
+      1.6
+     ]
+    ],
+    "near_white_pct": 17.6
+   },
+   "units": [
+    {
+     "key": "pub-239|23ccda02fc733511a55bafd597965e0b2f4b8e565c722dd1d86295805401769e",
+     "input_url": "https://www.ubuntu.com/",
+     "category": "svg-or-manifest",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 1,
+     "w": "48",
+     "h": "48",
+     "bytes": "1567"
+    }
+   ]
+  }
+ ]
+}

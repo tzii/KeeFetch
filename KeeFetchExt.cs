@@ -330,9 +330,32 @@ namespace KeeFetch
                 return Task.CompletedTask;
             }
 
+            FaviconDialog dialog;
             try
             {
-                var dialog = new FaviconDialog(host, Config, entries);
+                dialog = new FaviconDialog(host, Config, entries);
+            }
+            catch (ArgumentException ex)
+            {
+                // Policy resolution is fail-closed: surface invalid provider
+                // configuration visibly instead of a generic plugin crash.
+                System.Threading.Interlocked.Exchange(ref activeDownloadJob, 0);
+                Logger.Error("RunDownloadAsync", ex);
+                MessageBox.Show("The current KeeFetch provider configuration is invalid:\n" + ex.Message,
+                    "KeeFetch", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return Task.CompletedTask;
+            }
+            catch (InvalidOperationException ex)
+            {
+                System.Threading.Interlocked.Exchange(ref activeDownloadJob, 0);
+                Logger.Error("RunDownloadAsync", ex);
+                MessageBox.Show("The current KeeFetch fetch profile is invalid:\n" + ex.Message,
+                    "KeeFetch", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return Task.CompletedTask;
+            }
+
+            try
+            {
                 var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
                 dialog.RunAsync().ContinueWith(t =>
                 {

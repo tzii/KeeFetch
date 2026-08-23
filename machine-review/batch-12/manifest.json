@@ -1,0 +1,1222 @@
+{
+ "batch": "12",
+ "image_count": 24,
+ "images": [
+  {
+   "artifact_hash": "c477cf7a4fe423225cb70deb5cdba9844a559215e3666ec3b0c567f29ad94b76",
+   "image": "images/c477cf7a4fe423225cb70deb5cdba9844a559215e3666ec3b0c567f29ad94b76.png",
+   "pixel": {
+    "size": [
+     100,
+     100
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 67,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      37.3
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      28.0
+     ],
+     [
+      [
+       192,
+       32,
+       64
+      ],
+      15.8
+     ]
+    ],
+    "near_white_pct": 37.9
+   },
+   "units": [
+    {
+     "key": "pub-145|c477cf7a4fe423225cb70deb5cdba9844a559215e3666ec3b0c567f29ad94b76",
+     "input_url": "https://www.raspberrypi.org/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 8,
+     "w": "100",
+     "h": "100",
+     "bytes": "3545"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "4b85d43db73d8b67553d838fcbff6ebfcd1fe8d44b6294ddd31292d70f42b798",
+   "image": "images/4b85d43db73d8b67553d838fcbff6ebfcd1fe8d44b6294ddd31292d70f42b798.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 80.3,
+    "unique_colors": 244,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       128
+      ],
+      70.5
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      19.6
+     ],
+     [
+      [
+       192,
+       224,
+       224
+      ],
+      1.6
+     ]
+    ],
+    "near_white_pct": 21.1
+   },
+   "units": [
+    {
+     "key": "pub-146|4b85d43db73d8b67553d838fcbff6ebfcd1fe8d44b6294ddd31292d70f42b798",
+     "input_url": "https://www.arduino.cc/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 23,
+     "w": "64",
+     "h": "64",
+     "bytes": "2205"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "5fbe05ec0ed1f7ed4fb8b13e3988c1e326ccab10a9061dd918cd13f11d7175a8",
+   "image": "images/5fbe05ec0ed1f7ed4fb8b13e3988c1e326ccab10a9061dd918cd13f11d7175a8.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 87.7,
+    "unique_colors": 5765,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       128
+      ],
+      39.5
+     ],
+     [
+      [
+       0,
+       128,
+       160
+      ],
+      14.7
+     ],
+     [
+      [
+       32,
+       160,
+       160
+      ],
+      9.1
+     ]
+    ],
+    "near_white_pct": 10.2
+   },
+   "units": [
+    {
+     "key": "pub-146|5fbe05ec0ed1f7ed4fb8b13e3988c1e326ccab10a9061dd918cd13f11d7175a8",
+     "input_url": "https://www.arduino.cc/",
+     "category": "small-site",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 13,
+     "w": "128",
+     "h": "128",
+     "bytes": "34791"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "97d6ebcdcda38b68baa57d1eda8cde6eb9d39b277674a36179a8d2389568ced9",
+   "image": "images/97d6ebcdcda38b68baa57d1eda8cde6eb9d39b277674a36179a8d2389568ced9.png",
+   "pixel": {
+    "size": [
+     114,
+     114
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 348,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       128
+      ],
+      55.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      37.9
+     ],
+     [
+      [
+       32,
+       160,
+       160
+      ],
+      1.3
+     ]
+    ],
+    "near_white_pct": 38.7
+   },
+   "units": [
+    {
+     "key": "pub-146|97d6ebcdcda38b68baa57d1eda8cde6eb9d39b277674a36179a8d2389568ced9",
+     "input_url": "https://www.arduino.cc/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 7,
+     "w": "114",
+     "h": "114",
+     "bytes": "4272"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "c06a8c8646c12c5bc9e5d9123b41efef3640de71762775b27dfae79db3a3fcd6",
+   "image": "images/c06a8c8646c12c5bc9e5d9123b41efef3640de71762775b27dfae79db3a3fcd6.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 613,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      59.4
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      34.5
+     ],
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      1.4
+     ]
+    ],
+    "near_white_pct": 35.7
+   },
+   "units": [
+    {
+     "key": "pub-147|c06a8c8646c12c5bc9e5d9123b41efef3640de71762775b27dfae79db3a3fcd6",
+     "input_url": "https://www.adafruit.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "6866"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "15e3c9731dd98a79a5395d4836f9dbb156760b52bea2ac7e2883eed0cde771ab",
+   "image": "images/15e3c9731dd98a79a5395d4836f9dbb156760b52bea2ac7e2883eed0cde771ab.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 523,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      69.2
+     ],
+     [
+      [
+       224,
+       32,
+       32
+      ],
+      12.4
+     ],
+     [
+      [
+       192,
+       32,
+       32
+      ],
+      4.6
+     ]
+    ],
+    "near_white_pct": 73.0
+   },
+   "units": [
+    {
+     "key": "pub-148|15e3c9731dd98a79a5395d4836f9dbb156760b52bea2ac7e2883eed0cde771ab",
+     "input_url": "https://www.sparkfun.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 9,
+     "w": "32",
+     "h": "32",
+     "bytes": "2315"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "229a9f71e3f473f90084d209af3a3375d8741c7cd3a06c4f4291d97328cefde6",
+   "image": "images/229a9f71e3f473f90084d209af3a3375d8741c7cd3a06c4f4291d97328cefde6.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 603,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      67.3
+     ],
+     [
+      [
+       224,
+       32,
+       32
+      ],
+      10.4
+     ],
+     [
+      [
+       224,
+       192,
+       192
+      ],
+      4.1
+     ]
+    ],
+    "near_white_pct": 72.6
+   },
+   "units": [
+    {
+     "key": "pub-148|229a9f71e3f473f90084d209af3a3375d8741c7cd3a06c4f4291d97328cefde6",
+     "input_url": "https://www.sparkfun.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 12,
+     "w": "32",
+     "h": "32",
+     "bytes": "2186"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "3699d24a8398967fbc11a64309e8270a6139d61d710764d5c4a9ffa1bf83a010",
+   "image": "images/3699d24a8398967fbc11a64309e8270a6139d61d710764d5c4a9ffa1bf83a010.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 415,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      73.6
+     ],
+     [
+      [
+       224,
+       32,
+       32
+      ],
+      23.6
+     ],
+     [
+      [
+       224,
+       192,
+       192
+      ],
+      0.7
+     ]
+    ],
+    "near_white_pct": 74.3
+   },
+   "units": [
+    {
+     "key": "pub-148|3699d24a8398967fbc11a64309e8270a6139d61d710764d5c4a9ffa1bf83a010",
+     "input_url": "https://www.sparkfun.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "3475"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "a5134f7858204f01bd1ef35fe80174f6aaf554f4ae0acfd87dca54454e88fe23",
+   "image": "images/a5134f7858204f01bd1ef35fe80174f6aaf554f4ae0acfd87dca54454e88fe23.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 523,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      69.2
+     ],
+     [
+      [
+       224,
+       32,
+       32
+      ],
+      12.4
+     ],
+     [
+      [
+       192,
+       32,
+       32
+      ],
+      4.6
+     ]
+    ],
+    "near_white_pct": 73.0
+   },
+   "units": [
+    {
+     "key": "pub-148|a5134f7858204f01bd1ef35fe80174f6aaf554f4ae0acfd87dca54454e88fe23",
+     "input_url": "https://www.sparkfun.com/",
+     "category": "small-site",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "32",
+     "h": "32",
+     "bytes": "2315"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "9300fa9a14fe0223bb11e16a38ff728643b37c7e2fa6d8b2a766c5b2635956f1",
+   "image": "images/9300fa9a14fe0223bb11e16a38ff728643b37c7e2fa6d8b2a766c5b2635956f1.png",
+   "pixel": {
+    "size": [
+     76,
+     76
+    ],
+    "opaque_pct": 99.9,
+    "unique_colors": 21,
+    "top_colors": [
+     [
+      [
+       32,
+       64,
+       224
+      ],
+      67.9
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      28.3
+     ],
+     [
+      [
+       96,
+       128,
+       224
+      ],
+      2.1
+     ]
+    ],
+    "near_white_pct": 28.3
+   },
+   "units": [
+    {
+     "key": "pub-149|9300fa9a14fe0223bb11e16a38ff728643b37c7e2fa6d8b2a766c5b2635956f1",
+     "input_url": "https://www.thingiverse.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "76",
+     "h": "76",
+     "bytes": "474"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "d6b745d4041a3724da6fc4beee1779077c9e5e14dc82ae0590cbb12b9667dc46",
+   "image": "images/d6b745d4041a3724da6fc4beee1779077c9e5e14dc82ae0590cbb12b9667dc46.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 97.9,
+    "unique_colors": 2021,
+    "top_colors": [
+     [
+      [
+       192,
+       224,
+       224
+      ],
+      33.7
+     ],
+     [
+      [
+       224,
+       192,
+       0
+      ],
+      26.1
+     ],
+     [
+      [
+       224,
+       160,
+       64
+      ],
+      19.9
+     ]
+    ],
+    "near_white_pct": 35.6
+   },
+   "units": [
+    {
+     "key": "pub-150|d6b745d4041a3724da6fc4beee1779077c9e5e14dc82ae0590cbb12b9667dc46",
+     "input_url": "https://www.instructables.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "12691"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "562ff1ded1c963efbaf40e92a7b3959cc65ad3526f6336285a714a1f51184605",
+   "image": "images/562ff1ded1c963efbaf40e92a7b3959cc65ad3526f6336285a714a1f51184605.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 607,
+    "top_colors": [
+     [
+      [
+       0,
+       64,
+       224
+      ],
+      77.4
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      13.7
+     ],
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      4.6
+     ]
+    ],
+    "near_white_pct": 14.5
+   },
+   "units": [
+    {
+     "key": "pub-152|562ff1ded1c963efbaf40e92a7b3959cc65ad3526f6336285a714a1f51184605",
+     "input_url": "https://www.behance.net/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "4004"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "382322e490e077c4af256b364d4eb718495d8ce4244657ce72c88a7b4215c3e5",
+   "image": "images/382322e490e077c4af256b364d4eb718495d8ce4244657ce72c88a7b4215c3e5.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 466,
+    "top_colors": [
+     [
+      [
+       224,
+       160,
+       224
+      ],
+      56.1
+     ],
+     [
+      [
+       160,
+       64,
+       128
+      ],
+      39.9
+     ],
+     [
+      [
+       224,
+       128,
+       192
+      ],
+      1.4
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-153|382322e490e077c4af256b364d4eb718495d8ce4244657ce72c88a7b4215c3e5",
+     "input_url": "https://dribbble.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "6539"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "43a8420233bfeb21d6b9c70e371e18ccb33cea25503c7e561cce854a9e6fed16",
+   "image": "images/43a8420233bfeb21d6b9c70e371e18ccb33cea25503c7e561cce854a9e6fed16.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 19,
+    "top_colors": [
+     [
+      [
+       224,
+       160,
+       224
+      ],
+      55.6
+     ],
+     [
+      [
+       160,
+       64,
+       128
+      ],
+      39.3
+     ],
+     [
+      [
+       224,
+       128,
+       192
+      ],
+      2.3
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-153|43a8420233bfeb21d6b9c70e371e18ccb33cea25503c7e561cce854a9e6fed16",
+     "input_url": "https://dribbble.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 7,
+     "w": "128",
+     "h": "128",
+     "bytes": "2849"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "b9fe19b8db996385d78d124d9fdcf5916fc7492a5a2bc4dd18406d6bf5d3cf0d",
+   "image": "images/b9fe19b8db996385d78d124d9fdcf5916fc7492a5a2bc4dd18406d6bf5d3cf0d.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 79.5,
+    "unique_colors": 13,
+    "top_colors": [
+     [
+      [
+       224,
+       160,
+       224
+      ],
+      62.3
+     ],
+     [
+      [
+       160,
+       64,
+       128
+      ],
+      31.8
+     ],
+     [
+      [
+       224,
+       128,
+       192
+      ],
+      3.2
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-153|b9fe19b8db996385d78d124d9fdcf5916fc7492a5a2bc4dd18406d6bf5d3cf0d",
+     "input_url": "https://dribbble.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 8,
+     "w": "128",
+     "h": "128",
+     "bytes": "3682"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "c79e4867a179727fd8ab32add0a3a2e628b3c00661cbb43cf84a1dc7355bfe5d",
+   "image": "images/c79e4867a179727fd8ab32add0a3a2e628b3c00661cbb43cf84a1dc7355bfe5d.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 84.3,
+    "unique_colors": 1276,
+    "top_colors": [
+     [
+      [
+       224,
+       160,
+       224
+      ],
+      48.5
+     ],
+     [
+      [
+       192,
+       96,
+       160
+      ],
+      14.4
+     ],
+     [
+      [
+       224,
+       128,
+       192
+      ],
+      14.1
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-153|c79e4867a179727fd8ab32add0a3a2e628b3c00661cbb43cf84a1dc7355bfe5d",
+     "input_url": "https://dribbble.com/",
+     "category": "small-site",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "24544"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f9ea08ca0d61eb0e97d0480159c300c73e795c73e49277e0696d514ee12676d2",
+   "image": "images/f9ea08ca0d61eb0e97d0480159c300c73e795c73e49277e0696d514ee12676d2.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 83.7,
+    "unique_colors": 370,
+    "top_colors": [
+     [
+      [
+       224,
+       160,
+       224
+      ],
+      50.3
+     ],
+     [
+      [
+       160,
+       64,
+       128
+      ],
+      13.5
+     ],
+     [
+      [
+       192,
+       96,
+       160
+      ],
+      13.3
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-153|f9ea08ca0d61eb0e97d0480159c300c73e795c73e49277e0696d514ee12676d2",
+     "input_url": "https://dribbble.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "48",
+     "h": "48",
+     "bytes": "3845"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "caaddcef449769a2e1462a5d84cebd1b2bb897161af8f2df1c5b0727184c0db6",
+   "image": "images/caaddcef449769a2e1462a5d84cebd1b2bb897161af8f2df1c5b0727184c0db6.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 79.6,
+    "unique_colors": 582,
+    "top_colors": [
+     [
+      [
+       224,
+       96,
+       64
+      ],
+      81.3
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      13.9
+     ],
+     [
+      [
+       224,
+       64,
+       64
+      ],
+      2.8
+     ]
+    ],
+    "near_white_pct": 14.4
+   },
+   "units": [
+    {
+     "key": "pub-154|caaddcef449769a2e1462a5d84cebd1b2bb897161af8f2df1c5b0727184c0db6",
+     "input_url": "https://www.producthunt.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "4383"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "3392468662d8a0cae3c45710c5296c2d30bc998092193e83481d7026d8a05242",
+   "image": "images/3392468662d8a0cae3c45710c5296c2d30bc998092193e83481d7026d8a05242.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 385,
+    "top_colors": [
+     [
+      [
+       224,
+       96,
+       0
+      ],
+      92.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      5.0
+     ],
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      1.0
+     ]
+    ],
+    "near_white_pct": 5.4
+   },
+   "units": [
+    {
+     "key": "pub-155|3392468662d8a0cae3c45710c5296c2d30bc998092193e83481d7026d8a05242",
+     "input_url": "https://news.ycombinator.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "2564"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "0962b8276973a27a227121e7ba526e667573d6383a1f95c98739d9b855b56add",
+   "image": "images/0962b8276973a27a227121e7ba526e667573d6383a1f95c98739d9b855b56add.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 34,
+    "top_colors": [
+     [
+      [
+       0,
+       32,
+       32
+      ],
+      81.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      13.5
+     ],
+     [
+      [
+       0,
+       0,
+       32
+      ],
+      2.2
+     ]
+    ],
+    "near_white_pct": 14.1
+   },
+   "units": [
+    {
+     "key": "pub-156|0962b8276973a27a227121e7ba526e667573d6383a1f95c98739d9b855b56add",
+     "input_url": "https://www.indiehackers.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "1095"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "0cc5e5ab006e43d8dcd28e1adf4231693289dd35f90afdae62cfecbfd56c486a",
+   "image": "images/0cc5e5ab006e43d8dcd28e1adf4231693289dd35f90afdae62cfecbfd56c486a.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 2,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      85.7
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      14.3
+     ]
+    ],
+    "near_white_pct": 85.7
+   },
+   "units": [
+    {
+     "key": "pub-156|0cc5e5ab006e43d8dcd28e1adf4231693289dd35f90afdae62cfecbfd56c486a",
+     "input_url": "https://www.indiehackers.com/",
+     "category": "small-site",
+     "flags": "blank_suspected;profile-differing",
+     "occurrences": 6,
+     "w": "32",
+     "h": "32",
+     "bytes": "247"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "0e251c0f2fd5c95c378047c449b06f175fceb20d6e33c9d609b2c196b2aba788",
+   "image": "images/0e251c0f2fd5c95c378047c449b06f175fceb20d6e33c9d609b2c196b2aba788.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 25,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      84.1
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      13.8
+     ],
+     [
+      [
+       160,
+       160,
+       160
+      ],
+      1.9
+     ]
+    ],
+    "near_white_pct": 84.1
+   },
+   "units": [
+    {
+     "key": "pub-156|0e251c0f2fd5c95c378047c449b06f175fceb20d6e33c9d609b2c196b2aba788",
+     "input_url": "https://www.indiehackers.com/",
+     "category": "small-site",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "996"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "faaf44a14ee65be91f17606279b6817de7d99e5c5e07fcc9ea2486320092a974",
+   "image": "images/faaf44a14ee65be91f17606279b6817de7d99e5c5e07fcc9ea2486320092a974.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 142,
+    "top_colors": [
+     [
+      [
+       0,
+       32,
+       32
+      ],
+      81.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      13.5
+     ],
+     [
+      [
+       0,
+       0,
+       32
+      ],
+      2.2
+     ]
+    ],
+    "near_white_pct": 14.1
+   },
+   "units": [
+    {
+     "key": "pub-156|faaf44a14ee65be91f17606279b6817de7d99e5c5e07fcc9ea2486320092a974",
+     "input_url": "https://www.indiehackers.com/",
+     "category": "small-site",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "1619"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "39811139a016bd7d84058916b1103c3a581040686d9f6d509080cc72417dc75c",
+   "image": "images/39811139a016bd7d84058916b1103c3a581040686d9f6d509080cc72417dc75c.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 664,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      33.7
+     ],
+     [
+      [
+       32,
+       96,
+       160
+      ],
+      7.2
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      5.3
+     ]
+    ],
+    "near_white_pct": 36.4
+   },
+   "units": [
+    {
+     "key": "pub-157|39811139a016bd7d84058916b1103c3a581040686d9f6d509080cc72417dc75c",
+     "input_url": "https://www.cultofmac.com/",
+     "category": "small-site",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "2826"
+    }
+   ]
+  }
+ ]
+}

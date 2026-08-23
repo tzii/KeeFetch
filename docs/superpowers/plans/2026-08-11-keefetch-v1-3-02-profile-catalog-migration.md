@@ -358,6 +358,8 @@ Set three repetitions, concurrency 8, and both cold/warm modes. The selector rea
 
 `prepare-review.ps1` reads finalized `rows.csv` files and writes `review-queue.csv` with columns `run_id`, `fixture_id`, `profile_id`, `artifact_hash`, `review_label`, `reviewer`, `reviewed_at_utc`, and `notes`. It includes every synthetic, placeholder-suspected, blank-suspected, or profile-differing selection plus a deterministic category/profile-stratified 10% sample of remaining successes.
 
+> **Superseded 2026-08-17** (`docs/handoff-2026-08-17.md`): the review queue is now a CENSUS, not a sample. Every unique cold `(fixture_id, artifact_hash)` unit is reviewed exactly once, labels propagate to every occurrence of the exact artifact, and validation fails closed on any hole or non-census key. There is no stratified subset, no sampling seed, and no interval estimation downstream.
+
 Support `-Validate` to reject labels outside `correct`, `acceptable-synthetic`, `generic`, `wrong-brand`, `blank`, `unusable`, `ambiguous`, and `not-reviewed`; reviewed rows missing reviewer/timestamp; or artifact hashes that no longer match the run. Preserve labels when regenerating a queue with unchanged `(fixture_id, profile_id, artifact_hash)` keys.
 
 - [ ] **Step 3: Write selector self-tests using a three-candidate fixture**

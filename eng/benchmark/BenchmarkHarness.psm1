@@ -70,6 +70,22 @@ function Write-JsonFileUtf8NoBom {
     [System.IO.File]::WriteAllText($Path, $json, $utf8NoBom)
 }
 
+function ConvertTo-KeeFetchJsonString {
+    param([Parameter(Mandatory=$true)][string]$Value)
+    $escaped = $Value.Replace("\", "\\").Replace('"', '\"')
+    $escaped = $escaped.Replace("`r", "\r").Replace("`n", "\n").Replace("`t", "\t")
+    $builder = New-Object System.Text.StringBuilder
+    foreach ($ch in $escaped.ToCharArray()) {
+        $code = [int]$ch
+        if ($code -lt 0x20) {
+            [void]$builder.Append(("\u{0:x4}" -f $code))
+        } else {
+            [void]$builder.Append($ch)
+        }
+    }
+    return '"' + $builder.ToString() + '"'
+}
+
 function New-KeeFetchRun {
     [CmdletBinding()]
     param(
@@ -419,7 +435,9 @@ function Add-KeeFetchResult {
 function Complete-KeeFetchRun {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)][string]$RunDirectory
+        [Parameter(Mandatory=$true)][string]$RunDirectory,
+        [long]$ActiveElapsedMs = -1,
+        [bool]$Resumed = $false
     )
 
     if (-not (Test-Path -LiteralPath $RunDirectory)) {
@@ -635,6 +653,10 @@ function Complete-KeeFetchRun {
     $finalMeta['status'] = "complete"
     $finalMeta['completed_at'] = (Get-Date).ToUniversalTime().ToString("o")
     $finalMeta['total_records'] = $sorted.Count
+    if ($ActiveElapsedMs -ge 0) {
+        $finalMeta['active_elapsed_ms'] = $ActiveElapsedMs
+    }
+    $finalMeta['resumed'] = $Resumed
     # Ensure directory field present
     $finalMeta['directory'] = $RunDirectory
 
@@ -915,4 +937,185 @@ function Open-KeeFetchRun {
     return $result
 }
 
-Export-ModuleMember -Function Test-KeeFetchCorpus, New-KeeFetchRun, Add-KeeFetchResult, Complete-KeeFetchRun, Read-KeeFetchExperiment, Open-KeeFetchRun
+function Get-KeeFetchHarnessFingerprint {
+    [CmdletBinding()]
+    param([Parameter(Mandatory=$true)][string]$RepoRoot)
+
+    # Versioned canonical construction over the code that executes experiments.
+    # Any runner/harness change changes the fingerprint and therefore requires
+    # clean evidence, exactly like a changed binary. Line endings are normalized
+    # to LF so checkout platform/core.autocrlf does not change the identity.
+    $files = @('eng/benchmark-presets.ps1', 'eng/benchmark/BenchmarkHarness.psm1')
+    $payload = New-Object 'System.Collections.Generic.List[byte]'
+    $headerBytes = [System.Text.Encoding]::UTF8.GetBytes("keefetch-exec-harness-v1`n")
+    $payload.AddRange($headerBytes)
+    foreach ($rel in $files) {
+        $path = Join-Path $RepoRoot ($rel -replace '/', [System.IO.Path]::DirectorySeparatorChar)
+        if (-not (Test-Path -LiteralPath $path)) { throw "Harness component missing: $path" }
+        $nameBytes = [System.Text.Encoding]::UTF8.GetBytes($rel + "`n")
+        $payload.AddRange($nameBytes)
+        $text = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
+        $normalized = $text -replace "`r`n", "`n" -replace "`r", "`n"
+        $payload.AddRange([System.Text.Encoding]::UTF8.GetBytes($normalized))
+        $payload.Add([byte]10)
+    }
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $hash = $sha.ComputeHash($payload.ToArray())
+        return [BitConverter]::ToString($hash).Replace("-", "").ToLowerInvariant()
+    } finally {
+        $sha.Dispose()
+    }
+}
+
+function Get-SeededScheduleOrder {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)][string[]]$Items,
+        [Parameter(Mandatory=$true)][long]$Seed,
+        [Parameter(Mandatory=$true)][string]$Phase,
+        [Parameter(Mandatory=$true)][int]$Repetition
+    )
+
+    # Deterministic seeded ordering: SHA-256 ranking over
+    # keefetch-schedule-v1|seed|phase|repetition|item. Never depends on
+    # PowerShell's process-randomized string hash implementation.
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $ranked = foreach ($item in $Items) {
+            $inputBytes = [System.Text.Encoding]::UTF8.GetBytes("keefetch-schedule-v1|$Seed|$Phase|$Repetition|$item")
+            $hash = [BitConverter]::ToString($sha.ComputeHash($inputBytes)).Replace("-", "").ToLowerInvariant()
+            [PSCustomObject]@{ Item = [string]$item; Rank = $hash }
+        }
+        return [string[]]@($ranked | Sort-Object -Property @{ Expression = { $_.Rank } }, @{ Expression = { $_.Item } } | ForEach-Object { $_.Item })
+    } finally {
+        $sha.Dispose()
+    }
+}
+
+function Get-WarmBlockInvalidReason {
+    [CmdletBinding()]
+    param(
+        # Warm-up runs: objects exposing .Status. A warm block has exactly one.
+        # AllowEmptyCollection: an empty set is itself the "missing warm-up"
+        # invalidity, not a binding error.
+        [Parameter(Mandatory=$true)][AllowEmptyCollection()][array]$Warmups,
+        # Measured warm runs: objects exposing .Status and .Repetition.
+        [Parameter(Mandatory=$true)][AllowEmptyCollection()][array]$Measured,
+        [Parameter(Mandatory=$true)][int]$Repetitions
+    )
+
+    # A warm block is valid only as one complete atomic unit: exactly one
+    # complete warm-up plus complete measured repetitions 1..N with no
+    # duplicates. Any deviation invalidates the entire block.
+    if ($Warmups.Count -eq 0) { return "missing warm-up" }
+    if ($Warmups.Count -gt 1) { return "duplicate warm-up" }
+    if ([string]$Warmups[0].Status -ne 'complete') { return "incomplete warm-up" }
+
+    $seenReps = @{}
+    foreach ($m in $Measured) {
+        $rep = 0
+        try { $rep = [int]$m.Repetition } catch { return "warm measured run with unparseable repetition" }
+        if ($rep -lt 1 -or $rep -gt $Repetitions) { return "warm measured run with repetition $rep outside 1..$Repetitions" }
+        if ($seenReps.ContainsKey($rep)) { return "duplicate warm measured cell for repetition $rep" }
+        $seenReps[$rep] = $true
+        if ([string]$m.Status -ne 'complete') { return "incomplete warm measured cell for repetition $rep" }
+    }
+    for ($rep = 1; $rep -le $Repetitions; $rep++) {
+        if (-not $seenReps.ContainsKey($rep)) { return "missing warm measured cell for repetition $rep" }
+    }
+    return $null
+}
+
+function Assert-KeeFetchRunRows {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)][string]$RunDirectory,
+        [Parameter(Mandatory=$true)][string[]]$ExpectedFixtureIds,
+        # SHA-256 of the corpus file computed NOW by the caller; compared
+        # against the fingerprint recorded at run time.
+        [Parameter(Mandatory=$true)][string]$CurrentCorpusFingerprint,
+        [Parameter(Mandatory=$true)][string]$ExpectedExperimentId,
+        [Parameter(Mandatory=$true)][string]$ExpectedProfile,
+        [Parameter(Mandatory=$true)][string]$ExpectedCacheMode,
+        [Parameter(Mandatory=$true)][int]$ExpectedRepetition,
+        [Parameter(Mandatory=$true)][string]$ExpectedRunId,
+        [Parameter(Mandatory=$true)][int]$ExpectedConcurrency,
+        # Set for measured cold scoring cells: every success must carry a
+        # non-empty artifact hash and the artifact must exist on disk.
+        [switch]$RequireSuccessArtifacts
+    )
+
+    $runJsonPath = Join-Path $RunDirectory 'run.json'
+    $rowsCsvPath = Join-Path $RunDirectory 'rows.csv'
+    $meta = $null
+    try { $meta = Get-Content -Raw -LiteralPath $runJsonPath | ConvertFrom-Json -ErrorAction Stop } catch { $meta = $null }
+    if ($null -eq $meta) { throw "Run ${RunDirectory}: unreadable run.json." }
+
+    $recordedCorpus = ""
+    if ($meta.PSObject.Properties.Name -contains 'corpus_fingerprint') { $recordedCorpus = [string]$meta.corpus_fingerprint }
+    if ($recordedCorpus -ne $CurrentCorpusFingerprint) {
+        throw "Run ${RunDirectory}: corpus fingerprint mismatch (recorded $recordedCorpus, current $CurrentCorpusFingerprint). The corpus changed after this run executed; the evidence is invalid."
+    }
+
+    if (-not (Test-Path -LiteralPath $rowsCsvPath)) { throw "Run ${RunDirectory}: missing rows.csv." }
+    $rows = @(Import-Csv -LiteralPath $rowsCsvPath)
+
+    $expectedSet = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    foreach ($fid in $ExpectedFixtureIds) { [void]$expectedSet.Add([string]$fid) }
+
+    if ($rows.Count -ne $expectedSet.Count) {
+        throw "Run ${RunDirectory}: expected $($expectedSet.Count) rows but recorded $($rows.Count). Evidence is invalid."
+    }
+
+    $seen = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    foreach ($row in $rows) {
+        $fid = [string]$row.fixture_id
+        if ([string]::IsNullOrWhiteSpace($fid)) { throw "Run ${RunDirectory}: row without fixture_id." }
+        if (-not $expectedSet.Contains($fid)) { throw "Run ${RunDirectory}: unexpected fixture '$fid' not present in the corpus." }
+        if (-not $seen.Add($fid)) { throw "Run ${RunDirectory}: duplicate fixture '$fid' within the cell." }
+
+        if ([string]$row.experiment_id -ne $ExpectedExperimentId) {
+            throw "Run ${RunDirectory}: row '$fid' experiment_id '$($row.experiment_id)' does not match run metadata '$ExpectedExperimentId'."
+        }
+        if ([string]$row.profile -ne $ExpectedProfile) {
+            throw "Run ${RunDirectory}: row '$fid' profile '$($row.profile)' does not match run metadata '$ExpectedProfile'."
+        }
+        if ([string]$row.cache_mode -ne $ExpectedCacheMode) {
+            throw "Run ${RunDirectory}: row '$fid' cache_mode '$($row.cache_mode)' does not match run metadata '$ExpectedCacheMode'."
+        }
+        $rowRep = -1
+        try { $rowRep = [int]$row.repetition } catch { throw "Run ${RunDirectory}: row '$fid' has unparseable repetition '$($row.repetition)'." }
+        if ($rowRep -ne $ExpectedRepetition) {
+            throw "Run ${RunDirectory}: row '$fid' repetition $rowRep does not match run metadata $ExpectedRepetition."
+        }
+        if ([string]$row.run_id -ne $ExpectedRunId) {
+            throw "Run ${RunDirectory}: row '$fid' run_id '$($row.run_id)' does not match run metadata '$ExpectedRunId'."
+        }
+        $rowConc = -1
+        try { $rowConc = [int]$row.concurrency } catch { throw "Run ${RunDirectory}: row '$fid' has unparseable concurrency '$($row.concurrency)'." }
+        if ($rowConc -ne $ExpectedConcurrency) {
+            throw "Run ${RunDirectory}: row '$fid' concurrency $rowConc does not match run metadata $ExpectedConcurrency."
+        }
+
+        if ($RequireSuccessArtifacts -and [string]$row.machine_outcome -eq 'success') {
+            $hash = [string]$row.artifact_hash
+            if ([string]::IsNullOrWhiteSpace($hash)) {
+                throw "Run ${RunDirectory}: successful cold row '$fid' has no artifact hash; invalid evidence."
+            }
+            $artifactRel = [string]$row.artifact_path
+            if ([string]::IsNullOrWhiteSpace($artifactRel)) {
+                throw "Run ${RunDirectory}: successful cold row '$fid' has no artifact path; invalid evidence."
+            }
+            if (-not (Test-Path -LiteralPath (Join-Path $RunDirectory $artifactRel))) {
+                throw "Run ${RunDirectory}: artifact '$artifactRel' for successful cold row '$fid' is missing on disk; invalid evidence."
+            }
+        }
+    }
+
+    foreach ($fid in $expectedSet) {
+        if (-not $seen.Contains($fid)) { throw "Run ${RunDirectory}: missing fixture '$fid'." }
+    }
+}
+
+Export-ModuleMember -Function Test-KeeFetchCorpus, New-KeeFetchRun, Add-KeeFetchResult, Complete-KeeFetchRun, Read-KeeFetchExperiment, Open-KeeFetchRun, ConvertTo-KeeFetchJsonString, Get-KeeFetchHarnessFingerprint, Get-SeededScheduleOrder, Get-WarmBlockInvalidReason, Assert-KeeFetchRunRows, Write-JsonFileUtf8NoBom

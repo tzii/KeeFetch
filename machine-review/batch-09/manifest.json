@@ -1,0 +1,1226 @@
+{
+ "batch": "09",
+ "image_count": 24,
+ "images": [
+  {
+   "artifact_hash": "f77fef22c4d6e8d5ff30db820fd08c08ebdfbcee6980d759cac12c607a131ace",
+   "image": "images/f77fef22c4d6e8d5ff30db820fd08c08ebdfbcee6980d759cac12c607a131ace.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 48.8,
+    "unique_colors": 443,
+    "top_colors": [
+     [
+      [
+       96,
+       96,
+       192
+      ],
+      24.6
+     ],
+     [
+      [
+       128,
+       96,
+       192
+      ],
+      23.6
+     ],
+     [
+      [
+       32,
+       128,
+       192
+      ],
+      14.6
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-174|f77fef22c4d6e8d5ff30db820fd08c08ebdfbcee6980d759cac12c607a131ace",
+     "input_url": "https://jellyfin.org/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "32",
+     "h": "32",
+     "bytes": "2269"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f985a9910822dd1607dd7aaeb061ac36068c3c0f45204df30ac4e84026dee6b1",
+   "image": "images/f985a9910822dd1607dd7aaeb061ac36068c3c0f45204df30ac4e84026dee6b1.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 48.8,
+    "unique_colors": 443,
+    "top_colors": [
+     [
+      [
+       96,
+       96,
+       192
+      ],
+      24.6
+     ],
+     [
+      [
+       128,
+       96,
+       192
+      ],
+      23.6
+     ],
+     [
+      [
+       32,
+       128,
+       192
+      ],
+      14.6
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-174|f985a9910822dd1607dd7aaeb061ac36068c3c0f45204df30ac4e84026dee6b1",
+     "input_url": "https://jellyfin.org/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 12,
+     "w": "32",
+     "h": "32",
+     "bytes": "2269"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "1a6a0b536344b0259e85fccdcc81efc9529825f480b1d4ddb82587f4a5d92974",
+   "image": "images/1a6a0b536344b0259e85fccdcc81efc9529825f480b1d4ddb82587f4a5d92974.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 21,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      80.8
+     ],
+     [
+      [
+       224,
+       160,
+       0
+      ],
+      12.3
+     ],
+     [
+      [
+       128,
+       96,
+       0
+      ],
+      2.4
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-175|1a6a0b536344b0259e85fccdcc81efc9529825f480b1d4ddb82587f4a5d92974",
+     "input_url": "https://plex.tv/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 1,
+     "w": "32",
+     "h": "32",
+     "bytes": "402"
+    },
+    {
+     "key": "pub-176|1a6a0b536344b0259e85fccdcc81efc9529825f480b1d4ddb82587f4a5d92974",
+     "input_url": "https://www.plex.tv/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "32",
+     "h": "32",
+     "bytes": "402"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "a873624b1e880e8c7b2bfe2fc72e1957c83fc4d965d18d53cd3d88c4d918d8a7",
+   "image": "images/a873624b1e880e8c7b2bfe2fc72e1957c83fc4d965d18d53cd3d88c4d918d8a7.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 113,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      74.6
+     ],
+     [
+      [
+       224,
+       160,
+       0
+      ],
+      6.7
+     ],
+     [
+      [
+       192,
+       128,
+       0
+      ],
+      6.3
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-175|a873624b1e880e8c7b2bfe2fc72e1957c83fc4d965d18d53cd3d88c4d918d8a7",
+     "input_url": "https://plex.tv/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 53,
+     "w": "32",
+     "h": "32",
+     "bytes": "801"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "3028cfb2e29ec42f372453b8271189e8e8bd9ffe3c205b2a67cacd23894ec896",
+   "image": "images/3028cfb2e29ec42f372453b8271189e8e8bd9ffe3c205b2a67cacd23894ec896.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 1005,
+    "top_colors": [
+     [
+      [
+       0,
+       32,
+       32
+      ],
+      85.1
+     ],
+     [
+      [
+       192,
+       128,
+       0
+      ],
+      5.9
+     ],
+     [
+      [
+       224,
+       160,
+       0
+      ],
+      3.6
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-176|3028cfb2e29ec42f372453b8271189e8e8bd9ffe3c205b2a67cacd23894ec896",
+     "input_url": "https://www.plex.tv/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "6198"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "ecaf82ae26e85374b6554809c0a881b5430f1d49de1f2791f487f40909237931",
+   "image": "images/ecaf82ae26e85374b6554809c0a881b5430f1d49de1f2791f487f40909237931.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 79.5,
+    "unique_colors": 562,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      82.8
+     ],
+     [
+      [
+       224,
+       160,
+       0
+      ],
+      15.1
+     ],
+     [
+      [
+       32,
+       32,
+       0
+      ],
+      0.5
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-176|ecaf82ae26e85374b6554809c0a881b5430f1d49de1f2791f487f40909237931",
+     "input_url": "https://www.plex.tv/",
+     "category": "self-hosted-software",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "5837"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f99254df23532bcfc3e53eb6f72eaba7fd19bfb8bbfc414a1dfbe4736b31344b",
+   "image": "images/f99254df23532bcfc3e53eb6f72eaba7fd19bfb8bbfc414a1dfbe4736b31344b.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 42,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      83.2
+     ],
+     [
+      [
+       224,
+       160,
+       0
+      ],
+      15.0
+     ],
+     [
+      [
+       128,
+       96,
+       0
+      ],
+      0.6
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-176|f99254df23532bcfc3e53eb6f72eaba7fd19bfb8bbfc414a1dfbe4736b31344b",
+     "input_url": "https://www.plex.tv/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "1781"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "385e906a45337f7ac52aca948d9efe371660891ebc47c95ca8a4771a440a1a46",
+   "image": "images/385e906a45337f7ac52aca948d9efe371660891ebc47c95ca8a4771a440a1a46.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 99.8,
+    "unique_colors": 102,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      76.0
+     ],
+     [
+      [
+       0,
+       64,
+       192
+      ],
+      16.8
+     ],
+     [
+      [
+       128,
+       160,
+       224
+      ],
+      1.5
+     ]
+    ],
+    "near_white_pct": 77.2
+   },
+   "units": [
+    {
+     "key": "pub-177|385e906a45337f7ac52aca948d9efe371660891ebc47c95ca8a4771a440a1a46",
+     "input_url": "https://bitwarden.com/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "819"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "4389e008803170d6ebf8bb42eb62edc7fdc503aaa077a579d45188b0c2f55699",
+   "image": "images/4389e008803170d6ebf8bb42eb62edc7fdc503aaa077a579d45188b0c2f55699.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 37,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      52.7
+     ],
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      35.3
+     ],
+     [
+      [
+       64,
+       64,
+       64
+      ],
+      2.2
+     ]
+    ],
+    "near_white_pct": 54.4
+   },
+   "units": [
+    {
+     "key": "pub-178|4389e008803170d6ebf8bb42eb62edc7fdc503aaa077a579d45188b0c2f55699",
+     "input_url": "https://vaultwarden.org/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 12,
+     "w": "32",
+     "h": "32",
+     "bytes": "803"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "5368ded0e4b149b49f3a93e6c3ba07606c97a2b020e576e871f4f4ddcd3335ee",
+   "image": "images/5368ded0e4b149b49f3a93e6c3ba07606c97a2b020e576e871f4f4ddcd3335ee.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 49.8,
+    "unique_colors": 121,
+    "top_colors": [
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      99.8
+     ],
+     [
+      [
+       0,
+       32,
+       32
+      ],
+      0.2
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-178|5368ded0e4b149b49f3a93e6c3ba07606c97a2b020e576e871f4f4ddcd3335ee",
+     "input_url": "https://vaultwarden.org/",
+     "category": "self-hosted-software",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "32",
+     "h": "32",
+     "bytes": "1029"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "97f09c281312ebaff52c0ed09c48e124402a9b0d4a85956226b9265008ab761f",
+   "image": "images/97f09c281312ebaff52c0ed09c48e124402a9b0d4a85956226b9265008ab761f.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 50.1,
+    "unique_colors": 96,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      98.2
+     ],
+     [
+      [
+       32,
+       0,
+       0
+      ],
+      1.8
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-178|97f09c281312ebaff52c0ed09c48e124402a9b0d4a85956226b9265008ab761f",
+     "input_url": "https://vaultwarden.org/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 9,
+     "w": "32",
+     "h": "32",
+     "bytes": "956"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "a031c32cfd93bd82556f49066102f11686cb89a34b851a74021ce8012ed12e5c",
+   "image": "images/a031c32cfd93bd82556f49066102f11686cb89a34b851a74021ce8012ed12e5c.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 44.7,
+    "unique_colors": 221,
+    "top_colors": [
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      99.9
+     ],
+     [
+      [
+       0,
+       32,
+       32
+      ],
+      0.1
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-178|a031c32cfd93bd82556f49066102f11686cb89a34b851a74021ce8012ed12e5c",
+     "input_url": "https://vaultwarden.org/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "3734"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "5dcd4620a5850041c234768d12451785bb29499e7b9af157c0074a166edcc758",
+   "image": "images/5dcd4620a5850041c234768d12451785bb29499e7b9af157c0074a166edcc758.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 78.5,
+    "unique_colors": 2290,
+    "top_colors": [
+     [
+      [
+       192,
+       192,
+       224
+      ],
+      56.2
+     ],
+     [
+      [
+       160,
+       224,
+       224
+      ],
+      16.1
+     ],
+     [
+      [
+       192,
+       160,
+       224
+      ],
+      8.2
+     ]
+    ],
+    "near_white_pct": 60.5
+   },
+   "units": [
+    {
+     "key": "pub-179|5dcd4620a5850041c234768d12451785bb29499e7b9af157c0074a166edcc758",
+     "input_url": "https://www.photoprism.org/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "12059"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "1c1aeea0fd977ee7ffeb09419b10ec0b9bfa3a2fcfa697c8860eae843dae7b28",
+   "image": "images/1c1aeea0fd977ee7ffeb09419b10ec0b9bfa3a2fcfa697c8860eae843dae7b28.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 67.9,
+    "unique_colors": 396,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       224
+      ],
+      20.2
+     ],
+     [
+      [
+       0,
+       192,
+       64
+      ],
+      20.1
+     ],
+     [
+      [
+       224,
+       32,
+       32
+      ],
+      19.9
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-180|1c1aeea0fd977ee7ffeb09419b10ec0b9bfa3a2fcfa697c8860eae843dae7b28",
+     "input_url": "https://immich.app/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "2185"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "7d4a546d61ab19bea2d77589dbea2291db1b030bc4024946d43232eddd67d8f8",
+   "image": "images/7d4a546d61ab19bea2d77589dbea2291db1b030bc4024946d43232eddd67d8f8.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 40.7,
+    "unique_colors": 852,
+    "top_colors": [
+     [
+      [
+       96,
+       128,
+       32
+      ],
+      67.8
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      12.4
+     ],
+     [
+      [
+       64,
+       128,
+       32
+      ],
+      7.0
+     ]
+    ],
+    "near_white_pct": 12.7
+   },
+   "units": [
+    {
+     "key": "pub-181|7d4a546d61ab19bea2d77589dbea2291db1b030bc4024946d43232eddd67d8f8",
+     "input_url": "https://www.gitea.io/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "6014"
+    },
+    {
+     "key": "pub-182|7d4a546d61ab19bea2d77589dbea2291db1b030bc4024946d43232eddd67d8f8",
+     "input_url": "https://gitea.com/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "6014"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "5940a70fae9cfec205ccb5b5c41b0e5bac95f9efbfe7b20ed8d22d4012252e03",
+   "image": "images/5940a70fae9cfec205ccb5b5c41b0e5bac95f9efbfe7b20ed8d22d4012252e03.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 25.8,
+    "unique_colors": 613,
+    "top_colors": [
+     [
+      [
+       192,
+       0,
+       0
+      ],
+      53.8
+     ],
+     [
+      [
+       224,
+       96,
+       0
+      ],
+      43.4
+     ],
+     [
+      [
+       224,
+       0,
+       0
+      ],
+      2.2
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-183|5940a70fae9cfec205ccb5b5c41b0e5bac95f9efbfe7b20ed8d22d4012252e03",
+     "input_url": "https://forgejo.org/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "4578"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "6e5d9ebae9f2d979bf1f552d4951ea2da0598b374f216366779078d268379e4d",
+   "image": "images/6e5d9ebae9f2d979bf1f552d4951ea2da0598b374f216366779078d268379e4d.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 37.5,
+    "unique_colors": 1126,
+    "top_colors": [
+     [
+      [
+       224,
+       0,
+       0
+      ],
+      37.4
+     ],
+     [
+      [
+       128,
+       0,
+       0
+      ],
+      36.0
+     ],
+     [
+      [
+       0,
+       192,
+       0
+      ],
+      11.7
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-184|6e5d9ebae9f2d979bf1f552d4951ea2da0598b374f216366779078d268379e4d",
+     "input_url": "https://pi-hole.net/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "6426"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "823bff3547d500edd6493575291fc534c872d7db05e5cd7cfa7a2042eadea154",
+   "image": "images/823bff3547d500edd6493575291fc534c872d7db05e5cd7cfa7a2042eadea154.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 32.0,
+    "unique_colors": 852,
+    "top_colors": [
+     [
+      [
+       96,
+       160,
+       96
+      ],
+      57.5
+     ],
+     [
+      [
+       64,
+       160,
+       96
+      ],
+      21.9
+     ],
+     [
+      [
+       64,
+       128,
+       96
+      ],
+      15.1
+     ]
+    ],
+    "near_white_pct": 4.4
+   },
+   "units": [
+    {
+     "key": "pub-185|823bff3547d500edd6493575291fc534c872d7db05e5cd7cfa7a2042eadea154",
+     "input_url": "https://adguard.com/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "8180"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "36c67e56edb916a27db432d03fce1667bd179b8516d80a4a7b14a334efcc0d10",
+   "image": "images/36c67e56edb916a27db432d03fce1667bd179b8516d80a4a7b14a334efcc0d10.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 308,
+    "top_colors": [
+     [
+      [
+       64,
+       160,
+       192
+      ],
+      50.7
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      35.2
+     ],
+     [
+      [
+       96,
+       160,
+       224
+      ],
+      6.0
+     ]
+    ],
+    "near_white_pct": 37.1
+   },
+   "units": [
+    {
+     "key": "pub-186|36c67e56edb916a27db432d03fce1667bd179b8516d80a4a7b14a334efcc0d10",
+     "input_url": "https://www.openmediavault.org/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "2688"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "1e9f5078873e562a3477893d74a8109f33bfd5663cf528557824ec926577c4d1",
+   "image": "images/1e9f5078873e562a3477893d74a8109f33bfd5663cf528557824ec926577c4d1.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 38.0,
+    "unique_colors": 1113,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       192
+      ],
+      44.5
+     ],
+     [
+      [
+       32,
+       160,
+       224
+      ],
+      41.7
+     ],
+     [
+      [
+       160,
+       160,
+       160
+      ],
+      10.8
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-187|1e9f5078873e562a3477893d74a8109f33bfd5663cf528557824ec926577c4d1",
+     "input_url": "https://www.freenas.org/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "9464"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "39deb116b523b0b365d5e03f79460b57657fa819b735cfd3ba184f304852349a",
+   "image": "images/39deb116b523b0b365d5e03f79460b57657fa819b735cfd3ba184f304852349a.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 36.1,
+    "unique_colors": 17,
+    "top_colors": [
+     [
+      [
+       32,
+       160,
+       224
+      ],
+      42.3
+     ],
+     [
+      [
+       0,
+       128,
+       192
+      ],
+      42.3
+     ],
+     [
+      [
+       160,
+       160,
+       160
+      ],
+      10.5
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-187|39deb116b523b0b365d5e03f79460b57657fa819b735cfd3ba184f304852349a",
+     "input_url": "https://www.freenas.org/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "2099"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "74f3f58ef00437adf217a53ac7d209158d4f9e4a23e93eb92b453ddfd0ee77dd",
+   "image": "images/74f3f58ef00437adf217a53ac7d209158d4f9e4a23e93eb92b453ddfd0ee77dd.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 36.5,
+    "unique_colors": 944,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       192
+      ],
+      40.7
+     ],
+     [
+      [
+       32,
+       160,
+       224
+      ],
+      37.0
+     ],
+     [
+      [
+       160,
+       160,
+       160
+      ],
+      10.3
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-187|74f3f58ef00437adf217a53ac7d209158d4f9e4a23e93eb92b453ddfd0ee77dd",
+     "input_url": "https://www.freenas.org/",
+     "category": "self-hosted-software",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "9699"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "bc3c72485798c36abc4bce3ad46fad76cbffe33e46360242acc26bdafd996645",
+   "image": "images/bc3c72485798c36abc4bce3ad46fad76cbffe33e46360242acc26bdafd996645.png",
+   "pixel": {
+    "size": [
+     100,
+     100
+    ],
+    "opaque_pct": 37.0,
+    "unique_colors": 362,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       192
+      ],
+      44.6
+     ],
+     [
+      [
+       32,
+       160,
+       224
+      ],
+      44.5
+     ],
+     [
+      [
+       160,
+       160,
+       160
+      ],
+      10.9
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-187|bc3c72485798c36abc4bce3ad46fad76cbffe33e46360242acc26bdafd996645",
+     "input_url": "https://www.freenas.org/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 6,
+     "w": "100",
+     "h": "100",
+     "bytes": "4492"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "31ae5dd8a05446cd961ae2b93ab82461c9df99a4a4b53dc76117d074e20a885d",
+   "image": "images/31ae5dd8a05446cd961ae2b93ab82461c9df99a4a4b53dc76117d074e20a885d.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 375,
+    "top_colors": [
+     [
+      [
+       192,
+       128,
+       224
+      ],
+      67.4
+     ],
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      24.5
+     ],
+     [
+      [
+       160,
+       96,
+       224
+      ],
+      2.2
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-188|31ae5dd8a05446cd961ae2b93ab82461c9df99a4a4b53dc76117d074e20a885d",
+     "input_url": "https://www.portainer.io/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3602"
+    }
+   ]
+  }
+ ]
+}

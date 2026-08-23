@@ -1,0 +1,1214 @@
+{
+ "batch": "05",
+ "image_count": 24,
+ "images": [
+  {
+   "artifact_hash": "0d3af18eae1b024b64866bb156b7c3a8a6fd9689a50fd67f4578f3578cb026f9",
+   "image": "images/0d3af18eae1b024b64866bb156b7c3a8a6fd9689a50fd67f4578f3578cb026f9.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 98.9,
+    "unique_colors": 326,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      83.0
+     ],
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      15.9
+     ],
+     [
+      [
+       224,
+       96,
+       32
+      ],
+      0.2
+     ]
+    ],
+    "near_white_pct": 83.1
+   },
+   "units": [
+    {
+     "key": "pub-066|0d3af18eae1b024b64866bb156b7c3a8a6fd9689a50fd67f4578f3578cb026f9",
+     "input_url": "https://www.zalando.de/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "2542"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "08ef0dce08952688cbb85a4f52a6f961d87e0ed2cc8f6ef0d69a8fd4181f5995",
+   "image": "images/08ef0dce08952688cbb85a4f52a6f961d87e0ed2cc8f6ef0d69a8fd4181f5995.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 526,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      82.3
+     ],
+     [
+      [
+       224,
+       0,
+       0
+      ],
+      13.8
+     ],
+     [
+      [
+       224,
+       0,
+       32
+      ],
+      0.8
+     ]
+    ],
+    "near_white_pct": 83.2
+   },
+   "units": [
+    {
+     "key": "pub-067|08ef0dce08952688cbb85a4f52a6f961d87e0ed2cc8f6ef0d69a8fd4181f5995",
+     "input_url": "https://www.otto.de/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "4416"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "02b387f15ab04efa4cd42e42409f850534c191507979697ff2eb7716e46042bd",
+   "image": "images/02b387f15ab04efa4cd42e42409f850534c191507979697ff2eb7716e46042bd.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 98.3,
+    "unique_colors": 90,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      75.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      18.9
+     ],
+     [
+      [
+       224,
+       160,
+       128
+      ],
+      1.8
+     ]
+    ],
+    "near_white_pct": 20.3
+   },
+   "units": [
+    {
+     "key": "pub-068|02b387f15ab04efa4cd42e42409f850534c191507979697ff2eb7716e46042bd",
+     "input_url": "https://www.spiegel.de/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "64",
+     "h": "64",
+     "bytes": "938"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "104d54ac188c5790b6f871ec2dfb1107e193623e53dc84a44fc25a910667e3f6",
+   "image": "images/104d54ac188c5790b6f871ec2dfb1107e193623e53dc84a44fc25a910667e3f6.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 435,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      79.2
+     ],
+     [
+      [
+       224,
+       0,
+       0
+      ],
+      15.0
+     ],
+     [
+      [
+       224,
+       192,
+       192
+      ],
+      1.6
+     ]
+    ],
+    "near_white_pct": 80.8
+   },
+   "units": [
+    {
+     "key": "pub-069|104d54ac188c5790b6f871ec2dfb1107e193623e53dc84a44fc25a910667e3f6",
+     "input_url": "https://www.bahn.de/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3584"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "416afbcb746901f9c1988df34fd6c400256d50554f409b649cbe7905fa173e55",
+   "image": "images/416afbcb746901f9c1988df34fd6c400256d50554f409b649cbe7905fa173e55.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 79.9,
+    "unique_colors": 830,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       32
+      ],
+      63.9
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      32.0
+     ],
+     [
+      [
+       32,
+       128,
+       64
+      ],
+      0.6
+     ]
+    ],
+    "near_white_pct": 32.6
+   },
+   "units": [
+    {
+     "key": "pub-070|416afbcb746901f9c1988df34fd6c400256d50554f409b649cbe7905fa173e55",
+     "input_url": "https://www.s-bahn-berlin.de/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "7014"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "803844f8f611a9302752a171a9c0d07a7acc055861813cd1439b4a88398e4e60",
+   "image": "images/803844f8f611a9302752a171a9c0d07a7acc055861813cd1439b4a88398e4e60.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 11,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      66.1
+     ],
+     [
+      [
+       128,
+       64,
+       0
+      ],
+      16.4
+     ],
+     [
+      [
+       224,
+       96,
+       0
+      ],
+      16.0
+     ]
+    ],
+    "near_white_pct": 66.2
+   },
+   "units": [
+    {
+     "key": "pub-071|803844f8f611a9302752a171a9c0d07a7acc055861813cd1439b4a88398e4e60",
+     "input_url": "https://www.leboncoin.fr/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "368"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "c3d7fbfd472f24bc1fd947482afe1123ca6de39aa6eac4201ce9a27a75ef3bd6",
+   "image": "images/c3d7fbfd472f24bc1fd947482afe1123ca6de39aa6eac4201ce9a27a75ef3bd6.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 237,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      80.3
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      14.2
+     ],
+     [
+      [
+       64,
+       64,
+       64
+      ],
+      2.4
+     ]
+    ],
+    "near_white_pct": 14.6
+   },
+   "units": [
+    {
+     "key": "pub-072|c3d7fbfd472f24bc1fd947482afe1123ca6de39aa6eac4201ce9a27a75ef3bd6",
+     "input_url": "https://www.lemonde.fr/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3488"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "ca4433b5486ca287b12a4471ac35c2ea914a1d416f0a2fb0218fabc997d00310",
+   "image": "images/ca4433b5486ca287b12a4471ac35c2ea914a1d416f0a2fb0218fabc997d00310.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 1095,
+    "top_colors": [
+     [
+      [
+       192,
+       0,
+       0
+      ],
+      39.1
+     ],
+     [
+      [
+       224,
+       0,
+       0
+      ],
+      30.4
+     ],
+     [
+      [
+       160,
+       0,
+       0
+      ],
+      18.7
+     ]
+    ],
+    "near_white_pct": 9.3
+   },
+   "units": [
+    {
+     "key": "pub-073|ca4433b5486ca287b12a4471ac35c2ea914a1d416f0a2fb0218fabc997d00310",
+     "input_url": "https://www.sfr.fr/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "10474"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "305e4101ae5dfd384d1d5040f48f26c312a509aec64d0c086d27f1d9b37f7ad5",
+   "image": "images/305e4101ae5dfd384d1d5040f48f26c312a509aec64d0c086d27f1d9b37f7ad5.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 730,
+    "top_colors": [
+     [
+      [
+       224,
+       96,
+       0
+      ],
+      89.3
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      5.3
+     ],
+     [
+      [
+       224,
+       128,
+       0
+      ],
+      1.6
+     ]
+    ],
+    "near_white_pct": 5.9
+   },
+   "units": [
+    {
+     "key": "pub-074|305e4101ae5dfd384d1d5040f48f26c312a509aec64d0c086d27f1d9b37f7ad5",
+     "input_url": "https://www.orange.fr/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 53,
+     "w": "128",
+     "h": "128",
+     "bytes": "4526"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "3e4906736ef3a4c49d2bcd6fe88989778abc190d6490e3d846b1310b5f14e589",
+   "image": "images/3e4906736ef3a4c49d2bcd6fe88989778abc190d6490e3d846b1310b5f14e589.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 780,
+    "top_colors": [
+     [
+      [
+       224,
+       96,
+       0
+      ],
+      90.8
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      5.4
+     ],
+     [
+      [
+       224,
+       224,
+       192
+      ],
+      0.6
+     ]
+    ],
+    "near_white_pct": 6.0
+   },
+   "units": [
+    {
+     "key": "pub-074|3e4906736ef3a4c49d2bcd6fe88989778abc190d6490e3d846b1310b5f14e589",
+     "input_url": "https://www.orange.fr/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 1,
+     "w": "128",
+     "h": "128",
+     "bytes": "5192"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "8da16b0844b0df7ad41070aab70103673b30c26b5f8e2204dcd83d72ee745d95",
+   "image": "images/8da16b0844b0df7ad41070aab70103673b30c26b5f8e2204dcd83d72ee745d95.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 96.4,
+    "unique_colors": 944,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      74.4
+     ],
+     [
+      [
+       32,
+       96,
+       192
+      ],
+      16.0
+     ],
+     [
+      [
+       224,
+       32,
+       32
+      ],
+      2.4
+     ]
+    ],
+    "near_white_pct": 75.9
+   },
+   "units": [
+    {
+     "key": "pub-075|8da16b0844b0df7ad41070aab70103673b30c26b5f8e2204dcd83d72ee745d95",
+     "input_url": "https://www.carrefour.fr/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "8372"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "7c65fd4545de6e5da9474305a03e9237ae1ba652260f0bc9d1438a6fb075ad5a",
+   "image": "images/7c65fd4545de6e5da9474305a03e9237ae1ba652260f0bc9d1438a6fb075ad5a.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 49,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      77.2
+     ],
+     [
+      [
+       160,
+       0,
+       0
+      ],
+      17.4
+     ],
+     [
+      [
+       192,
+       0,
+       0
+      ],
+      2.3
+     ]
+    ],
+    "near_white_pct": 78.1
+   },
+   "units": [
+    {
+     "key": "pub-076|7c65fd4545de6e5da9474305a03e9237ae1ba652260f0bc9d1438a6fb075ad5a",
+     "input_url": "https://www.rakuten.co.jp/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 3,
+     "w": "128",
+     "h": "128",
+     "bytes": "1932"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "905a7c7f6c824e086beec6de5bd9f35b61a075b047302e1069777da2ed3a339e",
+   "image": "images/905a7c7f6c824e086beec6de5bd9f35b61a075b047302e1069777da2ed3a339e.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 99.9,
+    "unique_colors": 19,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      74.9
+     ],
+     [
+      [
+       160,
+       0,
+       0
+      ],
+      19.2
+     ],
+     [
+      [
+       224,
+       160,
+       160
+      ],
+      2.1
+     ]
+    ],
+    "near_white_pct": 75.4
+   },
+   "units": [
+    {
+     "key": "pub-076|905a7c7f6c824e086beec6de5bd9f35b61a075b047302e1069777da2ed3a339e",
+     "input_url": "https://www.rakuten.co.jp/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 51,
+     "w": "64",
+     "h": "64",
+     "bytes": "752"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "84d18a20e62ddd2afbc46058e8cdc9056e6007bfc25f22fed35381f9d300ea40",
+   "image": "images/84d18a20e62ddd2afbc46058e8cdc9056e6007bfc25f22fed35381f9d300ea40.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 65.3,
+    "unique_colors": 167,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       0
+      ],
+      44.4
+     ],
+     [
+      [
+       160,
+       0,
+       32
+      ],
+      9.4
+     ],
+     [
+      [
+       64,
+       192,
+       224
+      ],
+      9.1
+     ]
+    ],
+    "near_white_pct": 7.0
+   },
+   "units": [
+    {
+     "key": "pub-077|84d18a20e62ddd2afbc46058e8cdc9056e6007bfc25f22fed35381f9d300ea40",
+     "input_url": "https://www.mercari.com/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "1125"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "c93cb1a1c893110d3b49c36355ab4ec9c580fa2968823f1ba537c010d789919e",
+   "image": "images/c93cb1a1c893110d3b49c36355ab4ec9c580fa2968823f1ba537c010d789919e.png",
+   "pixel": {
+    "size": [
+     120,
+     120
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 32,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      83.2
+     ],
+     [
+      [
+       224,
+       0,
+       32
+      ],
+      12.4
+     ],
+     [
+      [
+       224,
+       160,
+       160
+      ],
+      0.8
+     ]
+    ],
+    "near_white_pct": 84.1
+   },
+   "units": [
+    {
+     "key": "pub-078|c93cb1a1c893110d3b49c36355ab4ec9c580fa2968823f1ba537c010d789919e",
+     "input_url": "https://www.yahoo.co.jp/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 27,
+     "w": "120",
+     "h": "120",
+     "bytes": "2134"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "fb43bf3e05cc9f99dcb8440bbaef4f6926fcfeb72b4211d8b23a8aad3491d262",
+   "image": "images/fb43bf3e05cc9f99dcb8440bbaef4f6926fcfeb72b4211d8b23a8aad3491d262.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 36.2,
+    "unique_colors": 239,
+    "top_colors": [
+     [
+      [
+       224,
+       0,
+       32
+      ],
+      100.0
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-078|fb43bf3e05cc9f99dcb8440bbaef4f6926fcfeb72b4211d8b23a8aad3491d262",
+     "input_url": "https://www.yahoo.co.jp/",
+     "category": "regional-service",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "7530"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "9b98b61ca5d58c58cce49bb7d89e62f7bf0f6998bbe8fa8a45a9eb0aa4009119",
+   "image": "images/9b98b61ca5d58c58cce49bb7d89e62f7bf0f6998bbe8fa8a45a9eb0aa4009119.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 177,
+    "top_colors": [
+     [
+      [
+       0,
+       192,
+       0
+      ],
+      71.8
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      22.8
+     ],
+     [
+      [
+       32,
+       192,
+       0
+      ],
+      3.6
+     ]
+    ],
+    "near_white_pct": 22.9
+   },
+   "units": [
+    {
+     "key": "pub-079|9b98b61ca5d58c58cce49bb7d89e62f7bf0f6998bbe8fa8a45a9eb0aa4009119",
+     "input_url": "https://www.naver.com/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 44,
+     "w": "128",
+     "h": "128",
+     "bytes": "1825"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "ec1b0d74c2b6d689a7ad9d5195bdca7fcd4ff86c2a0a3ab9fecd4d5226891262",
+   "image": "images/ec1b0d74c2b6d689a7ad9d5195bdca7fcd4ff86c2a0a3ab9fecd4d5226891262.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 92,
+    "top_colors": [
+     [
+      [
+       0,
+       224,
+       96
+      ],
+      25.0
+     ],
+     [
+      [
+       0,
+       160,
+       96
+      ],
+      21.9
+     ],
+     [
+      [
+       0,
+       192,
+       64
+      ],
+      19.6
+     ]
+    ],
+    "near_white_pct": 15.8
+   },
+   "units": [
+    {
+     "key": "pub-079|ec1b0d74c2b6d689a7ad9d5195bdca7fcd4ff86c2a0a3ab9fecd4d5226891262",
+     "input_url": "https://www.naver.com/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 10,
+     "w": "32",
+     "h": "32",
+     "bytes": "622"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "632a178229b21b6e21d80f4808cfd4d1f65d617642938d70713e881b11beca96",
+   "image": "images/632a178229b21b6e21d80f4808cfd4d1f65d617642938d70713e881b11beca96.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 95.9,
+    "unique_colors": 1373,
+    "top_colors": [
+     [
+      [
+       192,
+       0,
+       0
+      ],
+      53.4
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      39.7
+     ],
+     [
+      [
+       192,
+       32,
+       0
+      ],
+      1.3
+     ]
+    ],
+    "near_white_pct": 40.7
+   },
+   "units": [
+    {
+     "key": "pub-080|632a178229b21b6e21d80f4808cfd4d1f65d617642938d70713e881b11beca96",
+     "input_url": "https://www.coupang.com/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 34,
+     "w": "128",
+     "h": "128",
+     "bytes": "9979"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "76f1aef9e05ca29e566188ae80516e503b545a5b5b229eb8eaff4274d0c5087c",
+   "image": "images/76f1aef9e05ca29e566188ae80516e503b545a5b5b229eb8eaff4274d0c5087c.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 220,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      43.8
+     ],
+     [
+      [
+       192,
+       0,
+       0
+      ],
+      37.2
+     ],
+     [
+      [
+       192,
+       32,
+       0
+      ],
+      3.0
+     ]
+    ],
+    "near_white_pct": 45.7
+   },
+   "units": [
+    {
+     "key": "pub-080|76f1aef9e05ca29e566188ae80516e503b545a5b5b229eb8eaff4274d0c5087c",
+     "input_url": "https://www.coupang.com/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 20,
+     "w": "32",
+     "h": "32",
+     "bytes": "1292"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "0b3763d4b97aa93507cdf7e7afca74977bf63b3b62738c55a247e47173ae7461",
+   "image": "images/0b3763d4b97aa93507cdf7e7afca74977bf63b3b62738c55a247e47173ae7461.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 74.5,
+    "unique_colors": 2957,
+    "top_colors": [
+     [
+      [
+       224,
+       192,
+       32
+      ],
+      39.8
+     ],
+     [
+      [
+       224,
+       224,
+       32
+      ],
+      22.5
+     ],
+     [
+      [
+       0,
+       128,
+       192
+      ],
+      11.5
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-081|0b3763d4b97aa93507cdf7e7afca74977bf63b3b62738c55a247e47173ae7461",
+     "input_url": "https://www.flipkart.com/",
+     "category": "regional-service",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 4,
+     "w": "128",
+     "h": "128",
+     "bytes": "18201"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "16d7e47c230affbdeb75924463ab750d2de4a969f59ddafe58baa7f2365a3692",
+   "image": "images/16d7e47c230affbdeb75924463ab750d2de4a969f59ddafe58baa7f2365a3692.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 74.5,
+    "unique_colors": 57,
+    "top_colors": [
+     [
+      [
+       224,
+       192,
+       32
+      ],
+      39.4
+     ],
+     [
+      [
+       224,
+       224,
+       32
+      ],
+      23.4
+     ],
+     [
+      [
+       0,
+       128,
+       192
+      ],
+      12.3
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-081|16d7e47c230affbdeb75924463ab750d2de4a969f59ddafe58baa7f2365a3692",
+     "input_url": "https://www.flipkart.com/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 7,
+     "w": "128",
+     "h": "128",
+     "bytes": "5638"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "42b7e14b64e26aa616a0b743979bf16356bbe8996123bc613fcb302637fa6b83",
+   "image": "images/42b7e14b64e26aa616a0b743979bf16356bbe8996123bc613fcb302637fa6b83.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 72.7,
+    "unique_colors": 252,
+    "top_colors": [
+     [
+      [
+       224,
+       192,
+       32
+      ],
+      33.6
+     ],
+     [
+      [
+       224,
+       224,
+       32
+      ],
+      15.2
+     ],
+     [
+      [
+       224,
+       160,
+       32
+      ],
+      6.7
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-081|42b7e14b64e26aa616a0b743979bf16356bbe8996123bc613fcb302637fa6b83",
+     "input_url": "https://www.flipkart.com/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 24,
+     "w": "32",
+     "h": "32",
+     "bytes": "1657"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "52aa8bff32a1423c903dbda9e0c5e497e1104e8d6807e2e61f6ba94ca1c9fe47",
+   "image": "images/52aa8bff32a1423c903dbda9e0c5e497e1104e8d6807e2e61f6ba94ca1c9fe47.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 67,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       0
+      ],
+      80.0
+     ],
+     [
+      [
+       0,
+       64,
+       160
+      ],
+      13.6
+     ],
+     [
+      [
+       96,
+       64,
+       0
+      ],
+      1.5
+     ]
+    ],
+    "near_white_pct": 0.2
+   },
+   "units": [
+    {
+     "key": "pub-081|52aa8bff32a1423c903dbda9e0c5e497e1104e8d6807e2e61f6ba94ca1c9fe47",
+     "input_url": "https://www.flipkart.com/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 2,
+     "w": "128",
+     "h": "128",
+     "bytes": "2483"
+    }
+   ]
+  }
+ ]
+}

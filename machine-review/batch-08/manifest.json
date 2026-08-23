@@ -1,0 +1,1214 @@
+{
+ "batch": "08",
+ "image_count": 24,
+ "images": [
+  {
+   "artifact_hash": "40ff141e6e119950c1e1871c7c262ab908763bff607f75895779d1b0dfef87bf",
+   "image": "images/40ff141e6e119950c1e1871c7c262ab908763bff607f75895779d1b0dfef87bf.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 107,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      85.4
+     ],
+     [
+      [
+       0,
+       128,
+       224
+      ],
+      3.7
+     ],
+     [
+      [
+       32,
+       96,
+       192
+      ],
+      1.1
+     ]
+    ],
+    "near_white_pct": 86.0
+   },
+   "units": [
+    {
+     "key": "pub-115|40ff141e6e119950c1e1871c7c262ab908763bff607f75895779d1b0dfef87bf",
+     "input_url": "https://www.emag.ro/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "2313"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "77b69ccf5e63aa3d67aafa377f62c7d915c782ad512c0af41fb297c1e00d9b32",
+   "image": "images/77b69ccf5e63aa3d67aafa377f62c7d915c782ad512c0af41fb297c1e00d9b32.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 73.7,
+    "unique_colors": 2904,
+    "top_colors": [
+     [
+      [
+       224,
+       32,
+       32
+      ],
+      39.1
+     ],
+     [
+      [
+       192,
+       32,
+       64
+      ],
+      21.3
+     ],
+     [
+      [
+       160,
+       32,
+       96
+      ],
+      19.2
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-115|77b69ccf5e63aa3d67aafa377f62c7d915c782ad512c0af41fb297c1e00d9b32",
+     "input_url": "https://www.emag.ro/",
+     "category": "regional-service",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 9,
+     "w": "128",
+     "h": "128",
+     "bytes": "16627"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "74c69ec8a2c66c85c61b661290078bbdf71364c045c8362c84b8919625187205",
+   "image": "images/74c69ec8a2c66c85c61b661290078bbdf71364c045c8362c84b8919625187205.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 248,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       192
+      ],
+      72.1
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      19.6
+     ],
+     [
+      [
+       0,
+       96,
+       160
+      ],
+      3.9
+     ]
+    ],
+    "near_white_pct": 20.4
+   },
+   "units": [
+    {
+     "key": "pub-117|74c69ec8a2c66c85c61b661290078bbdf71364c045c8362c84b8919625187205",
+     "input_url": "https://www.takealot.com/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "2243"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "12ddf2b12d846630eb39fa5dc6eeb0affe88c606533dd553a3a40e3fefc800d2",
+   "image": "images/12ddf2b12d846630eb39fa5dc6eeb0affe88c606533dd553a3a40e3fefc800d2.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 80.3,
+    "unique_colors": 276,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      78.5
+     ],
+     [
+      [
+       192,
+       0,
+       32
+      ],
+      9.5
+     ],
+     [
+      [
+       32,
+       64,
+       128
+      ],
+      2.6
+     ]
+    ],
+    "near_white_pct": 79.8
+   },
+   "units": [
+    {
+     "key": "pub-118|12ddf2b12d846630eb39fa5dc6eeb0affe88c606533dd553a3a40e3fefc800d2",
+     "input_url": "https://www.news24.com/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 16,
+     "w": "64",
+     "h": "64",
+     "bytes": "2322"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "642af104255136a50960034c6cc16487161d5a9423b1006e481c40bea58c4742",
+   "image": "images/642af104255136a50960034c6cc16487161d5a9423b1006e481c40bea58c4742.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 56,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      71.8
+     ],
+     [
+      [
+       192,
+       0,
+       32
+      ],
+      14.1
+     ],
+     [
+      [
+       32,
+       64,
+       128
+      ],
+      2.4
+     ]
+    ],
+    "near_white_pct": 73.3
+   },
+   "units": [
+    {
+     "key": "pub-118|642af104255136a50960034c6cc16487161d5a9423b1006e481c40bea58c4742",
+     "input_url": "https://www.news24.com/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 11,
+     "w": "128",
+     "h": "128",
+     "bytes": "3844"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "9fae946d5353886c0a9870442e23782c0249a2762bf9115507dd91ac26886d89",
+   "image": "images/9fae946d5353886c0a9870442e23782c0249a2762bf9115507dd91ac26886d89.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 80.9,
+    "unique_colors": 1124,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      77.2
+     ],
+     [
+      [
+       192,
+       0,
+       32
+      ],
+      6.8
+     ],
+     [
+      [
+       32,
+       64,
+       128
+      ],
+      1.5
+     ]
+    ],
+    "near_white_pct": 79.8
+   },
+   "units": [
+    {
+     "key": "pub-118|9fae946d5353886c0a9870442e23782c0249a2762bf9115507dd91ac26886d89",
+     "input_url": "https://www.news24.com/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "9629"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "da680f54f40bf84d76909143427eab8882748922164ca2e7ea918db0d610efe8",
+   "image": "images/da680f54f40bf84d76909143427eab8882748922164ca2e7ea918db0d610efe8.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 80.3,
+    "unique_colors": 276,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      78.5
+     ],
+     [
+      [
+       192,
+       0,
+       32
+      ],
+      9.5
+     ],
+     [
+      [
+       32,
+       64,
+       128
+      ],
+      2.6
+     ]
+    ],
+    "near_white_pct": 79.8
+   },
+   "units": [
+    {
+     "key": "pub-118|da680f54f40bf84d76909143427eab8882748922164ca2e7ea918db0d610efe8",
+     "input_url": "https://www.news24.com/",
+     "category": "regional-service",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "64",
+     "h": "64",
+     "bytes": "2322"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "0708f9cccd0ecfdd3a4ea3baa1cd48eb8e1ae72052f3e0b106df2c2c0ed05340",
+   "image": "images/0708f9cccd0ecfdd3a4ea3baa1cd48eb8e1ae72052f3e0b106df2c2c0ed05340.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 55.4,
+    "unique_colors": 2084,
+    "top_colors": [
+     [
+      [
+       96,
+       128,
+       224
+      ],
+      10.7
+     ],
+     [
+      [
+       128,
+       160,
+       192
+      ],
+      6.4
+     ],
+     [
+      [
+       96,
+       160,
+       224
+      ],
+      4.4
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-119|0708f9cccd0ecfdd3a4ea3baa1cd48eb8e1ae72052f3e0b106df2c2c0ed05340",
+     "input_url": "https://www.daum.net/",
+     "category": "regional-service",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "64",
+     "h": "64",
+     "bytes": "7667"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "3244bcbb530c78813556c2a50806762136e2f00754cfaac5dbdeacd77100d1f8",
+   "image": "images/3244bcbb530c78813556c2a50806762136e2f00754cfaac5dbdeacd77100d1f8.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 35,
+    "top_colors": [
+     [
+      [
+       224,
+       192,
+       0
+      ],
+      92.2
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      5.2
+     ],
+     [
+      [
+       192,
+       160,
+       0
+      ],
+      1.1
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-120|3244bcbb530c78813556c2a50806762136e2f00754cfaac5dbdeacd77100d1f8",
+     "input_url": "https://www.kakao.com/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 1,
+     "w": "64",
+     "h": "64",
+     "bytes": "654"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "6a11c979a47defc7174666f19ffcc37457d962709007fdc23ff5f5e08f3ae84d",
+   "image": "images/6a11c979a47defc7174666f19ffcc37457d962709007fdc23ff5f5e08f3ae84d.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 73,
+    "top_colors": [
+     [
+      [
+       224,
+       192,
+       0
+      ],
+      92.2
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      5.2
+     ],
+     [
+      [
+       192,
+       160,
+       0
+      ],
+      1.1
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-120|6a11c979a47defc7174666f19ffcc37457d962709007fdc23ff5f5e08f3ae84d",
+     "input_url": "https://www.kakao.com/",
+     "category": "regional-service",
+     "flags": "profile-differing",
+     "occurrences": 53,
+     "w": "64",
+     "h": "64",
+     "bytes": "778"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "2873bd9412910b52eb4615b0f2ebdc193ddea33ad637b8dd05f0ed6240ea4c72",
+   "image": "images/2873bd9412910b52eb4615b0f2ebdc193ddea33ad637b8dd05f0ed6240ea4c72.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 99.1,
+    "unique_colors": 1120,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       192
+      ],
+      71.0
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      12.2
+     ],
+     [
+      [
+       0,
+       96,
+       192
+      ],
+      4.4
+     ]
+    ],
+    "near_white_pct": 14.9
+   },
+   "units": [
+    {
+     "key": "pub-166|2873bd9412910b52eb4615b0f2ebdc193ddea33ad637b8dd05f0ed6240ea4c72",
+     "input_url": "https://nextcloud.com/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "12387"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "bd88b8477bbf526e1de692978188e09c3614df857e8a7f668dc83060beabe8fe",
+   "image": "images/bd88b8477bbf526e1de692978188e09c3614df857e8a7f668dc83060beabe8fe.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 98.8,
+    "unique_colors": 124,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       192
+      ],
+      77.1
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      13.9
+     ],
+     [
+      [
+       192,
+       224,
+       224
+      ],
+      2.1
+     ]
+    ],
+    "near_white_pct": 16.0
+   },
+   "units": [
+    {
+     "key": "pub-166|bd88b8477bbf526e1de692978188e09c3614df857e8a7f668dc83060beabe8fe",
+     "input_url": "https://nextcloud.com/",
+     "category": "self-hosted-software",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "32",
+     "h": "32",
+     "bytes": "911"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "cf990f0f8aee980e3cd129fa91da967504be084d3cab04dbf1c9d3663f9de4f8",
+   "image": "images/cf990f0f8aee980e3cd129fa91da967504be084d3cab04dbf1c9d3663f9de4f8.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 98.8,
+    "unique_colors": 124,
+    "top_colors": [
+     [
+      [
+       0,
+       128,
+       192
+      ],
+      77.1
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      13.9
+     ],
+     [
+      [
+       192,
+       224,
+       224
+      ],
+      2.1
+     ]
+    ],
+    "near_white_pct": 16.0
+   },
+   "units": [
+    {
+     "key": "pub-166|cf990f0f8aee980e3cd129fa91da967504be084d3cab04dbf1c9d3663f9de4f8",
+     "input_url": "https://nextcloud.com/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "32",
+     "h": "32",
+     "bytes": "911"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f79101948526767af60c535b298746e48862cc300804a42158427a288471dcd3",
+   "image": "images/f79101948526767af60c535b298746e48862cc300804a42158427a288471dcd3.png",
+   "pixel": {
+    "size": [
+     127,
+     128
+    ],
+    "opaque_pct": 75.5,
+    "unique_colors": 763,
+    "top_colors": [
+     [
+      [
+       0,
+       160,
+       224
+      ],
+      74.2
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      17.9
+     ],
+     [
+      [
+       0,
+       192,
+       224
+      ],
+      4.8
+     ]
+    ],
+    "near_white_pct": 18.2
+   },
+   "units": [
+    {
+     "key": "pub-167|f79101948526767af60c535b298746e48862cc300804a42158427a288471dcd3",
+     "input_url": "https://www.home-assistant.io/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "127",
+     "h": "128",
+     "bytes": "5766"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f7e757b38249ba66ef594e2da1d0335aef2e0e0eb1cf6b13175d1713bc5ff29f",
+   "image": "images/f7e757b38249ba66ef594e2da1d0335aef2e0e0eb1cf6b13175d1713bc5ff29f.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 75.9,
+    "unique_colors": 333,
+    "top_colors": [
+     [
+      [
+       64,
+       64,
+       224
+      ],
+      27.5
+     ],
+     [
+      [
+       64,
+       64,
+       192
+      ],
+      20.7
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      13.8
+     ]
+    ],
+    "near_white_pct": 16.0
+   },
+   "units": [
+    {
+     "key": "pub-168|f7e757b38249ba66ef594e2da1d0335aef2e0e0eb1cf6b13175d1713bc5ff29f",
+     "input_url": "https://joinmastodon.org/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "1687"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "7df14f57f1c82e7b85b74789cc8ed52fed33f58968fcdff12f2f1f3b00e1a9e8",
+   "image": "images/7df14f57f1c82e7b85b74789cc8ed52fed33f58968fcdff12f2f1f3b00e1a9e8.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 91.4,
+    "unique_colors": 350,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      73.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      14.3
+     ],
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      2.8
+     ]
+    ],
+    "near_white_pct": 16.1
+   },
+   "units": [
+    {
+     "key": "pub-169|7df14f57f1c82e7b85b74789cc8ed52fed33f58968fcdff12f2f1f3b00e1a9e8",
+     "input_url": "https://ghost.org/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "2484"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "1244410fc9a5742894b68b9f0a440db3c5145380b3b14316c9f2e9cae9e70fe4",
+   "image": "images/1244410fc9a5742894b68b9f0a440db3c5145380b3b14316c9f2e9cae9e70fe4.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 22.1,
+    "unique_colors": 636,
+    "top_colors": [
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      83.6
+     ],
+     [
+      [
+       32,
+       32,
+       64
+      ],
+      16.3
+     ],
+     [
+      [
+       32,
+       64,
+       64
+      ],
+      0.1
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-170|1244410fc9a5742894b68b9f0a440db3c5145380b3b14316c9f2e9cae9e70fe4",
+     "input_url": "https://wordpress.org/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "6370"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f79057ffbdbc54c6e94ee2519b2df271a9a8a1667ce474c034e610d776b47fbe",
+   "image": "images/f79057ffbdbc54c6e94ee2519b2df271a9a8a1667ce474c034e610d776b47fbe.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 84.9,
+    "unique_colors": 1427,
+    "top_colors": [
+     [
+      [
+       32,
+       0,
+       32
+      ],
+      48.0
+     ],
+     [
+      [
+       224,
+       224,
+       160
+      ],
+      28.2
+     ],
+     [
+      [
+       32,
+       0,
+       0
+      ],
+      3.2
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-171|f79057ffbdbc54c6e94ee2519b2df271a9a8a1667ce474c034e610d776b47fbe",
+     "input_url": "https://www.discourse.org/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "8993"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "137603405ce5016446f9ee4e2778c0c2db6a0b70d32cc20e4582a38ef1d7f263",
+   "image": "images/137603405ce5016446f9ee4e2778c0c2db6a0b70d32cc20e4582a38ef1d7f263.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 29.9,
+    "unique_colors": 58,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      100.0
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-172|137603405ce5016446f9ee4e2778c0c2db6a0b70d32cc20e4582a38ef1d7f263",
+     "input_url": "https://matrix.org/",
+     "category": "self-hosted-software",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "505"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "0fe3344572fe17b5392ebf0ff6064dc579b1ae54ab735c9940a5a7237cb573a0",
+   "image": "images/0fe3344572fe17b5392ebf0ff6064dc579b1ae54ab735c9940a5a7237cb573a0.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 27,
+    "top_colors": [
+     [
+      [
+       0,
+       160,
+       128
+      ],
+      84.7
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      13.2
+     ],
+     [
+      [
+       192,
+       224,
+       224
+      ],
+      0.5
+     ]
+    ],
+    "near_white_pct": 13.6
+   },
+   "units": [
+    {
+     "key": "pub-173|0fe3344572fe17b5392ebf0ff6064dc579b1ae54ab735c9940a5a7237cb573a0",
+     "input_url": "https://element.io/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "128",
+     "h": "128",
+     "bytes": "2300"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "bd47a8437f60f8678734bbfe20b324e534d6297427d4c82ccd02b8e3e557b3a0",
+   "image": "images/bd47a8437f60f8678734bbfe20b324e534d6297427d4c82ccd02b8e3e557b3a0.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 97.3,
+    "unique_colors": 52,
+    "top_colors": [
+     [
+      [
+       0,
+       160,
+       128
+      ],
+      72.3
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      15.3
+     ],
+     [
+      [
+       32,
+       192,
+       128
+      ],
+      3.2
+     ]
+    ],
+    "near_white_pct": 17.7
+   },
+   "units": [
+    {
+     "key": "pub-173|bd47a8437f60f8678734bbfe20b324e534d6297427d4c82ccd02b8e3e557b3a0",
+     "input_url": "https://element.io/",
+     "category": "self-hosted-software",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 12,
+     "w": "32",
+     "h": "32",
+     "bytes": "792"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f6db9c6b38331660ed2dedd61313bd97a07e17e31f10d440cbf1d95eab7f6648",
+   "image": "images/f6db9c6b38331660ed2dedd61313bd97a07e17e31f10d440cbf1d95eab7f6648.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 301,
+    "top_colors": [
+     [
+      [
+       0,
+       160,
+       128
+      ],
+      84.3
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      12.9
+     ],
+     [
+      [
+       160,
+       224,
+       192
+      ],
+      0.4
+     ]
+    ],
+    "near_white_pct": 13.3
+   },
+   "units": [
+    {
+     "key": "pub-173|f6db9c6b38331660ed2dedd61313bd97a07e17e31f10d440cbf1d95eab7f6648",
+     "input_url": "https://element.io/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "5242"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "1513960b42ab6843de8ba4b9a8de85b110759555aa0602cca5efc6c9a520042b",
+   "image": "images/1513960b42ab6843de8ba4b9a8de85b110759555aa0602cca5efc6c9a520042b.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 54.6,
+    "unique_colors": 8512,
+    "top_colors": [
+     [
+      [
+       160,
+       96,
+       192
+      ],
+      16.4
+     ],
+     [
+      [
+       96,
+       128,
+       192
+      ],
+      16.1
+     ],
+     [
+      [
+       128,
+       96,
+       192
+      ],
+      9.5
+     ]
+    ],
+    "near_white_pct": 0.2
+   },
+   "units": [
+    {
+     "key": "pub-174|1513960b42ab6843de8ba4b9a8de85b110759555aa0602cca5efc6c9a520042b",
+     "input_url": "https://jellyfin.org/",
+     "category": "self-hosted-software",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "128",
+     "h": "128",
+     "bytes": "43067"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "5b02ebc6fac7d9e53e00e84ffdc9ea3b4d5c355012fe0c543a1e11051b036e92",
+   "image": "images/5b02ebc6fac7d9e53e00e84ffdc9ea3b4d5c355012fe0c543a1e11051b036e92.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 48.8,
+    "unique_colors": 443,
+    "top_colors": [
+     [
+      [
+       96,
+       96,
+       192
+      ],
+      24.6
+     ],
+     [
+      [
+       128,
+       96,
+       192
+      ],
+      23.8
+     ],
+     [
+      [
+       32,
+       128,
+       192
+      ],
+      14.4
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-174|5b02ebc6fac7d9e53e00e84ffdc9ea3b4d5c355012fe0c543a1e11051b036e92",
+     "input_url": "https://jellyfin.org/",
+     "category": "self-hosted-software",
+     "flags": "profile-differing",
+     "occurrences": 9,
+     "w": "32",
+     "h": "32",
+     "bytes": "2265"
+    }
+   ]
+  }
+ ]
+}

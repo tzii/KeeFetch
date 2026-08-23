@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "mode": "review_batch",
+  "repo": "C:\\Dev\\KeeFetch",
+  "results": [
+    {
+      "schema_version": "1.0",
+      "run_id": "20260822-181020-review-antigravity-c9dcc3",
+      "mode": "review",
+      "role": "google",
+      "worker": "antigravity",
+      "status": "ok",
+      "repo": {
+        "root": "C:\\Dev\\KeeFetch",
+        "base_commit": "12f630ea4af127921bc3ee1ed8205496a5bdb56b",
+        "dirty_source_included": true
+      },
+      "workspace": {
+        "path": "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-181020-review-antigravity-c9dcc3",
+        "ephemeral": true,
+        "branch": null,
+        "removed": true
+      },
+      "command": {
+        "argv": [
+          "C:\\Users\\zxcv0\\AppData\\Local\\agy\\bin\\agy.EXE",
+          "--model",
+          "gemini-3.7-flash-high",
+          "--effort",
+          "high",
+          "--mode",
+          "plan",
+          "--dangerously-skip-permissions",
+          "--print-timeout",
+          "35m",
+          "-p",
+          "<PROMPT>",
+          "--add-dir",
+          "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-181020-review-antigravity-c9dcc3",
+          "--output-format",
+          "json"
+        ],
+        "exit_code": 0
+      },
+      "result": {
+        "summary": "{\"conversation_id\":\"bbf8fc3a-cb8f-4668-832b-c41cc4a5acb5\",\"status\":\"ERROR\",\"response\":\"[\\n  {\\n    \\\"key\\\": \\\"pub-216|dd47a855b83b74fb64951af53cc3899064a61b9933768161ad1721271bf65d3b\\\",\\n    \\\"label\\\": \\\"unusable\\\",\\n    \\\"reason\\\": \\\"The image is a cropped fragment of neverssl.com's header banner that is not an icon and cannot serve as one.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-216|f33b3a686ad38bf890e2aeb47a2e38a330b8fe7d0c80a5190a508f17900ce7ff\\\",\\n    \\\"label\\\": \\\"unusable\\\",\\n    \\\"reason\\\": \\\"The image is a cropped fragment of neverssl.com's header banner that is not an icon and cannot serve as one.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-216|e9f3a5c52356250942300f1220f9f3b69822c9d85b835f99a4112f6c776747cf\\\",\\n    \\\"label\\\": \\\"unusable\\\",\\n    \\\"reason\\\": \\\"The image is a cropped fragment of neverssl.com's header banner that is not an icon and cannot serve as one.\\\",\\n    \\\"verified_live\\\": true\\n  }\\n]\\n\",\"error\":\"context canceled\",\"duration_seconds\":95.0612038,\"num_turns\":1,\"usage\":{\"input_tokens\":218328,\"output_tokens\":12171,\"thinking_tokens\":9019,\"cache_read_tokens\":1063450,\"total_tokens\":230499}}",
+        "summary_truncated": false,
+        "stdout_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-181020-review-antigravity-c9dcc3\\stdout.txt",
+        "stderr_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-181020-review-antigravity-c9dcc3\\stderr.txt"
+      },
+      "safety": {
+        "isolated": true,
+        "unexpected_review_mutation": false,
+        "auto_integrated": false,
+        "pushed_or_published_by_crew": false
+      },
+      "duration_ms": 100752
+    }
+  ]
+}

@@ -1,0 +1,1800 @@
+{
+ "batch": "01",
+ "image_count": 24,
+ "images": [
+  {
+   "artifact_hash": "5fa64cb11b0fed7fddbf58d2c6f8f46d380d83a5b3daeeb9ca441443d752f334",
+   "image": "images/5fa64cb11b0fed7fddbf58d2c6f8f46d380d83a5b3daeeb9ca441443d752f334.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 82.0,
+    "unique_colors": 166,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      63.6
+     ],
+     [
+      [
+       64,
+       128,
+       224
+      ],
+      8.1
+     ],
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      7.4
+     ]
+    ],
+    "near_white_pct": 64.9
+   },
+   "units": [
+    {
+     "key": "pub-266|5fa64cb11b0fed7fddbf58d2c6f8f46d380d83a5b3daeeb9ca441443d752f334",
+     "input_url": "androidapp://com.google.android.gm",
+     "category": "android-app",
+     "flags": "profile-differing",
+     "occurrences": 12,
+     "w": "32",
+     "h": "32",
+     "bytes": "1174"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "a1c65d6d57ba3536de40a15c9c2a6d285d8e0eb71f8f53edd4210d6dd49d889f",
+   "image": "images/a1c65d6d57ba3536de40a15c9c2a6d285d8e0eb71f8f53edd4210d6dd49d889f.png",
+   "pixel": {
+    "size": [
+     108,
+     108
+    ],
+    "opaque_pct": 49.7,
+    "unique_colors": 142,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      32.5
+     ],
+     [
+      [
+       32,
+       160,
+       64
+      ],
+      21.6
+     ],
+     [
+      [
+       64,
+       128,
+       224
+      ],
+      21.3
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-266|a1c65d6d57ba3536de40a15c9c2a6d285d8e0eb71f8f53edd4210d6dd49d889f",
+     "input_url": "androidapp://com.google.android.gm",
+     "category": "android-app",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 6,
+     "w": "108",
+     "h": "108",
+     "bytes": "1759"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "eb8703e9dbbacdf4a8c1449213440559109a635e2f7ba3eb4b5860011c8e167a",
+   "image": "images/eb8703e9dbbacdf4a8c1449213440559109a635e2f7ba3eb4b5860011c8e167a.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 82.0,
+    "unique_colors": 166,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      63.6
+     ],
+     [
+      [
+       64,
+       128,
+       224
+      ],
+      8.1
+     ],
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      7.4
+     ]
+    ],
+    "near_white_pct": 64.9
+   },
+   "units": [
+    {
+     "key": "pub-266|eb8703e9dbbacdf4a8c1449213440559109a635e2f7ba3eb4b5860011c8e167a",
+     "input_url": "androidapp://com.google.android.gm",
+     "category": "android-app",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "32",
+     "h": "32",
+     "bytes": "1174"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "8724dc98e67f03aca50f8210946639a3d06d7d390a8cd2c93df4aaf9ad2c760e",
+   "image": "images/8724dc98e67f03aca50f8210946639a3d06d7d390a8cd2c93df4aaf9ad2c760e.png",
+   "pixel": {
+    "size": [
+     23,
+     23
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 32,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      54.3
+     ],
+     [
+      [
+       32,
+       192,
+       96
+      ],
+      24.2
+     ],
+     [
+      [
+       160,
+       224,
+       192
+      ],
+      4.0
+     ]
+    ],
+    "near_white_pct": 59.0
+   },
+   "units": [
+    {
+     "key": "pub-268|8724dc98e67f03aca50f8210946639a3d06d7d390a8cd2c93df4aaf9ad2c760e",
+     "input_url": "androidapp://com.whatsapp",
+     "category": "android-app",
+     "flags": "profile-differing",
+     "occurrences": 15,
+     "w": "23",
+     "h": "23",
+     "bytes": "637"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "ffdce42b47d36800d1123b456b0431d4903e8930eeff383c9831130ff1973b9d",
+   "image": "images/ffdce42b47d36800d1123b456b0431d4903e8930eeff383c9831130ff1973b9d.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 66.2,
+    "unique_colors": 1630,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      34.8
+     ],
+     [
+      [
+       64,
+       192,
+       64
+      ],
+      17.5
+     ],
+     [
+      [
+       160,
+       160,
+       160
+      ],
+      11.8
+     ]
+    ],
+    "near_white_pct": 37.4
+   },
+   "units": [
+    {
+     "key": "pub-268|ffdce42b47d36800d1123b456b0431d4903e8930eeff383c9831130ff1973b9d",
+     "input_url": "androidapp://com.whatsapp",
+     "category": "android-app",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 9,
+     "w": "128",
+     "h": "128",
+     "bytes": "13580"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "4b64935db38f660ef5be23d2dee0cfa279bfee0f03d0aa7121235f06ac855cac",
+   "image": "images/4b64935db38f660ef5be23d2dee0cfa279bfee0f03d0aa7121235f06ac855cac.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 96.3,
+    "unique_colors": 722,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       0
+      ],
+      64.7
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      23.5
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      8.3
+     ]
+    ],
+    "near_white_pct": 23.8
+   },
+   "units": [
+    {
+     "key": "pub-273|4b64935db38f660ef5be23d2dee0cfa279bfee0f03d0aa7121235f06ac855cac",
+     "input_url": "androidapp://com.snapchat.android",
+     "category": "android-app",
+     "flags": "profile-differing",
+     "occurrences": 53,
+     "w": "128",
+     "h": "128",
+     "bytes": "5340"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "c93a1fccecbd6ca82d35e19db614cb79de22f1834032a022b5e6d97fa5c9d30e",
+   "image": "images/c93a1fccecbd6ca82d35e19db614cb79de22f1834032a022b5e6d97fa5c9d30e.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 96.3,
+    "unique_colors": 28,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       0
+      ],
+      64.7
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      23.6
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      8.5
+     ]
+    ],
+    "near_white_pct": 24.1
+   },
+   "units": [
+    {
+     "key": "pub-273|c93a1fccecbd6ca82d35e19db614cb79de22f1834032a022b5e6d97fa5c9d30e",
+     "input_url": "androidapp://com.snapchat.android",
+     "category": "android-app",
+     "flags": "profile-differing",
+     "occurrences": 1,
+     "w": "128",
+     "h": "128",
+     "bytes": "2754"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "882b7452cc1422af50e697024a8513235ebac8723eeb2acf73c2f6ddd61ad288",
+   "image": "images/882b7452cc1422af50e697024a8513235ebac8723eeb2acf73c2f6ddd61ad288.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 6014,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      51.6
+     ],
+     [
+      [
+       32,
+       192,
+       224
+      ],
+      5.8
+     ],
+     [
+      [
+       0,
+       64,
+       160
+      ],
+      4.6
+     ]
+    ],
+    "near_white_pct": 52.3
+   },
+   "units": [
+    {
+     "key": "pub-274|882b7452cc1422af50e697024a8513235ebac8723eeb2acf73c2f6ddd61ad288",
+     "input_url": "androidapp://com.microsoft.office.outlook",
+     "category": "android-app",
+     "flags": "profile-differing",
+     "occurrences": 1,
+     "w": "128",
+     "h": "128",
+     "bytes": "24362"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "90ba0a000e66b8c9a9d27b275071e3a129b4b31759724aaaeabc4f809d302d52",
+   "image": "images/90ba0a000e66b8c9a9d27b275071e3a129b4b31759724aaaeabc4f809d302d52.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 82.0,
+    "unique_colors": 166,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      63.6
+     ],
+     [
+      [
+       64,
+       128,
+       224
+      ],
+      8.1
+     ],
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      7.4
+     ]
+    ],
+    "near_white_pct": 64.9
+   },
+   "units": [
+    {
+     "key": "pub-001|90ba0a000e66b8c9a9d27b275071e3a129b4b31759724aaaeabc4f809d302d52",
+     "input_url": "https://www.google.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "1168"
+    },
+    {
+     "key": "pub-024|90ba0a000e66b8c9a9d27b275071e3a129b4b31759724aaaeabc4f809d302d52",
+     "input_url": "https://www.google.co.uk/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "1168"
+    },
+    {
+     "key": "pub-025|90ba0a000e66b8c9a9d27b275071e3a129b4b31759724aaaeabc4f809d302d52",
+     "input_url": "https://www.google.de/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "1168"
+    },
+    {
+     "key": "pub-199|90ba0a000e66b8c9a9d27b275071e3a129b4b31759724aaaeabc4f809d302d52",
+     "input_url": "https://www.google.com/search?q=keepass",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "1168"
+    },
+    {
+     "key": "pub-214|90ba0a000e66b8c9a9d27b275071e3a129b4b31759724aaaeabc4f809d302d52",
+     "input_url": "https://www.google.com:443/",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "1168"
+    },
+    {
+     "key": "pub-225|90ba0a000e66b8c9a9d27b275071e3a129b4b31759724aaaeabc4f809d302d52",
+     "input_url": "https://www.google.com/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "1168"
+    },
+    {
+     "key": "pub-251|90ba0a000e66b8c9a9d27b275071e3a129b4b31759724aaaeabc4f809d302d52",
+     "input_url": "https://www.google.com/nonexistentpage12345",
+     "category": "missing-or-invalid",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "1168"
+    },
+    {
+     "key": "pub-266|90ba0a000e66b8c9a9d27b275071e3a129b4b31759724aaaeabc4f809d302d52",
+     "input_url": "androidapp://com.google.android.gm",
+     "category": "android-app",
+     "flags": "profile-differing",
+     "occurrences": 9,
+     "w": "32",
+     "h": "32",
+     "bytes": "1168"
+    },
+    {
+     "key": "pub-283|90ba0a000e66b8c9a9d27b275071e3a129b4b31759724aaaeabc4f809d302d52",
+     "input_url": "androidapp://com.google.android.apps.maps",
+     "category": "android-app",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "1168"
+    },
+    {
+     "key": "pub-293|90ba0a000e66b8c9a9d27b275071e3a129b4b31759724aaaeabc4f809d302d52",
+     "input_url": "https://www.google.com/",
+     "category": "deduplication",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "1168"
+    },
+    {
+     "key": "pub-294|90ba0a000e66b8c9a9d27b275071e3a129b4b31759724aaaeabc4f809d302d52",
+     "input_url": "https://www.google.com:443/",
+     "category": "deduplication",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "1168"
+    },
+    {
+     "key": "pub-295|90ba0a000e66b8c9a9d27b275071e3a129b4b31759724aaaeabc4f809d302d52",
+     "input_url": "https://www.google.com/search?q=test",
+     "category": "deduplication",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "1168"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "11e591e7fecd3ce58980a415c93e70d641250d2650043674d95eb09c5c54e286",
+   "image": "images/11e591e7fecd3ce58980a415c93e70d641250d2650043674d95eb09c5c54e286.png",
+   "pixel": {
+    "size": [
+     16,
+     16
+    ],
+    "opaque_pct": 68.8,
+    "unique_colors": 15,
+    "top_colors": [
+     [
+      [
+       224,
+       0,
+       0
+      ],
+      93.2
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      3.4
+     ],
+     [
+      [
+       224,
+       64,
+       64
+      ],
+      1.1
+     ]
+    ],
+    "near_white_pct": 4.0
+   },
+   "units": [
+    {
+     "key": "pub-002|11e591e7fecd3ce58980a415c93e70d641250d2650043674d95eb09c5c54e286",
+     "input_url": "https://www.youtube.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "16",
+     "h": "16",
+     "bytes": "244"
+    },
+    {
+     "key": "pub-208|11e591e7fecd3ce58980a415c93e70d641250d2650043674d95eb09c5c54e286",
+     "input_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "16",
+     "h": "16",
+     "bytes": "244"
+    },
+    {
+     "key": "pub-209|11e591e7fecd3ce58980a415c93e70d641250d2650043674d95eb09c5c54e286",
+     "input_url": "https://www.youtube.com/c/GoogleDevelopers",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "16",
+     "h": "16",
+     "bytes": "244"
+    },
+    {
+     "key": "pub-267|11e591e7fecd3ce58980a415c93e70d641250d2650043674d95eb09c5c54e286",
+     "input_url": "androidapp://com.google.android.youtube",
+     "category": "android-app",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "16",
+     "h": "16",
+     "bytes": "244"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "93524f6573a89ed1798ca346390ce3e5e71e76f4ee762b9db2c80489791934b3",
+   "image": "images/93524f6573a89ed1798ca346390ce3e5e71e76f4ee762b9db2c80489791934b3.png",
+   "pixel": {
+    "size": [
+     48,
+     48
+    ],
+    "opaque_pct": 97.0,
+    "unique_colors": 16,
+    "top_colors": [
+     [
+      [
+       224,
+       96,
+       0
+      ],
+      92.5
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      4.0
+     ],
+     [
+      [
+       224,
+       160,
+       128
+      ],
+      1.6
+     ]
+    ],
+    "near_white_pct": 4.0
+   },
+   "units": [
+    {
+     "key": "pub-003|93524f6573a89ed1798ca346390ce3e5e71e76f4ee762b9db2c80489791934b3",
+     "input_url": "https://www.amazon.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "515"
+    },
+    {
+     "key": "pub-022|93524f6573a89ed1798ca346390ce3e5e71e76f4ee762b9db2c80489791934b3",
+     "input_url": "https://www.amazon.co.uk/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "515"
+    },
+    {
+     "key": "pub-023|93524f6573a89ed1798ca346390ce3e5e71e76f4ee762b9db2c80489791934b3",
+     "input_url": "https://www.amazon.de/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "515"
+    },
+    {
+     "key": "pub-198|93524f6573a89ed1798ca346390ce3e5e71e76f4ee762b9db2c80489791934b3",
+     "input_url": "https://www.amazon.com/s?k=keepass",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "515"
+    },
+    {
+     "key": "pub-264|93524f6573a89ed1798ca346390ce3e5e71e76f4ee762b9db2c80489791934b3",
+     "input_url": "https://www.amazon.com/nonexistent12345product",
+     "category": "missing-or-invalid",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "515"
+    },
+    {
+     "key": "pub-281|93524f6573a89ed1798ca346390ce3e5e71e76f4ee762b9db2c80489791934b3",
+     "input_url": "androidapp://com.amazon.mShop.android.shopping",
+     "category": "android-app",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "515"
+    },
+    {
+     "key": "pub-296|93524f6573a89ed1798ca346390ce3e5e71e76f4ee762b9db2c80489791934b3",
+     "input_url": "https://www.amazon.com/",
+     "category": "deduplication",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "515"
+    },
+    {
+     "key": "pub-297|93524f6573a89ed1798ca346390ce3e5e71e76f4ee762b9db2c80489791934b3",
+     "input_url": "https://amazon.com/",
+     "category": "deduplication",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "48",
+     "h": "48",
+     "bytes": "515"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "36e198025b6d7db73c528301778ff006a9764a11bfcc0e26389d6f0bf9347618",
+   "image": "images/36e198025b6d7db73c528301778ff006a9764a11bfcc0e26389d6f0bf9347618.png",
+   "pixel": {
+    "size": [
+     60,
+     60
+    ],
+    "opaque_pct": 80.4,
+    "unique_colors": 90,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       224
+      ],
+      72.4
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      23.5
+     ],
+     [
+      [
+       160,
+       192,
+       224
+      ],
+      1.0
+     ]
+    ],
+    "near_white_pct": 24.1
+   },
+   "units": [
+    {
+     "key": "pub-004|36e198025b6d7db73c528301778ff006a9764a11bfcc0e26389d6f0bf9347618",
+     "input_url": "https://www.facebook.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "60",
+     "h": "60",
+     "bytes": "1140"
+    },
+    {
+     "key": "pub-269|36e198025b6d7db73c528301778ff006a9764a11bfcc0e26389d6f0bf9347618",
+     "input_url": "androidapp://com.facebook.katana",
+     "category": "android-app",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "60",
+     "h": "60",
+     "bytes": "1140"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "0920538a9eb479f18f8c814b799ee1fe7af37da2558ffd1a411399d6427433a6",
+   "image": "images/0920538a9eb479f18f8c814b799ee1fe7af37da2558ffd1a411399d6427433a6.png",
+   "pixel": {
+    "size": [
+     32,
+     32
+    ],
+    "opaque_pct": 97.5,
+    "unique_colors": 843,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      14.1
+     ],
+     [
+      [
+       224,
+       0,
+       160
+      ],
+      6.0
+     ],
+     [
+      [
+       224,
+       0,
+       96
+      ],
+      5.9
+     ]
+    ],
+    "near_white_pct": 17.5
+   },
+   "units": [
+    {
+     "key": "pub-005|0920538a9eb479f18f8c814b799ee1fe7af37da2558ffd1a411399d6427433a6",
+     "input_url": "https://www.instagram.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "2885"
+    },
+    {
+     "key": "pub-270|0920538a9eb479f18f8c814b799ee1fe7af37da2558ffd1a411399d6427433a6",
+     "input_url": "androidapp://com.instagram.android",
+     "category": "android-app",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "32",
+     "h": "32",
+     "bytes": "2885"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "c720ba5a786ae5a8c15db61dffd9e308a17aa3bdc3bd58a4404458ac253104bd",
+   "image": "images/c720ba5a786ae5a8c15db61dffd9e308a17aa3bdc3bd58a4404458ac253104bd.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 67.9,
+    "unique_colors": 390,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      83.1
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      13.5
+     ],
+     [
+      [
+       192,
+       192,
+       192
+      ],
+      0.8
+     ]
+    ],
+    "near_white_pct": 14.3
+   },
+   "units": [
+    {
+     "key": "pub-006|c720ba5a786ae5a8c15db61dffd9e308a17aa3bdc3bd58a4404458ac253104bd",
+     "input_url": "https://x.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3875"
+    },
+    {
+     "key": "pub-235|c720ba5a786ae5a8c15db61dffd9e308a17aa3bdc3bd58a4404458ac253104bd",
+     "input_url": "https://www.twitter.com/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3875"
+    },
+    {
+     "key": "pub-272|c720ba5a786ae5a8c15db61dffd9e308a17aa3bdc3bd58a4404458ac253104bd",
+     "input_url": "androidapp://com.twitter.android",
+     "category": "android-app",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3875"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "91fe9f3eabb4da68ada3a588894bfcf2f0c9be8bff965398d1bfbeec4499c53e",
+   "image": "images/91fe9f3eabb4da68ada3a588894bfcf2f0c9be8bff965398d1bfbeec4499c53e.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 76.3,
+    "unique_colors": 20,
+    "top_colors": [
+     [
+      [
+       0,
+       96,
+       160
+      ],
+      71.4
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      26.5
+     ],
+     [
+      [
+       64,
+       128,
+       192
+      ],
+      1.0
+     ]
+    ],
+    "near_white_pct": 26.8
+   },
+   "units": [
+    {
+     "key": "pub-007|91fe9f3eabb4da68ada3a588894bfcf2f0c9be8bff965398d1bfbeec4499c53e",
+     "input_url": "https://www.linkedin.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "64",
+     "h": "64",
+     "bytes": "933"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "bf5d7ed500bd5e61c78d5240f49ffec1ff92d6abea928bc38e6d6d6341c25798",
+   "image": "images/bf5d7ed500bd5e61c78d5240f49ffec1ff92d6abea928bc38e6d6d6341c25798.png",
+   "pixel": {
+    "size": [
+     64,
+     64
+    ],
+    "opaque_pct": 49.8,
+    "unique_colors": 219,
+    "top_colors": [
+     [
+      [
+       160,
+       0,
+       0
+      ],
+      51.8
+     ],
+     [
+      [
+       224,
+       0,
+       0
+      ],
+      39.4
+     ],
+     [
+      [
+       128,
+       0,
+       0
+      ],
+      6.3
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-008|bf5d7ed500bd5e61c78d5240f49ffec1ff92d6abea928bc38e6d6d6341c25798",
+     "input_url": "https://www.netflix.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "64",
+     "h": "64",
+     "bytes": "1896"
+    },
+    {
+     "key": "pub-282|bf5d7ed500bd5e61c78d5240f49ffec1ff92d6abea928bc38e6d6d6341c25798",
+     "input_url": "androidapp://com.netflix.mediaclient",
+     "category": "android-app",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "64",
+     "h": "64",
+     "bytes": "1896"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "0346bc9d4d26697e308c4de937cb75a4d54610a43e2d24d90442483f253d02f5",
+   "image": "images/0346bc9d4d26697e308c4de937cb75a4d54610a43e2d24d90442483f253d02f5.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 90.8,
+    "unique_colors": 4,
+    "top_colors": [
+     [
+      [
+       224,
+       64,
+       32
+      ],
+      25.0
+     ],
+     [
+      [
+       96,
+       160,
+       0
+      ],
+      25.0
+     ],
+     [
+      [
+       0,
+       160,
+       224
+      ],
+      25.0
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-009|0346bc9d4d26697e308c4de937cb75a4d54610a43e2d24d90442483f253d02f5",
+     "input_url": "https://www.microsoft.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "779"
+    },
+    {
+     "key": "pub-206|0346bc9d4d26697e308c4de937cb75a4d54610a43e2d24d90442483f253d02f5",
+     "input_url": "https://www.microsoft.com/en-us/store/apps",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "779"
+    },
+    {
+     "key": "pub-298|0346bc9d4d26697e308c4de937cb75a4d54610a43e2d24d90442483f253d02f5",
+     "input_url": "https://www.microsoft.com/",
+     "category": "deduplication",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "779"
+    },
+    {
+     "key": "pub-299|0346bc9d4d26697e308c4de937cb75a4d54610a43e2d24d90442483f253d02f5",
+     "input_url": "https://microsoft.com/",
+     "category": "deduplication",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "779"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "f662d63d06b103cae93b5060b8e578894ceec753de705499d3ecce7978bdc523",
+   "image": "images/f662d63d06b103cae93b5060b8e578894ceec753de705499d3ecce7978bdc523.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 171,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      73.5
+     ],
+     [
+      [
+       96,
+       96,
+       96
+      ],
+      22.3
+     ],
+     [
+      [
+       64,
+       64,
+       64
+      ],
+      2.3
+     ]
+    ],
+    "near_white_pct": 74.2
+   },
+   "units": [
+    {
+     "key": "pub-010|f662d63d06b103cae93b5060b8e578894ceec753de705499d3ecce7978bdc523",
+     "input_url": "https://www.apple.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3356"
+    },
+    {
+     "key": "pub-207|f662d63d06b103cae93b5060b8e578894ceec753de705499d3ecce7978bdc523",
+     "input_url": "https://www.apple.com/shop/buy-mac",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3356"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "d8ba69c61335eee2ecc2d8ede05f90a445a3dbf7216ca54a1db296231e277ae7",
+   "image": "images/d8ba69c61335eee2ecc2d8ede05f90a445a3dbf7216ca54a1db296231e277ae7.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 547,
+    "top_colors": [
+     [
+      [
+       96,
+       32,
+       192
+      ],
+      85.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      5.8
+     ],
+     [
+      [
+       64,
+       0,
+       160
+      ],
+      1.5
+     ]
+    ],
+    "near_white_pct": 6.5
+   },
+   "units": [
+    {
+     "key": "pub-011|d8ba69c61335eee2ecc2d8ede05f90a445a3dbf7216ca54a1db296231e277ae7",
+     "input_url": "https://www.yahoo.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "4449"
+    },
+    {
+     "key": "pub-262|d8ba69c61335eee2ecc2d8ede05f90a445a3dbf7216ca54a1db296231e277ae7",
+     "input_url": "https://www.yahoo.com/nonexistent12345",
+     "category": "missing-or-invalid",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "4449"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "3f1cc2b705236b5c9c7acda42547cb346b2019ef4a284b60711e667dbb3f0834",
+   "image": "images/3f1cc2b705236b5c9c7acda42547cb346b2019ef4a284b60711e667dbb3f0834.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 225,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      92.4
+     ],
+     [
+      [
+       32,
+       32,
+       32
+      ],
+      4.7
+     ],
+     [
+      [
+       64,
+       64,
+       64
+      ],
+      0.8
+     ]
+    ],
+    "near_white_pct": 93.2
+   },
+   "units": [
+    {
+     "key": "pub-012|3f1cc2b705236b5c9c7acda42547cb346b2019ef4a284b60711e667dbb3f0834",
+     "input_url": "https://www.wikipedia.org/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3506"
+    },
+    {
+     "key": "pub-200|3f1cc2b705236b5c9c7acda42547cb346b2019ef4a284b60711e667dbb3f0834",
+     "input_url": "https://en.wikipedia.org/wiki/KeePass",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3506"
+    },
+    {
+     "key": "pub-221|3f1cc2b705236b5c9c7acda42547cb346b2019ef4a284b60711e667dbb3f0834",
+     "input_url": "https://www.wikipedia.org/",
+     "category": "svg-or-manifest",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3506"
+    },
+    {
+     "key": "pub-260|3f1cc2b705236b5c9c7acda42547cb346b2019ef4a284b60711e667dbb3f0834",
+     "input_url": "https://www.wikipedia.org/nonexistentpage99999",
+     "category": "missing-or-invalid",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3506"
+    },
+    {
+     "key": "pub-291|3f1cc2b705236b5c9c7acda42547cb346b2019ef4a284b60711e667dbb3f0834",
+     "input_url": "https://en.wikipedia.org/wiki/Main_Page",
+     "category": "deduplication",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3506"
+    },
+    {
+     "key": "pub-292|3f1cc2b705236b5c9c7acda42547cb346b2019ef4a284b60711e667dbb3f0834",
+     "input_url": "https://en.wikipedia.org/wiki/Main_Page?variant=1",
+     "category": "deduplication",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "3506"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "806222bb5433467733167610b22be052ff23e0c2c30e284ff98ef8ac5e94ec82",
+   "image": "images/806222bb5433467733167610b22be052ff23e0c2c30e284ff98ef8ac5e94ec82.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 47.3,
+    "unique_colors": 1955,
+    "top_colors": [
+     [
+      [
+       32,
+       192,
+       96
+      ],
+      91.8
+     ],
+     [
+      [
+       32,
+       224,
+       96
+      ],
+      4.2
+     ],
+     [
+      [
+       0,
+       192,
+       96
+      ],
+      2.4
+     ]
+    ],
+    "near_white_pct": 0.0
+   },
+   "units": [
+    {
+     "key": "pub-013|806222bb5433467733167610b22be052ff23e0c2c30e284ff98ef8ac5e94ec82",
+     "input_url": "https://www.whatsapp.com/",
+     "category": "global-brand",
+     "flags": "profile-differing",
+     "occurrences": 24,
+     "w": "128",
+     "h": "128",
+     "bytes": "18713"
+    },
+    {
+     "key": "pub-268|806222bb5433467733167610b22be052ff23e0c2c30e284ff98ef8ac5e94ec82",
+     "input_url": "androidapp://com.whatsapp",
+     "category": "android-app",
+     "flags": "profile-differing",
+     "occurrences": 21,
+     "w": "128",
+     "h": "128",
+     "bytes": "18713"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+   "image": "images/8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 211,
+    "top_colors": [
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      81.3
+     ],
+     [
+      [
+       96,
+       96,
+       96
+      ],
+      4.8
+     ],
+     [
+      [
+       192,
+       192,
+       192
+      ],
+      4.2
+     ]
+    ],
+    "near_white_pct": 85.5
+   },
+   "units": [
+    {
+     "key": "pub-013|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "https://www.whatsapp.com/",
+     "category": "global-brand",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 18,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    },
+    {
+     "key": "pub-101|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "https://www.shop.ca/",
+     "category": "regional-service",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 33,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    },
+    {
+     "key": "pub-142|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "https://danluu.com/",
+     "category": "small-site",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 33,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    },
+    {
+     "key": "pub-144|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "https://www.aaronsw.com/",
+     "category": "small-site",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 33,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    },
+    {
+     "key": "pub-215|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "http://example.com/",
+     "category": "url-variant",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 33,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    },
+    {
+     "key": "pub-217|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "https://example.com/",
+     "category": "url-variant",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 33,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    },
+    {
+     "key": "pub-218|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "https://example.com:443/path?q=1#frag",
+     "category": "url-variant",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 33,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    },
+    {
+     "key": "pub-232|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "https://svgjs.dev/",
+     "category": "svg-or-manifest",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 9,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    },
+    {
+     "key": "pub-246|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "https://example.invalid/",
+     "category": "missing-or-invalid",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 33,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    },
+    {
+     "key": "pub-250|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "https://example.com/nonexistent-favicon-xyz123",
+     "category": "missing-or-invalid",
+     "flags": "profile-differing;synthetic",
+     "occurrences": 33,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    },
+    {
+     "key": "pub-253|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "https://expired.badssl.com/",
+     "category": "missing-or-invalid",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 32,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    },
+    {
+     "key": "pub-254|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "https://self-signed.badssl.com/",
+     "category": "missing-or-invalid",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 33,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    },
+    {
+     "key": "pub-255|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "https://untrusted-root.badssl.com/",
+     "category": "missing-or-invalid",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 33,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    },
+    {
+     "key": "pub-258|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "https://thissitedoesnotexist12345abc.com/",
+     "category": "missing-or-invalid",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 33,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    },
+    {
+     "key": "pub-259|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "https://nonexistentdomain99999example.org/",
+     "category": "missing-or-invalid",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 32,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    },
+    {
+     "key": "pub-284|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "androidapp://com.example.app",
+     "category": "android-app",
+     "flags": "profile-differing;synthetic",
+     "occurrences": 33,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    },
+    {
+     "key": "pub-285|8267a3115066889b9a84ce4d9a71e71fad95ffbe23aaba3412cae5970b4f8454",
+     "input_url": "androidapp://io.example.todo",
+     "category": "android-app",
+     "flags": "placeholder_suspected;profile-differing;synthetic",
+     "occurrences": 33,
+     "w": "128",
+     "h": "128",
+     "bytes": "4798"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "47e21f6d0bfbaaa33133e85cb22a6bee97db53938860746ba7b420ce7c979179",
+   "image": "images/47e21f6d0bfbaaa33133e85cb22a6bee97db53938860746ba7b420ce7c979179.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 95.6,
+    "unique_colors": 964,
+    "top_colors": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      68.6
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      16.3
+     ],
+     [
+      [
+       0,
+       224,
+       224
+      ],
+      5.6
+     ]
+    ],
+    "near_white_pct": 16.6
+   },
+   "units": [
+    {
+     "key": "pub-014|47e21f6d0bfbaaa33133e85cb22a6bee97db53938860746ba7b420ce7c979179",
+     "input_url": "https://www.tiktok.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "5784"
+    }
+   ]
+  },
+  {
+   "artifact_hash": "bf2f1d9a4d68712a009a73a604ab55a45024ff0d8f6dbbf5c4adcdfc6c32d951",
+   "image": "images/bf2f1d9a4d68712a009a73a604ab55a45024ff0d8f6dbbf5c4adcdfc6c32d951.png",
+   "pixel": {
+    "size": [
+     128,
+     128
+    ],
+    "opaque_pct": 100.0,
+    "unique_colors": 1110,
+    "top_colors": [
+     [
+      [
+       128,
+       192,
+       224
+      ],
+      36.1
+     ],
+     [
+      [
+       160,
+       192,
+       224
+      ],
+      27.1
+     ],
+     [
+      [
+       224,
+       224,
+       224
+      ],
+      19.0
+     ]
+    ],
+    "near_white_pct": 20.7
+   },
+   "units": [
+    {
+     "key": "pub-015|bf2f1d9a4d68712a009a73a604ab55a45024ff0d8f6dbbf5c4adcdfc6c32d951",
+     "input_url": "https://www.reddit.com/",
+     "category": "global-brand",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "14198"
+    },
+    {
+     "key": "pub-202|bf2f1d9a4d68712a009a73a604ab55a45024ff0d8f6dbbf5c4adcdfc6c32d951",
+     "input_url": "https://www.reddit.com/r/KeePass/",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "14198"
+    },
+    {
+     "key": "pub-203|bf2f1d9a4d68712a009a73a604ab55a45024ff0d8f6dbbf5c4adcdfc6c32d951",
+     "input_url": "https://www.reddit.com/r/KeePass",
+     "category": "url-variant",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "14198"
+    },
+    {
+     "key": "pub-263|bf2f1d9a4d68712a009a73a604ab55a45024ff0d8f6dbbf5c4adcdfc6c32d951",
+     "input_url": "https://www.reddit.com/r/nonexistent_sub_99999/",
+     "category": "missing-or-invalid",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "14198"
+    },
+    {
+     "key": "pub-280|bf2f1d9a4d68712a009a73a604ab55a45024ff0d8f6dbbf5c4adcdfc6c32d951",
+     "input_url": "androidapp://com.reddit.frontpage",
+     "category": "android-app",
+     "flags": "census",
+     "occurrences": 54,
+     "w": "128",
+     "h": "128",
+     "bytes": "14198"
+    }
+   ]
+  }
+ ]
+}

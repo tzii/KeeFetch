@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "mode": "review_batch",
+  "repo": "C:\\Dev\\KeeFetch",
+  "results": [
+    {
+      "schema_version": "1.0",
+      "run_id": "20260822-172137-review-antigravity-dc59b3",
+      "mode": "review",
+      "role": "google",
+      "worker": "antigravity",
+      "status": "ok",
+      "repo": {
+        "root": "C:\\Dev\\KeeFetch",
+        "base_commit": "e74a343adb253a317bf582f78242f7c235503200",
+        "dirty_source_included": true
+      },
+      "workspace": {
+        "path": "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-172137-review-antigravity-dc59b3",
+        "ephemeral": true,
+        "branch": null,
+        "removed": true
+      },
+      "command": {
+        "argv": [
+          "C:\\Users\\zxcv0\\AppData\\Local\\agy\\bin\\agy.EXE",
+          "--model",
+          "gemini-3.7-flash-high",
+          "--effort",
+          "high",
+          "--mode",
+          "plan",
+          "--dangerously-skip-permissions",
+          "--print-timeout",
+          "35m",
+          "-p",
+          "<PROMPT>",
+          "--add-dir",
+          "C:\\Users\\zxcv0\\.crew\\worktrees\\KeeFetch-81ed88a1ab\\20260822-172137-review-antigravity-dc59b3",
+          "--output-format",
+          "json"
+        ],
+        "exit_code": 0
+      },
+      "result": {
+        "summary": "{\"conversation_id\":\"dbebcddf-90c1-43b1-9beb-93fb59878cba\",\"status\":\"SUCCESS\",\"response\":\"[\\n  {\\n    \\\"key\\\": \\\"pub-158|0f1f3555bb1ce130f6c886a00ca83e63220d0a25fbdae6a648c081fb3d81f59d\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine red circular 'M' logo for https://www.macstories.net/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-159|133f122a84babbb83ba2ff15bb6915b839697fa92dcc8f19c9c9ea8c08312117\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine yellow and black 'iM' brand logo for https://www.imore.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-160|1e0b25900abe4ffd0901586b310bc3ca24d4c5fa35dbf895d9e53a4406f6dadb\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Android Police shield brand logo for https://www.androidpolice.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-160|511a3b92c7898939827323f684026e149cf52ba7e7ec641153d95e3be7570fe1\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Android Police shield brand logo for https://www.androidpolice.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-160|770330f882147d9d5b6c70cb6c0571e450a8413642f61b34b2ba827595ce49ad\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Android Police shield brand logo for https://www.androidpolice.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-160|8b8239f42a8587a00fa46f026d813b44ef7286e09c499fb42482be070f97f4ee\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Android Police shield brand logo for https://www.androidpolice.com/, contradicting the synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-160|95f287dc9dbcd6c605e28054822e13bd45c8f0fb589e2dde1e48356d6de71c29\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Android Police shield brand logo for https://www.androidpolice.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-161|e1b8454a7a6832035af0496c8520608889f58cad4dcb12cffcd1109261853d61\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine circular '9' brand logo for https://9to5mac.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-162|908f0070747bfa30a5b58c5860794d2a93c13523b6f2adb82d80b41e3aa7c063\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine purple stylized monogram logo for https://www.theverge.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-163|dab24cfd168d0646c099566b3a5e4892778ee6b59f27d176934d9663ac8636a6\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine orange 'ars' badge brand logo for https://arstechnica.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-164|b8a20ee504ed2114b663481f93ba18edf97a7d74c64413da3907e4bfddfbd47b\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine condensed 'WIRED' wordmark logo for https://www.wired.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-165|076cdbf074300a3348443a4757053ae2b15b13cab036ca6df2f5e8c6e184ad81\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine teal brand favicon for https://www.seriouseats.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-222|6c22ca5b8f8f9b5d8dc9942226b3a14cfcf8e20af70145ecb3dee02d20ded819\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Wikimedia Commons logo for https://commons.wikimedia.org/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-223|1a91df35d82d4c7da95c4d7bdfedfd52ce058660b076dba85dbf2be3c8ffda71\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Mozilla brand logo for https://www.mozilla.org/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-224|d29374a3ef77ef93148435445df768c423be26d1ac230668701ac401004791fb\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine MDN Web Docs logo for https://developer.mozilla.org/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-229|69f8385d7eb75259b1f082b6b7de41d2504be9687606900f648e941107cc1672\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine stylized code bracket logo for https://web.dev/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-230|45a23ca6a5e9af23954e8f8923bcb52ee89de455f9a19e08ac3915cfef990cd6\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine multicolor Google Chrome logo for https://developer.chrome.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-231|bf49d76b447bf2eca119bc31267a46ce0c2183d8544d339e2ca98245d8ab0eda\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine W3C emblem logo for https://www.w3.org/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-232|40ebac3d857fc605537d4a193cba2c16fc1b91093c13ddd6410f1074cdd2cd8e\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine magenta polygon logo for https://svgjs.dev/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-232|724e01a071375514a29c14d2a2fd36b748110d6c73999a37d6a7e68abe26cce3\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine magenta polygon logo for https://svgjs.dev/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-236|1f5a95cb9d76de296126654c6a85e7b7e67bf3b7fdd354f365f20ba6f2997b68\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine orange origami tanuki logo for https://about.gitlab.com/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-237|b2b80f8e3f8f791ac25c98a8fce64c072a20c6644ab39da61bf1f7cf252312f0\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine GNOME footprint logo on blue background for https://www.gnome.org/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-238|4791a2272074046deebeeb7765653d1ad601a6d7b7190f47b66a85801bb8cd27\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine KDE gear and 'K' logo for https://www.kde.org/.\\\",\\n    \\\"verified_live\\\": true\\n  },\\n  {\\n    \\\"key\\\": \\\"pub-239|23ccda02fc733511a55bafd597965e0b2f4b8e565c722dd1d86295805401769e\\\",\\n    \\\"label\\\": \\\"correct\\\",\\n    \\\"reason\\\": \\\"The image is the genuine Ubuntu Circle of Friends logo for https://www.ubuntu.com/, contradicting the synthetic and placeholder flags.\\\",\\n    \\\"verified_live\\\": true\\n  }\\n]\\n\",\"duration_seconds\":117.4097764,\"num_turns\":1,\"usage\":{\"input_tokens\":216116,\"output_tokens\":31890,\"thinking_tokens\":18434,\"cache_read_tokens\":1889151,\"total_tokens\":248006}}",
+        "summary_truncated": false,
+        "stdout_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-172137-review-antigravity-dc59b3\\stdout.txt",
+        "stderr_path": "C:\\Users\\zxcv0\\.crew\\runs\\20260822-172137-review-antigravity-dc59b3\\stderr.txt"
+      },
+      "safety": {
+        "isolated": true,
+        "unexpected_review_mutation": false,
+        "auto_integrated": false,
+        "pushed_or_published_by_crew": false
+      },
+      "duration_ms": 123781
+    }
+  ]
+}

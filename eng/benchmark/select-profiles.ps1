@@ -283,10 +283,13 @@ $candidateIds = @()
 foreach ($c in @($experimentJson.candidates)) {
     $cid = [string]$c.id
     if ([string]::IsNullOrWhiteSpace($cid)) { throw "Experiment definition contains a candidate without an id." }
-    if (-not $candidatesDef.ContainsKey($cid)) {
-        $candidatesDef[$cid] = $c
-        $candidateIds += $cid
+    if ($candidatesDef.ContainsKey($cid)) {
+        # Same fail-closed posture as the runner: a duplicate candidate id in
+        # an experiment definition is rejected, never silently deduped.
+        throw "Experiment definition contains duplicate candidate id '$cid'."
     }
+    $candidatesDef[$cid] = $c
+    $candidateIds += $cid
 }
 $expectedCacheModes = @($experimentJson.cache_modes)
 $expectedRepetitions = [int]$experimentJson.repetitions
@@ -745,6 +748,10 @@ foreach ($cid in $candidateIds) {
     $throughput = 0.0
     $coldCellCount = 0
     foreach ($mode in $expectedCacheModes) { if ($mode -ne "warm") { $coldCellCount++ } }
+    # Total cold rows are divided by the executed cold cells: non-warm modes
+    # times repetitions. Dividing by modes alone would inflate the rate by the
+    # repetition factor.
+    $coldCellCount = $coldCellCount * [Math]::Max(1, $expectedRepetitions)
     if ($coldCellCount -eq 0) { $coldCellCount = 1 }
     if ($avgBatchCold -gt 0) {
         $throughput = ([double]$total / [double]$coldCellCount) / ($avgBatchCold / 1000.0)

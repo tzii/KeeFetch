@@ -250,10 +250,18 @@ if ($Validate) {
     # checks. A queue key that is not a cold census unit is stale or
     # fabricated - there is no smaller valid queue than the census.
     $censusUnits = $null
-    if (-not [string]::IsNullOrWhiteSpace($RunDir) -and (Test-Path -LiteralPath $RunDir)) {
+    if (-not [string]::IsNullOrWhiteSpace($RunDir)) {
+        if (-not (Test-Path -LiteralPath $RunDir)) {
+            # A provided-but-missing RunDir must fail validation outright;
+            # silently skipping the census cross-check would let a queue with
+            # holes or fabricated keys pass.
+            throw "RunDir not found for validation: $RunDir"
+        }
         $measuredRuns = Get-MeasuredRunDirectories -BaseDir $RunDir
         $coldRows = Get-ColdMeasuredRows -MeasuredRuns $measuredRuns
         $censusUnits = (Get-CensusUnits -ColdRows $coldRows).Units
+    } else {
+        Write-Output "NOTE: -Validate without -RunDir checks queue consistency only; census existence and completeness against the measured runs are NOT verified."
     }
 
     $errors = @()

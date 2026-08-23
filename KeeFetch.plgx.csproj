@@ -41,6 +41,9 @@
     <Compile Include="FetchProfiles\FetchProfileDefinition.cs" />
     <Compile Include="FetchProfiles\FetchProfileCatalog.Generated.cs" />
     <Compile Include="FetchProfiles\LegacyProfileMigration.cs" />
+    <!-- Batch folder -->
+    <Compile Include="Batch\BatchEntryOutcome.cs" />
+    <Compile Include="Batch\BatchRunResult.cs" />
     <!-- IconProviders folder -->
     <Compile Include="IconProviders\DirectSiteProvider.cs" />
     <Compile Include="IconProviders\DuckDuckGoProvider.cs" />

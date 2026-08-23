@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
+using KeeFetch.Settings;
 using KeePass.App.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -10,86 +12,160 @@ namespace KeeFetch.Tests
     public class SettingsFormLayoutTests
     {
         [TestMethod]
-        public void SettingsForm_BalancedPreset_ShowsAllProvidersInOrderList()
+        public void SettingsForm_HostsExactlyFourGuidedPagesWithSharedActionsOutsideTabs()
         {
-            using (var form = new SettingsForm(new Configuration(new AceCustomConfig())))
+            using (var form = NewForm())
             {
-                var list = GetControl<ListBox>(form, "lstProviderOrder");
-                var hint = GetControl<Label>(form, "lblProviderOrderHint");
+                TabControl tabs = GetField<TabControl>(form, "tabSettings");
+                CollectionAssert.AreEqual(
+                    new[] { "Overview", "Downloads", "Providers", "Advanced" },
+                    tabs.TabPages.Cast<TabPage>().Select(page => page.Text).ToArray());
 
-                Assert.AreEqual(FaviconDownloader.DefaultProviderOrder.Length, list.Items.Count);
-                StringAssert.Contains(hint.Text, "checked providers are used");
+                Assert.IsInstanceOfType(tabs.TabPages[0].Controls[0], typeof(OverviewSettingsPage));
+                Assert.IsInstanceOfType(tabs.TabPages[1].Controls[0], typeof(DownloadSettingsPage));
+                Assert.IsInstanceOfType(tabs.TabPages[2].Controls[0], typeof(ProviderSettingsPage));
+                Assert.IsInstanceOfType(tabs.TabPages[3].Controls[0], typeof(AdvancedSettingsPage));
+
+                Button save = GetField<Button>(form, "btnSave");
+                Button cancel = GetField<Button>(form, "btnCancel");
+                Assert.IsFalse(IsDescendantOf(save, tabs));
+                Assert.IsFalse(IsDescendantOf(cancel, tabs));
+                Assert.AreSame(save, form.AcceptButton);
+                Assert.AreSame(cancel, form.CancelButton);
+                Assert.AreEqual(DialogResult.Cancel, cancel.DialogResult);
             }
         }
 
         [TestMethod]
-        public void SettingsForm_ProviderOrderControls_DoNotOverlapAndListShowsAllProviders()
+        public void SettingsForm_UsesResizableAccessibleFontScaledLayout()
         {
-            using (var form = new SettingsForm(new Configuration(new AceCustomConfig())))
+            using (var form = NewForm())
             {
-                var list = GetControl<ListBox>(form, "lstProviderOrder");
-                var up = GetControl<Button>(form, "btnProviderUp");
-                var down = GetControl<Button>(form, "btnProviderDown");
-                var reset = GetControl<Button>(form, "btnProviderReset");
+                form.CreateControl();
+                form.PerformLayout();
 
-                Assert.IsTrue(list.Height >= FaviconDownloader.DefaultProviderOrder.Length * 22,
-                    "Provider order list should be tall enough to show every provider without scrolling.");
-                Assert.IsTrue(up.Bottom < down.Top,
-                    "Move Up and Move Down buttons should have visible spacing.");
-                Assert.IsTrue(down.Bottom < reset.Top,
-                    "Move Down and Reset buttons should have visible spacing.");
+                Assert.AreEqual(AutoScaleMode.Font, form.AutoScaleMode);
+                Assert.AreEqual(FormBorderStyle.Sizable, form.FormBorderStyle);
+                Assert.IsTrue(form.MinimumSize.Width >= 640);
+                Assert.IsTrue(form.MinimumSize.Height >= 480);
+
+                TabControl tabs = GetField<TabControl>(form, "tabSettings");
+                Button save = GetField<Button>(form, "btnSave");
+                Button cancel = GetField<Button>(form, "btnCancel");
+                Assert.IsFalse(string.IsNullOrWhiteSpace(tabs.AccessibleName));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(save.AccessibleName));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(cancel.AccessibleName));
+                Assert.IsTrue(tabs.Right <= form.ClientSize.Width);
+                Assert.IsTrue(cancel.Bottom <= form.ClientSize.Height);
             }
         }
 
         [TestMethod]
-        public void SettingsForm_LongSslCertificateText_FitsInsideNetworkGroup()
+        public void SettingsForm_SaveCommitsDraftAndCancelLeavesConfigurationUntouched()
         {
-            using (var form = new SettingsForm(new Configuration(new AceCustomConfig())))
+            var saveConfig = new Configuration(new AceCustomConfig());
+            using (var form = new SettingsForm(saveConfig))
             {
-                var group = GetControl<GroupBox>(form, "grpNetwork");
-                var ssl = GetControl<CheckBox>(form, "chkAllowSelfSigned");
+                OverviewSettingsPage overview = GetField<OverviewSettingsPage>(form, "overviewPage");
+                DownloadSettingsPage downloads = GetField<DownloadSettingsPage>(form, "downloadPage");
+                ComboBox profiles = Find<ComboBox>(overview, "cmbProfile");
+                profiles.SelectedItem = profiles.Items.Cast<ProfileListItem>()
+                    .Single(item => item.Id == "privacy");
+                Find<CheckBox>(downloads, "chkAutoSave").Checked = true;
 
-                Assert.IsFalse(ssl.AutoSize,
-                    "Long SSL warning text should use a bounded checkbox instead of autosizing past the group.");
-                Assert.IsTrue(ssl.Right <= group.ClientSize.Width - 12,
-                    "SSL warning checkbox should fit within the network group.");
+                InvokeHandler(form, "btnSave_Click");
+
+                Assert.AreEqual(DialogResult.OK, form.DialogResult);
+                Assert.AreEqual("privacy", saveConfig.FetchProfileId);
+                Assert.IsTrue(saveConfig.AutoSave);
+            }
+
+            var cancelConfig = new Configuration(new AceCustomConfig());
+            using (var form = new SettingsForm(cancelConfig))
+            {
+                DownloadSettingsPage downloads = GetField<DownloadSettingsPage>(form, "downloadPage");
+                Find<CheckBox>(downloads, "chkAutoSave").Checked = true;
+
+                InvokeHandler(form, "btnCancel_Click");
+
+                Assert.AreEqual(DialogResult.Cancel, form.DialogResult);
+                Assert.IsFalse(cancelConfig.AutoSave);
             }
         }
 
         [TestMethod]
-        public void SettingsForm_NumericRows_HaveSpacingBetweenLabelsInputsAndUnits()
+        public void SettingsForm_ValidationSelectsErrorPageAndShowsAccessibleSummary()
         {
-            using (var form = new SettingsForm(new Configuration(new AceCustomConfig())))
+            using (var form = NewForm())
             {
-                AssertNumericRowSpacing(
-                    GetControl<Label>(form, "lblMaxIconSize"),
-                    GetControl<NumericUpDown>(form, "numMaxIconSize"),
-                    GetControl<Label>(form, "lblIconSizeUnit"));
+                OverviewSettingsPage overview = GetField<OverviewSettingsPage>(form, "overviewPage");
+                ComboBox profiles = Find<ComboBox>(overview, "cmbProfile");
+                profiles.SelectedItem = profiles.Items.Cast<ProfileListItem>()
+                    .Single(item => item.Id == "custom");
+                form.Show();
 
-                AssertNumericRowSpacing(
-                    GetControl<Label>(form, "lblTimeout"),
-                    GetControl<NumericUpDown>(form, "numTimeout"),
-                    GetControl<Label>(form, "lblTimeoutUnit"));
+                var errors = new[]
+                {
+                    new SettingsValidationError(
+                        "advanced", "timeout", "Connection timeout is invalid.")
+                };
+
+                MethodInfo showErrors = typeof(SettingsForm).GetMethod(
+                    "ShowValidationErrors", BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.IsNotNull(showErrors);
+                showErrors.Invoke(form, new object[] { errors });
+
+                TabControl tabs = GetField<TabControl>(form, "tabSettings");
+                Label summary = GetField<Label>(form, "lblValidationSummary");
+                AdvancedSettingsPage advanced = GetField<AdvancedSettingsPage>(form, "advancedPage");
+                Assert.AreEqual("Advanced", tabs.SelectedTab.Text);
+                Assert.IsTrue(summary.Visible);
+                StringAssert.Contains(summary.Text, "Connection timeout is invalid.");
+                Assert.IsFalse(string.IsNullOrWhiteSpace(summary.AccessibleName));
+                Assert.IsTrue(Find<NumericUpDown>(advanced, "numTimeout").ContainsFocus);
             }
         }
 
-        private static T GetControl<T>(SettingsForm form, string fieldName) where T : Control
+        private static SettingsForm NewForm()
         {
-            FieldInfo field = typeof(SettingsForm).GetField(fieldName,
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.IsNotNull(field, "Missing field " + fieldName);
+            return new SettingsForm(new Configuration(new AceCustomConfig()));
+        }
 
-            var control = field.GetValue(form) as T;
-            Assert.IsNotNull(control, "Field " + fieldName + " was not a " + typeof(T).Name);
+        private static T GetField<T>(SettingsForm form, string name) where T : class
+        {
+            FieldInfo field = typeof(SettingsForm).GetField(
+                name, BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(field, "Missing field " + name + ".");
+            T value = field.GetValue(form) as T;
+            Assert.IsNotNull(value, name + " was not a " + typeof(T).Name + ".");
+            return value;
+        }
+
+        private static T Find<T>(Control root, string name) where T : Control
+        {
+            Control[] matches = root.Controls.Find(name, true);
+            Assert.AreEqual(1, matches.Length);
+            T control = matches[0] as T;
+            Assert.IsNotNull(control);
             return control;
         }
 
-        private static void AssertNumericRowSpacing(Label label, NumericUpDown input, Label unit)
+        private static bool IsDescendantOf(Control control, Control ancestor)
         {
-            Assert.IsTrue(label.Right + 8 <= input.Left,
-                label.Name + " should not overlap its numeric input.");
-            Assert.IsTrue(input.Right + 8 <= unit.Left,
-                input.Name + " should not overlap its unit label.");
+            for (Control current = control.Parent; current != null; current = current.Parent)
+            {
+                if (current == ancestor)
+                    return true;
+            }
+            return false;
+        }
+
+        private static void InvokeHandler(SettingsForm form, string name)
+        {
+            MethodInfo handler = typeof(SettingsForm).GetMethod(
+                name, BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(handler, "Missing handler " + name + ".");
+            handler.Invoke(form, new object[] { form, EventArgs.Empty });
         }
     }
 }

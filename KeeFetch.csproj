@@ -38,12 +38,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Update="FirstRunForm.Designer.cs">
+      <DependentUpon>FirstRunForm.cs</DependentUpon>
+    </Compile>
     <Compile Update="SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="FirstRunForm.resx">
+      <DependentUpon>FirstRunForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Update="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>

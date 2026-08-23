@@ -27,6 +27,8 @@
     <Compile Include="FaviconDialog.cs" />
     <Compile Include="FaviconDownloader.cs" />
     <Compile Include="FaviconDiagnostics.cs" />
+    <Compile Include="FirstRunForm.cs" />
+    <Compile Include="FirstRunForm.Designer.cs" />
     <Compile Include="KeeFetchExt.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="SharedHttp.cs" />
@@ -73,6 +75,9 @@
     <Compile Include="IconSelection\ProviderCapabilities.cs" />
     <EmbeddedResource Include="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FirstRunForm.resx">
+      <DependentUpon>FirstRunForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Assets\Icons\keefetch-app.png" />
     <EmbeddedResource Include="Assets\Icons\keefetch-download.png" />

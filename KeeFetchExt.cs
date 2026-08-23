@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using KeeFetch.FetchProfiles;
 using KeePass.Plugins;
 using KeePassLib;
 
@@ -386,17 +387,39 @@ namespace KeeFetch
             if (Config.HasSeenFirstRunDisclosure)
                 return true;
 
-            MessageBox.Show(
-                "KeeFetch is availability-first by default.\n\n" +
-                "To maximize success rates, domain names may be sent to third-party favicon services " +
-                "(Twenty Icons, DuckDuckGo, Google, Yandex, Favicone, Icon Horse) when direct fetching " +
-                "is insufficient.\n\n" +
-                "You can disable third-party or synthetic fallbacks in KeeFetch Settings.",
-                "KeeFetch disclosure",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+            using (var form = new FirstRunForm(Config.FetchProfileId))
+            {
+                if (form.ShowDialog(host.MainWindow) != DialogResult.OK)
+                    return false;
 
-            Config.HasSeenFirstRunDisclosure = true;
+                return ApplyFirstRunChoice(Config, form);
+            }
+        }
+
+        internal static bool ApplyFirstRunChoice(Configuration config, FirstRunForm form)
+        {
+            if (config == null)
+                throw new ArgumentNullException("config");
+            if (form == null)
+                throw new ArgumentNullException("form");
+            if (!form.Confirmed)
+                return false;
+
+            FetchProfileDefinition profile;
+            try
+            {
+                profile = FetchProfileCatalog.GetRequiredProfile(form.SelectedProfileId);
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+
+            if (!profile.IsVisible)
+                return false;
+
+            config.FetchProfileId = profile.Id;
+            config.HasSeenFirstRunDisclosure = true;
             return true;
         }
 

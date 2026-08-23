@@ -86,7 +86,7 @@ jobs:
 
           # Copy only the source files needed for plgx-create (exclude TestCompile.cs)
           Copy-Item -Path "*.cs" -Destination $plgxSrc -Exclude "TestCompile.cs"
-          Copy-Item -Path "SettingsForm.resx" -Destination $plgxSrc
+          Copy-Item -Path "*Form.resx" -Destination $plgxSrc
           Copy-Item -Path "Properties" -Destination $plgxSrc -Recurse
           Copy-Item -Path "IconProviders" -Destination $plgxSrc -Recurse
           Copy-Item -Path "FetchProfiles" -Destination $plgxSrc -Recurse
@@ -102,6 +102,7 @@ jobs:
           $expectedFiles = @(
             "KeeFetchExt.cs", "FaviconDownloader.cs", "FaviconDialog.cs",
             "Configuration.cs", "SettingsForm.cs", "SettingsForm.Designer.cs",
+            "FirstRunForm.cs", "FirstRunForm.Designer.cs", "FirstRunForm.resx",
             "Logger.cs", "Util.cs", "SharedHttp.cs", "AndroidAppMapper.cs",
             "Properties\AssemblyInfo.cs", "KeeFetch.csproj",
             "IconSelection\IconSelector.cs", "IconSelection\IconCandidate.cs",

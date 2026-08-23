@@ -24,6 +24,8 @@
     <!-- Root .cs files (explicitly listed for PLGX compatibility) -->
     <Compile Include="AndroidAppMapper.cs" />
     <Compile Include="Configuration.cs" />
+    <Compile Include="CompletionForm.cs" />
+    <Compile Include="CompletionForm.Designer.cs" />
     <Compile Include="FaviconDialog.cs" />
     <Compile Include="FaviconDownloader.cs" />
     <Compile Include="FaviconDiagnostics.cs" />
@@ -79,6 +81,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FirstRunForm.resx">
       <DependentUpon>FirstRunForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CompletionForm.resx">
+      <DependentUpon>CompletionForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Assets\Icons\keefetch-app.png" />
     <EmbeddedResource Include="Assets\Icons\keefetch-download.png" />

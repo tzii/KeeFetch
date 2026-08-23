@@ -5,9 +5,9 @@ using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using KeeFetch.Batch;
 using KeeFetch.FetchProfiles;
 using KeePass.Plugins;
 using KeePassLib;
@@ -316,10 +316,10 @@ namespace KeeFetch
             return true;
         }
 
-        private Task RunDownloadAsync(PwEntry[] entries)
+        private async Task RunDownloadAsync(PwEntry[] entries)
         {
             if (!EnsureFirstRunDisclosure())
-                return Task.CompletedTask;
+                return;
 
             if (System.Threading.Interlocked.CompareExchange(ref activeDownloadJob, 1, 0) != 0)
             {
@@ -328,66 +328,74 @@ namespace KeeFetch
                     "KeeFetch",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
-                return Task.CompletedTask;
+                return;
             }
 
-            FaviconDialog dialog;
+            try
+            {
+                FaviconDialog dialog;
+                if (!TryCreateFaviconDialog(entries, out dialog))
+                    return;
+
+                BatchRunResult result = await dialog.RunAsync();
+                bool retryRequested = ShowCompletionResult(result, true);
+                if (retryRequested && !result.WasCancelled && result.RetryEntries.Count > 0)
+                {
+                    FaviconDialog retryDialog;
+                    if (!TryCreateFaviconDialog(result.RetryEntries.ToArray(), out retryDialog))
+                        return;
+
+                    BatchRunResult retryResult = await retryDialog.RunAsync();
+                    ShowCompletionResult(retryResult, false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("RunDownloadAsync", ex);
+                MessageBox.Show("An error occurred during favicon download:\n" + ex.Message,
+                    "KeeFetch", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                System.Threading.Interlocked.Exchange(ref activeDownloadJob, 0);
+            }
+        }
+
+        private bool TryCreateFaviconDialog(PwEntry[] entries, out FaviconDialog dialog)
+        {
+            dialog = null;
             try
             {
                 dialog = new FaviconDialog(host, Config, entries);
+                return true;
             }
             catch (ArgumentException ex)
             {
                 // Policy resolution is fail-closed: surface invalid provider
                 // configuration visibly instead of a generic plugin crash.
-                System.Threading.Interlocked.Exchange(ref activeDownloadJob, 0);
                 Logger.Error("RunDownloadAsync", ex);
-                MessageBox.Show("The current KeeFetch provider configuration is invalid:\n" + ex.Message,
+                MessageBox.Show(
+                    "The current KeeFetch provider configuration is invalid:\n" + ex.Message,
                     "KeeFetch", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return Task.CompletedTask;
+                return false;
             }
             catch (InvalidOperationException ex)
             {
-                System.Threading.Interlocked.Exchange(ref activeDownloadJob, 0);
                 Logger.Error("RunDownloadAsync", ex);
-                MessageBox.Show("The current KeeFetch fetch profile is invalid:\n" + ex.Message,
+                MessageBox.Show(
+                    "The current KeeFetch fetch profile is invalid:\n" + ex.Message,
                     "KeeFetch", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return Task.CompletedTask;
+                return false;
             }
+        }
 
-            try
+        private bool ShowCompletionResult(BatchRunResult result, bool retryAllowed)
+        {
+            using (var form = new CompletionForm(result, retryAllowed))
             {
-                var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
-                dialog.RunAsync().ContinueWith(t =>
-                {
-                    System.Threading.Interlocked.Exchange(ref activeDownloadJob, 0);
-
-                    if (t.IsFaulted && t.Exception != null)
-                    {
-                        Exception ex = t.Exception.GetBaseException();
-                        Logger.Error("RunDownloadAsync", ex);
-                        MessageBox.Show("An error occurred during favicon download:\n" + ex.Message,
-                            "KeeFetch", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    else if (!t.IsCanceled && t.Result != null)
-                    {
-                        Logger.Debug("RunDownloadAsync", string.Format(
-                            "Batch result: {0} total, {1} updated, {2} retry eligible.",
-                            t.Result.TotalCount,
-                            t.Result.UpdatedCount,
-                            t.Result.RetryEntries.Count));
-                    }
-                }, CancellationToken.None, TaskContinuationOptions.None, scheduler);
+                form.ShowDialog(host.MainWindow);
+                return form.SelectedAction == CompletionAction.RetryEligible;
             }
-            catch (Exception ex)
-            {
-                System.Threading.Interlocked.Exchange(ref activeDownloadJob, 0);
-                Logger.Error("RunDownloadAsync", ex);
-                MessageBox.Show("An error occurred during favicon download:\n" + ex.Message,
-                    "KeeFetch", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            return Task.CompletedTask;
         }
 
         private bool EnsureFirstRunDisclosure()

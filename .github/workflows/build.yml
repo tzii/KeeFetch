@@ -115,7 +115,16 @@ jobs:
             "FetchProfiles\LegacyProfileMigration.cs",
             "Batch\BatchEntryOutcome.cs",
             "Batch\BatchRunResult.cs",
-            "Settings\SettingsDraft.cs"
+            "Settings\SettingsDraft.cs",
+            "Settings\ProfileListItem.cs",
+            "Settings\OverviewSettingsPage.cs",
+            "Settings\OverviewSettingsPage.Designer.cs",
+            "Settings\DownloadSettingsPage.cs",
+            "Settings\DownloadSettingsPage.Designer.cs",
+            "Settings\ProviderSettingsPage.cs",
+            "Settings\ProviderSettingsPage.Designer.cs",
+            "Settings\AdvancedSettingsPage.cs",
+            "Settings\AdvancedSettingsPage.Designer.cs"
           )
           $missing = $expectedFiles | Where-Object { !(Test-Path (Join-Path $plgxSrc $_)) }
           if ($missing) {

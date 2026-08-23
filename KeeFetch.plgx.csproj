@@ -46,6 +46,15 @@
     <Compile Include="Batch\BatchRunResult.cs" />
     <!-- Settings folder -->
     <Compile Include="Settings\SettingsDraft.cs" />
+    <Compile Include="Settings\ProfileListItem.cs" />
+    <Compile Include="Settings\OverviewSettingsPage.cs" />
+    <Compile Include="Settings\OverviewSettingsPage.Designer.cs" />
+    <Compile Include="Settings\DownloadSettingsPage.cs" />
+    <Compile Include="Settings\DownloadSettingsPage.Designer.cs" />
+    <Compile Include="Settings\ProviderSettingsPage.cs" />
+    <Compile Include="Settings\ProviderSettingsPage.Designer.cs" />
+    <Compile Include="Settings\AdvancedSettingsPage.cs" />
+    <Compile Include="Settings\AdvancedSettingsPage.Designer.cs" />
     <!-- IconProviders folder -->
     <Compile Include="IconProviders\DirectSiteProvider.cs" />
     <Compile Include="IconProviders\DuckDuckGoProvider.cs" />

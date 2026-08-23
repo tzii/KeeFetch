@@ -115,6 +115,7 @@ jobs:
             "FetchProfiles\FetchProfileCatalog.Generated.cs",
             "FetchProfiles\LegacyProfileMigration.cs",
             "Batch\BatchEntryOutcome.cs",
+            "Batch\BatchProgressSnapshot.cs",
             "Batch\BatchRunResult.cs",
             "Settings\SettingsDraft.cs",
             "Settings\ProfileListItem.cs",

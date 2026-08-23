@@ -369,6 +369,14 @@ namespace KeeFetch
                         MessageBox.Show("An error occurred during favicon download:\n" + ex.Message,
                             "KeeFetch", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
+                    else if (!t.IsCanceled && t.Result != null)
+                    {
+                        Logger.Debug("RunDownloadAsync", string.Format(
+                            "Batch result: {0} total, {1} updated, {2} retry eligible.",
+                            t.Result.TotalCount,
+                            t.Result.UpdatedCount,
+                            t.Result.RetryEntries.Count));
+                    }
                 }, CancellationToken.None, TaskContinuationOptions.None, scheduler);
             }
             catch (Exception ex)

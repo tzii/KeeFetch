@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using KeeFetch.Batch;
+using KeeFetch.FetchProfiles;
 using KeePass.Plugins;
 using KeePassLib;
 using KeePassLib.Interfaces;
@@ -24,29 +26,22 @@ namespace KeeFetch
         private readonly Configuration config;
         private readonly PwEntry[] entries;
         private readonly FaviconDownloader downloader;
+        private readonly string profileId;
         private readonly ConcurrentQueue<PendingIconUpdate> pendingIconUpdates =
             new ConcurrentQueue<PendingIconUpdate>();
-        private readonly Dictionary<string, ProviderMetricAggregate> providerMetricAggregates =
-            new Dictionary<string, ProviderMetricAggregate>(StringComparer.OrdinalIgnoreCase);
-        private readonly object providerMetricsLock = new object();
-
         private IStatusLogger logger;
         private CancellationTokenSource cts;
 
         private int totalCount;
         private int successCount;
-        private int directSiteSuccessCount;
-        private int resolvedSuccessCount;
-        private int syntheticSuccessCount;
         private int skippedCount;
         private int notFoundCount;
         private int errorCount;
         private int processedCount;
         private int pendingIconUpdateCount;
-        private int cacheHitCount;
         private bool dbModified;
-        private long totalDownloadElapsedMs;
-        private long maxDownloadElapsedMs;
+        private BatchEntryOutcome[] outcomes;
+        private string lastProgressText;
 
         private readonly List<string> errorLog = new List<string>();
         private readonly List<string> diagnosticsLog = new List<string>();
@@ -64,39 +59,32 @@ namespace KeeFetch
             this.host = host;
             this.config = config;
             this.entries = entries;
+            profileId = config.FetchProfileId;
             downloader = new FaviconDownloader(config);
         }
 
         /// <summary>
         /// Runs the download dialog asynchronously. Must be called from the UI thread.
         /// </summary>
-        public async Task RunAsync()
+        public BatchRunResult Result { get; private set; }
+
+        public async Task<BatchRunResult> RunAsync()
         {
+            ResetRunState();
+            var runStopwatch = Stopwatch.StartNew();
+
             if (entries == null || entries.Length == 0)
-                return;
-
-            totalCount = entries.Length;
-            successCount = 0;
-            directSiteSuccessCount = 0;
-            resolvedSuccessCount = 0;
-            syntheticSuccessCount = 0;
-            skippedCount = 0;
-            notFoundCount = 0;
-            errorCount = 0;
-            processedCount = 0;
-            pendingIconUpdateCount = 0;
-            cacheHitCount = 0;
-            dbModified = false;
-            totalDownloadElapsedMs = 0;
-            maxDownloadElapsedMs = 0;
-
-            lock (errorLogLock) { errorLog.Clear(); }
-            lock (diagnosticsLogLock)
             {
-                diagnosticsLog.Clear();
-                diagnosticsCsvRows.Clear();
+                Result = BuildBatchRunResult(
+                    new PwEntry[0],
+                    new BatchEntryOutcome[0],
+                    false,
+                    TimeSpan.Zero,
+                    profileId,
+                    null,
+                    null);
+                return Result;
             }
-            lock (providerMetricsLock) { providerMetricAggregates.Clear(); }
 
             cts = new CancellationTokenSource();
 
@@ -126,7 +114,7 @@ namespace KeeFetch
                     }
 
                     FlushPendingUpdates(UiApplyBatchSize);
-                    UpdateProgressDisplay();
+                    UpdateProgressDisplay(false);
 
                     await Task.Delay(UiPollDelayMs);
                 }
@@ -140,11 +128,57 @@ namespace KeeFetch
             finally
             {
                 FlushPendingUpdates(int.MaxValue);
-                UpdateProgressDisplay();
+                bool wasCancelled = cts != null && cts.IsCancellationRequested;
+                CompleteMissingOutcomes(wasCancelled);
+                ApplyDatabaseChanges();
+
+                string diagnosticsLogPath;
+                string diagnosticsCsvPath;
+                ExportDiagnostics(out diagnosticsLogPath, out diagnosticsCsvPath);
+
+                runStopwatch.Stop();
+                Result = BuildBatchRunResult(
+                    entries,
+                    outcomes,
+                    wasCancelled,
+                    runStopwatch.Elapsed,
+                    profileId,
+                    diagnosticsLogPath,
+                    diagnosticsCsvPath);
+
+                UpdateProgressDisplay(true);
                 FaviconDownloader.ClearCache();
                 logger.EndLogging();
-                ShowCompletionMessage();
                 cts.Dispose();
+            }
+
+            return Result;
+        }
+
+        private void ResetRunState()
+        {
+            totalCount = entries == null ? 0 : entries.Length;
+            successCount = 0;
+            skippedCount = 0;
+            notFoundCount = 0;
+            errorCount = 0;
+            processedCount = 0;
+            pendingIconUpdateCount = 0;
+            dbModified = false;
+            outcomes = new BatchEntryOutcome[totalCount];
+            lastProgressText = null;
+            Result = null;
+
+            PendingIconUpdate ignored;
+            while (pendingIconUpdates.TryDequeue(out ignored))
+            {
+            }
+
+            lock (errorLogLock) { errorLog.Clear(); }
+            lock (diagnosticsLogLock)
+            {
+                diagnosticsLog.Clear();
+                diagnosticsCsvRows.Clear();
             }
         }
 
@@ -162,67 +196,76 @@ namespace KeeFetch
                 using (var semaphore = new SemaphoreSlim(MaxConcurrency, MaxConcurrency))
                 {
                     var tasks = new List<Task>();
-
-                    for (int idx = 0; idx < entries.Length; idx++)
+                    bool schedulingCancelled = false;
+                    try
                     {
-                        token.ThrowIfCancellationRequested();
-
-                        PwEntry entry = entries[idx];
-
-                        while (!await semaphore.WaitAsync(500, token))
+                        for (int idx = 0; idx < entries.Length; idx++)
                         {
                             token.ThrowIfCancellationRequested();
-                        }
+                            int entryIndex = idx;
+                            PwEntry entry = entries[entryIndex];
 
-                        var task = Task.Run(async () =>
-                        {
-                            try
+                            while (!await semaphore.WaitAsync(500, token))
                             {
                                 token.ThrowIfCancellationRequested();
-                                await ProcessEntryAsync(entry, db, token);
                             }
-                            catch (OperationCanceledException)
-                            {
-                                Interlocked.Increment(ref skippedCount);
-                                throw;
-                            }
-                            catch (Exception ex)
-                            {
-                                Interlocked.Increment(ref errorCount);
 
-                                string title = "?";
-                                string url = "?";
-                                try { title = entry.Strings.ReadSafe(PwDefs.TitleField); }
-                                catch (Exception ex2) { Logger.Debug("ProcessEntry", ex2); }
-                                try { url = entry.Strings.ReadSafe(PwDefs.UrlField); }
-                                catch (Exception ex2) { Logger.Debug("ProcessEntry", ex2); }
-
-                                lock (errorLogLock)
+                            var task = Task.Run(async () =>
+                            {
+                                try
                                 {
-                                    errorLog.Add(string.Format("[{0}] {1}: {2}",
-                                        title, url, ex.ToString()));
+                                    token.ThrowIfCancellationRequested();
+                                    await ProcessEntryAsync(entryIndex, entry, db, token);
                                 }
-                            }
-                            finally
+                                catch (OperationCanceledException)
+                                {
+                                    TrySetOutcome(entryIndex, CreateOutcome(
+                                        entry,
+                                        null,
+                                        BatchEntryStatus.Cancelled,
+                                        null,
+                                        false,
+                                        "Cancelled while processing."));
+                                }
+                                catch (Exception ex)
+                                {
+                                    string url = ReadEntryValue(entry, PwDefs.UrlField, "?");
+                                    AddError(entry, url, ex);
+                                    TrySetOutcome(entryIndex, CreateOutcome(
+                                        entry,
+                                        url,
+                                        BatchEntryStatus.RecoverableError,
+                                        null,
+                                        true,
+                                        ex.Message));
+                                }
+                                finally
+                                {
+                                    semaphore.Release();
+                                }
+                            });
+
+                            tasks.Add(task);
+
+                            if (tasks.Count >= MaxConcurrency * 2)
                             {
-                                semaphore.Release();
-                                Interlocked.Increment(ref processedCount);
+                                Task completed = await Task.WhenAny(tasks);
+                                tasks.Remove(completed);
+                                await completed;
                             }
-                        }, token);
-
-                        tasks.Add(task);
-
-                        if (tasks.Count >= MaxConcurrency * 2)
-                        {
-                            var completed = await Task.WhenAny(tasks);
-                            tasks.Remove(completed);
-                            try { await completed; }
-                            catch (OperationCanceledException) { }
                         }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        schedulingCancelled = true;
                     }
 
                     await Task.WhenAll(tasks);
+                    if (schedulingCancelled)
+                        token.ThrowIfCancellationRequested();
                 }
+
+                token.ThrowIfCancellationRequested();
             }
             finally
             {
@@ -231,11 +274,30 @@ namespace KeeFetch
             }
         }
 
-        private async Task ProcessEntryAsync(PwEntry entry, PwDatabase db, CancellationToken token)
+        private async Task ProcessEntryAsync(int entryIndex, PwEntry entry,
+            PwDatabase db, CancellationToken token)
         {
+            if (entry == null)
+            {
+                TrySetOutcome(entryIndex, CreateOutcome(
+                    null,
+                    null,
+                    BatchEntryStatus.InvalidInput,
+                    null,
+                    false,
+                    "Entry is null."));
+                return;
+            }
+
             if (config.SkipExistingIcons && !entry.CustomIconUuid.Equals(PwUuid.Zero))
             {
-                Interlocked.Increment(ref skippedCount);
+                TrySetOutcome(entryIndex, CreateOutcome(
+                    entry,
+                    null,
+                    BatchEntryStatus.Skipped,
+                    null,
+                    false,
+                    "Entry already has a custom icon."));
                 return;
             }
 
@@ -249,7 +311,13 @@ namespace KeeFetch
 
             if (string.IsNullOrWhiteSpace(url))
             {
-                Interlocked.Increment(ref skippedCount);
+                TrySetOutcome(entryIndex, CreateOutcome(
+                    entry,
+                    url,
+                    BatchEntryStatus.InvalidInput,
+                    null,
+                    false,
+                    "Entry has no usable URL or title-derived domain."));
                 return;
             }
 
@@ -258,19 +326,28 @@ namespace KeeFetch
             if (result.ElapsedMilliseconds <= 0)
                 result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
 
-            RecordDownloadMetrics(result);
-
             if (result.Status != FaviconStatus.Success || result.IconData == null)
             {
-                Interlocked.Increment(ref notFoundCount);
+                bool recoverable = IsRecoverableFailure(result);
+                TrySetOutcome(entryIndex, CreateOutcome(
+                    entry,
+                    url,
+                    recoverable ? BatchEntryStatus.RecoverableError : BatchEntryStatus.NotFound,
+                    result,
+                    recoverable,
+                    string.IsNullOrWhiteSpace(result.DiagnosticsSummary)
+                        ? "No usable icon was found."
+                        : result.DiagnosticsSummary));
                 AddDiagnosticsEntry(entry, url, result);
                 return;
             }
 
             byte[] iconHash = Util.HashData(result.IconData);
-            pendingIconUpdates.Enqueue(new PendingIconUpdate(entry, iconHash, result.IconData,
-                result.Host, result.SelectedTier, result.WasSyntheticFallback, url));
             Interlocked.Increment(ref pendingIconUpdateCount);
+            pendingIconUpdates.Enqueue(new PendingIconUpdate(entryIndex, entry, iconHash,
+                result.IconData, result.Host, result.SelectedTier,
+                result.WasSyntheticFallback, url, GetProviderId(result.Provider),
+                result.ElapsedMilliseconds, result.DiagnosticsSummary));
 
             AddDiagnosticsEntry(entry, url, result);
         }
@@ -282,7 +359,25 @@ namespace KeeFetch
 
             PwDatabase db = host.Database;
             if (db == null)
+            {
+                PendingIconUpdate unavailable;
+                while (pendingIconUpdates.TryDequeue(out unavailable))
+                {
+                    Interlocked.Decrement(ref pendingIconUpdateCount);
+                    TrySetOutcome(unavailable.EntryIndex, new BatchEntryOutcome(
+                        unavailable.Entry,
+                        unavailable.EntryTitle,
+                        unavailable.ResolvedUrl,
+                        BatchEntryStatus.RecoverableError,
+                        unavailable.ProviderId,
+                        unavailable.SelectedTier,
+                        unavailable.WasSyntheticFallback,
+                        true,
+                        unavailable.ElapsedMilliseconds,
+                        "KeePass database became unavailable before the icon could be applied."));
+                }
                 return;
+            }
 
             int applied = 0;
 
@@ -299,15 +394,32 @@ namespace KeeFetch
                     try
                     {
                         ApplyIconUpdate(db, pending);
+                        TrySetOutcome(pending.EntryIndex, new BatchEntryOutcome(
+                            pending.Entry,
+                            pending.EntryTitle,
+                            pending.ResolvedUrl,
+                            BatchEntryStatus.Updated,
+                            pending.ProviderId,
+                            pending.SelectedTier,
+                            pending.WasSyntheticFallback,
+                            false,
+                            pending.ElapsedMilliseconds,
+                            pending.Diagnostic));
                     }
                     catch (Exception ex)
                     {
-                        Interlocked.Increment(ref errorCount);
-                        lock (errorLogLock)
-                        {
-                            errorLog.Add(string.Format("[{0}] {1}: {2}",
-                                pending.EntryTitle, pending.ResolvedUrl, ex.ToString()));
-                        }
+                        AddError(pending.Entry, pending.ResolvedUrl, ex);
+                        TrySetOutcome(pending.EntryIndex, new BatchEntryOutcome(
+                            pending.Entry,
+                            pending.EntryTitle,
+                            pending.ResolvedUrl,
+                            BatchEntryStatus.RecoverableError,
+                            pending.ProviderId,
+                            pending.SelectedTier,
+                            pending.WasSyntheticFallback,
+                            true,
+                            pending.ElapsedMilliseconds,
+                            ex.Message));
                     }
 
                     applied++;
@@ -353,136 +465,75 @@ namespace KeeFetch
                 dbModified = true;
             }
 
-            Interlocked.Increment(ref successCount);
-            if (pending.WasSyntheticFallback || pending.SelectedTier == IconTier.SyntheticFallback)
-                Interlocked.Increment(ref syntheticSuccessCount);
-            else if (pending.SelectedTier == IconTier.SiteCanonical)
-                Interlocked.Increment(ref directSiteSuccessCount);
-            else if (pending.SelectedTier == IconTier.StrongResolved)
-                Interlocked.Increment(ref resolvedSuccessCount);
         }
 
-        private void UpdateProgressDisplay()
+        private void UpdateProgressDisplay(bool isComplete)
         {
             int currentProcessed = Interlocked.CompareExchange(ref processedCount, 0, 0);
             int pct = totalCount > 0 ? (int)(currentProcessed * 100.0 / totalCount) : 100;
             uint progressValue = (uint)Math.Min(Math.Max(pct, 0), 100);
 
             int currentSuccess = Interlocked.CompareExchange(ref successCount, 0, 0);
-            int currentDirect = Interlocked.CompareExchange(ref directSiteSuccessCount, 0, 0);
-            int currentResolved = Interlocked.CompareExchange(ref resolvedSuccessCount, 0, 0);
-            int currentSynthetic = Interlocked.CompareExchange(ref syntheticSuccessCount, 0, 0);
             int currentSkipped = Interlocked.CompareExchange(ref skippedCount, 0, 0);
             int currentNotFound = Interlocked.CompareExchange(ref notFoundCount, 0, 0);
             int currentErrors = Interlocked.CompareExchange(ref errorCount, 0, 0);
             int currentPending = Interlocked.CompareExchange(ref pendingIconUpdateCount, 0, 0);
+            bool cancellationRequested = cts != null && cts.IsCancellationRequested;
+            string detail = null;
+            if (cancellationRequested && !isComplete)
+                detail = "Waiting for active requests";
+            else if (currentPending > 0)
+                detail = "Applying downloaded icons";
+
+            var snapshot = new BatchProgressSnapshot(
+                totalCount,
+                currentProcessed,
+                currentSuccess,
+                currentSkipped,
+                currentNotFound,
+                currentErrors,
+                cancellationRequested,
+                isComplete,
+                detail);
+            string progressText = BuildProgressText(snapshot);
 
             logger.SetProgress(progressValue);
-            logger.SetText(string.Format(
-                "Processed {0}/{1} ({2}%) — OK: {3} (Direct {4}, Resolved {5}, Synthetic {6}), Skipped: {7}, Not found: {8}, Errors: {9}, Pending UI apply: {10}",
-                currentProcessed, totalCount, pct,
-                currentSuccess, currentDirect, currentResolved, currentSynthetic,
-                currentSkipped, currentNotFound, currentErrors, currentPending),
-                LogStatusType.Info);
+            if (!string.Equals(lastProgressText, progressText, StringComparison.Ordinal))
+            {
+                lastProgressText = progressText;
+                logger.SetText(progressText,
+                    cancellationRequested ? LogStatusType.Warning : LogStatusType.Info);
+            }
         }
 
-        private void RecordDownloadMetrics(FaviconResult result)
+        private void ApplyDatabaseChanges()
         {
-            if (result == null)
+            if (!dbModified)
                 return;
 
-            long elapsed = Math.Max(0L, result.ElapsedMilliseconds);
-            Interlocked.Add(ref totalDownloadElapsedMs, elapsed);
-            TryRecordMaxElapsed(elapsed);
-
-            if (result.DiagnosticsSummary != null &&
-                result.DiagnosticsSummary.IndexOf("cache-hit", StringComparison.OrdinalIgnoreCase) >= 0)
+            try
             {
-                Interlocked.Increment(ref cacheHitCount);
+                host.Database.UINeedsIconUpdate = true;
+                host.MainWindow.UpdateUI(false, null, false, null, true, null, true);
+
+                if (config.AutoSave && host.Database.IOConnectionInfo != null)
+                    host.MainWindow.SaveDatabase(host.Database, null);
             }
-
-            if (result.ProviderMetrics == null)
-                return;
-
-            lock (providerMetricsLock)
+            catch (Exception ex)
             {
-                foreach (ProviderAttemptMetric metric in result.ProviderMetrics)
-                {
-                    if (metric == null || string.IsNullOrWhiteSpace(metric.ProviderName))
-                        continue;
-
-                    ProviderMetricAggregate aggregate;
-                    if (!providerMetricAggregates.TryGetValue(metric.ProviderName, out aggregate))
-                    {
-                        aggregate = new ProviderMetricAggregate(metric.ProviderName);
-                        providerMetricAggregates[metric.ProviderName] = aggregate;
-                    }
-
-                    aggregate.Add(metric);
-                }
+                Logger.Error("ApplyDatabaseChanges", ex);
             }
         }
 
-        private void TryRecordMaxElapsed(long elapsedMilliseconds)
+        private void ExportDiagnostics(out string diagnosticsLogPath,
+            out string diagnosticsCsvPath)
         {
-            while (true)
-            {
-                long current = Interlocked.Read(ref maxDownloadElapsedMs);
-                if (elapsedMilliseconds <= current)
-                    return;
-
-                if (Interlocked.CompareExchange(ref maxDownloadElapsedMs,
-                    elapsedMilliseconds, current) == current)
-                    return;
-            }
-        }
-
-        private void ShowCompletionMessage()
-        {
-            if (dbModified)
-            {
-                try
-                {
-                    host.Database.UINeedsIconUpdate = true;
-                    host.MainWindow.UpdateUI(false, null, false, null, true, null, true);
-
-                    if (config.AutoSave && host.Database.IOConnectionInfo != null)
-                    {
-                        host.MainWindow.SaveDatabase(host.Database, null);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error("ShowCompletionMessage", ex);
-                }
-            }
-
-            bool wasCancelled = cts != null && cts.IsCancellationRequested;
-
-            string message = string.Format(
-                "KeeFetch completed.\n\n" +
-                "Total entries: {0}\n" +
-                "Icons downloaded: {1}\n" +
-                "  - Direct-site successes: {2}\n" +
-                "  - Third-party resolved successes: {3}\n" +
-                "  - Synthetic fallback successes: {4}\n" +
-                "Skipped: {5}\n" +
-                "Not found: {6}\n" +
-                "Errors: {7}",
-                totalCount, successCount, directSiteSuccessCount, resolvedSuccessCount,
-                syntheticSuccessCount, skippedCount, notFoundCount, errorCount);
-
-            string timingSummary = BuildTimingSummary();
-            if (!string.IsNullOrEmpty(timingSummary))
-                message += "\n\n" + timingSummary;
-
-            if (wasCancelled)
-                message += "\n\nDownload was cancelled by user.";
-
+            diagnosticsLogPath = null;
+            diagnosticsCsvPath = null;
             string logDir = null;
             try
             {
-                var dbPath = host.Database.IOConnectionInfo.Path;
+                string dbPath = host.Database.IOConnectionInfo.Path;
                 if (!string.IsNullOrEmpty(dbPath) && File.Exists(dbPath))
                     logDir = Path.GetDirectoryName(dbPath);
             }
@@ -493,47 +544,263 @@ namespace KeeFetch
             if (string.IsNullOrEmpty(logDir) || !Directory.Exists(logDir))
                 logDir = Path.GetTempPath();
 
-            if (diagnosticsLog.Count > 0)
+            List<string> logLines;
+            List<string> csvRows;
+            List<string> errors;
+            lock (diagnosticsLogLock)
+            {
+                logLines = new List<string>(diagnosticsLog);
+                csvRows = new List<string>(diagnosticsCsvRows);
+            }
+            lock (errorLogLock) { errors = new List<string>(errorLog); }
+
+            if (errors.Count > 0)
+            {
+                if (logLines.Count > 0)
+                    logLines.Add(string.Empty);
+                logLines.Add("Processing errors:");
+                logLines.AddRange(errors);
+            }
+
+            if (logLines.Count > 0)
             {
                 try
                 {
-                    string diagnosticsPath = Path.Combine(logDir, "KeeFetch_diagnostics.log");
-                    File.WriteAllText(diagnosticsPath, string.Join(Environment.NewLine, diagnosticsLog));
-                    message += "\n\nDiagnostics log saved to:\n" + diagnosticsPath;
-
-                    if (diagnosticsCsvRows.Count > 0)
-                    {
-                        string diagnosticsCsvPath = Path.Combine(logDir, "KeeFetch_diagnostics.csv");
-                        var csvLines = new List<string>();
-                        csvLines.Add(FaviconDiagnostics.BuildCsvHeader());
-                        csvLines.AddRange(diagnosticsCsvRows);
-                        File.WriteAllText(diagnosticsCsvPath, string.Join(Environment.NewLine, csvLines));
-                        message += "\nDiagnostics CSV saved to:\n" + diagnosticsCsvPath;
-                    }
+                    string path = Path.Combine(logDir, "KeeFetch_diagnostics.log");
+                    File.WriteAllText(path, string.Join(Environment.NewLine, logLines));
+                    diagnosticsLogPath = path;
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error("ShowCompletionMessage", ex);
+                    Logger.Error("ExportDiagnostics", ex);
                 }
             }
 
-            if (errorLog.Count > 0)
+            if (csvRows.Count > 0)
             {
                 try
                 {
-                    string logPath = Path.Combine(logDir, "KeeFetch_errors.log");
-                    File.WriteAllText(logPath,
-                        string.Join(Environment.NewLine + Environment.NewLine, errorLog));
-                    message += "\n\nError log saved to:\n" + logPath;
+                    string path = Path.Combine(logDir, "KeeFetch_diagnostics.csv");
+                    var csvLines = new List<string>();
+                    csvLines.Add(FaviconDiagnostics.BuildCsvHeader());
+                    csvLines.AddRange(csvRows);
+                    File.WriteAllText(path, string.Join(Environment.NewLine, csvLines));
+                    diagnosticsCsvPath = path;
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error("ShowCompletionMessage", ex);
+                    Logger.Error("ExportDiagnostics", ex);
                 }
             }
+        }
 
-            MessageBox.Show(message, "KeeFetch", MessageBoxButtons.OK,
-                wasCancelled ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
+        private void CompleteMissingOutcomes(bool wasCancelled)
+        {
+            for (int i = 0; i < outcomes.Length; i++)
+            {
+                if (outcomes[i] != null)
+                    continue;
+
+                TrySetOutcome(i, CreateOutcome(
+                    entries[i],
+                    null,
+                    wasCancelled ? BatchEntryStatus.Cancelled : BatchEntryStatus.RecoverableError,
+                    null,
+                    !wasCancelled,
+                    wasCancelled
+                        ? "Cancelled before processing completed."
+                        : "Processing ended without an outcome."));
+            }
+        }
+
+        private bool TrySetOutcome(int entryIndex, BatchEntryOutcome outcome)
+        {
+            if (outcome == null || entryIndex < 0 || entryIndex >= outcomes.Length)
+                return false;
+            if (Interlocked.CompareExchange(ref outcomes[entryIndex], outcome, null) != null)
+                return false;
+
+            switch (outcome.Status)
+            {
+                case BatchEntryStatus.Updated:
+                    Interlocked.Increment(ref successCount);
+                    break;
+                case BatchEntryStatus.Skipped:
+                    Interlocked.Increment(ref skippedCount);
+                    break;
+                case BatchEntryStatus.NotFound:
+                    Interlocked.Increment(ref notFoundCount);
+                    break;
+                case BatchEntryStatus.RecoverableError:
+                case BatchEntryStatus.InvalidInput:
+                    Interlocked.Increment(ref errorCount);
+                    break;
+            }
+
+            if (outcome.Status != BatchEntryStatus.Cancelled)
+                Interlocked.Increment(ref processedCount);
+            return true;
+        }
+
+        internal static string BuildProgressText(BatchProgressSnapshot snapshot)
+        {
+            if (snapshot == null)
+                throw new ArgumentNullException("snapshot");
+
+            string prefix;
+            if (snapshot.CancellationRequested && snapshot.IsComplete)
+            {
+                prefix = string.Format("Cancelled after {0} of {1}",
+                    snapshot.ProcessedCount, snapshot.TotalCount);
+            }
+            else if (snapshot.CancellationRequested)
+            {
+                prefix = string.Format("Cancelling… Processed {0} of {1}",
+                    snapshot.ProcessedCount, snapshot.TotalCount);
+            }
+            else
+            {
+                prefix = string.Format("Processed {0} of {1}",
+                    snapshot.ProcessedCount, snapshot.TotalCount);
+            }
+
+            string text = string.Format(
+                "{0} — updated {1}, skipped {2}, not found {3}, errors {4}",
+                prefix,
+                snapshot.UpdatedCount,
+                snapshot.SkippedCount,
+                snapshot.NotFoundCount,
+                snapshot.ErrorCount);
+            if (!string.IsNullOrWhiteSpace(snapshot.Detail))
+                text += Environment.NewLine + snapshot.Detail;
+            return text;
+        }
+
+        internal static BatchRunResult BuildBatchRunResult(
+            PwEntry[] inputEntries,
+            BatchEntryOutcome[] inputOutcomes,
+            bool wasCancelled,
+            TimeSpan elapsed,
+            string profileId,
+            string diagnosticsLogPath,
+            string diagnosticsCsvPath)
+        {
+            PwEntry[] entrySnapshot = inputEntries ?? new PwEntry[0];
+            BatchEntryOutcome[] outcomeSnapshot = inputOutcomes ??
+                new BatchEntryOutcome[entrySnapshot.Length];
+            if (entrySnapshot.Length != outcomeSnapshot.Length)
+                throw new ArgumentException("Entries and outcomes must have the same length.");
+
+            var ordered = new List<BatchEntryOutcome>(entrySnapshot.Length);
+            for (int i = 0; i < entrySnapshot.Length; i++)
+            {
+                BatchEntryOutcome outcome = outcomeSnapshot[i];
+                if (outcome == null)
+                {
+                    BatchEntryStatus status = wasCancelled
+                        ? BatchEntryStatus.Cancelled
+                        : BatchEntryStatus.RecoverableError;
+                    outcome = new BatchEntryOutcome(
+                        entrySnapshot[i],
+                        ReadEntryValue(entrySnapshot[i], PwDefs.TitleField, string.Empty),
+                        string.Empty,
+                        status,
+                        string.Empty,
+                        IconTier.Rejected,
+                        false,
+                        !wasCancelled,
+                        0,
+                        wasCancelled
+                            ? "Cancelled before processing completed."
+                            : "Processing ended without an outcome.");
+                }
+                ordered.Add(outcome);
+            }
+
+            return new BatchRunResult(
+                ordered,
+                wasCancelled,
+                elapsed,
+                profileId,
+                diagnosticsLogPath,
+                diagnosticsCsvPath);
+        }
+
+        private static BatchEntryOutcome CreateOutcome(
+            PwEntry entry,
+            string resolvedUrl,
+            BatchEntryStatus status,
+            FaviconResult result,
+            bool recoverable,
+            string diagnostic)
+        {
+            return new BatchEntryOutcome(
+                entry,
+                ReadEntryValue(entry, PwDefs.TitleField, string.Empty),
+                resolvedUrl ?? string.Empty,
+                status,
+                result != null ? GetProviderId(result.Provider) : string.Empty,
+                result != null ? result.SelectedTier : IconTier.Rejected,
+                result != null && result.WasSyntheticFallback,
+                recoverable,
+                result != null ? Math.Max(0L, result.ElapsedMilliseconds) : 0,
+                diagnostic ?? string.Empty);
+        }
+
+        private static bool IsRecoverableFailure(FaviconResult result)
+        {
+            if (result == null)
+                return false;
+
+            if (result.ProviderMetrics != null && result.ProviderMetrics.Any(metric =>
+                metric != null &&
+                (ContainsIgnoreCase(metric.Outcome, "error") ||
+                 ContainsIgnoreCase(metric.Outcome, "timeout"))))
+            {
+                return true;
+            }
+
+            return ContainsIgnoreCase(result.DiagnosticsSummary, "timeout") ||
+                ContainsIgnoreCase(result.DiagnosticsSummary, "provider-error");
+        }
+
+        private void AddError(PwEntry entry, string resolvedUrl, Exception ex)
+        {
+            string title = ReadEntryValue(entry, PwDefs.TitleField, "?");
+            lock (errorLogLock)
+            {
+                errorLog.Add(string.Format("[{0}] {1}: {2}",
+                    title, resolvedUrl ?? string.Empty, ex.ToString()));
+            }
+        }
+
+        private static string ReadEntryValue(PwEntry entry, string fieldName,
+            string fallback)
+        {
+            if (entry == null)
+                return fallback;
+
+            try
+            {
+                return entry.Strings.ReadSafe(fieldName);
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug("ReadEntryValue", ex);
+                return fallback;
+            }
+        }
+
+        private static bool ContainsIgnoreCase(string value, string fragment)
+        {
+            return value != null && value.IndexOf(
+                fragment, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static string GetProviderId(string idOrDisplayName)
+        {
+            ProviderDefinition provider = FetchProfileCatalog.FindProvider(idOrDisplayName);
+            return provider != null ? provider.Id : (idOrDisplayName ?? string.Empty);
         }
 
         private void AddDiagnosticsEntry(PwEntry entry, string resolvedUrl, FaviconResult result)
@@ -554,53 +821,14 @@ namespace KeeFetch
             }
         }
 
-        private string BuildTimingSummary()
-        {
-            int completed = Math.Max(1, Interlocked.CompareExchange(ref processedCount, 0, 0));
-            long totalMs = Interlocked.Read(ref totalDownloadElapsedMs);
-            long maxMs = Interlocked.Read(ref maxDownloadElapsedMs);
-            int cacheHits = Interlocked.CompareExchange(ref cacheHitCount, 0, 0);
-            long averageMs = completed > 0 ? totalMs / completed : 0;
-
-            var lines = new List<string>();
-            lines.Add(string.Format(
-                "Timing: avg {0} ms per entry, slowest {1} ms, cache hits {2}.",
-                averageMs, maxMs, cacheHits));
-
-            List<ProviderMetricAggregate> aggregates;
-            lock (providerMetricsLock)
-            {
-                aggregates = providerMetricAggregates.Values
-                    .OrderByDescending(v => v.TotalElapsedMilliseconds)
-                    .ThenBy(v => v.ProviderName, StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-            }
-
-            if (aggregates.Count > 0)
-            {
-                lines.Add("Provider timings:");
-                foreach (ProviderMetricAggregate aggregate in aggregates.Take(6))
-                {
-                    lines.Add(string.Format(
-                        "- {0}: {1} calls, {2} ms total, avg {3} ms, candidates {4}, errors {5}",
-                        aggregate.ProviderName,
-                        aggregate.CallCount,
-                        aggregate.TotalElapsedMilliseconds,
-                        aggregate.CallCount > 0 ? aggregate.TotalElapsedMilliseconds / aggregate.CallCount : 0,
-                        aggregate.TotalCandidates,
-                        aggregate.ErrorCount));
-                }
-            }
-
-            return string.Join(Environment.NewLine, lines.ToArray());
-        }
-
         private sealed class PendingIconUpdate
         {
-            public PendingIconUpdate(PwEntry entry, byte[] iconHash, byte[] iconData,
-                string iconHost, IconTier selectedTier, bool wasSyntheticFallback,
-                string resolvedUrl)
+            public PendingIconUpdate(int entryIndex, PwEntry entry, byte[] iconHash,
+                byte[] iconData, string iconHost, IconTier selectedTier,
+                bool wasSyntheticFallback, string resolvedUrl, string providerId,
+                long elapsedMilliseconds, string diagnostic)
             {
+                EntryIndex = entryIndex;
                 Entry = entry;
                 IconHash = iconHash;
                 IconData = iconData;
@@ -608,9 +836,13 @@ namespace KeeFetch
                 SelectedTier = selectedTier;
                 WasSyntheticFallback = wasSyntheticFallback;
                 ResolvedUrl = resolvedUrl ?? string.Empty;
-                EntryTitle = entry != null ? entry.Strings.ReadSafe(PwDefs.TitleField) : string.Empty;
+                EntryTitle = ReadEntryValue(entry, PwDefs.TitleField, string.Empty);
+                ProviderId = providerId ?? string.Empty;
+                ElapsedMilliseconds = Math.Max(0L, elapsedMilliseconds);
+                Diagnostic = diagnostic ?? string.Empty;
             }
 
+            public int EntryIndex { get; private set; }
             public PwEntry Entry { get; private set; }
             public byte[] IconHash { get; private set; }
             public byte[] IconData { get; private set; }
@@ -619,29 +851,10 @@ namespace KeeFetch
             public bool WasSyntheticFallback { get; private set; }
             public string ResolvedUrl { get; private set; }
             public string EntryTitle { get; private set; }
+            public string ProviderId { get; private set; }
+            public long ElapsedMilliseconds { get; private set; }
+            public string Diagnostic { get; private set; }
         }
 
-        private sealed class ProviderMetricAggregate
-        {
-            public ProviderMetricAggregate(string providerName)
-            {
-                ProviderName = providerName;
-            }
-
-            public string ProviderName { get; private set; }
-            public int CallCount { get; private set; }
-            public long TotalElapsedMilliseconds { get; private set; }
-            public int TotalCandidates { get; private set; }
-            public int ErrorCount { get; private set; }
-
-            public void Add(ProviderAttemptMetric metric)
-            {
-                CallCount++;
-                TotalElapsedMilliseconds += Math.Max(0L, metric.ElapsedMilliseconds);
-                TotalCandidates += Math.Max(0, metric.CandidateCount);
-                if (string.Equals(metric.Outcome, "error", StringComparison.OrdinalIgnoreCase))
-                    ErrorCount++;
-            }
-        }
     }
 }

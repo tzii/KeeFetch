@@ -1,12 +1,12 @@
 # KeeFetch current state
 
 Status:  WORKING
-Agent:   Codex
+Agent:   ZCode (GLM-5.3)
 
-Focus:   Plan 03 Task 8 - complete the remaining human-manual KeePass validation rows for High Contrast and real-host Settings, First Run, Progress, Completion, and Retry.
-Next:    Load the final PLGX in a disposable visible KeePass instance and record PASS or an issue for every PENDING (host manual) row in docs/validation/v1.3-ui-matrix.md.
-Pointer: docs/superpowers/plans/2026-08-11-keefetch-v1-3-03-guided-native-ux.md
-As-of:   2026-08-24 · Tasks 1-7 plus semantics repair committed; Task 8 automated gate complete, human-host matrix pending
+Focus:   Plan 03 Task 8 real-host KeePass validation and final PLGX load proof
+Next:    Run the complete fresh automated baseline, then execute every pending host-manual row against one exact PLGX.
+Pointer: docs/superpowers/plans/2026-08-27-keefetch-v1-3-release-completion.md
+As-of:   2026-08-27 · 8f5bd71 · release-completion plan Task 0 executed (worktree verified against live remote)
 
 Notes:
 - Verified baseline: master 462fb25 is clean, synchronized, and green after PR #4; no open issues. Draft website PRs #5/#6 are later-plan alternatives and remain out of scope until Plan 03 freezes the plugin UX.

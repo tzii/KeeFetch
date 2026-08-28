@@ -109,6 +109,27 @@ namespace KeeFetch
             }
         }
 
+        internal string PreviewFetchProfileId()
+        {
+            if (fetchProfileId != null)
+                return fetchProfileId;
+
+            string stored = config.GetString(Prefix + "FetchProfileId", null);
+            if (stored != null)
+            {
+                string trimmed = stored.Trim();
+                if (string.IsNullOrWhiteSpace(trimmed) || !IsKnownProfileId(trimmed))
+                    return "custom";
+
+                return GetCanonicalProfileId(trimmed);
+            }
+
+            string legacyRaw = config.GetString(Prefix + "FetchPresetMode", null);
+            bool isNewInstall = legacyRaw == null;
+            string mapped = LegacyProfileMigration.MapLegacyValue(legacyRaw, isNewInstall);
+            return GetCanonicalProfileId(mapped);
+        }
+
         public int ProfileSchemaVersion
         {
             get

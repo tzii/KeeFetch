@@ -153,7 +153,7 @@ namespace KeeFetch
             btnCancel.AutoSize = true;
             btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             btnCancel.TabIndex = 1;
-            btnCancel.Text = "Cancel";
+            btnCancel.Text = "Ca&ncel";
             btnCancel.UseVisualStyleBackColor = true;
             btnCancel.Click += btnCancel_Click;
 
@@ -161,7 +161,7 @@ namespace KeeFetch
             btnConfirm.AccessibleName = "Confirm fetch profile and continue";
             btnConfirm.AutoSize = true;
             btnConfirm.TabIndex = 0;
-            btnConfirm.Text = "Confirm and Continue";
+            btnConfirm.Text = "&Confirm and Continue";
             btnConfirm.UseVisualStyleBackColor = true;
             btnConfirm.Click += btnConfirm_Click;
 

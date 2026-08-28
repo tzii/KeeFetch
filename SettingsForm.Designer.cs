@@ -105,7 +105,7 @@ namespace KeeFetch
             btnCancel.AutoSize = true;
             btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             btnCancel.TabIndex = 1;
-            btnCancel.Text = "Cancel";
+            btnCancel.Text = "&Cancel";
             btnCancel.UseVisualStyleBackColor = true;
             btnCancel.Click += btnCancel_Click;
 
@@ -113,7 +113,7 @@ namespace KeeFetch
             btnSave.AccessibleName = "Save KeeFetch settings";
             btnSave.AutoSize = true;
             btnSave.TabIndex = 0;
-            btnSave.Text = "Save";
+            btnSave.Text = "&Save";
             btnSave.UseVisualStyleBackColor = true;
             btnSave.Click += btnSave_Click;
 

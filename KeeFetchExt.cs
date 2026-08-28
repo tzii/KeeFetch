@@ -403,7 +403,7 @@ namespace KeeFetch
             if (Config.HasSeenFirstRunDisclosure)
                 return true;
 
-            using (var form = new FirstRunForm(Config.FetchProfileId))
+            using (var form = new FirstRunForm(Config.PreviewFetchProfileId()))
             {
                 if (form.ShowDialog(host.MainWindow) != DialogResult.OK)
                     return false;

@@ -151,6 +151,34 @@ namespace KeeFetch.Tests
             Assert.AreSame(second, result.RetryEntries[1]);
         }
 
+        [TestMethod]
+        public void RetryEntries_ExcludesNonRecoverableErrorOutcomes()
+        {
+            PwEntry entry = NewEntry("Application fault");
+            var nonRecoverable = new BatchEntryOutcome(
+                entry,
+                "Application fault",
+                "https://example.com/",
+                BatchEntryStatus.RecoverableError,
+                string.Empty,
+                IconTier.Rejected,
+                false,
+                false,
+                10,
+                "Unexpected application failure.");
+
+            var result = new BatchRunResult(
+                new[] { nonRecoverable },
+                false,
+                TimeSpan.Zero,
+                "everyday",
+                null,
+                null);
+
+            Assert.AreEqual(0, result.RetryEntries.Count,
+                "Only outcomes explicitly classified as recoverable may retry.");
+        }
+
         private static BatchEntryOutcome Outcome(PwEntry entry, BatchEntryStatus status)
         {
             return new BatchEntryOutcome(

@@ -86,7 +86,7 @@ namespace KeeFetch.Settings
             layout.SetColumnSpan(lblManagedHint, 2);
 
             btnResetAdvanced.Name = "btnResetAdvanced";
-            btnResetAdvanced.Text = "Reset advanced defaults";
+            btnResetAdvanced.Text = "&Reset advanced defaults";
             btnResetAdvanced.AccessibleName = "Reset advanced settings to defaults";
             btnResetAdvanced.AutoSize = true;
             btnResetAdvanced.Anchor = AnchorStyles.Left;

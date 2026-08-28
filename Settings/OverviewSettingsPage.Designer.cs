@@ -42,7 +42,7 @@ namespace KeeFetch.Settings
             layout.SetColumnSpan(lblHeading, 2);
 
             lblProfile.Name = "lblProfile";
-            lblProfile.Text = "Profile:";
+            lblProfile.Text = "&Profile:";
             lblProfile.AutoSize = true;
             lblProfile.Anchor = AnchorStyles.Left;
             lblProfile.Margin = new Padding(0, 4, 12, 4);

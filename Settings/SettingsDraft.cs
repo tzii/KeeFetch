@@ -93,7 +93,7 @@ namespace KeeFetch.Settings
             foreach (ProviderDefinition provider in FetchProfileCatalog.Providers)
                 draft.providerEnabled[provider.Id] = config.IsProviderEnabled(provider.DisplayName);
 
-            draft.profileId = config.FetchProfileId;
+            draft.profileId = config.PreviewFetchProfileId();
             FetchProfileDefinition managedProfile;
             if (TryGetManagedProfile(draft.profileId, out managedProfile))
             {
@@ -216,7 +216,13 @@ namespace KeeFetch.Settings
             config.SkipExistingIcons = SkipExistingIcons;
             config.AutoSave = AutoSave;
             config.AllowSelfSignedCerts = AllowSelfSignedCerts;
-            config.UseThirdPartyFallbacks = UseThirdPartyFallbacks;
+            bool effectiveThirdPartyFallbacks = UseThirdPartyFallbacks;
+            if (string.Equals(profileId, "custom", StringComparison.OrdinalIgnoreCase))
+            {
+                effectiveThirdPartyFallbacks = FetchProfileCatalog.Providers.Any(provider =>
+                    provider.IsThirdParty && IsProviderEnabled(provider.Id));
+            }
+            config.UseThirdPartyFallbacks = effectiveThirdPartyFallbacks;
             config.AllowSyntheticFallbacks = AllowSyntheticFallbacks;
             config.HasSeenFirstRunDisclosure = HasSeenFirstRunDisclosure;
             config.MaxIconSize = MaxIconSize;

@@ -29,7 +29,8 @@ namespace KeeFetch.Batch
                 IncrementStatusCount(outcome.Status);
 
                 if ((outcome.Status == BatchEntryStatus.NotFound ||
-                     outcome.Status == BatchEntryStatus.RecoverableError) &&
+                     (outcome.Status == BatchEntryStatus.RecoverableError &&
+                      outcome.Recoverable)) &&
                     outcome.Entry != null &&
                     !ContainsReference(retrySnapshot, outcome.Entry))
                 {

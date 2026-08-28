@@ -209,16 +209,16 @@ namespace KeeFetch
             actionPanel.Margin = new System.Windows.Forms.Padding(0, 8, 0, 0);
             actionPanel.WrapContents = true;
 
-            ConfigureButton(btnClose, "btnClose", "Close", "Close batch summary", 0);
+            ConfigureButton(btnClose, "btnClose", "&Close", "Close batch summary", 0);
             btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             btnClose.Click += btnClose_Click;
-            ConfigureButton(btnRetry, "btnRetry", "Retry Eligible Entries",
+            ConfigureButton(btnRetry, "btnRetry", "&Retry Eligible Entries",
                 "Retry eligible entries once", 1);
             btnRetry.Click += btnRetry_Click;
-            ConfigureButton(btnCopySummary, "btnCopySummary", "Copy Summary",
+            ConfigureButton(btnCopySummary, "btnCopySummary", "Copy &Summary",
                 "Copy batch summary", 2);
             btnCopySummary.Click += btnCopySummary_Click;
-            ConfigureButton(btnOpenDiagnostics, "btnOpenDiagnostics", "Open Diagnostics",
+            ConfigureButton(btnOpenDiagnostics, "btnOpenDiagnostics", "&Open Diagnostics",
                 "Open diagnostics file", 3);
             btnOpenDiagnostics.Click += btnOpenDiagnostics_Click;
             actionPanel.Controls.Add(btnClose);

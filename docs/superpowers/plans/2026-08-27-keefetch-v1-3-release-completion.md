@@ -604,9 +604,14 @@ Repeat Task 1 Steps 2–5. Rebuild and visibly load the PLGX again if any produc
 
 - [ ] **Step 3: Push and create the PR**
 
+Owner amendment (2026-08-28): a draft PR may be opened before the host-manual
+rows are complete so review and CI can proceed. While any row remains pending,
+the PR stays draft and `.agent/STATE.md` stays `WORKING`; this does not authorize
+marking the PR ready, merging it, or beginning the next delivery branch.
+
 ```powershell
 git push -u origin codex/v1-3-guided-native-ux
-gh pr create --repo tzii/KeeFetch --base master --head codex/v1-3-guided-native-ux --title "Complete v1.3 guided-native plugin UX" --body-file docs\validation\v1.3-ui-matrix.md
+gh pr create --draft --repo tzii/KeeFetch --base master --head codex/v1-3-guided-native-ux --title "Complete v1.3 guided-native plugin UX" --body-file docs\validation\v1.3-ui-matrix.md
 ```
 
 If a PR already exists, do not create a duplicate. Read it with `gh pr view`, push the verified commit, and update the description to summarize implementation, automated gates, manual matrix, PLGX identity, and known limitations.
@@ -618,7 +623,8 @@ gh pr checks --repo tzii/KeeFetch --watch
 gh pr view --repo tzii/KeeFetch --json number,state,isDraft,mergeable,mergeStateStatus,statusCheckRollup,reviews,url
 ```
 
-Do not mark ready while any check is missing, pending, cancelled, or failed.
+Do not mark ready while any host-manual row or CI check is missing, pending,
+cancelled, or failed.
 
 - [ ] **Step 5: Stop for merge authorization**
 

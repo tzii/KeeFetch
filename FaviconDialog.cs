@@ -236,7 +236,7 @@ namespace KeeFetch
                                         url,
                                         BatchEntryStatus.RecoverableError,
                                         null,
-                                        true,
+                                        false,
                                         ex.Message));
                                 }
                                 finally
@@ -372,7 +372,7 @@ namespace KeeFetch
                         unavailable.ProviderId,
                         unavailable.SelectedTier,
                         unavailable.WasSyntheticFallback,
-                        true,
+                        false,
                         unavailable.ElapsedMilliseconds,
                         "KeePass database became unavailable before the icon could be applied."));
                 }
@@ -417,7 +417,7 @@ namespace KeeFetch
                             pending.ProviderId,
                             pending.SelectedTier,
                             pending.WasSyntheticFallback,
-                            true,
+                            false,
                             pending.ElapsedMilliseconds,
                             ex.Message));
                     }
@@ -606,7 +606,7 @@ namespace KeeFetch
                     null,
                     wasCancelled ? BatchEntryStatus.Cancelled : BatchEntryStatus.RecoverableError,
                     null,
-                    !wasCancelled,
+                    false,
                     wasCancelled
                         ? "Cancelled before processing completed."
                         : "Processing ended without an outcome."));
@@ -708,7 +708,7 @@ namespace KeeFetch
                         string.Empty,
                         IconTier.Rejected,
                         false,
-                        !wasCancelled,
+                        false,
                         0,
                         wasCancelled
                             ? "Cancelled before processing completed."

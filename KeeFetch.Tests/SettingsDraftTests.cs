@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using KeeFetch.FetchProfiles;
 using KeeFetch.Settings;
 using KeePass.App.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,12 +13,18 @@ namespace KeeFetch.Tests
         [TestMethod]
         public void Draft_DoesNotMutateConfigurationUntilApply()
         {
-            var config = new Configuration(new AceCustomConfig());
+            var rawConfig = new AceCustomConfig();
+            var config = new Configuration(rawConfig);
             SettingsDraft draft = SettingsDraft.FromConfiguration(config);
 
             draft.ProfileId = "privacy";
             draft.AutoSave = true;
 
+            Assert.IsNull(rawConfig.GetString("KeeFetch.FetchProfileId", null),
+                "Opening Settings must not persist a default profile before Save.");
+            Assert.AreEqual(0L,
+                rawConfig.GetLong("KeeFetch.ProfileSchemaVersion", 0),
+                "Opening Settings must not persist a schema version before Save.");
             Assert.AreEqual("everyday", config.FetchProfileId);
             Assert.IsFalse(config.AutoSave);
 
@@ -196,7 +203,8 @@ namespace KeeFetch.Tests
             Assert.IsTrue(config.SkipExistingIcons);
             Assert.IsTrue(config.AutoSave);
             Assert.IsTrue(config.AllowSelfSignedCerts);
-            Assert.IsFalse(config.UseThirdPartyFallbacks);
+            Assert.IsTrue(config.UseThirdPartyFallbacks,
+                "Custom must enable its effective third-party chain when Google is checked.");
             Assert.IsFalse(config.AllowSyntheticFallbacks);
             Assert.IsTrue(config.HasSeenFirstRunDisclosure);
             Assert.AreEqual(96, config.MaxIconSize);
@@ -207,6 +215,52 @@ namespace KeeFetch.Tests
             Assert.IsTrue(config.IsProviderEnabled("Google"));
             Assert.IsTrue(config.IsProviderEnabled("Direct Site"));
             Assert.IsFalse(config.IsProviderEnabled("Yandex"));
+            CollectionAssert.AreEqual(
+                new[] { "google", "direct-site" },
+                (System.Collections.ICollection)new FaviconDownloader(config)
+                    .ResolvedPolicy.ProviderIds);
+        }
+
+        [TestMethod]
+        public void ApplyTo_PrivacyThenCustomDerivesThirdPartyGateFromCheckedProviders()
+        {
+            var config = new Configuration(new AceCustomConfig());
+            SettingsDraft draft = SettingsDraft.FromConfiguration(config);
+            draft.ProfileId = "privacy";
+            Assert.IsFalse(draft.UseThirdPartyFallbacks);
+
+            draft.ProfileId = "custom";
+            draft.ProviderOrder.Add("google");
+            draft.SetProviderEnabled("google", true);
+            draft.ApplyTo(config);
+
+            Assert.IsTrue(config.UseThirdPartyFallbacks);
+            CollectionAssert.Contains(
+                (System.Collections.ICollection)new FaviconDownloader(config)
+                    .ResolvedPolicy.ProviderIds,
+                "google",
+                "A checked third-party provider must be present in the effective Custom chain.");
+        }
+
+        [TestMethod]
+        public void ApplyTo_LegacyCustomDerivesThirdPartyGateFromCheckedProviders()
+        {
+            var config = new Configuration(new AceCustomConfig());
+            config.FetchProfileId = "custom";
+            config.UseThirdPartyFallbacks = false;
+            config.ProviderOrder = "Google,Direct Site";
+            config.SetProviderEnabled("Google", true);
+            config.SetProviderEnabled("Direct Site", true);
+
+            SettingsDraft draft = SettingsDraft.FromConfiguration(config);
+            draft.ApplyTo(config);
+
+            Assert.IsTrue(config.UseThirdPartyFallbacks);
+            CollectionAssert.Contains(
+                (System.Collections.ICollection)new FaviconDownloader(config)
+                    .ResolvedPolicy.ProviderIds,
+                "google",
+                "A checked legacy Custom provider must remain in the effective chain.");
         }
 
         private static SettingsDraft CustomDraft()

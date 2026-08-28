@@ -33,6 +33,40 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
+        public void GuidedNativeUi_EachFormExposesAnAccessKeyMnemonic()
+        {
+            foreach (Form form in CreateForms())
+            {
+                using (form)
+                {
+                    Assert.IsTrue(
+                        Descendants(form).Any(control =>
+                            (control is ButtonBase || control is Label) &&
+                            HasMnemonic(control.Text)),
+                        form.Name + " needs at least one visible access-key mnemonic.");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void SettingsUi_EachPageExposesAnAccessKeyMnemonic()
+        {
+            using (var settings = new SettingsForm(
+                new Configuration(new AceCustomConfig())))
+            {
+                TabControl tabs = Find<TabControl>(settings, "tabSettings");
+                foreach (TabPage page in tabs.TabPages)
+                {
+                    Assert.IsTrue(
+                        Descendants(page).Any(control =>
+                            (control is ButtonBase || control is Label) &&
+                            HasMnemonic(control.Text)),
+                        page.Name + " needs a visible access-key mnemonic.");
+                }
+            }
+        }
+
+        [TestMethod]
         public void GuidedNativeUi_ContainsVisibleControlsAtSimulatedDpiScales()
         {
             foreach (float scale in new[] { 1F, 1.25F, 1.5F, 2F })
@@ -203,6 +237,22 @@ namespace KeeFetch.Tests
                 control is ComboBox || control is ListBox ||
                 control is NumericUpDown || control is LinkLabel ||
                 control is TabControl;
+        }
+
+        private static bool HasMnemonic(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return false;
+
+            for (int i = 0; i < text.Length - 1; i++)
+            {
+                if (text[i] == '&' && text[i + 1] != '&')
+                    return true;
+                if (text[i] == '&' && text[i + 1] == '&')
+                    i++;
+            }
+
+            return false;
         }
 
         private static T Find<T>(Control root, string name) where T : Control

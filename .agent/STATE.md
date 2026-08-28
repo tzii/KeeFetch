@@ -6,7 +6,7 @@ Agent:   Codex
 Focus:   Plan 03 Task 8 real-host KeePass validation and final PLGX load proof
 Next:    Owner visibly loads the e0051fd replacement PLGX and confirms the four Settings tabs no longer show ampersands; then continue the remaining host-manual rows before PR #8 can be ready.
 Pointer: https://github.com/tzii/KeeFetch/pull/8
-As-of:   2026-08-28 · Owner cancellation and Fast mixed-run evidence recorded from e370714; literal ampersands found in Settings tab captions, fixed test-first at e0051fd; fresh KeePass 2.60 gate green at 208/208; exact replacement PLGX and pristine portable host prepared; PR #8 update pending.
+As-of:   2026-08-28 · Owner cancellation and Fast mixed-run evidence recorded from e370714; literal ampersands found in Settings tab captions, fixed test-first at e0051fd; fresh KeePass 2.60 gate green at 208/208; exact replacement PLGX and pristine portable host prepared; draft PR #8 refreshed and GitHub CI green, MERGEABLE/CLEAN.
 
 Notes:
 - 2026-08-28 (Codex): Owner host run on e370714 proved cancellation arithmetic (71 total; 32 updated; 1 not found; 2 invalid; 36 cancelled; retry 1) and Fast mixed-result arithmetic (71 total; 59 updated; 8 not found; 2 recoverable + 2 invalid errors; retry 10), but exposed literal `&` markers in all Settings tab captions. Root cause was invalid mnemonic assumptions for `TabPage.Text`; fixed test-first in e0051fd with plain captions and retained Ctrl+Tab navigation. Fresh gate: 0 warnings/errors, 208/208, harness/corpus/export/diff/tree green. Replacement PLGX: 1,069,253 bytes, SHA-256 `4AFBECD4C6245163FCAEA60C653D00FEA832C20A846DEEA1C239BBE06ADB205C`; pristine host `%TEMP%\KeeFetch-v13-ui-portable-e0051fd43b96`; visible load/Settings recheck pending.

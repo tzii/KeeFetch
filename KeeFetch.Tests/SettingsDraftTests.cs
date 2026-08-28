@@ -25,12 +25,19 @@ namespace KeeFetch.Tests
             Assert.AreEqual(0L,
                 rawConfig.GetLong("KeeFetch.ProfileSchemaVersion", 0),
                 "Opening Settings must not persist a schema version before Save.");
-            Assert.AreEqual("everyday", config.FetchProfileId);
+            Assert.AreEqual("privacy", draft.ProfileId);
             Assert.IsFalse(config.AutoSave);
+            Assert.IsNull(rawConfig.GetString("KeeFetch.FetchProfileId", null));
+            Assert.AreEqual(0L,
+                rawConfig.GetLong("KeeFetch.ProfileSchemaVersion", 0));
 
             draft.ApplyTo(config);
 
             Assert.AreEqual("privacy", config.FetchProfileId);
+            Assert.AreEqual("privacy",
+                rawConfig.GetString("KeeFetch.FetchProfileId", null));
+            Assert.AreEqual(1L,
+                rawConfig.GetLong("KeeFetch.ProfileSchemaVersion", 0));
             Assert.IsTrue(config.AutoSave);
             Assert.IsFalse(config.UseThirdPartyFallbacks);
             CollectionAssert.AreEqual(new[] { "Direct Site" }, config.GetProviderOrderList().Take(1).ToArray());

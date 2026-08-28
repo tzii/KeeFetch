@@ -60,7 +60,7 @@ namespace KeeFetch.Settings
             ConfigureCheckBox(chkAutoSave, "chkAutoSave", "Save the database after applying icons", "Save database after download", 3);
 
             lblMaxIconSize.Name = "lblMaxIconSize";
-            lblMaxIconSize.Text = "Maximum icon &size:";
+            lblMaxIconSize.Text = "Maximum icon size:";
             lblMaxIconSize.AutoSize = true;
             lblMaxIconSize.Anchor = AnchorStyles.Left;
             lblMaxIconSize.Margin = new Padding(0, 10, 12, 4);

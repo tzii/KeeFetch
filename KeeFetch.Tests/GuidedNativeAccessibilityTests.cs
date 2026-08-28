@@ -39,11 +39,11 @@ namespace KeeFetch.Tests
             {
                 using (form)
                 {
-                    Assert.IsTrue(
-                        Descendants(form).Any(control =>
-                            (control is ButtonBase || control is Label) &&
-                            HasMnemonic(control.Text)),
-                        form.Name + " needs at least one visible access-key mnemonic.");
+                    form.StartPosition = FormStartPosition.Manual;
+                    form.Location = new Point(-4000, -4000);
+                    form.Show();
+                    Application.DoEvents();
+                    AssertUniqueActiveMnemonics(form);
                 }
             }
         }
@@ -57,11 +57,27 @@ namespace KeeFetch.Tests
                 TabControl tabs = Find<TabControl>(settings, "tabSettings");
                 foreach (TabPage page in tabs.TabPages)
                 {
-                    Assert.IsTrue(
-                        Descendants(page).Any(control =>
-                            (control is ButtonBase || control is Label) &&
-                            HasMnemonic(control.Text)),
-                        page.Name + " needs a visible access-key mnemonic.");
+                    Assert.IsTrue(HasMnemonic(page.Text),
+                        page.Name + " needs a tab access-key mnemonic.");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void SettingsUi_MnemonicsAreUniqueForEverySelectedPage()
+        {
+            using (var settings = new SettingsForm(
+                new Configuration(new AceCustomConfig())))
+            {
+                settings.StartPosition = FormStartPosition.Manual;
+                settings.Location = new Point(-4000, -4000);
+                settings.Show();
+                TabControl tabs = Find<TabControl>(settings, "tabSettings");
+                foreach (TabPage page in tabs.TabPages)
+                {
+                    tabs.SelectedTab = page;
+                    Application.DoEvents();
+                    AssertUniqueActiveMnemonics(settings);
                 }
             }
         }
@@ -115,7 +131,7 @@ namespace KeeFetch.Tests
                 AssertTextFits(Find<Label>(settings, "lblProfileDescription"));
                 TabControl tabs = Find<TabControl>(settings, "tabSettings");
                 tabs.SelectedTab = tabs.TabPages.Cast<TabPage>()
-                    .Single(page => page.Text == "Providers");
+                    .Single(page => page.Text == "&Providers");
                 settings.PerformLayout();
                 Application.DoEvents();
                 AssertTextFits(Find<Label>(settings, "lblProviderHint"));
@@ -253,6 +269,40 @@ namespace KeeFetch.Tests
             }
 
             return false;
+        }
+
+        private static void AssertUniqueActiveMnemonics(Form form)
+        {
+            char[] keys = Descendants(form)
+                .Where(control => control.Enabled &&
+                    ((control is TabPage) ||
+                     (control.Visible &&
+                      (control is ButtonBase || control is Label))))
+                .Select(control => MnemonicKey(control.Text))
+                .Where(key => key != '\0')
+                .ToArray();
+
+            Assert.IsTrue(keys.Length > 0,
+                form.Name + " needs an enabled visible access-key mnemonic.");
+            Assert.AreEqual(keys.Length, keys.Distinct().Count(),
+                form.Name + " has duplicate active access-key mnemonics: " +
+                string.Join(", ", keys.Select(key => key.ToString()).ToArray()) + ".");
+        }
+
+        private static char MnemonicKey(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return '\0';
+
+            for (int i = 0; i < text.Length - 1; i++)
+            {
+                if (text[i] == '&' && text[i + 1] != '&')
+                    return char.ToUpperInvariant(text[i + 1]);
+                if (text[i] == '&' && text[i + 1] == '&')
+                    i++;
+            }
+
+            return '\0';
         }
 
         private static T Find<T>(Control root, string name) where T : Control

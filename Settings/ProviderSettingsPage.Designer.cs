@@ -63,7 +63,7 @@ namespace KeeFetch.Settings
             buttonPanel.WrapContents = false;
             buttonPanel.Margin = new Padding(0, 10, 0, 0);
 
-            ConfigureButton(btnProviderUp, "btnProviderUp", "Move &up", "Move selected provider up", 0, btnProviderUp_Click);
+            ConfigureButton(btnProviderUp, "btnProviderUp", "Move up", "Move selected provider up", 0, btnProviderUp_Click);
             ConfigureButton(btnProviderDown, "btnProviderDown", "Move down", "Move selected provider down", 1, btnProviderDown_Click);
             ConfigureButton(btnProviderReset, "btnProviderReset", "Reset", "Reset provider order and enabled providers", 2, btnProviderReset_Click);
 

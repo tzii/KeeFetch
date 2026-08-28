@@ -53,7 +53,7 @@ namespace KeeFetch.Tests
                     "The form must not write Configuration itself.");
                 Assert.IsFalse(config.HasSeenFirstRunDisclosure);
 
-                Assert.IsTrue(KeeFetchExt.ApplyFirstRunChoice(config, form));
+                Assert.IsTrue(KeeFetchExt.ApplyFirstRunChoice(config, form, null));
                 Assert.AreEqual("privacy", config.FetchProfileId);
                 Assert.IsTrue(config.HasSeenFirstRunDisclosure);
             }
@@ -72,10 +72,62 @@ namespace KeeFetch.Tests
 
                 Assert.IsFalse(form.Confirmed);
                 Assert.AreEqual(DialogResult.Cancel, form.DialogResult);
-                Assert.IsFalse(KeeFetchExt.ApplyFirstRunChoice(config, form));
+                Assert.IsFalse(KeeFetchExt.ApplyFirstRunChoice(config, form, null));
                 Assert.AreEqual(originalProfileId, config.FetchProfileId);
                 Assert.IsFalse(config.HasSeenFirstRunDisclosure);
             }
+        }
+
+        [TestMethod]
+        public void FirstRunForm_ConfirmedChoicePersistsAfterCommit()
+        {
+            var config = new Configuration(new AceCustomConfig());
+
+            int persistCount = 0;
+            string profileAtPersist = null;
+            bool disclosureAtPersist = false;
+            Action persist = delegate
+            {
+                persistCount++;
+                profileAtPersist = config.FetchProfileId;
+                disclosureAtPersist = config.HasSeenFirstRunDisclosure;
+            };
+
+            using (var form = new FirstRunForm("everyday"))
+            {
+                SelectProfile(form, "privacy");
+                InvokeHandler(form, "btnConfirm_Click");
+
+                Assert.IsTrue(KeeFetchExt.ApplyFirstRunChoice(config, form, persist));
+            }
+
+            Assert.AreEqual(1, persistCount,
+                "A confirmed first-run choice must persist exactly once.");
+            Assert.AreEqual("privacy", profileAtPersist,
+                "Persistence must run after the profile is committed in memory.");
+            Assert.IsTrue(disclosureAtPersist,
+                "Persistence must run after the disclosure flag is committed in memory.");
+            Assert.AreEqual("privacy", config.FetchProfileId);
+            Assert.IsTrue(config.HasSeenFirstRunDisclosure);
+        }
+
+        [TestMethod]
+        public void FirstRunForm_CancelledChoiceNeverPersists()
+        {
+            var config = new Configuration(new AceCustomConfig());
+            int persistCount = 0;
+            Action persist = delegate { persistCount++; };
+
+            using (var form = new FirstRunForm("everyday"))
+            {
+                InvokeHandler(form, "btnCancel_Click");
+
+                Assert.IsFalse(KeeFetchExt.ApplyFirstRunChoice(config, form, persist));
+            }
+
+            Assert.AreEqual(0, persistCount,
+                "A cancelled first-run choice must not trigger persistence.");
+            Assert.IsFalse(config.HasSeenFirstRunDisclosure);
         }
 
         [TestMethod]

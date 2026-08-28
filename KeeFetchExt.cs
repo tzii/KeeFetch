@@ -299,7 +299,7 @@ namespace KeeFetch
 
         private void OnOpenSettings(object sender, EventArgs e)
         {
-            using (var form = new SettingsForm(Config))
+            using (var form = new SettingsForm(Config, PersistConfiguration))
             {
                 form.ShowDialog(host.MainWindow);
             }
@@ -408,11 +408,11 @@ namespace KeeFetch
                 if (form.ShowDialog(host.MainWindow) != DialogResult.OK)
                     return false;
 
-                return ApplyFirstRunChoice(Config, form);
+                return ApplyFirstRunChoice(Config, form, PersistConfiguration);
             }
         }
 
-        internal static bool ApplyFirstRunChoice(Configuration config, FirstRunForm form)
+        internal static bool ApplyFirstRunChoice(Configuration config, FirstRunForm form, Action persist)
         {
             if (config == null)
                 throw new ArgumentNullException("config");
@@ -436,7 +436,24 @@ namespace KeeFetch
 
             config.FetchProfileId = profile.Id;
             config.HasSeenFirstRunDisclosure = true;
+            if (persist != null)
+                persist();
             return true;
+        }
+
+        // KeePass flushes KeePass.config.xml itself only when its own state
+        // changes, so plugin CustomConfig writes must be saved explicitly or
+        // they are lost when the process exits.
+        private void PersistConfiguration()
+        {
+            try
+            {
+                KeePass.App.Configuration.AppConfigSerializer.Save(KeePass.Program.Config);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("PersistConfiguration", ex);
+            }
         }
 
         public override string UpdateUrl

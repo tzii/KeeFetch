@@ -10,13 +10,20 @@ namespace KeeFetch
     {
         private readonly Configuration config;
         private readonly SettingsDraft draft;
+        private readonly Action persistOnSave;
 
         public SettingsForm(Configuration config)
+            : this(config, null)
+        {
+        }
+
+        internal SettingsForm(Configuration config, Action persistOnSave)
         {
             if (config == null)
                 throw new ArgumentNullException("config");
 
             this.config = config;
+            this.persistOnSave = persistOnSave;
             draft = SettingsDraft.FromConfiguration(config);
             InitializeComponent();
             LoadPagesFromDraft();
@@ -54,6 +61,8 @@ namespace KeeFetch
 
             ClearValidationErrors();
             draft.ApplyTo(config);
+            if (persistOnSave != null)
+                persistOnSave();
             DialogResult = DialogResult.OK;
             Close();
         }

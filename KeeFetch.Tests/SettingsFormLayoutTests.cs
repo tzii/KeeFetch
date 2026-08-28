@@ -126,6 +126,54 @@ namespace KeeFetch.Tests
             }
         }
 
+        [TestMethod]
+        public void SettingsForm_SavePersistsAfterCommitAndValidationFailureDoesNot()
+        {
+            var saveConfig = new Configuration(new AceCustomConfig());
+            int persistCount = 0;
+            bool appliedAtPersist = false;
+            using (var form = new SettingsForm(saveConfig, delegate
+            {
+                persistCount++;
+                appliedAtPersist = saveConfig.AutoSave;
+            }))
+            {
+                DownloadSettingsPage downloads = GetField<DownloadSettingsPage>(form, "downloadPage");
+                Find<CheckBox>(downloads, "chkAutoSave").Checked = true;
+
+                InvokeHandler(form, "btnSave_Click");
+
+                Assert.AreEqual(DialogResult.OK, form.DialogResult);
+                Assert.AreEqual(1, persistCount,
+                    "A successful Save must persist exactly once.");
+                Assert.IsTrue(appliedAtPersist,
+                    "Persistence must run after the draft is applied to the configuration.");
+            }
+
+            int failedPersistCount = 0;
+            using (var form = new SettingsForm(new Configuration(new AceCustomConfig()),
+                delegate { failedPersistCount++; }))
+            {
+                OverviewSettingsPage overview = GetField<OverviewSettingsPage>(form, "overviewPage");
+                ProviderSettingsPage providers = GetField<ProviderSettingsPage>(form, "providerPage");
+                ComboBox profiles = Find<ComboBox>(overview, "cmbProfile");
+                profiles.SelectedItem = profiles.Items.Cast<ProfileListItem>()
+                    .Single(item => item.Id == "custom");
+
+                CheckedListBox providerList = Find<CheckedListBox>(providers, "clbProviders");
+                Assert.IsTrue(providerList.Enabled,
+                    "Custom mode must expose the provider list.");
+                for (int i = 0; i < providerList.Items.Count; i++)
+                    providerList.SetItemChecked(i, false);
+
+                InvokeHandler(form, "btnSave_Click");
+
+                Assert.AreEqual(0, failedPersistCount,
+                    "A Save blocked by validation must not persist.");
+                Assert.AreNotEqual(DialogResult.OK, form.DialogResult);
+            }
+        }
+
         private static SettingsForm NewForm()
         {
             return new SettingsForm(new Configuration(new AceCustomConfig()));

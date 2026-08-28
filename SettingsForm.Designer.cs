@@ -88,10 +88,10 @@ namespace KeeFetch
             tabSettings.SelectedIndex = 0;
             tabSettings.TabIndex = 0;
 
-            ConfigureTabPage(tabOverview, "tabOverview", "&Overview", overviewPage);
-            ConfigureTabPage(tabDownloads, "tabDownloads", "&Downloads", downloadPage);
-            ConfigureTabPage(tabProviders, "tabProviders", "&Providers", providerPage);
-            ConfigureTabPage(tabAdvanced, "tabAdvanced", "&Advanced", advancedPage);
+            ConfigureTabPage(tabOverview, "tabOverview", "Overview", overviewPage);
+            ConfigureTabPage(tabDownloads, "tabDownloads", "Downloads", downloadPage);
+            ConfigureTabPage(tabProviders, "tabProviders", "Providers", providerPage);
+            ConfigureTabPage(tabAdvanced, "tabAdvanced", "Advanced", advancedPage);
 
             actionPanel.Name = "actionPanel";
             actionPanel.AutoSize = true;

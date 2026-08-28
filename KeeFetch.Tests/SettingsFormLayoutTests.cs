@@ -18,7 +18,7 @@ namespace KeeFetch.Tests
             {
                 TabControl tabs = GetField<TabControl>(form, "tabSettings");
                 CollectionAssert.AreEqual(
-                    new[] { "&Overview", "&Downloads", "&Providers", "&Advanced" },
+                    new[] { "Overview", "Downloads", "Providers", "Advanced" },
                     tabs.TabPages.Cast<TabPage>().Select(page => page.Text).ToArray());
 
                 Assert.IsInstanceOfType(tabs.TabPages[0].Controls[0], typeof(OverviewSettingsPage));
@@ -118,7 +118,7 @@ namespace KeeFetch.Tests
                 TabControl tabs = GetField<TabControl>(form, "tabSettings");
                 Label summary = GetField<Label>(form, "lblValidationSummary");
                 AdvancedSettingsPage advanced = GetField<AdvancedSettingsPage>(form, "advancedPage");
-                Assert.AreEqual("&Advanced", tabs.SelectedTab.Text);
+                Assert.AreEqual("Advanced", tabs.SelectedTab.Text);
                 Assert.IsTrue(summary.Visible);
                 StringAssert.Contains(summary.Text, "Connection timeout is invalid.");
                 Assert.IsFalse(string.IsNullOrWhiteSpace(summary.AccessibleName));

@@ -49,7 +49,7 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
-        public void SettingsUi_EachPageExposesAnAccessKeyMnemonic()
+        public void SettingsUi_TabCaptionsRenderWithoutMnemonicMarkers()
         {
             using (var settings = new SettingsForm(
                 new Configuration(new AceCustomConfig())))
@@ -57,8 +57,8 @@ namespace KeeFetch.Tests
                 TabControl tabs = Find<TabControl>(settings, "tabSettings");
                 foreach (TabPage page in tabs.TabPages)
                 {
-                    Assert.IsTrue(HasMnemonic(page.Text),
-                        page.Name + " needs a tab access-key mnemonic.");
+                    Assert.IsFalse(page.Text.Contains("&"),
+                        page.Name + " must not expose a literal mnemonic marker.");
                 }
             }
         }
@@ -131,7 +131,7 @@ namespace KeeFetch.Tests
                 AssertTextFits(Find<Label>(settings, "lblProfileDescription"));
                 TabControl tabs = Find<TabControl>(settings, "tabSettings");
                 tabs.SelectedTab = tabs.TabPages.Cast<TabPage>()
-                    .Single(page => page.Text == "&Providers");
+                    .Single(page => page.Text == "Providers");
                 settings.PerformLayout();
                 Application.DoEvents();
                 AssertTextFits(Find<Label>(settings, "lblProviderHint"));

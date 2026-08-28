@@ -1,14 +1,15 @@
 # KeeFetch current state
 
 Status:  WORKING
-Agent:   ZCode (GLM-5.3)
+Agent:   Codex
 
 Focus:   Plan 03 Task 8 real-host KeePass validation and final PLGX load proof
-Next:    Run the complete fresh automated baseline, then execute every pending host-manual row against one exact PLGX.
+Next:    Complete independent review, open a draft PR, verify CI, then have the owner execute every pending host-manual row before ready-for-review.
 Pointer: docs/superpowers/plans/2026-08-27-keefetch-v1-3-release-completion.md
-As-of:   2026-08-28 · c703629 pushed (docs-only ahead of validated source 782dd1ea4c57); fresh 2.60 baseline green at c703629; final PLGX + pristine disposable portable instance verified intact; host-manual runbook staged in docs/validation/v1.3-ui-matrix.md — waiting on owner execution, then Task 3 (PR + CI + REVIEW)
+As-of:   2026-08-28 · 5b16e90 pushed; fresh KeePass 2.60 pre-PR baseline green (201/201 and all repository gates); independent review in progress; draft PR explicitly requested as the review/CI vehicle while host-manual rows remain pending.
 
 Notes:
+- 2026-08-28 (Codex): GitHub reconciled: PR #4 is merged; remote UX tip is 5b16e90; no existing UX PR or v1.3.0 tag/release; unrelated draft PR #7 left untouched. Fresh baseline at 5b16e90 with KeePass 2.60.0.0 passed both warning-as-error Release builds, explicit C# 5 build, MSTest 201/201, benchmark self-tests, corpus validation, profile export `-Check`, `git diff --check`, and clean-tree check (evidence `%TEMP%\KeeFetch-v13-ui-validation-20260828-135950`). Computer Use cannot execute the remaining real-host matrix because its non-negotiable policy prohibits password-manager automation even with synthetic data; owner requested a meaningful draft PR for review/CI while those rows remain pending.
 - 2026-08-28 (ZCode): remote unchanged (master 462fb25, UX 8f5bd71, no v1.3.0 tag/release, no superseding PR). Fresh baseline at c703629 with KeePass 2.60.0.0: builds 0/0, MSTest 201/201, harness/corpus/export/diff green, clean tree (evidence %TEMP%\KeeFetch-v13-ui-validation-20260828-124647; an incidental KeePass 2.61.1 pass was also green). PLGX (420BA129…F87C) and the disposable portable instance verified intact; local config has zero KeeFetch.* keys (pristine first-install state). Host-manual execution runbook (launch/reset commands, v1.2 legacy config snippets, ordered checklist, recording rules) appended to docs/validation/v1.3-ui-matrix.md. Password-manager UI automation remains prohibited — the owner executes the runbook; afterwards record results, commit, push, then Plan Task 3 (review, PR, CI, REVIEW).
 - 2026-08-27 (ZCode): worktree verified against live remote (master 462fb25, UX tip 8f5bd71 unchanged, no v1.3.0 tag/release). Fresh automated baseline at 782dd1ea4c57: both builds 0/0, MSTest 201/201, harness/corpus/export/diff gates green. Final UI PLGX built by KeePass 2.60 --plgx-create (1,069,139 bytes, SHA-256 420BA129258C1B007D63538AC47236FF45BF10B19604B6A48FED3DD4D028F87C); visible disposable instance loads it with no compile error, Tools->KeeFetch present, plugin cache compiled (PluginCache\hhTYomEjyxI1BPBG4f7P\KeeFetch.dll), clean close. Evidence in docs/validation/v1.3-ui-matrix.md. Remaining: every host-manual row (Settings tabs, DPI, High Contrast, keyboard, first install, migrations, cancel/partial/retry/success, long path).
 - Verified baseline: master 462fb25 is clean, synchronized, and green after PR #4; no open issues. Draft website PRs #5/#6 are later-plan alternatives and remain out of scope until Plan 03 freezes the plugin UX.

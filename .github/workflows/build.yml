@@ -86,11 +86,13 @@ jobs:
 
           # Copy only the source files needed for plgx-create (exclude TestCompile.cs)
           Copy-Item -Path "*.cs" -Destination $plgxSrc -Exclude "TestCompile.cs"
-          Copy-Item -Path "SettingsForm.resx" -Destination $plgxSrc
+          Copy-Item -Path "*Form.resx" -Destination $plgxSrc
           Copy-Item -Path "Properties" -Destination $plgxSrc -Recurse
           Copy-Item -Path "IconProviders" -Destination $plgxSrc -Recurse
           Copy-Item -Path "FetchProfiles" -Destination $plgxSrc -Recurse
           Copy-Item -Path "IconSelection" -Destination $plgxSrc -Recurse
+          Copy-Item -Path "Batch" -Destination $plgxSrc -Recurse
+          Copy-Item -Path "Settings" -Destination $plgxSrc -Recurse
           Copy-Item -Path "Assets" -Destination $plgxSrc -Recurse
 
           # KeePass plgx-create needs a legacy-style .csproj — SDK-style won't work.
@@ -100,6 +102,8 @@ jobs:
           $expectedFiles = @(
             "KeeFetchExt.cs", "FaviconDownloader.cs", "FaviconDialog.cs",
             "Configuration.cs", "SettingsForm.cs", "SettingsForm.Designer.cs",
+            "FirstRunForm.cs", "FirstRunForm.Designer.cs", "FirstRunForm.resx",
+            "CompletionForm.cs", "CompletionForm.Designer.cs", "CompletionForm.resx",
             "Logger.cs", "Util.cs", "SharedHttp.cs", "AndroidAppMapper.cs",
             "Properties\AssemblyInfo.cs", "KeeFetch.csproj",
             "IconSelection\IconSelector.cs", "IconSelection\IconCandidate.cs",
@@ -110,7 +114,20 @@ jobs:
             "FetchProfiles\FetchProfileCatalog.cs",
             "FetchProfiles\FetchProfileDefinition.cs",
             "FetchProfiles\FetchProfileCatalog.Generated.cs",
-            "FetchProfiles\LegacyProfileMigration.cs"
+            "FetchProfiles\LegacyProfileMigration.cs",
+            "Batch\BatchEntryOutcome.cs",
+            "Batch\BatchProgressSnapshot.cs",
+            "Batch\BatchRunResult.cs",
+            "Settings\SettingsDraft.cs",
+            "Settings\ProfileListItem.cs",
+            "Settings\OverviewSettingsPage.cs",
+            "Settings\OverviewSettingsPage.Designer.cs",
+            "Settings\DownloadSettingsPage.cs",
+            "Settings\DownloadSettingsPage.Designer.cs",
+            "Settings\ProviderSettingsPage.cs",
+            "Settings\ProviderSettingsPage.Designer.cs",
+            "Settings\AdvancedSettingsPage.cs",
+            "Settings\AdvancedSettingsPage.Designer.cs"
           )
           $missing = $expectedFiles | Where-Object { !(Test-Path (Join-Path $plgxSrc $_)) }
           if ($missing) {

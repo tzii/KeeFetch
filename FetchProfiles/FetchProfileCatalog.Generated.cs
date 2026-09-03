@@ -56,9 +56,9 @@ namespace KeeFetch.FetchProfiles
 
             profiles.Add(new FetchProfileDefinition(
                 "max-coverage",
-                "Thorough",
+                "Precise",
                 "tries 2 icon source(s) in order (the site itself, Yandex) within a 22s total budget; stops as soon as a strong resolver returns a high-confidence icon.",
-                "Maximum coverage with the study-selected resolver chain",
+                "Favor icon precision over finding an icon for every entry",
                 new string[] { "direct-site", "yandex" },
                 6000,
                 3500,

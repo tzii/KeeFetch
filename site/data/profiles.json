@@ -62,9 +62,9 @@
     },
     {
       "id": "max-coverage",
-      "displayName": "Thorough",
+      "displayName": "Precise",
       "description": "tries 2 icon source(s) in order (the site itself, Yandex) within a 22s total budget; stops as soon as a strong resolver returns a high-confidence icon.",
-      "intendedUse": "Maximum coverage with the study-selected resolver chain",
+      "intendedUse": "Favor icon precision over finding an icon for every entry",
       "providerIds": [
         "direct-site",
         "yandex"

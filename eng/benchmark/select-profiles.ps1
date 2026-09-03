@@ -869,7 +869,10 @@ $privacyWinner = Invoke-WinnerRule -Role "privacy" -Ranking {
         @{ Expression = { $_.profile_id } })
 }
 
-# 2. Max-coverage winner: highest estimated usable rate.
+# 2. Precision winner. The stable role id remains "max-coverage" for
+# configuration/migration compatibility, but this rule ranks reviewed
+# usability among returned artifacts, not total coverage. User-facing text
+# must describe that precision trade-off truthfully.
 $maxCoverageWinner = Invoke-WinnerRule -Role "max-coverage" -Ranking {
     param([string]$scenario)
     @($statsList | Sort-Object -Property `
@@ -996,7 +999,7 @@ $roles = @(
     @{ Id = "bulk-fast";      DisplayName = "Fast";      IntendedUse = "Large batch fetching with reduced latency";                 Winner = $bulkWinner },
     @{ Id = "everyday";       DisplayName = "Balanced";  IntendedUse = "Default everyday use balancing coverage and speed";        Winner = $everydayWinner },
     @{ Id = "privacy";        DisplayName = "Privacy";   IntendedUse = "Privacy-sensitive fetching without third-party providers"; Winner = $privacyWinner },
-    @{ Id = "max-coverage";   DisplayName = "Thorough";  IntendedUse = "Maximum coverage with the study-selected resolver chain";        Winner = $maxCoverageWinner }
+    @{ Id = "max-coverage";   DisplayName = "Precise";   IntendedUse = "Favor icon precision over finding an icon for every entry";      Winner = $maxCoverageWinner }
 )
 
 foreach ($role in $roles) {
@@ -1049,6 +1052,29 @@ $generatedCs = ($generatedLines -join "`n") + "`n"
 # 7. Reports
 # ---------------------------------------------------------------------------
 
+$reviewCensusLine = "- Review is a CENSUS: every unique cold (fixture_id, artifact_hash) unit is $reviewKindPhrase exactly once and the label propagates to every occurrence of that exact artifact across repetitions and candidates. There is no sampling, no stratification, and no design weighting; the selection verifies that the review queue equals the cold census exactly (no missing unit, no extra key)."
+if ($experimentId -eq "profile-candidates-v13") {
+    $reaskManifestPath = Join-Path $repoRoot "machine-review\resolve-ambiguous\manifest.json"
+    if (-not (Test-Path -LiteralPath $reaskManifestPath)) {
+        throw "The profile-candidates-v13 publication requires its focused re-ask manifest: $reaskManifestPath"
+    }
+
+    $reaskManifest = Get-Content -Raw -LiteralPath $reaskManifestPath | ConvertFrom-Json
+    $reaskKeys = @($reaskManifest.images | ForEach-Object { @($_.units) } | ForEach-Object { [string]$_.key })
+    if ($reaskKeys.Count -eq 0) {
+        throw "The focused re-ask manifest contains no review-unit keys: $reaskManifestPath"
+    }
+
+    foreach ($reaskKey in $reaskKeys) {
+        if (-not $reviewMap.ContainsKey($reaskKey)) {
+            throw "Focused re-ask key '$reaskKey' is absent from the final review queue."
+        }
+    }
+
+    $reaskFixtureIds = @($reaskKeys | ForEach-Object { ($_ -split '\|', 2)[0] } | Sort-Object -Unique)
+    $reviewCensusLine = "- Review is a CENSUS: every unique cold (fixture_id, artifact_hash) unit is $reviewKindPhrase and the label propagates to every occurrence of that exact artifact across repetitions and candidates. Every unit received exactly one labeling pass except $($reaskKeys.Count) initially ambiguous $($reaskFixtureIds -join ', ') units, which received one disclosed focused re-ask recorded under ``machine-review/resolve-ambiguous/``. There is no sampling, no stratification, and no design weighting; the selection verifies that the review queue equals the cold census exactly (no missing unit, no extra key)."
+}
+
 $evidenceLines = New-Object System.Collections.Generic.List[string]
 $evidenceLines.Add("# v1.3 Provider Study Evidence Report")
 $evidenceLines.Add("")
@@ -1068,7 +1094,7 @@ $evidenceLines.Add("")
 $evidenceLines.Add("- Execution policies: every candidate executed its recorded provider chain, per-provider and cumulative budgets, synthetic flag, and early-stop flag; run.json policy fingerprints were verified against the experiment definition, and the execution-harness fingerprint was verified uniform and current.")
 $evidenceLines.Add("- Cold/warm: cold runs clear all caches before every measured run. Warm blocks clear once, perform an unmeasured warm-up over the full corpus, then run measured warm repetitions without clearing. Warm-up runs are marked and excluded from all metrics.")
 $evidenceLines.Add("- Scoring is cold-only: machine availability, label rates, provider calls, third-party disclosure, and latency statistics are computed over measured cold cells; warm rows appear only as informational latency percentiles and never enter a winner rule.")
-$evidenceLines.Add("- Review is a CENSUS: every unique cold (fixture_id, artifact_hash) unit is $reviewKindPhrase exactly once and the label propagates to every occurrence of that exact artifact across repetitions and candidates. There is no sampling, no stratification, and no design weighting; the selection verifies that the review queue equals the cold census exactly (no missing unit, no extra key).")
+$evidenceLines.Add($reviewCensusLine)
 $evidenceLines.Add("- Statistics: machine availability and census labels are separate evidence; an unreviewed success is never counted as correct. Reported label rates are exact proportions over the reviewed census population - with a complete census there is no sampling error to estimate, so no interval estimates are reported anywhere.")
 foreach ($disclosureLine in $reviewDisclosureLines) { $evidenceLines.Add($disclosureLine) }
 $evidenceLines.Add("- Correctness excludes ambiguous labels from numerator and denominator. Rows without an artifact hash cannot carry exact identity and remain machine evidence only.")
@@ -1100,6 +1126,7 @@ $evidenceLines.Add("")
 $evidenceLines.Add("- Live-network measurements reflect the environment and time of the run; absolute latencies vary, rankings are the decision evidence.")
 $evidenceLines.Add("- The census removes sampling error from label rates, not reviewer judgment error: each label is one $($reviewKindPhrase.Replace('-reviewed','').Replace('reviewed (','').Replace(')','')) decision per unique artifact" + $(if ($isMachineReview) { " (machine judgment error characteristics differ from human judgment error)" } else { "" }) + ".")
 $evidenceLines.Add("- Privacy is measured by observed third-party call evidence, not by the configured chain alone.")
+$evidenceLines.Add(("- The stable ``max-coverage`` id is retained for migration compatibility, but its rule ranks reviewed usability among returned artifacts rather than total coverage. Its user-facing label is therefore Precise; the selected chain measured {0:P1} total coverage versus {1:P1} for Balanced." -f $maxCoverageWinner.coverage, $everydayWinner.coverage))
 $evidenceLines.Add("")
 $evidenceLines.Add("## Reproduction")
 $evidenceLines.Add("")

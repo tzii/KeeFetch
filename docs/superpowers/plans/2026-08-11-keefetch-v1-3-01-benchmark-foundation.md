@@ -92,7 +92,7 @@ git commit -m "build: enforce C# 5 plugin compatibility"
 Use the user-provided archive and an isolated temporary directory:
 
 ```powershell
-$archive = 'C:\Users\simon\Downloads\ABDM\Compressed\KeeFetch-Test-Package.zip'
+$archive = Join-Path $env:USERPROFILE 'Downloads\KeeFetch-Test-Package.zip'
 $destination = Join-Path $env:TEMP 'keefetch-v13-regression-import'
 if (Test-Path -LiteralPath $destination) { Remove-Item -LiteralPath $destination -Recurse }
 Expand-Archive -LiteralPath $archive -DestinationPath $destination

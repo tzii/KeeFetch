@@ -1,17 +1,21 @@
 # KeeFetch current state
 
-Status:  DONE
-Agent:   Codex
+Status:  WORKING
+Agent:   Hoplite
 
-Focus:   PR #4 merged into master as e2bee2d (2026-08-23) after the completed review pass: the reviewed head de4f871 was mergeable with CI green, all local gates had been re-verified, and all four published winners reproduced end-to-end.
-Next:    None - this focus is complete. Parked harness fixes for a future study remain in docs/benchmarks/v1.3-harness-followups.md.
-Pointer: https://github.com/tzii/KeeFetch/pull/4
-As-of:   2026-08-23 · merged as e2bee2d
+Focus:   Final merge-readiness corrections for PR #9: release-job permission isolation, trailing-root-dot host classification, and precise security/compatibility documentation.
+Next:    Confirm the complete Windows CI gate on the updated PR head before the human merge decision.
+Pointer: https://github.com/tzii/KeeFetch/pull/9
+As-of:   2026-09-06 · final corrections verified locally; new-head Windows CI pending; do not merge or claim REVIEW from the older 3bdb271 check
 
 Notes:
-- Review provenance: census labels are MACHINE review (`machine:antigravity-1.1.18/gemini-3.7-flash-high`), owner-approved after the dual-lane pilot + pixel arbitration and an owner spot-check; disclosed in `docs/benchmarks/v1.3-provider-study.md` and `machine-review/`. Never present them as human review.
-- Winners: bulk-fast -> cand-direct-google-twenty-fast; everyday -> cand-full-minus-favicone-thorough-synth; privacy -> cand-direct-only-balanced; max-coverage -> cand-direct-yandex-balanced; all stable under ambiguity replay after the 3 pub-216 units were resolved to `unusable` (focused re-ask, live-verified).
-- Gates at this state: MSTest 161/161, Release build -warnaserror 0/0, harness self-tests green, export -Check green, git diff --check clean, prepare-review -Validate green (456 rows), selector -Publish write-back verified.
-- Selector repairs this session (android-store ctor arg, provenance-derived wording, eng\** compile exclusion in KeeFetch.csproj) are outside the harness-fingerprint scope; recorded fingerprints in the evidence remain valid.
-- Evidence root backup: review-queue.pre-machine-20260822.bak.csv (all not-reviewed) next to the labeled queue.
-- Review verified the published study is untainted by the known resume-accumulator defect: resumed_any is false for every cell in the final evidence (0 of 126 measured cells resumed).
+- Final pass: build/test/package now uses contents: read and non-persisted checkout credentials; only a tag-push release job has contents: write. Artifact checksums run on PRs; executable self-tests cover valid, tampered, missing, duplicate, malformed, and traversal cases. Root-dot classifier/transport regressions reproduced two failures before the fix; security subset now 23/23. README/CONTRIBUTING/CHANGELOG accurately describe post-response redirect filtering, DNS limitations, site-linked Privacy assets, TLS fallback, and unreleased profiles.
+- Fresh local verification: official .NET SDK 8.0.424 + KeePass 2.60, production C# 5 and test builds -warnaserror 0/0; all 177 tests exercised in complementary Mono UI/non-UI partitions (175 pass, 2 fail). Untouched 3bdb271 produces the same failures (172/174): missing Mono Microsoft.VisualBasic implementation and libgdiplus PNG fixture rejection. Unpartitioned suites stall under Mono; the diagnostic run stopped at StalledResponseStream_BecomesProviderTimeoutWithinBudget, which passes in isolation. No tests were weakened or omitted from the partition comparison.
+- Release-workflow self-tests, YAML permission/artifact/order validation, version/manifest gates, export -Check, 300-row corpus validation, and diff checks pass. Benchmark self-tests fail identically on this head and 3bdb271 under PowerShell 7 because they require Windows PowerShell JSON-array semantics; fingerprinted scripts remain unchanged. Original-head Windows CI is green but is not evidence for the new head.
+- Linux tooling is now reproducible through .hoplite/settings.json and eng/setup-sandbox.sh. The platform setup lifecycle tool failed; the same script was verified through explicit shell execution. New-head CI verification remains required.
+- The prior repository review is preserved on thread branch hoplite/ainos-d4393498 at 118759c. Preexisting diagnostics, destination-policy/DNS, image resource limits, and retry issues remain separate work; this PR must not claim to solve them.
+- PR #8 (`codex/v1-3-guided-native-ux`, draft, CI green) remains the in-flight v1.3 UX work; its own `.agent/STATE.md` on that branch tracks the host-manual validation rows. It touches `.github/workflows/build.yml` (PLGX staging list) and will need a small merge with this branch's workflow edits.
+- PRs #5 and #6 both rewrite `site/index.html` against a stale base and conflict with each other; one should be chosen and rebased, the other closed.
+- Historical initial pass used another Linux sandbox: 166/173 tests (7 Mono failures). The fresh comparison above supersedes those local counts; the original PR head later passed 174/174 on Windows CI.
+- Review provenance of the v1.3 study is unchanged: census labels are MACHINE review (`machine:antigravity-1.1.18/gemini-3.7-flash-high`), owner-approved; never present them as human review.
+- Parked harness fixes remain in docs/benchmarks/v1.3-harness-followups.md.

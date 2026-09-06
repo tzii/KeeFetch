@@ -8,6 +8,13 @@ on:
     branches: [master]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
@@ -15,15 +22,36 @@ env:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '8.0.x'
+
+      - name: Check version consistency
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF -like 'refs/tags/v*') {
+            ./eng/check-version.ps1 -Tag $env:GITHUB_REF
+          } else {
+            ./eng/check-version.ps1
+          }
+
+      - name: Check PLGX manifest matches tracked sources
+        shell: pwsh
+        run: ./eng/check-plgx-manifest.ps1
+
+      - name: Test release workflow safeguards
+        shell: pwsh
+        run: ./eng/test-release-workflow.ps1
 
       - name: Install KeePass
         shell: pwsh
@@ -184,17 +212,89 @@ jobs:
         with:
           name: KeeFetch.dll
           path: bin/Release/net48/KeeFetch.dll
+          if-no-files-found: error
 
       - name: Upload PLGX artifact
         uses: actions/upload-artifact@v6
         with:
           name: KeeFetch.plgx
           path: ${{ env.PLGX_PATH }}
+          if-no-files-found: error
+
+      - name: Compute release checksums
+        shell: pwsh
+        run: |
+          $out = Join-Path $env:RUNNER_TEMP 'SHA256SUMS.txt'
+          $lines = @()
+          foreach ($file in @("bin\Release\net48\KeeFetch.dll", $env:PLGX_PATH)) {
+            $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $file).Hash.ToLowerInvariant()
+            $lines += "$hash  $(Split-Path -Leaf $file)"
+          }
+          [System.IO.File]::WriteAllLines($out, $lines)
+          Get-Content $out
+          Write-Output "SHA256SUMS_PATH=$out" >> $env:GITHUB_ENV
+
+      - name: Upload checksum artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: SHA256SUMS.txt
+          path: ${{ env.SHA256SUMS_PATH }}
+          if-no-files-found: error
+
+  release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download tested DLL
+        uses: actions/download-artifact@v8
+        with:
+          name: KeeFetch.dll
+          path: release
+
+      - name: Download tested PLGX
+        uses: actions/download-artifact@v8
+        with:
+          name: KeeFetch.plgx
+          path: release
+
+      - name: Download checksums
+        uses: actions/download-artifact@v8
+        with:
+          name: SHA256SUMS.txt
+          path: release
+
+      - name: Verify release checksums
+        shell: pwsh
+        run: |
+          $expected = @('KeeFetch.dll', 'KeeFetch.plgx')
+          $seen = @()
+          $lines = @(Get-Content -LiteralPath 'release/SHA256SUMS.txt' -ErrorAction Stop)
+          if ($lines.Count -ne $expected.Count) { throw 'Expected exactly two release checksums.' }
+          foreach ($line in $lines) {
+            if ($line -cnotmatch '^([0-9a-f]{64})  (KeeFetch\.(?:dll|plgx))$') {
+              throw 'Invalid release checksum entry.'
+            }
+            $hash = $Matches[1]
+            $name = $Matches[2]
+            if ($seen -contains $name) { throw "Duplicate checksum: $name" }
+            $actual = (Get-FileHash -Algorithm SHA256 -LiteralPath "release/$name" -ErrorAction Stop).Hash.ToLowerInvariant()
+            if ($actual -cne $hash) { throw "Checksum mismatch: $name" }
+            $seen += $name
+          }
+          foreach ($name in $expected) {
+            if ($seen -notcontains $name) { throw "Missing checksum: $name" }
+          }
 
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v3
+        # softprops/action-gh-release v3.0.3, pinned by commit for supply-chain safety
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64
         with:
+          fail_on_unmatched_files: true
           files: |
-            bin/Release/net48/KeeFetch.dll
-            ${{ env.PLGX_PATH }}
+            release/KeeFetch.dll
+            release/KeeFetch.plgx
+            release/SHA256SUMS.txt

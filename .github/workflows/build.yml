@@ -8,6 +8,13 @@ on:
     branches: [master]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
@@ -15,6 +22,8 @@ env:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write   # release asset upload on v* tags; read-only elsewhere
 
     steps:
       - name: Checkout code
@@ -24,6 +33,19 @@ jobs:
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '8.0.x'
+
+      - name: Check version consistency
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF -like 'refs/tags/v*') {
+            ./eng/check-version.ps1 -Tag $env:GITHUB_REF
+          } else {
+            ./eng/check-version.ps1
+          }
+
+      - name: Check PLGX manifest matches tracked sources
+        shell: pwsh
+        run: ./eng/check-plgx-manifest.ps1
 
       - name: Install KeePass
         shell: pwsh
@@ -191,10 +213,26 @@ jobs:
           name: KeeFetch.plgx
           path: ${{ env.PLGX_PATH }}
 
+      - name: Compute release checksums
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          $out = "$env:RUNNER_TEMP\SHA256SUMS.txt"
+          $lines = @()
+          foreach ($file in @("bin\Release\net48\KeeFetch.dll", $env:PLGX_PATH)) {
+            $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $file).Hash.ToLowerInvariant()
+            $lines += "$hash  $(Split-Path -Leaf $file)"
+          }
+          [System.IO.File]::WriteAllLines($out, $lines)
+          Get-Content $out
+          Write-Output "SHA256SUMS_PATH=$out" >> $env:GITHUB_ENV
+
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v3
+        # softprops/action-gh-release v3.0.3, pinned by commit for supply-chain safety
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64
         with:
           files: |
             bin/Release/net48/KeeFetch.dll
             ${{ env.PLGX_PATH }}
+            ${{ env.SHA256SUMS_PATH }}

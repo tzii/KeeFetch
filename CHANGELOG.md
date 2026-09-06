@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Study-selected managed fetch profiles (`Fast`, `Balanced`, `Privacy`, `Thorough`) chosen by the v1.3 provider study; see `docs/benchmarks/v1.3-provider-study.md`
+- Benchmark harness, regression corpus, and profile catalog tooling under `eng/`
+- CI gates: PLGX manifest consistency (`eng/check-plgx-manifest.ps1`), version/tag consistency (`eng/check-version.ps1`), and `SHA256SUMS.txt` release asset
+
+### Changed
+- Balanced profile now runs Direct Site → Twenty Icons → DuckDuckGo → Google → Yandex → Icon Horse with synthetic fallbacks allowed (supersedes the 1.2.0 Direct Site/Google/Favicone default); Favicone remains available for Custom configurations
+- Fast profile now runs Direct Site → Google → Twenty Icons; Thorough runs Direct Site → Yandex
+- Existing `Fast`/`Balanced`/`Thorough` preset settings migrate to the matching managed profile; `Custom` is preserved
+
+### Security
+- Self-signed certificate acceptance now applies only to KeeFetch's own HTTP client instead of the process-wide `ServicePointManager` callback shared with KeePass and other plugins
+- KeeFetch no longer overrides `ServicePointManager.SecurityProtocol`; the previous code re-enabled TLS 1.0/1.1 for the whole KeePass process
+- Private-address detection now covers `0.0.0.0/8`, carrier-grade NAT (`100.64.0.0/10`), documentation/benchmark ranges, multicast, IPv4-mapped IPv6, and NAT64 addresses, and resolver providers now reject redirects that land on a private host
+- GitHub Actions workflow runs with a read-only token except for release asset upload; the release action is pinned by commit SHA
+
+### Fixed
+- Bare IPv6 literals are no longer misclassified as intranet hostnames
+
 ## [1.2.0] - 2026-04-26
 
 ### Added

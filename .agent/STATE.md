@@ -1,17 +1,16 @@
 # KeeFetch current state
 
-Status:  DONE
-Agent:   Codex
+Status:  REVIEW
+Agent:   Hoplite
 
-Focus:   PR #4 merged into master as e2bee2d (2026-08-23) after the completed review pass: the reviewed head de4f871 was mergeable with CI green, all local gates had been re-verified, and all four published winners reproduced end-to-end.
-Next:    None - this focus is complete. Parked harness fixes for a future study remain in docs/benchmarks/v1.3-harness-followups.md.
-Pointer: https://github.com/tzii/KeeFetch/pull/4
-As-of:   2026-08-23 · merged as e2bee2d
+Focus:   Repository hardening pass on master: scope self-signed-cert acceptance to KeeFetch's HttpClient (no ServicePointManager mutation), stop forcing TLS 1.0/1.1 process-wide, close private-address/redirect gaps, add fail-closed CI gates (PLGX manifest, version/tag), least-privilege workflow token, SHA-pinned release action, SHA256SUMS release asset, Dependabot, and bring CHANGELOG/README/CONTRIBUTING back in line with the shipped profile catalog.
+Next:    Human review and merge decision on the hardening PR; then rebase PR #8 (guided-native UX) onto master — its `KeeFetch.plgx.csproj` additions will now be verified by `eng/check-plgx-manifest.ps1`.
+Pointer: hoplite/kalchedon-1ba50bf1 (PR opened from this branch)
+As-of:   2026-09-06 · branched from master 462fb25
 
 Notes:
-- Review provenance: census labels are MACHINE review (`machine:antigravity-1.1.18/gemini-3.7-flash-high`), owner-approved after the dual-lane pilot + pixel arbitration and an owner spot-check; disclosed in `docs/benchmarks/v1.3-provider-study.md` and `machine-review/`. Never present them as human review.
-- Winners: bulk-fast -> cand-direct-google-twenty-fast; everyday -> cand-full-minus-favicone-thorough-synth; privacy -> cand-direct-only-balanced; max-coverage -> cand-direct-yandex-balanced; all stable under ambiguity replay after the 3 pub-216 units were resolved to `unusable` (focused re-ask, live-verified).
-- Gates at this state: MSTest 161/161, Release build -warnaserror 0/0, harness self-tests green, export -Check green, git diff --check clean, prepare-review -Validate green (456 rows), selector -Publish write-back verified.
-- Selector repairs this session (android-store ctor arg, provenance-derived wording, eng\** compile exclusion in KeeFetch.csproj) are outside the harness-fingerprint scope; recorded fingerprints in the evidence remain valid.
-- Evidence root backup: review-queue.pre-machine-20260822.bak.csv (all not-reviewed) next to the labeled queue.
-- Review verified the published study is untainted by the known resume-accumulator defect: resumed_any is false for every cell in the final evidence (0 of 126 measured cells resumed).
+- PR #8 (`codex/v1-3-guided-native-ux`, draft, CI green) remains the in-flight v1.3 UX work; its own `.agent/STATE.md` on that branch tracks the host-manual validation rows. It touches `.github/workflows/build.yml` (PLGX staging list) and will need a small merge with this branch's workflow edits.
+- PRs #5 and #6 both rewrite `site/index.html` against a stale base and conflict with each other; one should be chosen and rebased, the other closed.
+- Gates on this branch (Linux sandbox, Mono runtime): Release build 0/0 with `-p:LangVersion=5 -warnaserror`; MSTest 166/173 — the 7 failures are identical on unmodified master under Mono (WinForms layout metrics + libgdiplus 1x1 PNG) and pass on Windows CI; `eng/check-plgx-manifest.ps1` and `eng/check-version.ps1` green (negative cases verified to fail); `git diff --check` clean. Harness self-tests and `export-profile-data.ps1 -Check` need Windows/KeePass and were not run here.
+- Review provenance of the v1.3 study is unchanged: census labels are MACHINE review (`machine:antigravity-1.1.18/gemini-3.7-flash-high`), owner-approved; never present them as human review.
+- Parked harness fixes remain in docs/benchmarks/v1.3-harness-followups.md.

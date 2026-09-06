@@ -35,47 +35,79 @@ Thank you for your interest in contributing to KeeFetch!
 
 The PLGX is built using the `KeeFetch.plgx.csproj` file which is a legacy-style project file required by KeePass. The main `KeeFetch.csproj` is an SDK-style project used for modern development and testing.
 
+Every production `.cs`, `.resx`, and embedded asset must be listed in `KeeFetch.plgx.csproj`; `eng/check-plgx-manifest.ps1` (run in CI) fails when the project and the tracked sources drift apart.
+
+## Repository Gates
+
+CI runs these on every pull request; run them locally before opening one:
+
+```powershell
+dotnet build KeeFetch.csproj -c Release -p:LangVersion=5 -warnaserror   # production must stay C# 5 and warning-free
+dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj -c Release
+./eng/check-version.ps1                                                  # version.txt == AssemblyInfo.cs
+./eng/check-plgx-manifest.ps1                                            # PLGX project lists exactly the tracked sources
+./eng/export-profile-data.ps1 -Check                                     # site/data/profiles.json matches the catalog
+powershell -File eng/benchmark/test-benchmark-harness.ps1                # benchmark harness self-tests (offline)
+git diff --check
+```
+
+Releases are cut by pushing a `v*` tag; the workflow additionally checks that the tag matches `version.txt` and that `CHANGELOG.md` has a section for it, then publishes the DLL, PLGX, and `SHA256SUMS.txt`.
+
 ## Project Structure
 
 ```
 KeeFetch/
-├── KeeFetchExt.cs              # Plugin entry point — registers menus, handles click events
-├── FaviconDownloader.cs        # Orchestrates the provider chain with caching and timeouts
-├── FaviconDialog.cs            # Progress dialog — concurrent downloads with SemaphoreSlim
-├── Configuration.cs            # Plugin settings stored in KeePass custom config
-├── SettingsForm.cs             # Settings UI (WinForms)
-├── SettingsForm.Designer.cs    # WinForms designer-generated code
-├── Logger.cs                   # Thread-safe in-memory log with level filtering
-├── Util.cs                     # URL parsing, image resizing, hashing, proxy helpers
-├── AndroidAppMapper.cs         # Maps androidapp:// URLs to web domains + Play Store scraping
+├── KeeFetchExt.cs                # Plugin entry point — registers menus, first-run disclosure, update URL
+├── FaviconDownloader.cs          # Runs the provider chain under one execution policy; caching, coalescing, health
+├── FaviconDialog.cs              # Progress dialog — concurrent downloads with SemaphoreSlim, UI-thread DB writes
+├── FaviconDiagnostics.cs         # Per-entry diagnostics log and CSV export
+├── Configuration.cs              # Plugin settings stored in KeePass custom config; preset/profile mapping
+├── SettingsForm.cs / .Designer.cs / .resx   # Settings UI (WinForms)
+├── SharedHttp.cs                 # Single HttpClient; scoped self-signed certificate policy
+├── Logger.cs                     # Thread-safe in-memory log with level filtering
+├── Util.cs                       # URL parsing, private-host detection, image validation, hashing
+├── AndroidAppMapper.cs           # Maps androidapp:// URLs to web domains + Play Store scraping
+├── FetchProfiles/
+│   ├── ProviderDefinition.cs             # Stable provider ids (direct-site … icon-horse) and display names
+│   ├── FetchProfileDefinition.cs         # Immutable managed-profile record
+│   ├── FetchProfileCatalog.cs            # Catalog lookup / normalization
+│   ├── FetchProfileCatalog.Generated.cs  # Managed profiles written by eng/benchmark/select-profiles.ps1 — do not hand-edit
+│   ├── FetchExecutionPolicy.cs           # Resolves the single policy (providers, timeouts, flags) a run executes with
+│   └── LegacyProfileMigration.cs         # Maps pre-1.3 preset values to profile ids
+├── IconSelection/
+│   ├── IconSelector.cs           # Tier/confidence ranking of collected candidates
+│   ├── IconCandidate.cs, IconRequest.cs, IconSelectionResult.cs, IconTier.cs
+│   └── ProviderCapabilities.cs   # Per-provider tier, confidence, concurrency, private-host policy
 ├── IconProviders/
-│   ├── IIconProvider.cs        # Interface — GetIconAsync(host, size, timeout, proxy, token)
-│   ├── IconProviderBase.cs     # Abstract base — shared HTTP download + validation logic
-│   ├── DirectSiteProvider.cs   # Primary — parses HTML for <link rel="icon">, apple-touch-icon
-│   ├── GoogleProvider.cs       # Fallback — google.com/s2/favicons API
-│   ├── DuckDuckGoProvider.cs   # Fallback — icons.duckduckgo.com API
-│   ├── IconHorseProvider.cs    # Fallback — icon.horse API
-│   └── YandexProvider.cs       # Fallback — favicon.yandex.net API
-├── KeeFetch.Tests/
-│   ├── UtilTests.cs            # Tests for URL parsing, hashing, image validation
-│   ├── AndroidAppMapperTests.cs# Tests for Android URL mapping and package guessing
-│   ├── DirectSiteProviderTests.cs # Tests for HTML icon link parsing
-│   ├── LoggerTests.cs          # Tests for logging, limits, and filtering
-│   └── ConfigurationTests.cs   # Tests for config properties and clamping
-├── Properties/
-│   └── AssemblyInfo.cs         # Assembly metadata and InternalsVisibleTo
-├── KeeFetch.csproj             # SDK-style project (development & testing)
-├── KeeFetch.plgx.csproj        # Legacy-style project (PLGX creation only)
-├── docs/                       # README demo GIFs and screenshots
+│   ├── IIconProvider.cs          # Interface — GetCandidatesAsync(request, token)
+│   ├── IconProviderBase.cs       # Shared HTTP download, retry, redirect guard, candidate scoring
+│   ├── DirectSiteProvider.cs     # Primary — parses HTML/manifest for icons, apple-touch-icon, og:image
+│   ├── TwentyIconsProvider.cs, DuckDuckGoProvider.cs, GoogleProvider.cs,
+│   │   YandexProvider.cs, FaviconeProvider.cs, IconHorseProvider.cs   # Third-party resolvers
+├── Assets/Icons/                 # Embedded menu icons
+├── KeeFetch.Tests/               # MSTest suite (offline; HTTP goes through a fake transport)
+│   └── Fixtures/                 # Regression database + manifest, provider corpus
+├── eng/
+│   ├── check-version.ps1, check-plgx-manifest.ps1, export-profile-data.ps1   # CI gates
+│   ├── benchmark-presets.ps1     # Benchmark runner CLI
+│   └── benchmark/                # Harness module, self-tests, review prep, profile selector, experiments
+├── docs/                         # README media, benchmark study, plans and validation records
+├── site/                         # GitHub Pages site; site/data/profiles.json is generated from the catalog
+├── KeeFetch.csproj               # SDK-style project (development & testing)
+├── KeeFetch.plgx.csproj          # Legacy-style project (PLGX creation only)
 └── .github/workflows/
-    └── build.yml               # CI: build DLL, run tests, create PLGX, publish releases
+    ├── build.yml                 # CI: gates, build, test, PLGX creation, release publishing
+    └── pages.yml                 # GitHub Pages deployment
 ```
 
 ### Architecture Overview
 
-The plugin follows a **provider-based fallback chain**:
+A download run executes one **`FetchExecutionPolicy`**, resolved once from the selected fetch profile (`Fast`, `Balanced`, `Privacy`, `Thorough`) or from the Custom configuration. The policy fixes the provider order, per-provider and cumulative timeouts, whether synthetic fallbacks are allowed, and whether the run stops at the first strong resolver hit.
 
-1. **`DirectSiteProvider`** — Fetches the site directly, parses `<head>` for icon links, prioritizes `apple-touch-icon` and large PNGs.
-2. **`GoogleProvider`** → **`DuckDuckGoProvider`** → **`IconHorseProvider`** → **`YandexProvider`** — Third-party fallbacks tried in order if the direct attempt fails.
+1. **`DirectSiteProvider`** fetches the site itself and parses `<head>`, the web manifest, `apple-touch-icon`, and `og:image` into candidates.
+2. **Resolver providers** (`TwentyIcons`, `DuckDuckGo`, `Google`, `Yandex`, `Favicone`, `IconHorse`) each return at most one candidate. They are skipped for private/internal targets, and redirects that land on a private host are rejected.
+3. **`IconSelector`** ranks all surviving candidates by tier (`SiteCanonical` → `StrongResolved` → `SyntheticFallback`) and confidence, so a synthetic or placeholder-prone result only wins when nothing stronger survived.
 
-`FaviconDownloader` orchestrates this chain with cumulative timeouts and per-host caching. `FaviconDialog` runs downloads concurrently (up to 8 parallel via `SemaphoreSlim`) and marshals database writes to the UI thread.
+`FaviconDownloader` orchestrates this with a shared cumulative deadline, per-origin caching and negative caching, in-flight coalescing, and per-provider health cooldowns. `FaviconDialog` runs entries concurrently (up to 8 in parallel via `SemaphoreSlim`) and marshals database writes to the UI thread.
+
+Managed profiles are not hand-tuned: `eng/benchmark/select-profiles.ps1` writes `FetchProfileCatalog.Generated.cs` from study evidence, and `eng/export-profile-data.ps1 -Check` keeps the website data in sync.

@@ -98,6 +98,16 @@ namespace KeeFetch.IconProviders
                                     continue;
                                 }
 
+                                // Redirects are followed automatically; refuse a final hop that
+                                // landed on a private/internal address unless the provider is
+                                // explicitly allowed to talk to such hosts.
+                                Uri finalUri = response.RequestMessage != null ? response.RequestMessage.RequestUri : null;
+                                if (!Capabilities.AllowPrivateHosts && finalUri != null && Util.IsPrivateHost(finalUri.Host))
+                                {
+                                    Logger.Debug(Name, "Rejected redirect to private host " + finalUri.Host);
+                                    return null;
+                                }
+
                                 var contentLength = response.Content.Headers.ContentLength;
                                 if (contentLength.HasValue && contentLength.Value > MaxIconDownloadBytes)
                                     return null;

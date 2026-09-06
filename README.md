@@ -15,17 +15,31 @@ A fast, smart, and modern favicon downloader plugin for KeePass 2.x.
 - **Concurrent downloads** — Parallel favicon fetching using `SemaphoreSlim` to keep the UI responsive.
 - **Availability-first selector engine** — Collects provider candidates, then ranks by trust tier (`Site canonical` → `Strong resolver` → `Synthetic fallback`) so placeholder-prone results cannot outrank stronger real icons.
 - **Smart icon detection** — Parses `rel=icon`, `apple-touch-icon`, `rel=manifest` icon entries, and detects SVG-only situations for resolver fallback competition.
-- **Expanded fallback chain** — Direct site → Twenty Icons → DuckDuckGo → Google → Yandex → Favicone → Icon Horse.
+- **Study-selected fetch profiles** — `Fast`, `Balanced` (default), `Privacy`, and `Thorough` profiles whose provider chains and timeouts were chosen by a measured provider study; `Custom` exposes every provider and timeout. See [Fetch profiles](#-fetch-profiles).
 - **Deduplication** — SHA-256 hashing ensures icons aren't duplicated in your database.
 - **Android Support** — Converts `androidapp://` URLs to web domains with 100+ built-in mappings and Play Store scraping.
 - **Intelligent URL handling** — Resolves KeePass `{REF:...}` placeholders and auto-prefixes schemes.
-- **Modern Standards** — Supports TLS 1.3, uses the system default proxy configuration, and handles self-signed certificates.
+- **Modern Standards** — Uses the operating system's TLS policy (TLS 1.2/1.3 on current Windows), the system default proxy configuration, and can optionally accept self-signed certificates for KeeFetch's own requests only.
 
 ## 🔒 Privacy
 
-By default, KeeFetch uses third-party favicon services (Twenty Icons, DuckDuckGo, Google, Yandex, Favicone, Icon Horse) as fallbacks when direct site fetching is insufficient. Domain names from your password entries may be sent to these services to maximize icon availability.
+By default, KeeFetch uses third-party favicon services as fallbacks when direct site fetching is insufficient. Domain names from your password entries may be sent to these services to maximize icon availability. Which services are contacted depends on the selected fetch profile (see below); the `Privacy` profile contacts only the site itself. KeeFetch never sends anything other than the host name, and has no telemetry or analytics.
 
-KeeFetch shows a one-time first-run disclosure about this behavior and keeps the availability-first defaults enabled. You can still disable third-party providers, synthetic fallbacks, or specific resolvers in plugin settings (`Tools` → `KeeFetch` → `Settings...`).
+KeeFetch shows a one-time first-run disclosure about this behavior and keeps the availability-first defaults enabled. You can switch to the `Privacy` profile, or disable third-party providers, synthetic fallbacks, or specific resolvers in plugin settings (`Tools` → `KeeFetch` → `Settings...`).
+
+Requests to private or internal hosts (RFC 1918, link-local, loopback, `.local`/`.lan`/`.internal` names, and so on) are never forwarded to third-party services, and redirects that land on such hosts are rejected.
+
+## 🎛 Fetch profiles
+
+| Profile | Provider chain | Total budget | Notes |
+|---|---|---|---|
+| **Fast** | Direct Site → Google → Twenty Icons | 15 s | Stops at the first strong resolver hit; no synthetic fallbacks. Best for large batches. |
+| **Balanced** (default) | Direct Site → Twenty Icons → DuckDuckGo → Google → Yandex → Icon Horse | 45 s | Queries the whole chain before selecting; allows a generated fallback icon when nothing real is found. |
+| **Privacy** | Direct Site only | 22 s | No third-party services are contacted. |
+| **Thorough** | Direct Site → Yandex | 22 s | Study-selected chain for maximum correct-brand coverage. |
+| **Custom** | Any of Direct Site, Twenty Icons, DuckDuckGo, Google, Yandex, Favicone, Icon Horse | configurable | Full manual control over providers, order, and timeouts. |
+
+The managed profiles are generated from the v1.3 provider study (`docs/benchmarks/v1.3-provider-study.md`) and mirrored to the website in `site/data/profiles.json`; CI fails if the two drift apart.
 
 ## 🚀 Installation
 
@@ -82,9 +96,14 @@ KeeFetch uses an SDK-style project for development and a legacy-style project fo
 
 ### Build Commands
 ```powershell
-# Build the DLL and run tests
-dotnet build
-dotnet test
+# Build the DLL and run tests (set KeePassPath if KeePass is not in the default install folder)
+dotnet build KeeFetch.sln -c Release -p:KeePassPath="C:\Program Files\KeePass Password Safe 2"
+dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj -c Release
+
+# Repository gates run by CI
+./eng/check-version.ps1                 # version.txt == AssemblyInfo (== tag on release)
+./eng/check-plgx-manifest.ps1           # KeeFetch.plgx.csproj lists exactly the tracked sources
+./eng/export-profile-data.ps1 -Check    # site/data/profiles.json matches the compiled catalog
 
 # Create PLGX (requires KeePass.exe in Path)
 KeePass.exe --plgx-create "path\to\KeeFetch"

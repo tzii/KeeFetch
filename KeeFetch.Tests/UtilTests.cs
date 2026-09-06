@@ -199,6 +199,52 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
+        public void IsPrivateHost_NonRoutableRanges_ReturnTrue()
+        {
+            Assert.IsTrue(Util.IsPrivateHost("0.0.0.0"));
+            Assert.IsTrue(Util.IsPrivateHost("0.1.2.3"));
+            Assert.IsTrue(Util.IsPrivateHost("100.64.0.1"));   // carrier-grade NAT
+            Assert.IsTrue(Util.IsPrivateHost("169.254.169.254"));   // cloud metadata
+            Assert.IsTrue(Util.IsPrivateHost("192.0.2.1"));   // TEST-NET-1
+            Assert.IsTrue(Util.IsPrivateHost("198.18.0.1"));
+            Assert.IsTrue(Util.IsPrivateHost("224.0.0.1"));   // multicast
+            Assert.IsTrue(Util.IsPrivateHost("255.255.255.255"));
+        }
+
+        [TestMethod]
+        public void IsPrivateHost_Ipv6Forms_ReturnTrue()
+        {
+            Assert.IsTrue(Util.IsPrivateHost("::1"));
+            Assert.IsTrue(Util.IsPrivateHost("[::1]"));
+            Assert.IsTrue(Util.IsPrivateHost("::"));
+            Assert.IsTrue(Util.IsPrivateHost("::ffff:127.0.0.1"));   // IPv4-mapped loopback
+            Assert.IsTrue(Util.IsPrivateHost("::ffff:10.0.0.1"));   // IPv4-mapped private
+            Assert.IsTrue(Util.IsPrivateHost("fd12:3456::1"));
+            Assert.IsTrue(Util.IsPrivateHost("fe80::1"));
+            Assert.IsTrue(Util.IsPrivateHost("ff02::1"));
+            Assert.IsTrue(Util.IsPrivateHost("2001:db8::1"));
+            Assert.IsTrue(Util.IsPrivateHost("64:ff9b::a00:1"));   // NAT64 of 10.0.0.1
+        }
+
+        [TestMethod]
+        public void IsPrivateHost_PublicIpv6_ReturnsFalse()
+        {
+            Assert.IsFalse(Util.IsPrivateHost("2606:4700:4700::1111"));
+            Assert.IsFalse(Util.IsPrivateHost("::ffff:8.8.8.8"));
+            Assert.IsFalse(Util.IsPrivateHost("64:ff9b::808:808"));   // NAT64 of 8.8.8.8
+        }
+
+        [TestMethod]
+        public void IsPrivateHost_PublicEdgeRanges_ReturnFalse()
+        {
+            Assert.IsFalse(Util.IsPrivateHost("100.63.255.255"));
+            Assert.IsFalse(Util.IsPrivateHost("100.128.0.1"));
+            Assert.IsFalse(Util.IsPrivateHost("172.32.0.1"));
+            Assert.IsFalse(Util.IsPrivateHost("192.169.0.1"));
+            Assert.IsFalse(Util.IsPrivateHost("223.255.255.255"));
+        }
+
+        [TestMethod]
         public void GuessDomainFromTitle_SimpleName_ReturnsWithCom()
         {
             string result = Util.GuessDomainFromTitle("example");

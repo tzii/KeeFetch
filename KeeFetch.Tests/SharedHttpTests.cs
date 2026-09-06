@@ -138,6 +138,29 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
+        public async Task ResolverProvider_AbsoluteInternalNames_NeverReachTransport()
+        {
+            var handler = new RedirectingHandler(new Uri("https://cdn.example.net/icon.png"), TinyPng);
+            SharedHttp.ReplaceClientForTests(new HttpClient(handler));
+
+            foreach (string url in new[]
+            {
+                "https://localhost./", "https://SERVER.INTERNAL./", "https://printer./"
+            })
+            {
+                var request = new IconRequest
+                {
+                    TargetHost = new Uri(url).Host,
+                    MaxIconSize = 64,
+                    TimeoutMs = 5000
+                };
+                var candidates = await new GoogleProvider().GetCandidatesAsync(request, CancellationToken.None);
+                Assert.AreEqual(0, candidates.Count, url);
+            }
+            Assert.AreEqual(0, handler.RequestCount, "Internal names must not be disclosed to a resolver.");
+        }
+
+        [TestMethod]
         public async Task ResolverProvider_RejectsRedirectToPrivateHost()
         {
             // Simulates the transport having followed a redirect: the response's
@@ -180,6 +203,8 @@ namespace KeeFetch.Tests
             private readonly Uri finalUri;
             private readonly byte[] body;
 
+            public int RequestCount { get; private set; }
+
             public RedirectingHandler(Uri finalUri, byte[] body)
             {
                 this.finalUri = finalUri;
@@ -189,6 +214,7 @@ namespace KeeFetch.Tests
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
                 CancellationToken cancellationToken)
             {
+                RequestCount++;
                 var response = new HttpResponseMessage(HttpStatusCode.OK)
                 {
                     Content = new ByteArrayContent(body),

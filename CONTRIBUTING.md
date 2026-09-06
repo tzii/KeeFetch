@@ -31,6 +31,16 @@ Thank you for your interest in contributing to KeeFetch!
 - .NET Framework 4.8 targeting pack (the plugin targets .NET Framework 4.8).
 - KeePass 2.x installed for testing and PLGX creation.
 
+For an Ubuntu 24.04 x64 sandbox, `.hoplite/settings.json` runs `eng/setup-sandbox.sh` to install the official .NET 8 SDK, Mono/Xvfb, PowerShell, and a checksum-verified KeePass 2.60 reference. The official SDK is required because Ubuntu's SDK package omits the WindowsDesktop targets used by this project.
+
+```sh
+dotnet build KeeFetch.Tests/KeeFetch.Tests.csproj -c Release -p:KeePassPath=/opt/keepass/2.60 -warnaserror
+xvfb-run -a dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj -c Release --no-build
+KEEFETCH_KEEPASS_PATH=/opt/keepass/2.60/KeePass.exe pwsh -File eng/export-profile-data.ps1 -Check
+```
+
+Linux checks supplement, not replace, the Windows gate. Mono WinForms/image behavior differs, and the benchmark self-tests require Windows PowerShell's JSON-array semantics rather than PowerShell 7. Keep those failures visible; do not change fingerprinted benchmark code to accommodate the sandbox.
+
 ## Building the PLGX
 
 The PLGX is built using the `KeeFetch.plgx.csproj` file which is a legacy-style project file required by KeePass. The main `KeeFetch.csproj` is an SDK-style project used for modern development and testing.
@@ -46,12 +56,13 @@ dotnet build KeeFetch.csproj -c Release -p:LangVersion=5 -warnaserror   # produc
 dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj -c Release
 ./eng/check-version.ps1                                                  # version.txt == AssemblyInfo.cs
 ./eng/check-plgx-manifest.ps1                                            # PLGX project lists exactly the tracked sources
+./eng/test-release-workflow.ps1                                         # permission isolation and checksum negative cases
 ./eng/export-profile-data.ps1 -Check                                     # site/data/profiles.json matches the catalog
 powershell -File eng/benchmark/test-benchmark-harness.ps1                # benchmark harness self-tests (offline)
 git diff --check
 ```
 
-Releases are cut by pushing a `v*` tag; the workflow additionally checks that the tag matches `version.txt` and that `CHANGELOG.md` has a section for it, then publishes the DLL, PLGX, and `SHA256SUMS.txt`.
+Releases are cut by pushing a `v*` tag; the workflow checks that the tag matches `version.txt` and that `CHANGELOG.md` has a section for it. The read-only build job produces the DLL, PLGX, and `SHA256SUMS.txt` on PRs too. A separate tag-push-only release job downloads those artifacts, verifies their hashes, and publishes them with repository write permission. It does not check out or rebuild source. A manual workflow dispatch validates/packages but does not publish a release; rerun a failed tag-push workflow to retry publication.
 
 ## Project Structure
 
@@ -105,7 +116,7 @@ KeeFetch/
 A download run executes one **`FetchExecutionPolicy`**, resolved once from the selected fetch profile (`Fast`, `Balanced`, `Privacy`, `Thorough`) or from the Custom configuration. The policy fixes the provider order, per-provider and cumulative timeouts, whether synthetic fallbacks are allowed, and whether the run stops at the first strong resolver hit.
 
 1. **`DirectSiteProvider`** fetches the site itself and parses `<head>`, the web manifest, `apple-touch-icon`, and `og:image` into candidates.
-2. **Resolver providers** (`TwentyIcons`, `DuckDuckGo`, `Google`, `Yandex`, `Favicone`, `IconHorse`) each return at most one candidate. They are skipped for private/internal targets, and redirects that land on a private host are rejected.
+2. **Resolver providers** (`TwentyIcons`, `DuckDuckGo`, `Google`, `Yandex`, `Favicone`, `IconHorse`) each return at most one candidate. They are skipped for targets recognized by the lexical private-host classifier. Their final-response guard discards private-host responses after automatic redirects; it does not prevent network contact, inspect intermediate hops, or validate DNS answers. See the README privacy limitations.
 3. **`IconSelector`** ranks all surviving candidates by tier (`SiteCanonical` → `StrongResolved` → `SyntheticFallback`) and confidence, so a synthetic or placeholder-prone result only wins when nothing stronger survived.
 
 `FaviconDownloader` orchestrates this with a shared cumulative deadline, per-origin caching and negative caching, in-flight coalescing, and per-provider health cooldowns. `FaviconDialog` runs entries concurrently (up to 8 in parallel via `SemaphoreSlim`) and marshals database writes to the UI thread.

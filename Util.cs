@@ -194,6 +194,9 @@ namespace KeeFetch
             if (string.IsNullOrEmpty(host))
                 return true;
 
+            // A DNS root dot must not turn an internal name into a resolver target.
+            host = host.TrimEnd('.');
+
             // IP literals first: the dotless-name heuristic below would otherwise
             // misclassify every bare IPv6 address as an intranet host.
             IPAddress ip;

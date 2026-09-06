@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 - Self-signed certificate acceptance now applies only to KeeFetch's own HTTP client instead of the process-wide `ServicePointManager` callback shared with KeePass and other plugins
-- KeeFetch no longer overrides `ServicePointManager.SecurityProtocol`; the previous code re-enabled TLS 1.0/1.1 for the whole KeePass process
+- KeeFetch's own HTTP client now negotiates only TLS 1.2/1.3 and no longer assigns `ServicePointManager.SecurityProtocol`; the previous code set TLS 1.0/1.1/1.2/1.3 for the whole KeePass process
 - Private-address detection now covers `0.0.0.0/8`, carrier-grade NAT (`100.64.0.0/10`), documentation/benchmark ranges, multicast, IPv4-mapped IPv6, and NAT64 addresses, and resolver providers now reject redirects that land on a private host
 - GitHub Actions workflow runs with a read-only token except for release asset upload; the release action is pinned by commit SHA
 

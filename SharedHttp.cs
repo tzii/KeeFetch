@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 
@@ -13,6 +14,15 @@ namespace KeeFetch
     /// </summary>
     internal static class SharedHttp
     {
+        /// <summary>
+        /// Protocols KeeFetch negotiates for its own connections. KeePass.exe targets
+        /// an old framework, so the process default is TLS 1.0/1.1/1.2; pinning here
+        /// excludes the legacy versions and allows 1.3 without touching
+        /// <see cref="ServicePointManager.SecurityProtocol"/> for the whole process.
+        /// Declared before <see cref="client"/>: static initializers run in textual order.
+        /// </summary>
+        internal static readonly SslProtocols RequiredSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
+
         private static HttpClient client = CreateClient();
 
         // Reference-counted so overlapping download runs do not switch the
@@ -32,7 +42,22 @@ namespace KeeFetch
                 // Uses system default proxy (WebRequest.DefaultWebProxy)
             };
             handler.ServerCertificateCustomValidationCallback = ValidateServerCertificate;
+            ApplySslProtocols(handler);
             return new HttpClient(handler);
+        }
+
+        private static void ApplySslProtocols(HttpClientHandler handler)
+        {
+            try
+            {
+                handler.SslProtocols = RequiredSslProtocols;
+            }
+            catch (Exception ex)
+            {
+                // Older runtimes reject the setter or the Tls13 flag; fall back to
+                // the process default rather than fail every download.
+                Logger.Warn("SharedHttp", ex);
+            }
         }
 
         public static HttpClient Instance

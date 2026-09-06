@@ -80,10 +80,9 @@ namespace KeeFetch
 
         /// <summary>
         /// Raises the per-host connection limit for concurrent icon downloads.
-        /// TLS protocol selection is deliberately left at the .NET 4.8 default
-        /// (SystemDefault), which follows OS policy and already negotiates TLS 1.2/1.3;
-        /// forcing a protocol set here would silently re-enable TLS 1.0/1.1 for the
-        /// whole KeePass process.
+        /// TLS protocol selection lives on KeeFetch's own <see cref="SharedHttp"/>
+        /// handler (TLS 1.2/1.3); assigning <c>ServicePointManager.SecurityProtocol</c>
+        /// here would change every connection in the KeePass process.
         /// </summary>
         public static void SetupTls()
         {

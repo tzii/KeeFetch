@@ -5,6 +5,8 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
+using System.Reflection;
+using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using KeeFetch.IconProviders;
@@ -97,6 +99,21 @@ namespace KeeFetch.Tests
             SharedHttp.SetAllowSelfSignedCertificates(false);
             SharedHttp.SetAllowSelfSignedCertificates(true);
             Assert.IsTrue(SharedHttp.AllowSelfSignedCertificates);
+        }
+
+        [TestMethod]
+        public void SharedClient_PinsTls12AndTls13OnItsOwnHandler()
+        {
+            SharedHttp.ResetClientForTests();
+            FieldInfo handlerField = typeof(HttpMessageInvoker).GetField("_handler",
+                BindingFlags.Instance | BindingFlags.NonPublic)
+                ?? typeof(HttpMessageInvoker).GetField("handler", BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(handlerField, "HttpMessageInvoker handler field not found");
+            var clientHandler = handlerField.GetValue(SharedHttp.Instance) as HttpClientHandler;
+            Assert.IsNotNull(clientHandler, "shared client must be backed by HttpClientHandler");
+            Assert.AreEqual(SharedHttp.RequiredSslProtocols, clientHandler.SslProtocols);
+            Assert.IsTrue((clientHandler.SslProtocols & SslProtocols.Tls) == 0, "TLS 1.0 must be excluded");
+            Assert.IsTrue((clientHandler.SslProtocols & SslProtocols.Tls11) == 0, "TLS 1.1 must be excluded");
         }
 
         [TestMethod]

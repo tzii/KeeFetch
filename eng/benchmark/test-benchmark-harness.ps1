@@ -1093,4 +1093,5 @@ try {
 } finally {
     Remove-Item -LiteralPath $temp -Recurse -Force
 }
+& (Join-Path $PSScriptRoot 'test-complete-study.ps1')
 Write-Output 'Benchmark harness self-tests passed.'

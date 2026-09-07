@@ -113,10 +113,10 @@ KeeFetch/
 
 ### Architecture Overview
 
-A download run executes one **`FetchExecutionPolicy`**, resolved once from the selected fetch profile (`Fast`, `Balanced`, `Privacy`, `Thorough`) or from the Custom configuration. The policy fixes the provider order, per-provider and cumulative timeouts, whether synthetic fallbacks are allowed, and whether the run stops at the first strong resolver hit.
+A download run executes one **`FetchExecutionPolicy`**, resolved once from the selected fetch profile (`Fast`, `Balanced`, `Privacy`, `Precise`) or from the Custom configuration. The policy fixes the provider order, per-provider and cumulative timeouts, whether synthetic fallbacks are allowed, and whether the run stops at the first strong resolver hit.
 
 1. **`DirectSiteProvider`** fetches the site itself and parses `<head>`, the web manifest, `apple-touch-icon`, and `og:image` into candidates.
-2. **Resolver providers** (`TwentyIcons`, `DuckDuckGo`, `Google`, `Yandex`, `Favicone`, `IconHorse`) each return at most one candidate. They are skipped for targets recognized by the lexical private-host classifier. Their final-response guard discards private-host responses after automatic redirects; it does not prevent network contact, inspect intermediate hops, or validate DNS answers. See the README privacy limitations.
+2. **Resolver providers** (`TwentyIcons`, `DuckDuckGo`, `Google`, `Yandex`, `Favicone`, `IconHorse`) each return at most one candidate. They are skipped for targets recognized by the lexical private-host classifier. Redirects are followed manually, and every redirect destination is checked before contact; recognized private hosts are refused for resolvers. This lexical check does not validate DNS answers or prevent DNS rebinding. Direct Site explicitly permits private hosts. See the README privacy limitations.
 3. **`IconSelector`** ranks all surviving candidates by tier (`SiteCanonical` → `StrongResolved` → `SyntheticFallback`) and confidence, so a synthetic or placeholder-prone result only wins when nothing stronger survived.
 
 `FaviconDownloader` orchestrates this with a shared cumulative deadline, per-origin caching and negative caching, in-flight coalescing, and per-provider health cooldowns. `FaviconDialog` runs entries concurrently (up to 8 in parallel via `SemaphoreSlim`) and marshals database writes to the UI thread.

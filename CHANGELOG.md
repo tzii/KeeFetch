@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Certificate-chain overrides are additionally limited to hosts KeeFetch classifies as private/internal; public resolvers and public sites always keep strict validation
 - HTTP redirects are followed manually with the private-host policy evaluated before every hop, so a resolver redirect to a private address is refused without contacting it
 - KeeFetch's own HTTP client requests TLS 1.2/1.3 and no longer assigns `ServicePointManager.SecurityProtocol`; runtimes that reject the handler setting retain host defaults. The previous code set TLS 1.0/1.1/1.2/1.3 for the whole KeePass process
-- Private-address detection now covers `0.0.0.0/8`, carrier-grade NAT (`100.64.0.0/10`), documentation/benchmark ranges, multicast, IPv4-mapped IPv6, and NAT64 addresses. Resolver providers discard responses ending at recognized private hosts after following redirects; this is not prevention of private-network contact or DNS rebinding
+- Private-address detection now covers `0.0.0.0/8`, carrier-grade NAT (`100.64.0.0/10`), documentation/benchmark ranges, multicast, IPv4-mapped IPv6, and NAT64 addresses. Resolver redirect destinations are checked before contact; the lexical classifier does not inspect DNS answers or prevent DNS rebinding
 - Build/test/package uses a read-only workflow token; a separate tag-push release job has write permission and consumes the tested artifacts. Checksums are generated on PRs as well as releases; the release action is pinned by commit SHA
 
 ### Fixed

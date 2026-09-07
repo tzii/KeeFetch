@@ -3,10 +3,10 @@
 Status:  WORKING
 Agent:   Codex
 
-Focus:   PR #8 combined artifact: agy review findings fixed; CI and real-host UI matrix remain.
-Next:    Confirm CI on the review-fix commit, then repeat the pending real-host rows against the combined artifact.
+Focus:   PR #8 v1.3 preparation: verify release gates and prepare the current-artifact host validation.
+Next:    Complete the pending real-host UI matrix against the freshly packaged 18d4909 artifact.
 Pointer: https://github.com/tzii/KeeFetch/pull/8
-As-of:   2026-09-07 · Merge f21180f verified (227/227 tests, CI green, PLGX CDDCD67A loaded in KeePass 2.60). agy adversarial review (gemini-3.8-flash-high) returned 10 findings; 8 verified and fixed at this head with 7 new regressions (234/234). Diagnostics redaction and pwsh benchmark-harness semantics remain documented separate follow-ups.
+As-of:   2026-09-07 · GitHub confirms PR #8 OPEN/DRAFT at 18d49093d10e0dd819eea8a21e52cad4cc91f6ac with green CI 34160791331; master is f252f8d; latest release v1.2.0 and no v1.3.0 tag. Merge f21180f verified (227/227 tests, CI green, PLGX CDDCD67A loaded in KeePass 2.60). agy adversarial review (gemini-3.8-flash-high) returned 10 findings; 8 verified and fixed at this head with 7 new regressions (234/234). Diagnostics redaction and pwsh benchmark-harness semantics remain documented separate follow-ups.
 
 Notes:
 - Preserved UX-branch history: real-host passes at 7eea645 (first run, persistence, 100% traversal, cancellation/mixed arithmetic, one bounded retry) and the persistence fix 1ab7379 remain described below and in docs/validation/v1.3-ui-matrix.md.

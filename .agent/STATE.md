@@ -1,12 +1,12 @@
 # KeeFetch current state
 
-Status:  WORKING
-Agent:   Hoplite
+Status:  REVIEW
+Agent:   Codex
 
-Focus:   Final merge-readiness corrections for PR #9: release-job permission isolation, trailing-root-dot host classification, and precise security/compatibility documentation.
-Next:    Confirm the complete Windows CI gate on the updated PR head before the human merge decision.
+Focus:   PR #9 hardening merge readiness.
+Next:    Human review and merge decision for PR #9.
 Pointer: https://github.com/tzii/KeeFetch/pull/9
-As-of:   2026-09-06 · final corrections verified locally; new-head Windows CI pending; do not merge or claim REVIEW from the older 3bdb271 check
+As-of:   2026-09-07 · GitHub verified head 2296f698; Windows build run 34030739977 succeeded; PR OPEN and MERGEABLE/CLEAN with no reviews. Fresh Windows gates all passed; final diff audit found no additional merge blocker.
 
 Notes:
 - Final pass: build/test/package now uses contents: read and non-persisted checkout credentials; only a tag-push release job has contents: write. Artifact checksums run on PRs; executable self-tests cover valid, tampered, missing, duplicate, malformed, and traversal cases. Root-dot classifier/transport regressions reproduced two failures before the fix; security subset now 23/23. README/CONTRIBUTING/CHANGELOG accurately describe post-response redirect filtering, DNS limitations, site-linked Privacy assets, TLS fallback, and unreleased profiles.

@@ -206,10 +206,13 @@ namespace KeeFetch
             string lower = host.ToLowerInvariant();
             if (lower == "localhost" ||
                 lower.EndsWith(".local") ||
+                lower.EndsWith(".localdomain") ||
                 lower.EndsWith(".lan") ||
                 lower.EndsWith(".internal") ||
                 lower.EndsWith(".corp") ||
                 lower.EndsWith(".home") ||
+                lower.EndsWith(".home.arpa") ||
+                lower.EndsWith(".arpa") ||
                 lower.EndsWith(".intranet") ||
                 !lower.Contains("."))
                 return true;

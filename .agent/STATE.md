@@ -3,10 +3,10 @@
 Status:  WORKING
 Agent:   Codex
 
-Focus:   Integrate PR #9 hardening (f252f8d) into the PR #8 guided-native UX branch and re-verify the combined Windows gate.
-Next:    Run the complete combined gate and the agy adversarial review on the merged tree, then resume the real-host UI matrix.
+Focus:   PR #8 combined artifact: agy review findings fixed; CI and real-host UI matrix remain.
+Next:    Confirm CI on the review-fix commit, then repeat the pending real-host rows against the combined artifact.
 Pointer: https://github.com/tzii/KeeFetch/pull/8
-As-of:   2026-09-07 · Merge of origin/master into codex/v1-3-guided-native-ux in progress; only .agent state/handoff files conflicted and are resolved. Host-manual rows from the 2026-09-03 pass remain valid for the 7eea645 artifact only; they must be repeated on the combined artifact before release.
+As-of:   2026-09-07 · Merge f21180f verified (227/227 tests, CI green, PLGX CDDCD67A loaded in KeePass 2.60). agy adversarial review (gemini-3.8-flash-high) returned 10 findings; 8 verified and fixed at this head with 7 new regressions (234/234). Diagnostics redaction and pwsh benchmark-harness semantics remain documented separate follow-ups.
 
 Notes:
 - Preserved UX-branch history: real-host passes at 7eea645 (first run, persistence, 100% traversal, cancellation/mixed arithmetic, one bounded retry) and the persistence fix 1ab7379 remain described below and in docs/validation/v1.3-ui-matrix.md.

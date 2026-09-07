@@ -15,11 +15,11 @@ A fast, smart, and modern favicon downloader plugin for KeePass 2.x.
 - **Concurrent downloads** — Parallel favicon fetching using `SemaphoreSlim` to keep the UI responsive.
 - **Availability-first selector engine** — Collects provider candidates, then ranks by trust tier (`Site canonical` → `Strong resolver` → `Synthetic fallback`) so placeholder-prone results cannot outrank stronger real icons.
 - **Smart icon detection** — Parses `rel=icon`, `apple-touch-icon`, `rel=manifest` icon entries, and detects SVG-only situations for resolver fallback competition.
-- **Study-selected fetch profiles** — `Fast`, `Balanced` (default), `Privacy`, and `Thorough` profiles whose provider chains and timeouts were chosen by a measured provider study; `Custom` exposes every provider and timeout. See [Fetch profiles](#-fetch-profiles).
+- **Study-selected fetch profiles** — `Fast`, `Balanced` (default), `Privacy`, and `Precise` profiles whose provider chains and timeouts were chosen by a measured provider study; `Custom` exposes every provider and timeout. See [Fetch profiles](#-fetch-profiles).
 - **Deduplication** — SHA-256 hashing ensures icons aren't duplicated in your database.
 - **Android Support** — Converts `androidapp://` URLs to web domains with 100+ built-in mappings and Play Store scraping.
 - **Intelligent URL handling** — Resolves KeePass `{REF:...}` placeholders and auto-prefixes schemes.
-- **Modern Standards** — Requests TLS 1.2/1.3 on KeeFetch's own HTTP handler without changing process-wide protocol settings, uses the system default proxy, and can optionally accept certificate-chain errors for KeeFetch requests. Older runtimes that reject the protocol setting fall back to host defaults; hostname mismatches and missing certificates remain rejected.
+- **Modern Standards** — Requests TLS 1.2/1.3 on KeeFetch's own HTTP handler without changing process-wide protocol settings, uses the system default proxy, and can optionally accept certificate-chain errors for requests to hosts KeeFetch classifies as private/internal. Public hosts always keep strict validation; hostname mismatches and missing certificates remain rejected. Older runtimes that reject the protocol setting fall back to host defaults.
 
 ## 🔒 Privacy
 
@@ -27,7 +27,7 @@ By default, KeeFetch can query third-party favicon resolver services using domai
 
 KeeFetch shows a one-time first-run disclosure about this behavior and keeps the availability-first defaults enabled. You can switch to the `Privacy` profile, or disable third-party providers, synthetic fallbacks, or specific resolvers in plugin settings (`Tools` → `KeeFetch` → `Settings...`).
 
-Hosts recognized by KeeFetch's lexical private-host classifier (including private IP literals and common internal suffixes) are excluded from resolver lookup. This does not detect every internal DNS name or inspect resolved addresses. Providers discard responses whose final host violates their private-host checks **after** automatic redirects have been followed; this does not prevent network contact with those destinations or inspect intermediate redirect hops.
+Hosts recognized by KeeFetch's lexical private-host classifier (including private IP literals and common internal suffixes) are excluded from resolver lookup. This does not detect every internal DNS name or inspect resolved addresses. Redirects are followed manually: before each hop, the destination is checked against the private-host policy, and a resolver redirect pointing at a private host is refused without contacting it. Direct Site is explicitly allowed to fetch private hosts, so site-linked redirects may still reach them.
 
 Routine diagnostics currently include entry titles and resolved URLs in plaintext log/CSV files beside the database when possible, otherwise in a temporary directory. Treat those files as sensitive; the Privacy profile does not redact them.
 
@@ -38,7 +38,7 @@ Routine diagnostics currently include entry titles and resolved URLs in plaintex
 | **Fast** | Direct Site → Google → Twenty Icons | 15 s | Stops at the first strong resolver hit; no synthetic fallbacks. Best for large batches. |
 | **Balanced** (default) | Direct Site → Twenty Icons → DuckDuckGo → Google → Yandex → Icon Horse | 45 s | Queries the whole chain before selecting; allows a generated fallback icon when nothing real is found. |
 | **Privacy** | Direct Site only | 22 s | Disables favicon resolvers; site-linked assets and redirects may use other hosts. |
-| **Thorough** | Direct Site → Yandex | 22 s | Study-selected chain for maximum correct-brand coverage. |
+| **Precise** | Direct Site → Yandex | 22 s | Study-selected chain that prioritizes correct-brand precision over raw coverage. |
 | **Custom** | Any of Direct Site, Twenty Icons, DuckDuckGo, Google, Yandex, Favicone, Icon Horse | configurable | Full manual control over providers, order, and timeouts. |
 
 These profiles describe the unreleased source tree, not the latest v1.2.0 download. They are generated from the v1.3 provider study (`docs/benchmarks/v1.3-provider-study.md`) and mirrored to the website in `site/data/profiles.json`; CI fails if the two drift apart.

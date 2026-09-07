@@ -57,6 +57,7 @@ namespace KeeFetch.IconProviders
         {
             int attempt = 0;
             int timeoutMs = Math.Max(1000, request.TimeoutMs);
+            string currentUrl = url;
             Exception lastTransportException = null;
 
             while (attempt < 2)
@@ -70,49 +71,49 @@ namespace KeeFetch.IconProviders
                     token.ThrowIfCancellationRequested();
                     lastTransportException = null;
 
-                    using (var httpRequest = new HttpRequestMessage(HttpMethod.Get, url))
+                    using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
                     {
-                        httpRequest.Headers.Add("User-Agent", UserAgentString);
-                        httpRequest.Headers.Add("Accept", "image/svg+xml,image/webp,image/apng,image/*,*/*;q=0.8");
-
-                        using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
+                        cts.CancelAfter(timeoutMs);
+                        // Every redirect hop is checked against the private-host
+                        // policy BEFORE the request is issued; the final response
+                        // is disposed by the caller on every path.
+                        using (var response = await SharedHttp.SendFollowingRedirectsAsync(
+                            currentUrl, ConfigureResolverRequest, AllowRedirectHop,
+                            Name, cts.Token).ConfigureAwait(false))
                         {
-                            cts.CancelAfter(timeoutMs);
-                            // The response is deterministically disposed on every
-                            // path (success, HTTP error, oversize, parse rejection).
-                            // The cancellation registration below remains only to
-                            // abort stalled .NET Framework response stream reads.
-                            using (var response = await SharedHttp.Instance.SendAsync(httpRequest,
-                                HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false))
+                            // Rejected hop or redirect limit: no candidate.
+                            if (response == null)
+                                return null;
+
+                            statusCode = response.StatusCode;
+                            contentType = response.Content.Headers.ContentType != null
+                                ? response.Content.Headers.ContentType.MediaType
+                                : null;
+
+                            if (!response.IsSuccessStatusCode)
                             {
-                                statusCode = response.StatusCode;
-                                contentType = response.Content.Headers.ContentType != null
-                                    ? response.Content.Headers.ContentType.MediaType
-                                    : null;
-
-                                if (!response.IsSuccessStatusCode)
-                                {
-                                    shouldRetry = attempt == 0 && IsRetryableStatus(response.StatusCode);
-                                    if (!shouldRetry)
-                                        return null;
-                                    continue;
-                                }
-
-                                // Redirects are followed automatically; refuse a final hop that
-                                // landed on a private/internal address unless the provider is
-                                // explicitly allowed to talk to such hosts.
-                                Uri finalUri = response.RequestMessage != null ? response.RequestMessage.RequestUri : null;
-                                if (!Capabilities.AllowPrivateHosts && finalUri != null && Util.IsPrivateHost(finalUri.Host))
-                                {
-                                    Logger.Debug(Name, "Rejected redirect to private host " + finalUri.Host);
+                                shouldRetry = attempt == 0 && IsRetryableStatus(response.StatusCode);
+                                if (!shouldRetry)
                                     return null;
-                                }
+                                continue;
+                            }
 
-                                var contentLength = response.Content.Headers.ContentLength;
-                                if (contentLength.HasValue && contentLength.Value > MaxIconDownloadBytes)
-                                    return null;
+                            // Defense in depth: the manual redirect loop already
+                            // refuses disallowed hosts before contact; a transport
+                            // that followed redirects anyway must still be caught.
+                            Uri finalUri = response.RequestMessage != null
+                                ? response.RequestMessage.RequestUri
+                                : null;
+                            if (finalUri == null)
+                                finalUri = TryParseUri(currentUrl);
+                            if (!AllowRedirectHop(finalUri))
+                                return null;
 
-                                byte[] data;
+                            var contentLength = response.Content.Headers.ContentLength;
+                            if (contentLength.HasValue && contentLength.Value > MaxIconDownloadBytes)
+                                return null;
+
+                            byte[] data;
                                 // .NET Framework response streams ignore the cancellation token on
                                 // ReadAsync; disposing the response when the deadline fires is the
                                 // only reliable way to abort a stalled socket read.
@@ -142,8 +143,7 @@ namespace KeeFetch.IconProviders
                                     data = ms.ToArray();
                                 }
 
-                                return BuildCandidateFromData(url, request, data, contentType);
-                            }
+                                return BuildCandidateFromData(currentUrl, request, data, contentType);
                         }
                     }
                 }
@@ -192,6 +192,33 @@ namespace KeeFetch.IconProviders
             if (lastTransportException != null)
                 throw lastTransportException;
 
+            return null;
+        }
+
+        private static void ConfigureResolverRequest(HttpRequestMessage request)
+        {
+            request.Headers.Add("User-Agent", UserAgentString);
+            request.Headers.Add("Accept", "image/svg+xml,image/webp,image/apng,image/*,*/*;q=0.8");
+        }
+
+        /// <summary>
+        /// True when this provider may contact <paramref name="destination"/>.
+        /// Null destinations are refused (fail closed).
+        /// </summary>
+        private bool AllowRedirectHop(Uri destination)
+        {
+            if (destination == null)
+                return false;
+            if (Capabilities.AllowPrivateHosts)
+                return true;
+            return !Util.IsPrivateHost(destination.Host);
+        }
+
+        private static Uri TryParseUri(string url)
+        {
+            Uri parsed;
+            if (Uri.TryCreate(url, UriKind.Absolute, out parsed))
+                return parsed;
             return null;
         }
 

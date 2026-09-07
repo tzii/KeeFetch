@@ -198,6 +198,143 @@ namespace KeeFetch.Tests
             Assert.AreEqual(1, candidates.Count);
         }
 
+        [TestMethod]
+        public void ValidateServerCertificate_ChainErrors_PublicHostRejectedEvenWhenAllowed()
+        {
+            SharedHttp.SetAllowSelfSignedCertificates(true);
+            var publicRequest = new HttpRequestMessage(HttpMethod.Get, new Uri("https://www.google.com/s2/favicons"));
+            Assert.IsFalse(SharedHttp.ValidateServerCertificate(publicRequest, null, null,
+                SslPolicyErrors.RemoteCertificateChainErrors),
+                "the override must never disable validation for public hosts");
+        }
+
+        [TestMethod]
+        public void ValidateServerCertificate_ChainErrors_PrivateHostAcceptedWhenAllowed()
+        {
+            SharedHttp.SetAllowSelfSignedCertificates(true);
+            var privateRequest = new HttpRequestMessage(HttpMethod.Get, new Uri("https://router.local/icon"));
+            Assert.IsTrue(SharedHttp.ValidateServerCertificate(privateRequest, null, null,
+                SslPolicyErrors.RemoteCertificateChainErrors));
+            Assert.IsFalse(SharedHttp.ValidateServerCertificate(privateRequest, null, null,
+                SslPolicyErrors.RemoteCertificateNameMismatch));
+        }
+
+        [TestMethod]
+        public async Task ResolverProvider_NeverContactsPrivateRedirectTarget()
+        {
+            var handler = new ScriptedHandler(delegate (Uri hop)
+            {
+                var redirect = new HttpResponseMessage(HttpStatusCode.Redirect)
+                {
+                    Headers = { Location = new Uri("http://169.254.169.254/latest/meta-data") }
+                };
+                return redirect;
+            });
+            SharedHttp.ReplaceClientForTests(new HttpClient(handler));
+            var request = new IconRequest
+            {
+                TargetHost = "example.com",
+                MaxIconSize = 64,
+                TimeoutMs = 5000
+            };
+
+            IReadOnlyList<IconCandidate> candidates = await new GoogleProvider().GetCandidatesAsync(request, CancellationToken.None);
+            Assert.AreEqual(0, candidates.Count, "a redirect into a private range must yield no candidate");
+            Assert.AreEqual(1, handler.RequestedUris.Count, "only the resolver request may be issued");
+            Assert.AreNotEqual("169.254.169.254", handler.RequestedUris[0].Host,
+                "the private redirect target must never be contacted");
+        }
+
+        [TestMethod]
+        public async Task ResolverProvider_FollowsPublicRedirectChain()
+        {
+            var handler = new ScriptedHandler(delegate (Uri hop)
+            {
+                if (hop.Host == "cdn.example.net")
+                {
+                    var ok = new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new ByteArrayContent(TinyPng)
+                    };
+                    ok.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+                    return ok;
+                }
+                return new HttpResponseMessage(HttpStatusCode.Redirect)
+                {
+                    Headers = { Location = new Uri("https://cdn.example.net/icon.png") }
+                };
+            });
+            SharedHttp.ReplaceClientForTests(new HttpClient(handler));
+
+            var request = new IconRequest
+            {
+                TargetHost = "example.com",
+                MaxIconSize = 64,
+                TimeoutMs = 5000
+            };
+
+            IReadOnlyList<IconCandidate> candidates = await new GoogleProvider().GetCandidatesAsync(request, CancellationToken.None);
+            Assert.AreEqual(1, candidates.Count);
+            Assert.AreEqual(2, handler.RequestedUris.Count, "the public redirect must be followed exactly once");
+            Assert.AreEqual("cdn.example.net", handler.RequestedUris[1].Host);
+        }
+
+        [TestMethod]
+        public async Task ResolverProvider_StopsAtManualRedirectLimit()
+        {
+            int hops = 0;
+            var handler = new ScriptedHandler(delegate (Uri hop)
+            {
+                hops++;
+                return new HttpResponseMessage(HttpStatusCode.Redirect)
+                {
+                    Headers = { Location = new Uri("https://hop" + hops + ".example.net/icon.png") }
+                };
+            });
+            SharedHttp.ReplaceClientForTests(new HttpClient(handler));
+
+            var request = new IconRequest
+            {
+                TargetHost = "example.com",
+                MaxIconSize = 64,
+                TimeoutMs = 5000
+            };
+
+            IReadOnlyList<IconCandidate> candidates = await new GoogleProvider().GetCandidatesAsync(request, CancellationToken.None);
+            Assert.AreEqual(0, candidates.Count);
+            Assert.AreEqual(SharedHttp.MaxManualRedirects + 1, handler.RequestedUris.Count,
+                "the redirect budget must cap the number of hops");
+        }
+
+        [TestMethod]
+        public async Task SendFollowingRedirects_PrivateHopAllowedWhenPolicyPermits()
+        {
+            var handler = new ScriptedHandler(delegate (Uri hop)
+            {
+                if (hop.Host == "router.local")
+                {
+                    var ok = new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new ByteArrayContent(TinyPng)
+                    };
+                    return ok;
+                }
+                return new HttpResponseMessage(HttpStatusCode.Redirect)
+                {
+                    Headers = { Location = new Uri("https://router.local/icon.png") }
+                };
+            });
+            SharedHttp.ReplaceClientForTests(new HttpClient(handler));
+
+            HttpResponseMessage response = await SharedHttp.SendFollowingRedirectsAsync(
+                "https://router.example.net/", null, delegate { return true; },
+                "test", CancellationToken.None);
+            Assert.IsNotNull(response);
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            Assert.AreEqual(2, handler.RequestedUris.Count);
+            response.Dispose();
+        }
+
         private sealed class RedirectingHandler : HttpMessageHandler
         {
             private readonly Uri finalUri;
@@ -221,6 +358,27 @@ namespace KeeFetch.Tests
                     RequestMessage = new HttpRequestMessage(HttpMethod.Get, finalUri)
                 };
                 response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+                return Task.FromResult(response);
+            }
+        }
+
+        private sealed class ScriptedHandler : HttpMessageHandler
+        {
+            private readonly Func<Uri, HttpResponseMessage> respond;
+
+            public ScriptedHandler(Func<Uri, HttpResponseMessage> respond)
+            {
+                this.respond = respond;
+            }
+
+            public IList<Uri> RequestedUris { get; } = new List<Uri>();
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+                CancellationToken cancellationToken)
+            {
+                RequestedUris.Add(request.RequestUri);
+                HttpResponseMessage response = respond(request.RequestUri);
+                response.RequestMessage = request;
                 return Task.FromResult(response);
             }
         }

@@ -288,6 +288,13 @@ namespace KeeFetch
                 });
             }
 
+            if (entries.Count == 0)
+            {
+                MessageBox.Show("Database has no eligible entries.", "KeeFetch",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             var result = MessageBox.Show(
                 string.Format("Download favicons for all {0} entries?", entries.Count),
                 "KeeFetch", MessageBoxButtons.YesNo, MessageBoxIcon.Question);

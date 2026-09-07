@@ -65,7 +65,7 @@ namespace KeeFetch.Settings
             numTimeout.Margin = new Padding(0, 0, 0, 8);
 
             chkAllowSelfSigned.Name = "chkAllowSelfSigned";
-            chkAllowSelfSigned.Text = "Allow self-signed TLS certificates (weakens validation globally)";
+            chkAllowSelfSigned.Text = "Allow self-signed TLS certificates (private/internal hosts only)";
             chkAllowSelfSigned.AccessibleName = "Allow self-signed TLS certificates";
             chkAllowSelfSigned.AutoSize = true;
             chkAllowSelfSigned.TabIndex = 1;

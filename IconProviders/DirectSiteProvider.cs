@@ -579,6 +579,7 @@ namespace KeeFetch.IconProviders
             bool allowPrivateResponse, CancellationToken token = default(CancellationToken))
         {
             int attempt = 0;
+            string currentUrl = url;
             Uri responseUri = null;
 
             while (attempt < 2)
@@ -589,49 +590,61 @@ namespace KeeFetch.IconProviders
                 {
                     token.ThrowIfCancellationRequested();
 
-                    using (var request = new HttpRequestMessage(HttpMethod.Get, url))
+                    using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
                     {
-                        request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
-                        request.Headers.Add("Accept", "text/html,application/manifest+json,application/json,image/svg+xml,image/webp,image/apng,image/*,*/*;q=0.8");
-                        request.Headers.Add("Accept-Language", "en-US,en;q=0.9");
-
-                        using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
+                        cts.CancelAfter(Math.Max(1000, timeoutMs));
+                        // Every redirect hop is checked against the private-host
+                        // policy BEFORE the request is issued; the final response
+                        // is disposed by the caller on every path.
+                        using (var response = await SharedHttp.SendFollowingRedirectsAsync(
+                            currentUrl, ConfigureSiteRequest,
+                            next => allowPrivateResponse || !Util.IsPrivateHost(next.Host),
+                            "Direct Site", cts.Token).ConfigureAwait(false))
                         {
-                            cts.CancelAfter(Math.Max(1000, timeoutMs));
-                            // The response is deterministically disposed on every
-                            // path (success, HTTP error, private redirect, oversize).
-                            // The cancellation registration below remains only to
-                            // abort stalled .NET Framework response stream reads.
-                            using (var response = await SharedHttp.Instance.SendAsync(request,
-                                HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false))
+                            // Rejected hop or redirect limit: treated as a failed
+                            // download with no data.
+                            if (response == null)
                             {
-                                if (!response.IsSuccessStatusCode)
+                                return new DownloadResult
                                 {
-                                    shouldRetry = attempt == 0 && IsRetryableStatus(response.StatusCode);
-                                    if (!shouldRetry)
-                                    {
-                                        return new DownloadResult
-                                        {
-                                            Data = null,
-                                            ResponseUri = null,
-                                            ContentType = null,
-                                            StatusCode = response.StatusCode
-                                        };
-                                    }
-                                    continue;
-                                }
+                                    Data = null,
+                                    ResponseUri = null,
+                                    ContentType = null,
+                                    StatusCode = null
+                                };
+                            }
 
-                                responseUri = response.RequestMessage != null ? response.RequestMessage.RequestUri : null;
-                                if (!allowPrivateResponse && responseUri != null && Util.IsPrivateHost(responseUri.Host))
+                            if (!response.IsSuccessStatusCode)
+                            {
+                                shouldRetry = attempt == 0 && IsRetryableStatus(response.StatusCode);
+                                if (!shouldRetry)
                                 {
                                     return new DownloadResult
                                     {
                                         Data = null,
-                                        ResponseUri = responseUri,
+                                        ResponseUri = null,
                                         ContentType = null,
                                         StatusCode = response.StatusCode
                                     };
                                 }
+                                continue;
+                            }
+
+                            responseUri = response.RequestMessage != null ? response.RequestMessage.RequestUri : null;
+                            if (responseUri == null)
+                                responseUri = TryParseCurrentUrl(currentUrl);
+                            // Defense in depth: the manual redirect loop already
+                            // refuses disallowed hosts before contact.
+                            if (!allowPrivateResponse && responseUri != null && Util.IsPrivateHost(responseUri.Host))
+                            {
+                                return new DownloadResult
+                                {
+                                    Data = null,
+                                    ResponseUri = responseUri,
+                                    ContentType = null,
+                                    StatusCode = response.StatusCode
+                                };
+                            }
 
                                 var contentLength = response.Content.Headers.ContentLength;
                                 if (contentLength.HasValue && contentLength.Value > maxBytes)
@@ -701,7 +714,6 @@ namespace KeeFetch.IconProviders
                                     };
                                 }
                             }
-                        }
                     }
                 }
                 catch (OperationCanceledException)
@@ -748,6 +760,21 @@ namespace KeeFetch.IconProviders
                    statusCode == HttpStatusCode.ServiceUnavailable ||
                    statusCode == HttpStatusCode.BadGateway ||
                    statusCode == HttpStatusCode.GatewayTimeout;
+        }
+
+        private static void ConfigureSiteRequest(HttpRequestMessage request)
+        {
+            request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+            request.Headers.Add("Accept", "text/html,application/manifest+json,application/json,image/svg+xml,image/webp,image/apng,image/*,*/*;q=0.8");
+            request.Headers.Add("Accept-Language", "en-US,en;q=0.9");
+        }
+
+        private static Uri TryParseCurrentUrl(string url)
+        {
+            Uri parsed;
+            if (Uri.TryCreate(url, UriKind.Absolute, out parsed))
+                return parsed;
+            return null;
         }
 
         private static int NextJitter(int maxExclusive)

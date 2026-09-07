@@ -171,6 +171,7 @@ namespace KeeFetch.Tests
             {
                 "localhost.", "LOCALHOST.", "server.local.", "server.lan.",
                 "SERVER.INTERNAL.", "server.corp.", "server.home.", "server.intranet.",
+                "server.localdomain.", "server.home.arpa.", "printer.arpa.",
                 "printer.", "127.0.0.1.", "192.168.1.1.", "169.254.169.254."
             })
                 Assert.IsTrue(Util.IsPrivateHost(host), host);

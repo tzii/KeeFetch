@@ -194,6 +194,15 @@ namespace KeeFetch
             if (string.IsNullOrEmpty(host))
                 return true;
 
+            // A DNS root dot must not turn an internal name into a resolver target.
+            host = host.TrimEnd('.');
+
+            // IP literals first: the dotless-name heuristic below would otherwise
+            // misclassify every bare IPv6 address as an intranet host.
+            IPAddress ip;
+            if (IPAddress.TryParse(host.Trim('[', ']'), out ip))
+                return IsPrivateAddress(ip);
+
             string lower = host.ToLowerInvariant();
             if (lower == "localhost" ||
                 lower.EndsWith(".local") ||
@@ -205,34 +214,60 @@ namespace KeeFetch
                 !lower.Contains("."))
                 return true;
 
-            IPAddress ip;
-            if (IPAddress.TryParse(host, out ip))
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether an IP address is loopback, link-local, private, or otherwise
+        /// not publicly routable. IPv4-mapped IPv6 addresses are unwrapped first.
+        /// </summary>
+        public static bool IsPrivateAddress(IPAddress ip)
+        {
+            if (ip == null)
+                return true;
+
+            if (IPAddress.IsLoopback(ip) || IPAddress.Any.Equals(ip) || IPAddress.IPv6Any.Equals(ip))
+                return true;
+
+            if (ip.AddressFamily == AddressFamily.InterNetworkV6 && ip.IsIPv4MappedToIPv6)
+                ip = ip.MapToIPv4();
+
+            byte[] bytes = ip.GetAddressBytes();
+            if (ip.AddressFamily == AddressFamily.InterNetwork)
             {
-                if (IPAddress.IsLoopback(ip))
+                if (bytes[0] == 0 || bytes[0] == 10 || bytes[0] == 127)
                     return true;
+                if (bytes[0] == 100 && bytes[1] >= 64 && bytes[1] <= 127)   // 100.64.0.0/10 carrier NAT
+                    return true;
+                if (bytes[0] == 169 && bytes[1] == 254)
+                    return true;
+                if (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31)
+                    return true;
+                if (bytes[0] == 192 && bytes[1] == 0 && (bytes[2] == 0 || bytes[2] == 2))   // 192.0.0.0/24, TEST-NET-1
+                    return true;
+                if (bytes[0] == 192 && bytes[1] == 168)
+                    return true;
+                if (bytes[0] == 198 && (bytes[1] == 18 || bytes[1] == 19))   // 198.18.0.0/15 benchmarking
+                    return true;
+                if (bytes[0] == 198 && bytes[1] == 51 && bytes[2] == 100)   // TEST-NET-2
+                    return true;
+                if (bytes[0] == 203 && bytes[1] == 0 && bytes[2] == 113)    // TEST-NET-3
+                    return true;
+                if (bytes[0] >= 224)   // multicast, reserved, broadcast
+                    return true;
+                return false;
+            }
 
-                byte[] bytes = ip.GetAddressBytes();
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    if (bytes[0] == 10)
-                        return true;
-                    if (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31)
-                        return true;
-                    if (bytes[0] == 192 && bytes[1] == 168)
-                        return true;
-                    if (bytes[0] == 169 && bytes[1] == 254)
-                        return true;
-                    if (bytes[0] == 127)
-                        return true;
-                }
-                if (ip.AddressFamily == AddressFamily.InterNetworkV6)
-                {
-                    if (ip.IsIPv6LinkLocal || ip.IsIPv6SiteLocal)
-                        return true;
-                    if (bytes[0] == 0xfc || bytes[0] == 0xfd)
-                        return true;
-                }
-
+            if (ip.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                if (ip.IsIPv6LinkLocal || ip.IsIPv6SiteLocal || ip.IsIPv6Multicast || ip.IsIPv6Teredo)
+                    return true;
+                if (bytes[0] == 0xfc || bytes[0] == 0xfd)   // fc00::/7 unique local
+                    return true;
+                if (bytes[0] == 0x20 && bytes[1] == 0x01 && bytes[2] == 0x0d && bytes[3] == 0xb8)   // 2001:db8::/32 documentation
+                    return true;
+                if (bytes[0] == 0 && bytes[1] == 0x64 && bytes[2] == 0xff && bytes[3] == 0x9b)   // 64:ff9b::/96 NAT64
+                    return IsPrivateAddress(new IPAddress(new byte[] { bytes[12], bytes[13], bytes[14], bytes[15] }));
                 return false;
             }
 

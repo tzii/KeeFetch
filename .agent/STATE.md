@@ -1,17 +1,16 @@
 # KeeFetch current state
 
-Status:  DONE
+Status:  REVIEW
 Agent:   Codex
 
-Focus:   PR #4 merged into master as e2bee2d (2026-08-23) after the completed review pass: the reviewed head de4f871 was mergeable with CI green, all local gates had been re-verified, and all four published winners reproduced end-to-end.
-Next:    None - this focus is complete. Parked harness fixes for a future study remain in docs/benchmarks/v1.3-harness-followups.md.
-Pointer: https://github.com/tzii/KeeFetch/pull/4
-As-of:   2026-08-23 · merged as e2bee2d
+Focus:   PR #9 hardening merge readiness.
+Next:    Human review and merge decision for PR #9.
+Pointer: https://github.com/tzii/KeeFetch/pull/9
+As-of:   2026-09-07 · Production head 2296f698 passed exact-head Windows CI 34030739977 and fresh local Windows gates. The handoff commit must also have green CI before merging.
 
 Notes:
-- Review provenance: census labels are MACHINE review (`machine:antigravity-1.1.18/gemini-3.7-flash-high`), owner-approved after the dual-lane pilot + pixel arbitration and an owner spot-check; disclosed in `docs/benchmarks/v1.3-provider-study.md` and `machine-review/`. Never present them as human review.
-- Winners: bulk-fast -> cand-direct-google-twenty-fast; everyday -> cand-full-minus-favicone-thorough-synth; privacy -> cand-direct-only-balanced; max-coverage -> cand-direct-yandex-balanced; all stable under ambiguity replay after the 3 pub-216 units were resolved to `unusable` (focused re-ask, live-verified).
-- Gates at this state: MSTest 161/161, Release build -warnaserror 0/0, harness self-tests green, export -Check green, git diff --check clean, prepare-review -Validate green (456 rows), selector -Publish write-back verified.
-- Selector repairs this session (android-store ctor arg, provenance-derived wording, eng\** compile exclusion in KeeFetch.csproj) are outside the harness-fingerprint scope; recorded fingerprints in the evidence remain valid.
-- Evidence root backup: review-queue.pre-machine-20260822.bak.csv (all not-reviewed) next to the labeled queue.
-- Review verified the published study is untainted by the known resume-accumulator defect: resumed_any is false for every cell in the final evidence (0 of 126 measured cells resumed).
+- Final diff/release audit found no additional merge blocker or new migration/configuration prerequisite. Runtime and workflow corrections are complete; no merge or release performed.
+- Fresh Windows verification: SDK 9.0.317, KeePass 2.60, production Release C# 5 -warnaserror with zero warnings/errors; full MSTest 177/177, zero skipped; Windows PowerShell benchmark self-tests, profile export -Check, version, 37-file PLGX manifest, release-workflow self-tests, and working-tree/PR-range git diff --check all passed. This supersedes previous Mono failures and stale pending-CI claims.
+- Exact production-head GitHub run 34030739977 independently passed all 177 tests and packaging (PLGX 1,050,307 bytes). Handoff commits change agent documentation only.
+- Pre-request destination/DNS enforcement, diagnostic redaction/export safety, decoded-image bounds, and retry pacing remain documented separate follow-ups. This scoped PR does not claim to solve them or complete the v1.3 release.
+- PR #8 retains the cancellation/persistence and guided-native UX changes; its remaining real-host validation is tracked on that branch. Preserve those changes when integrating.

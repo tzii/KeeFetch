@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using KeeFetch.FetchProfiles;
@@ -41,10 +39,6 @@ namespace KeeFetch
                 { "favicone", () => new FaviconeProvider() },
                 { "icon-horse", () => new IconHorseProvider() }
             };
-
-        private static readonly object certLock = new object();
-        private static int certSetupCount;
-        private static RemoteCertificateValidationCallback savedOriginalCallback;
 
         private static readonly ConcurrentDictionary<string, CachedIconEntry> DownloadCache =
             new ConcurrentDictionary<string, CachedIconEntry>(StringComparer.OrdinalIgnoreCase);
@@ -84,24 +78,16 @@ namespace KeeFetch
             get { return policy; }
         }
 
-        /// <summary>Configures TLS 1.1/1.2/1.3 if available on this .NET version.</summary>
+        /// <summary>
+        /// Raises the per-host connection limit for concurrent icon downloads.
+        /// TLS protocol selection lives on KeeFetch's own <see cref="SharedHttp"/>
+        /// handler (TLS 1.2/1.3); assigning <c>ServicePointManager.SecurityProtocol</c>
+        /// here would change every connection in the KeePass process.
+        /// </summary>
         public static void SetupTls()
         {
             try
             {
-                var spt = SecurityProtocolType.Tls;
-                Type tSpt = typeof(SecurityProtocolType);
-                foreach (string name in Enum.GetNames(tSpt))
-                {
-                    if (name.Equals("Tls11", StringComparison.OrdinalIgnoreCase) ||
-                        name.Equals("Tls12", StringComparison.OrdinalIgnoreCase) ||
-                        name.Equals("Tls13", StringComparison.OrdinalIgnoreCase))
-                    {
-                        spt |= (SecurityProtocolType)Enum.Parse(tSpt, name, true);
-                    }
-                }
-
-                ServicePointManager.SecurityProtocol = spt;
                 if (ServicePointManager.DefaultConnectionLimit < 24)
                     ServicePointManager.DefaultConnectionLimit = 24;
                 ServicePointManager.MaxServicePointIdleTime = 10000;
@@ -113,46 +99,12 @@ namespace KeeFetch
         }
 
         /// <summary>
-        /// Installs or removes a permissive certificate callback that accepts self-signed certs.
+        /// Enables or disables acceptance of self-signed certificates for KeeFetch's
+        /// own HTTP client only. Calls must be balanced.
         /// </summary>
         public static void SetupSelfSignedCerts(bool allow)
         {
-            lock (certLock)
-            {
-                if (allow)
-                {
-                    certSetupCount++;
-                    if (certSetupCount == 1)
-                    {
-                        savedOriginalCallback = ServicePointManager.ServerCertificateValidationCallback;
-                        ServicePointManager.ServerCertificateValidationCallback =
-                            (object sender, X509Certificate cert, X509Chain chain, SslPolicyErrors errors) =>
-                            {
-                                if (errors == SslPolicyErrors.None)
-                                    return true;
-
-                                if ((errors & SslPolicyErrors.RemoteCertificateChainErrors) != 0 &&
-                                    (errors & SslPolicyErrors.RemoteCertificateNameMismatch) == 0)
-                                    return true;
-
-                                var original = savedOriginalCallback;
-                                if (original != null)
-                                    return original(sender, cert, chain, errors);
-                                return false;
-                            };
-                    }
-                }
-                else
-                {
-                    certSetupCount--;
-                    if (certSetupCount <= 0)
-                    {
-                        certSetupCount = 0;
-                        ServicePointManager.ServerCertificateValidationCallback = savedOriginalCallback;
-                        savedOriginalCallback = null;
-                    }
-                }
-            }
+            SharedHttp.SetAllowSelfSignedCertificates(allow);
         }
 
         public static byte[] GetCachedIcon(string cacheKey)

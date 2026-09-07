@@ -1,12 +1,12 @@
 # KeeFetch current state
 
-Status:  WORKING
+Status:  REVIEW
 Agent:   Codex
 
 Focus:   PR #9 hardening merge readiness.
-Next:    Confirm CI on the handoff commit, then leave the human merge decision to the owner.
+Next:    Human review and merge decision for PR #9.
 Pointer: https://github.com/tzii/KeeFetch/pull/9
-As-of:   2026-09-07 · Production head 2296f698 passed exact-head Windows CI 34030739977 and fresh local Windows gates. Final handoff-only CI is pending.
+As-of:   2026-09-07 · Production head 2296f698 passed exact-head Windows CI 34030739977 and fresh local Windows gates. The handoff commit must also have green CI before merging.
 
 Notes:
 - Final diff/release audit found no additional merge blocker or new migration/configuration prerequisite. Runtime and workflow corrections are complete; no merge or release performed.

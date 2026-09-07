@@ -1,21 +1,16 @@
 # KeeFetch current state
 
-Status:  REVIEW
+Status:  WORKING
 Agent:   Codex
 
 Focus:   PR #9 hardening merge readiness.
-Next:    Human review and merge decision for PR #9.
+Next:    Confirm CI on the handoff commit, then leave the human merge decision to the owner.
 Pointer: https://github.com/tzii/KeeFetch/pull/9
-As-of:   2026-09-07 · GitHub verified head 2296f698; Windows build run 34030739977 succeeded; PR OPEN and MERGEABLE/CLEAN with no reviews. Fresh Windows gates all passed; final diff audit found no additional merge blocker.
+As-of:   2026-09-07 · Production head 2296f698 passed exact-head Windows CI 34030739977 and fresh local Windows gates. Final handoff-only CI is pending.
 
 Notes:
-- Final pass: build/test/package now uses contents: read and non-persisted checkout credentials; only a tag-push release job has contents: write. Artifact checksums run on PRs; executable self-tests cover valid, tampered, missing, duplicate, malformed, and traversal cases. Root-dot classifier/transport regressions reproduced two failures before the fix; security subset now 23/23. README/CONTRIBUTING/CHANGELOG accurately describe post-response redirect filtering, DNS limitations, site-linked Privacy assets, TLS fallback, and unreleased profiles.
-- Fresh local verification: official .NET SDK 8.0.424 + KeePass 2.60, production C# 5 and test builds -warnaserror 0/0; all 177 tests exercised in complementary Mono UI/non-UI partitions (175 pass, 2 fail). Untouched 3bdb271 produces the same failures (172/174): missing Mono Microsoft.VisualBasic implementation and libgdiplus PNG fixture rejection. Unpartitioned suites stall under Mono; the diagnostic run stopped at StalledResponseStream_BecomesProviderTimeoutWithinBudget, which passes in isolation. No tests were weakened or omitted from the partition comparison.
-- Release-workflow self-tests, YAML permission/artifact/order validation, version/manifest gates, export -Check, 300-row corpus validation, and diff checks pass. Benchmark self-tests fail identically on this head and 3bdb271 under PowerShell 7 because they require Windows PowerShell JSON-array semantics; fingerprinted scripts remain unchanged. Original-head Windows CI is green but is not evidence for the new head.
-- Linux tooling is now reproducible through .hoplite/settings.json and eng/setup-sandbox.sh. The platform setup lifecycle tool failed; the same script was verified through explicit shell execution. New-head CI verification remains required.
-- The prior repository review is preserved on thread branch hoplite/ainos-d4393498 at 118759c. Preexisting diagnostics, destination-policy/DNS, image resource limits, and retry issues remain separate work; this PR must not claim to solve them.
-- PR #8 (`codex/v1-3-guided-native-ux`, draft, CI green) remains the in-flight v1.3 UX work; its own `.agent/STATE.md` on that branch tracks the host-manual validation rows. It touches `.github/workflows/build.yml` (PLGX staging list) and will need a small merge with this branch's workflow edits.
-- PRs #5 and #6 both rewrite `site/index.html` against a stale base and conflict with each other; one should be chosen and rebased, the other closed.
-- Historical initial pass used another Linux sandbox: 166/173 tests (7 Mono failures). The fresh comparison above supersedes those local counts; the original PR head later passed 174/174 on Windows CI.
-- Review provenance of the v1.3 study is unchanged: census labels are MACHINE review (`machine:antigravity-1.1.18/gemini-3.7-flash-high`), owner-approved; never present them as human review.
-- Parked harness fixes remain in docs/benchmarks/v1.3-harness-followups.md.
+- Final diff/release audit found no additional merge blocker or new migration/configuration prerequisite. Runtime and workflow corrections are complete; no merge or release performed.
+- Fresh Windows verification: SDK 9.0.317, KeePass 2.60, production Release C# 5 -warnaserror with zero warnings/errors; full MSTest 177/177, zero skipped; Windows PowerShell benchmark self-tests, profile export -Check, version, 37-file PLGX manifest, release-workflow self-tests, and working-tree/PR-range git diff --check all passed. This supersedes previous Mono failures and stale pending-CI claims.
+- Exact production-head GitHub run 34030739977 independently passed all 177 tests and packaging (PLGX 1,050,307 bytes). Handoff commits change agent documentation only.
+- Pre-request destination/DNS enforcement, diagnostic redaction/export safety, decoded-image bounds, and retry pacing remain documented separate follow-ups. This scoped PR does not claim to solve them or complete the v1.3 release.
+- PR #8 retains the cancellation/persistence and guided-native UX changes; its remaining real-host validation is tracked on that branch. Preserve those changes when integrating.

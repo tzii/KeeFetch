@@ -178,6 +178,10 @@ section { padding: 5rem 0; border-bottom: 1px solid var(--line); }
 .docs-main h2 { font-size: clamp(1.75rem, 3vw, 2.35rem); }
 .docs-main h3 { margin-top: 2rem; }
 .docs-main li { max-width: 72ch; margin-block: .4rem; }
+.product-shot { max-width: 762px; margin: 2rem 0; }
+.product-shot > a { display: block; border: 1px solid var(--line); border-radius: 8px; }
+.product-shot img { display: block; width: 100%; border-radius: 8px; }
+.product-shot figcaption { margin-top: .75rem; color: var(--muted); font-size: .875rem; }
 .doc-index { display: flex; flex-wrap: wrap; gap: .3rem 1.2rem; padding: 1.2rem 0; border-bottom: 1px solid var(--line); }
 .doc-index a { display: inline-flex; align-items: center; min-height: 44px; font-size: .9375rem; }
 .table-wrap { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; margin: 1.5rem 0; border: 1px solid var(--line); border-radius: 8px; }

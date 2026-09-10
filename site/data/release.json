@@ -7,5 +7,6 @@
   "releaseUrl": "https://github.com/tzii/KeeFetch/releases/tag/v1.2.0",
   "plgxUrl": "https://github.com/tzii/KeeFetch/releases/download/v1.2.0/KeeFetch.plgx",
   "dllUrl": "https://github.com/tzii/KeeFetch/releases/download/v1.2.0/KeeFetch.dll",
-  "checksumsUrl": null
+  "checksumsUrl": null,
+  "previewSourceRef": "19a0c224ca4dbf7042d22c3497e7599f61937c0b"
 }

@@ -112,7 +112,7 @@ def verify(site):
             errors.append('incorrect checksums URL')
         if release.get('plgxSha256') and not re.fullmatch(r'[0-9a-f]{64}', release['plgxSha256']):
             errors.append('invalid PLGX checksum')
-        if release.get('plgxChecksumUrl') not in (None,base+'download/'+release['tag']+'/KeeFetch.plgx.sha256'):
+        if release.get('plgxChecksumUrl') not in (None,base+'download/'+release['tag']+'/KeeFetch.plgx.sha256',base+'download/'+release['tag']+'/SHA256SUMS.txt'):
             errors.append('incorrect PLGX checksum URL')
         if bool(release.get('plgxSha256')) != bool(release.get('plgxChecksumUrl')):
             errors.append('PLGX checksum and source URL must be supplied together')

@@ -8,7 +8,7 @@
 </div>
 </header>
 <div class="release-strip"><!-- RELEASE_STATUS_START -->
-v1.3.0 source preview · Stable download: <a href="https://github.com/tzii/KeeFetch/releases/tag/v1.2.0">v1.2.0</a>
+Stable download: <a href="https://github.com/tzii/KeeFetch/releases/tag/v1.3.0">v1.3.0</a>
 <!-- RELEASE_STATUS_END --></div>
 <main id="main" class="docs-main" tabindex="-1"><header class="page-heading"><p class="eyebrow">KeeFetch / Privacy</p><h1>Know where the requests go.</h1><p class="lead">What KeeFetch reads, which hosts it contacts, and how profiles, certificates and diagnostics affect privacy.</p></header>
 <section><h2>Entry data and network requests</h2><p>KeeFetch reads entry URLs and, when configured, titles locally. Direct Site requests the resolved URL and can fetch linked icons and manifests from other hosts. Third-party favicon resolvers may receive the target domain. Android store lookup may query Google Play for an app package.</p><p>KeeFetch does not upload your database or send username/password fields as a database export. A URL can itself contain sensitive path or query data, and resolved references can put data into a URL: review entries and diagnostics accordingly. There is no telemetry or analytics.</p></section>
@@ -18,5 +18,5 @@ v1.3.0 source preview · Stable download: <a href="https://github.com/tzii/KeeFe
 <section><h2>Local diagnostics</h2><p>Routine plaintext log and CSV files can include entry titles, resolved URLs, outcomes and provider details. They are written beside the database when possible, otherwise in a temporary directory. The completion summary identifies the actual paths.</p><p>Inspect and redact files before sharing them. The Privacy profile does not redact them. Treat CSV contents as untrusted when opening them in spreadsheet software.</p></section>
 <section><h2>Report a security concern</h2><p>Follow the repository's <a href="https://github.com/tzii/KeeFetch/blob/master/SECURITY.md">security policy</a>. Do not attach a real vault, credentials or unredacted diagnostics to a public issue.</p></section></main>
 <footer><div class="footer-inner"><a class="footer-brand" href="#main">KeeFetch<span aria-hidden="true">_</span></a><p>Familiar icons. Less searching.</p><div class="footer-links"><a href="https://github.com/tzii/KeeFetch/blob/master/LICENSE">MIT license</a><button id="theme-reset" type="button" hidden>Use system theme</button><a href="#main">Back to top ↑</a></div></div><div class="concept-note"><span>Made for KeePass. Built in the open.</span><span><!-- RELEASE_FOOTER_START -->
-<a href="https://github.com/tzii/KeeFetch/releases/tag/v1.2.0">Stable v1.2.0</a>
+<a href="https://github.com/tzii/KeeFetch/releases/tag/v1.3.0">Stable v1.3.0</a>
 <!-- RELEASE_FOOTER_END --> · <a href="privacy.html">Privacy</a> · <a href="https://github.com/tzii/KeeFetch/blob/master/SECURITY.md">Security</a></span></div></footer></body></html>

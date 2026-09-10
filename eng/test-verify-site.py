@@ -57,7 +57,7 @@ class WebsiteGateTests(unittest.TestCase):
         self.mutate('href="profiles.html"','href="../private.txt"'); self.assert_rejected('local link escapes site')
     def test_checksum_from_wrong_release(self):
         path=self.site/'data/release.json'; data=json.loads(path.read_text(encoding='utf-8'))
-        data['plgxChecksumUrl']=data['plgxChecksumUrl'].replace('/v1.2.0/', '/v0.0.0/')
+        data['plgxChecksumUrl']=data['plgxChecksumUrl'].replace('/'+data['tag']+'/', '/v0.0.0/')
         path.write_text(json.dumps(data),encoding='utf-8')
         self.assert_rejected('incorrect PLGX checksum URL')
     def test_malformed_checksum(self):

@@ -17,7 +17,7 @@ sample domains. Its before/after interaction is an explicitly labeled illustrati
 
 ## Product truth and boundaries
 
-- The stable download is v1.2.0. The described v1.3.0 features are a source preview.
+- The stable download is v1.3.0. The described features and screenshots match that release.
   `data/release.json` and the synchronizer own generated release links and labels.
 - `data/profiles-v1.3.json` is the checksum-bound candidate export and owns managed profile facts. Do not tune time budgets,
   providers, names or evidence as a design change.
@@ -56,4 +56,4 @@ Automated browser checks and screenshots do not establish physical-device,
 screen-reader or native KeePass compatibility. Record which checks ran and keep
 those remaining acceptance checks explicit.
 
-The independent website publication keeps `data/profiles.json` tied to the compiled branch catalog. `data/profiles-v1.3.json` is the accepted 9f0b43f export; its source commit and hash are recorded in release.json. The website uses this frozen preview so publishing documentation does not change the plugin or weaken its export check. Update the snapshot deliberately with the next accepted candidate.
+The independent website publication keeps `data/profiles.json` tied to the compiled branch catalog. `data/profiles-v1.3.json` is the accepted 9f0b43f export; its source commit and hash are recorded in release.json. The website retains this frozen release snapshot, which matches the compiled 1.3 catalog, so publishing documentation does not change the plugin or weaken its export check. Update the snapshot deliberately with the next accepted candidate.

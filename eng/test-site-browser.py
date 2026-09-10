@@ -62,6 +62,7 @@ def main() -> int:
     if args.axe and not args.axe.is_file():
         parser.error('--axe must identify axe.min.js')
     args.output.mkdir(parents=True, exist_ok=True)
+    release = json.loads((args.site / 'data/release.json').read_text(encoding='utf-8-sig'))
     results = []
     axe_runs = []
     report = {'browser': args.browser, 'playwright': version('playwright'), 'cases': results, 'axe': axe_runs}
@@ -277,7 +278,9 @@ def main() -> int:
                         assert image.get_attribute('alt')
                         assert image.evaluate('e => e.closest("a").getAttribute("href") === e.getAttribute("src")')
                     page.locator('.verification summary').click()
-                    expect(page.locator('#checksum')).to_have_text('1fd7e12590bfc2d23ede93c1ae5e61de0662187321caccdfeeb0bbcb995f5275')
+                    expect(page.locator('#checksum')).to_have_text(release['plgxSha256'])
+                    expect(page.locator('.verification a')).to_have_attribute('href', release['plgxChecksumUrl'])
+                    expect(page.locator('.install-intro .button')).to_have_attribute('href', release['plgxUrl'])
                 case('genuine-media-and-stable-checksum', media, width=390, screenshot=True)
 
                 def print_page(page, _context):

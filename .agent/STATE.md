@@ -3,16 +3,13 @@
 Status:  WORKING
 Agent:   Codex
 
-Focus:   Expanded v1.3 provider study: owner selected the complete 19-candidate rerun.
-Next:    Freeze launch fingerprints, run the clean expanded matrix, then review its full cold-artifact census.
-Pointer: https://github.com/tzii/KeeFetch/pull/8
-As-of:   2026-09-07 · GitHub confirms PR #8 OPEN/DRAFT at 18d49093d10e0dd819eea8a21e52cad4cc91f6ac with green CI 34160791331; master is f252f8d; latest release v1.2.0 and no v1.3.0 tag. Merge f21180f verified (227/227 tests, CI green, PLGX CDDCD67A loaded in KeePass 2.60). agy adversarial review (gemini-3.8-flash-high) returned 10 findings; 8 verified and fixed at this head with 7 new regressions (234/234). Diagnostics redaction and pwsh benchmark-harness semantics remain documented separate follow-ups.
+Focus:   Complete the expanded provider study and integrate v1.3 release preparation.
+Next:    Commit the validated source and package exact DLL/PLGX for final KeePass host checks.
+Pointer: docs/validation/2026-09-10-v1.3-selection-and-freeze.md
+As-of:   2026-09-10 Europe/Rome · Git/GitHub reconciled: local cac2cb0 plus validated integration; PR #8 OPEN/DRAFT still at 18d4909, latest release v1.2.0. Final 827-unit queue and 138-unit / 92-image direct spot-check accepted. Owner-approved ConservativeFailure selection published locally; four unresolved app labels preserved. Catalog/export/README/site and 1.3.0.0 metadata synchronized. Release and test builds warning-free; MSTest 237/237 (zero skipped), 63 evidence tests, harness, export, version, manifest, workflow, website verifier 16 tests and fresh Edge 63 cases pass. WORKING / NO-GO pending current-head CI, exact packages, host/media and release review.
 
 Notes:
-- Preserved UX-branch history: real-host passes at 7eea645 (first run, persistence, 100% traversal, cancellation/mixed arithmetic, one bounded retry) and the persistence fix 1ab7379 remain described below and in docs/validation/v1.3-ui-matrix.md.
-- Preserved master history: PR #9 merged as f252f8d with scoped TLS/certificate policy, widened private-host classification, read-only build job, tag-gated release job, and new CI gates.
-- Full v1.3 release gaps are assessed in docs/validation/2026-09-07-v1.3-release-gaps.md on branch codex/v1-3-release-gap-audit.
-- 2026-09-03 (Codex): Reconciled clean branch 7eea645 and green draft PR #8; owner host-verified first-run cancel/confirm persistence, Settings traversal/atomicity, cancellation arithmetic (71=22+2+3+44), mixed arithmetic (71=59+7+5, retry 10), and exactly-one retry (10=5+5). Remaining: keyboard-only traversal, 125/150/200% DPI, High Contrast, migrations, skipped-entry, full-success, long-path, cancellation-wording rows.
-- 2026-08-28 (ZCode): Persistence defect fixed at 1ab7379 — AceCustomConfig writes are never flushed at exit; both commit points now persist via AppConfigSerializer.Save(Program.Config), failure-tolerant and logged. Three regressions added; gates 211/211.
-- 2026-08-28 (Codex): Tab-caption literal-& defect fixed test-first at e0051fd (plain captions, Ctrl+Tab retained); 208/208 gates green.
-- 2026-08-28 (Codex): Pre-PR review fixed four Important issues at d515aeb (first-run preview persistence, fault retryability, Custom hidden-gate mismatch, missing mnemonics); six regressions; 207/207.
+- The study freeze ended after inspected conservative selection and verified local catalog publication. Original study inputs/DLL remain preserved. Current v1.3 DLL SHA-256 is f03a728c1a5facd54a7f09d1607d78e781ef51179785b609dc7ec9e6a775bf8b; package/host validation is pending.
+- Preserve original reviews and study queue. ZCode model identity is harness-reported; transcripts are reconstructions and some timestamps approximate. Reask-05 accepted two ambiguous Shopping labels; two further app identities remain ambiguous. Their uncertainty is retained, not silently relabeled as wrong.
+- Base assignments are complete; do not resume the obsolete agy plan. Reask-06's external run was rejected by automatic approval review and not retried; Codex completed the additional adjudication locally. No worker or wakeup is running. No source commit, tag, merge or external publication yet.
+- Website destination is GitHub Pages only. Prior website and real-host evidence remains historical; final candidate integration is required.

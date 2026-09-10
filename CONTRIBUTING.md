@@ -62,7 +62,7 @@ powershell -File eng/benchmark/test-benchmark-harness.ps1                # bench
 git diff --check
 ```
 
-Releases are cut by pushing a `v*` tag; the workflow checks that the tag matches `version.txt` and that `CHANGELOG.md` has a section for it. The read-only build job produces the DLL, PLGX, and `SHA256SUMS.txt` on PRs too. A separate tag-push-only release job downloads those artifacts, verifies their hashes, and publishes them with repository write permission. It does not check out or rebuild source. A manual workflow dispatch validates/packages but does not publish a release; rerun a failed tag-push workflow to retry publication.
+A `v*` tag runs validation: the tag must match `version.txt` and a `CHANGELOG.md` section. The read-only build job produces the DLL, PLGX and `SHA256SUMS.txt` on PRs too. A separate read-only tag job verifies those CI artifacts. CI never creates or updates a GitHub release. After owner authorization, the maintainer publishes the exact DLL/PLGX and checksums recorded in the final release-validation document; a tag rebuild must not replace the host-validated files. Manual workflow dispatch also validates/packages only.
 
 ## Project Structure
 

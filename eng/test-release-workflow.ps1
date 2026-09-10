@@ -9,10 +9,13 @@ if ($build -match 'contents: write' -or $build -notmatch 'contents: read') {
 }
 if ($build -notmatch 'persist-credentials: false') { throw 'Checkout must not persist credentials.' }
 if ($release -notmatch "(?m)^    if: github.event_name == 'push' && startsWith\(github.ref, 'refs/tags/v'\)\r?$" -or
-    $release -notmatch '(?m)^    needs: build\r?$' -or $release -notmatch 'contents: write') {
-    throw 'Release must be tag-push-only, depend on build, and own write permission.'
+    $release -notmatch '(?m)^    needs: build\r?$' -or $release -notmatch 'contents: read') {
+    throw 'Release verification must be tag-push-only, depend on build, and use read-only permission.'
 }
 if ($release -match 'actions/checkout@') { throw 'Release must consume artifacts, not rebuild source.' }
+if ($workflow -match 'contents: write|action-gh-release|gh release (create|upload|edit)') {
+    throw 'CI must not publish or replace the manually validated release artifacts.'
+}
 
 function Get-WorkflowScript([string]$name) {
     $pattern = '(?ms)^      - name: ' + [regex]::Escape($name) + '\r?\n(?<step>.*?)(?=^      - name:|^  \S|\z)'

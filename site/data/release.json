@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "version": "1.2.0",
+  "tag": "v1.2.0",
+  "status": "stable",
+  "previewVersion": "1.3.0",
+  "releaseUrl": "https://github.com/tzii/KeeFetch/releases/tag/v1.2.0",
+  "plgxUrl": "https://github.com/tzii/KeeFetch/releases/download/v1.2.0/KeeFetch.plgx",
+  "dllUrl": "https://github.com/tzii/KeeFetch/releases/download/v1.2.0/KeeFetch.dll",
+  "checksumsUrl": null
+}

@@ -5,8 +5,26 @@
     {
       "id": "bulk-fast",
       "displayName": "Fast",
-      "description": "tries 3 icon source(s) in order (the site itself, Google, Twenty Icons) within a 15s total budget; stops as soon as a strong resolver returns a high-confidence icon.",
+      "description": "tries 2 icon source(s) in order (the site itself, Yandex) within a 22s total budget; stops as soon as a strong resolver returns a high-confidence icon.",
       "intendedUse": "Large batch fetching with reduced latency",
+      "providerIds": [
+        "direct-site",
+        "yandex"
+      ],
+      "primaryTimeoutMs": 6000,
+      "fallbackTimeoutMs": 3500,
+      "cumulativeTimeoutMs": 22000,
+      "allowSyntheticFallbacks": false,
+      "stopAfterStrongResolved": true,
+      "allowAndroidStoreLookup": true,
+      "isVisible": true,
+      "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
+    },
+    {
+      "id": "everyday",
+      "displayName": "Balanced",
+      "description": "tries 3 icon source(s) in order (the site itself, Google, Twenty Icons) within a 15s total budget; stops as soon as a strong resolver returns a high-confidence icon.",
+      "intendedUse": "Default everyday use balancing coverage and speed",
       "providerIds": [
         "direct-site",
         "google",
@@ -17,28 +35,6 @@
       "cumulativeTimeoutMs": 15000,
       "allowSyntheticFallbacks": false,
       "stopAfterStrongResolved": true,
-      "allowAndroidStoreLookup": true,
-      "isVisible": true,
-      "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
-    },
-    {
-      "id": "everyday",
-      "displayName": "Balanced",
-      "description": "tries 6 icon source(s) in order (the site itself, Twenty Icons, DuckDuckGo, Google, Yandex, Icon Horse) within a 45s total budget; queries every source in the chain before selecting; allows a generated fallback icon when no real icon is found.",
-      "intendedUse": "Default everyday use balancing coverage and speed",
-      "providerIds": [
-        "direct-site",
-        "twenty-icons",
-        "duckduckgo",
-        "google",
-        "yandex",
-        "icon-horse"
-      ],
-      "primaryTimeoutMs": 10000,
-      "fallbackTimeoutMs": 5000,
-      "cumulativeTimeoutMs": 45000,
-      "allowSyntheticFallbacks": true,
-      "stopAfterStrongResolved": false,
       "allowAndroidStoreLookup": true,
       "isVisible": true,
       "evidenceReport": "docs/benchmarks/v1.3-provider-study.md"
@@ -63,11 +59,11 @@
     {
       "id": "max-coverage",
       "displayName": "Precise",
-      "description": "tries 2 icon source(s) in order (the site itself, Yandex) within a 22s total budget; stops as soon as a strong resolver returns a high-confidence icon.",
+      "description": "tries 2 icon source(s) in order (the site itself, Google) within a 22s total budget; stops as soon as a strong resolver returns a high-confidence icon.",
       "intendedUse": "Favor icon precision over finding an icon for every entry",
       "providerIds": [
         "direct-site",
-        "yandex"
+        "google"
       ],
       "primaryTimeoutMs": 6000,
       "fallbackTimeoutMs": 3500,

@@ -114,7 +114,7 @@ namespace KeeFetch.Tests
             var names = GetPipelineProviderNames(config);
 
             CollectionAssert.AreEqual(
-                new[] { "Direct Site", "Twenty Icons", "DuckDuckGo", "Google", "Yandex", "Icon Horse" },
+                new[] { "Direct Site", "Google", "Twenty Icons" },
                 names);
         }
 
@@ -127,7 +127,7 @@ namespace KeeFetch.Tests
             var names = GetPipelineProviderNames(config);
 
             CollectionAssert.AreEqual(
-                new[] { "Direct Site", "Yandex" },
+                new[] { "Direct Site", "Google" },
                 names);
         }
 

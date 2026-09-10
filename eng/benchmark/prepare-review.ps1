@@ -1,15 +1,16 @@
 param(
     [string]$RunDir,
     [switch]$Validate,
-    [string]$OutputPath
+    [string]$OutputPath,
+    [switch]$ColdOnly
 )
 
 $ErrorActionPreference = "Stop"
 
-# Builds (and validates) the human review queue for a benchmark experiment.
+# Builds (and validates) the review queue for a benchmark experiment.
 #
 # The queue is a CENSUS, not a sample: every unique cold (fixture_id,
-# artifact_hash) unit is human-reviewed exactly once, and the recorded label
+# artifact_hash) unit is reviewed (human, or owner-authorized machine review), and the recorded label
 # propagates to every occurrence of that exact artifact - all repetitions and
 # candidates that produced it. There is no sampling, no strata, no design
 # weights, and no seed; coverage is complete by construction, so no interval
@@ -68,6 +69,7 @@ function Get-MeasuredRunDirectories {
     $measured = @()
     foreach ($run in $runs) {
         $meta = Get-Content -Raw -LiteralPath (Join-Path $run "run.json") | ConvertFrom-Json
+        if ($ColdOnly -and [string]$meta.cache_mode -ne 'cold') { continue }
         $status = ""
         if ($meta.PSObject.Properties.Name -contains 'status') { $status = [string]$meta.status }
         if ($status -ne "complete") {

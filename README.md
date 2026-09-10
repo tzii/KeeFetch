@@ -16,6 +16,8 @@ A fast, smart, and modern favicon downloader plugin for KeePass 2.x.
 - **Availability-first selector engine** — Collects provider candidates, then ranks by trust tier (`Site canonical` → `Strong resolver` → `Synthetic fallback`) so placeholder-prone results cannot outrank stronger real icons.
 - **Smart icon detection** — Parses `rel=icon`, `apple-touch-icon`, `rel=manifest` icon entries, and detects SVG-only situations for resolver fallback competition.
 - **Study-selected fetch profiles** — `Fast`, `Balanced` (default), `Privacy`, and `Precise` profiles whose provider chains and timeouts were chosen by a measured provider study; `Custom` exposes every provider and timeout. See [Fetch profiles](#-fetch-profiles).
+- **Guided setup and settings** — First-run profile selection explains third-party requests. Overview, Downloads, Providers and Advanced tabs let you edit settings before saving or cancelling them.
+- **Clear batch results** — Completion shows updated, skipped, not-found, error and cancelled counts, with Copy Summary, diagnostics paths and one bounded retry of eligible misses/errors.
 - **Deduplication** — SHA-256 hashing ensures icons aren't duplicated in your database.
 - **Android Support** — Converts `androidapp://` URLs to web domains with 100+ built-in mappings and Play Store scraping.
 - **Intelligent URL handling** — Resolves KeePass `{REF:...}` placeholders and auto-prefixes schemes.
@@ -35,13 +37,13 @@ Routine diagnostics currently include entry titles and resolved URLs in plaintex
 
 | Profile | Provider chain | Total budget | Notes |
 |---|---|---|---|
-| **Fast** | Direct Site → Google → Twenty Icons | 15 s | Stops at the first strong resolver hit; no synthetic fallbacks. Best for large batches. |
-| **Balanced** (default) | Direct Site → Twenty Icons → DuckDuckGo → Google → Yandex → Icon Horse | 45 s | Queries the whole chain before selecting; allows a generated fallback icon when nothing real is found. |
+| **Fast** | Direct Site → Yandex | 22 s | Lowest measured eligible cold-batch duration; stops at a strong resolver hit; no synthetic fallbacks. |
+| **Balanced** (default) | Direct Site → Google → Twenty Icons | 15 s | Balances reviewed usability, coverage and speed; stops at a strong resolver hit; no synthetic fallbacks. |
 | **Privacy** | Direct Site only | 22 s | Disables favicon resolvers; site-linked assets and redirects may use other hosts. |
-| **Precise** | Direct Site → Yandex | 22 s | Study-selected chain that prioritizes correct-brand precision over raw coverage. |
+| **Precise** | Direct Site → Google | 22 s | Prioritizes reviewed usability among returned icons; the winner depends on conservative ambiguity scoring. |
 | **Custom** | Any of Direct Site, Twenty Icons, DuckDuckGo, Google, Yandex, Favicone, Icon Horse | configurable | Full manual control over providers, order, and timeouts. |
 
-These profiles describe the unreleased source tree, not the latest v1.2.0 download. They are generated from the v1.3 provider study (`docs/benchmarks/v1.3-provider-study.md`) and mirrored to the website in `site/data/profiles.json`; CI fails if the two drift apart.
+These profiles describe the v1.3 source candidate; the stable download remains v1.2.0 until publication. They are generated from the [expanded 19-candidate study](docs/benchmarks/v1.3-provider-study.md), with 827 machine-reviewed units and four unresolved app identities counted as failures for scoring. The report discloses Precise's ambiguity sensitivity. Profiles are mirrored to the website in `site/data/profiles.json`; CI fails if the two drift apart. Time budgets are upper bounds, so Fast's larger budget does not imply a slower measured batch.
 
 ## 🚀 Installation
 
@@ -57,31 +59,31 @@ These profiles describe the unreleased source tree, not the latest v1.2.0 downlo
 
 ### 1. Simple One-Click Fetch
 
-Right-click any entry and select **KeeFetch - Download Favicons**. The plugin will instantly search for the best icon, prioritizing high-resolution sources like `apple-touch-icon` and large PNGs.
+Right-click any entry and select **KeeFetch - Download Favicons**. The plugin searches for an icon, considering site-linked sources such as `apple-touch-icon` and PNGs alongside the configured providers.
 
 ![Single Entry Demo](docs/usage-single.gif)
-*Right-click any entry to instantly fetch its favicon*
+*Historical single-entry demonstration; v1.3 adds guided first-run and completion screens.*
 
 ### 2. Bulk Group Processing
 
-Process entire groups (including all subgroups) in one go. KeeFetch uses a concurrent engine with `SemaphoreSlim` for up to 8 parallel downloads, so fetching 100+ icons only takes seconds.
+Process entire groups (including all subgroups) in one go. KeeFetch runs up to 8 entries concurrently. Batch duration depends on the selected profile, provider timeouts and network conditions.
 
 ![Group Download Demo](docs/usage-group.gif)
-*Process entire groups with concurrent downloads*
+*Historical group-download demonstration; final v1.3 media is pending host validation.*
 
 ### 3. Android App Support
 
 KeeFetch uniquely handles `androidapp://` URLs. It maps package names (like `com.instagram.android`) to official web domains using a built-in database of 100+ app mappings, with Google Play Store fallback.
 
 ![Android Mapping Demo](docs/usage-android.gif)
-*Automatic androidapp:// URL to web domain mapping*
+*Historical demonstration of androidapp:// URL mapping; final v1.3 media is pending host validation.*
 
 ### 4. Database-wide Maintenance
 
 Keep your entire database up to date via the Tools menu. Perfect for cleaning up missing icons in large, existing databases.
 
 ![Database Maintenance](docs/usage-maintenance.png)
-*Update all entries across your entire database*
+*Historical database-wide menu illustration; final v1.3 media is pending host validation.*
 
 **Menu Path:** `Tools` → `KeeFetch` → `Download All Favicons`
 

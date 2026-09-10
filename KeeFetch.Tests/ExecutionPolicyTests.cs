@@ -61,6 +61,20 @@ namespace KeeFetch.Tests
         public void BulkFastProfile_ResolvesExactBudgetsChainAndStop()
         {
             var policy = Resolve(ManagedConfig("bulk-fast"));
+            Assert.AreEqual(6000, policy.PrimaryTimeoutMs);
+            Assert.AreEqual(3500, policy.FallbackTimeoutMs);
+            Assert.AreEqual(22000, policy.CumulativeTimeoutMs);
+            Assert.IsFalse(policy.AllowSyntheticFallbacks);
+            Assert.IsTrue(policy.StopAfterStrongResolved);
+            CollectionAssert.AreEqual(
+                new[] { "direct-site", "yandex" },
+                (System.Collections.ICollection)policy.ProviderIds);
+        }
+
+        [TestMethod]
+        public void EverydayProfile_ResolvesExactBudgetsChainAndEarlyStop()
+        {
+            var policy = Resolve(ManagedConfig("everyday"));
             Assert.AreEqual(4000, policy.PrimaryTimeoutMs);
             Assert.AreEqual(2500, policy.FallbackTimeoutMs);
             Assert.AreEqual(15000, policy.CumulativeTimeoutMs);
@@ -72,21 +86,7 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
-        public void EverydayProfile_ResolvesExactBudgetsChainSyntheticAndFullChain()
-        {
-            var policy = Resolve(ManagedConfig("everyday"));
-            Assert.AreEqual(10000, policy.PrimaryTimeoutMs);
-            Assert.AreEqual(5000, policy.FallbackTimeoutMs);
-            Assert.AreEqual(45000, policy.CumulativeTimeoutMs);
-            Assert.IsTrue(policy.AllowSyntheticFallbacks);
-            Assert.IsFalse(policy.StopAfterStrongResolved);
-            CollectionAssert.AreEqual(
-                new[] { "direct-site", "twenty-icons", "duckduckgo", "google", "yandex", "icon-horse" },
-                (System.Collections.ICollection)policy.ProviderIds);
-        }
-
-        [TestMethod]
-        public void ThoroughProfile_ResolvesExactBudgetsChainAndEarlyStop()
+        public void PreciseProfile_ResolvesExactBudgetsChainAndEarlyStop()
         {
             var policy = Resolve(ManagedConfig("max-coverage"));
             Assert.AreEqual(6000, policy.PrimaryTimeoutMs);
@@ -95,7 +95,7 @@ namespace KeeFetch.Tests
             Assert.IsFalse(policy.AllowSyntheticFallbacks);
             Assert.IsTrue(policy.StopAfterStrongResolved);
             CollectionAssert.AreEqual(
-                new[] { "direct-site", "yandex" },
+                new[] { "direct-site", "google" },
                 (System.Collections.ICollection)policy.ProviderIds);
         }
 

@@ -50,6 +50,14 @@ class WebsiteGateTests(unittest.TestCase):
         path=self.site/'data/release.json'; data=json.loads(path.read_text(encoding='utf-8'))
         data['tag']='v999.0.0'; path.write_text(json.dumps(data),encoding='utf-8')
         self.assert_rejected('release tag/version mismatch')
+    def test_mutable_preview_source_rejected(self):
+        path=self.site/'data/release.json'; data=json.loads(path.read_text(encoding='utf-8'))
+        data['previewSourceRef']='master'; path.write_text(json.dumps(data),encoding='utf-8')
+        self.assert_rejected('previewSourceRef must be a full immutable commit SHA')
+    def test_stale_study_links_rejected(self):
+        ref=json.loads((self.site/'data/release.json').read_text())['previewSourceRef']
+        self.mutate('/blob/'+ref+'/docs/benchmarks/', '/blob/master/docs/benchmarks/', 'benchmarks.html')
+        self.assert_rejected('generated content mismatch')
     def test_escaping_local_link(self):
         self.mutate('href="profiles.html"','href="../private.txt"'); self.assert_rejected('local link escapes site')
 

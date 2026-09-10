@@ -253,6 +253,10 @@ def main() -> int:
                     def forced(page, _context):
                         visit(page)
                         page.emulate_media(forced_colors='active')
+                        report['forced_colors_capabilities'] = page.evaluate("""() => ({
+                            mediaActive: matchMedia('(forced-colors: active)').matches,
+                            colorAdjustmentSupported: CSS.supports('forced-color-adjust','none')
+                        })""")
                         page.locator('#demo-before').click()
                         page.locator('#demo-after').click()
                         expect(page.locator('#machine-count')).to_have_text('04', timeout=8000)

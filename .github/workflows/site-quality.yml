@@ -106,3 +106,33 @@ jobs:
             site-qa/
             eng/site/package-lock.json
           retention-days: 14
+
+  plugin-compatibility:
+    runs-on: windows-latest
+    needs: website
+    timeout-minutes: 20
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+      - name: Install matching KeePass host dependencies
+        shell: pwsh
+        run: |
+          choco install keepass.install --version=2.60.0 --no-progress -y --allow-downgrade
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build, test and verify unchanged plugin contracts
+        shell: pwsh
+        run: ./eng/site/verify-plugin-compatibility.ps1 -KeePassPath 'C:\Program Files\KeePass Password Safe 2'
+      - name: Save MSTest results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: keefetch-plugin-compatibility
+          path: site-qa/plugin-tests/
+          retention-days: 14

@@ -1,0 +1,56 @@
+name: Website quality
+
+on:
+  push:
+    branches:
+      - 'codex/site-*'
+    paths:
+      - 'site/**'
+      - 'eng/*site*'
+      - '.github/workflows/site-quality.yml'
+  pull_request:
+    paths:
+      - 'site/**'
+      - 'eng/*site*'
+      - '.github/workflows/site-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: Static checks and review build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Validate sources and build
+        run: |
+          python3 eng/sync-site-profiles.py --check
+          python3 eng/verify-site.py
+          python3 eng/test-verify-site.py
+          node --check site/assets/js/site.js
+          node --check site/assets/js/theme.js
+          python3 site/build.py
+          python3 eng/verify-site.py --site site/dist
+      - name: Upload review build (never deploy)
+        uses: actions/upload-artifact@v6
+        with:
+          name: keefetch-site-review
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            site/
+            !site/dist/
+            !site/__pycache__/
+            eng/*site*.py
+            eng/*site*.js
+            eng/*site*.json

@@ -1,0 +1,35 @@
+[
+  {
+    "title": "Dropbox",
+    "hex": "0061FF",
+    "source": "https://www.dropbox.com/branding"
+  },
+  {
+    "title": "Figma",
+    "hex": "F24E1E",
+    "source": "https://www.figma.com/using-the-figma-brand/",
+    "guidelines": "https://www.figma.com/using-the-figma-brand/"
+  },
+  {
+    "title": "GitHub",
+    "hex": "181717",
+    "source": "https://github.com/logos",
+    "guidelines": "https://github.com/logos"
+  },
+  {
+    "title": "Linear",
+    "hex": "5E6AD2",
+    "source": "https://linear.app"
+  },
+  {
+    "title": "Notion",
+    "hex": "000000",
+    "source": "https://www.notion.so"
+  },
+  {
+    "title": "Spotify",
+    "hex": "1ED760",
+    "source": "https://developer.spotify.com/documentation/general/design-and-branding/#using-our-logo",
+    "guidelines": "https://developer.spotify.com/documentation/general/design-and-branding/#using-our-logo"
+  }
+]

@@ -4,9 +4,9 @@ Status: WORKING
 Agent: Codex
 
 Focus: Publish KeeFetch v1.3.0 with the accepted packages and update the official website.
-Next: Finalize public release text and merge PR8 after its final checks pass.
+Next: Complete PR18 CI, merge the stable website update and verify GitHub Pages.
 Pointer: https://tzii.github.io/KeeFetch/
-As-of: 2026-09-11 Europe/Rome · PR16 merged as a5c3ef6 and Pages deployment 34536083847 succeeded. All 34 public files match Git; 14 live browser cases and download/checksum checks pass. Final PR16 and PR8 website CI each pass 384 page cases, 123 machine cases and 84 axe scans; 20 static fixtures pass. PR8 at 15dc7d3 is mergeable/CLEAN with green Windows CI, 237 tests and all source/harness/export/package gates. The owner authorized completion of the v1.3 release on September 11. Live GitHub state reverified; both retained package hashes match the accepted values.
+As-of: 2026-09-11 Europe/Rome · PR16 merged as a5c3ef6 and Pages deployment 34536083847 succeeded. All 34 public files match Git; 14 live browser cases and download/checksum checks pass. Final PR16 and PR8 website CI each pass 384 page cases, 123 machine cases and 84 axe scans; 20 static fixtures pass. PR8 at 15dc7d3 is mergeable/CLEAN with green Windows CI, 237 tests and all source/harness/export/package gates. The owner authorized completion on September 11. PR8 merged as 0c3f15c; merge/tag CI passed. v1.3.0 is published as latest stable, and all three public downloads match the retained candidate. PR18 carries the stable website cutover.
 
 Notes:
 - Official hosting is GitHub Pages only. The four original screenshots are published without pixel edits. The clean completion shows the verified six-entry Privacy demo; mixed-outcome functional evidence remains preserved.

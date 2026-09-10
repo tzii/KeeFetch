@@ -1,15 +1,16 @@
 # KeeFetch current state
 
-Status:   WORKING
-Agent:   Codex
+Status: WORKING
+Agent: Codex
 
-Focus:   Make the owner-selected little icon machine design the official KeeFetch website.
-Next:   Complete PR16 current-head CI, then merge the website-only change and verify GitHub Pages.
-Pointer:   https://github.com/tzii/KeeFetch/pull/16
-As-of:   2026-09-10 Europe/Rome · PR16 publishes only the selected little-machine site and six guides from master; PR8 is aligned at 80ddaea. Four genuine screenshots and exact plugin packages retain their original hashes. Stable downloads remain v1.2.0; the v1.3 profile preview is bound to candidate 9f0b43f. Local static checks 20/20, motion 41/41 and corrected guide regression 48/48 with eight axe scans pass. Current-head three-browser and Windows CI is running before publication.
+Focus: Publish KeeFetch v1.3.0 with the accepted packages and update the official website.
+Next: Finalize public release text and merge PR8 after its final checks pass.
+Pointer: https://tzii.github.io/KeeFetch/
+As-of: 2026-09-11 Europe/Rome · PR16 merged as a5c3ef6 and Pages deployment 34536083847 succeeded. All 34 public files match Git; 14 live browser cases and download/checksum checks pass. Final PR16 and PR8 website CI each pass 384 page cases, 123 machine cases and 84 axe scans; 20 static fixtures pass. PR8 at 15dc7d3 is mergeable/CLEAN with green Windows CI, 237 tests and all source/harness/export/package gates. The owner authorized completion of the v1.3 release on September 11. Live GitHub state reverified; both retained package hashes match the accepted values.
 
 Notes:
-- Preserve original study inputs and exact candidate bytes. Candidate source: 9f0b43f64335803d24ca99d6ccc7e0e7abac3bb8. DLL SHA-256: 924c6c5c1a38b99e8805b01e20569f3fdb50c2941576c567f5e1f406e4311ad5; PLGX: 4742355b5cadb089c7898b99d7a6ff95d068f8319ad97b3a1eb15b1d186a53a8. Later test-fixture/evidence commits do not replace this source identity.
-- Preserve original reviews and study queue. ZCode model identity is harness-reported; transcripts are reconstructions and some timestamps approximate. Reask-05 accepted two ambiguous Shopping labels; two further app identities remain ambiguous. Their uncertainty is retained, not silently relabeled as wrong.
-- Base assignments are complete; no worker/wakeup is running. Reask-06 rejection was respected; GitHub upload completed after explicit owner approval. The prepared synthetic migration, authentic upgrade/rollback and long-path tests are now accepted from the owner’s manual report.
-- Website destination is GitHub Pages only. Candidate website automation passes; all four genuine host screenshots are complete; publication remains pending. Preserve concurrent site/index.html and untracked site-next.css edits outside the candidate.
+- Official hosting is GitHub Pages only. The four original screenshots are published without pixel edits. The clean completion shows the verified six-entry Privacy demo; mixed-outcome functional evidence remains preserved.
+- Stable downloads remain v1.2.0. The website's v1.3 profile preview is the checksum-bound 9f0b43f export in profiles-v1.3.json. profiles.json still follows the compiled branch catalog; no export gate was weakened.
+- Accepted candidate source is 9f0b43f64335803d24ca99d6ccc7e0e7abac3bb8. Retained DLL SHA-256: 924c6c5c1a38b99e8805b01e20569f3fdb50c2941576c567f5e1f406e4311ad5; PLGX: 4742355b5cadb089c7898b99d7a6ff95d068f8319ad97b3a1eb15b1d186a53a8. No package, plugin source or release tag was changed by website publication. Do not replace the host-tested payload with CI rebuilds.
+- Study provenance and original inputs remain preserved: 560 agy and 267 ZCode labels, reconstructed transcripts, four ambiguous app identities scored conservatively by owner decision. Native host acceptance is owner-reported; WebKit lacks forced-color-adjust support, explicitly recorded in browser QA.
+- Evidence: artifacts/v1.3-preparation/official-website-ci-final-20260911. The source ZIP intake and earlier QA failures remain archived. Main checkout stays on site/redesign-v1-3-release with unrelated index.html and site-next.css edits preserved. Release integration uses website-integration-worktree at 15dc7d3; the website-only worktree retains PR16 source. Local preview remains http://127.0.0.1:60250/.

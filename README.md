@@ -43,7 +43,7 @@ Routine diagnostics currently include entry titles and resolved URLs in plaintex
 | **Precise** | Direct Site → Google | 22 s | Prioritizes reviewed usability among returned icons; the winner depends on conservative ambiguity scoring. |
 | **Custom** | Any of Direct Site, Twenty Icons, DuckDuckGo, Google, Yandex, Favicone, Icon Horse | configurable | Full manual control over providers, order, and timeouts. |
 
-These profiles describe the v1.3 source candidate; the stable download remains v1.2.0 until publication. They are generated from the [expanded 19-candidate study](docs/benchmarks/v1.3-provider-study.md), with 827 machine-reviewed units and four unresolved app identities counted as failures for scoring. The report discloses Precise's ambiguity sensitivity. Profiles are mirrored to the website in `site/data/profiles.json`; CI fails if the two drift apart. Time budgets are upper bounds, so Fast's larger budget does not imply a slower measured batch.
+These are the v1.3 fetch profiles. They are generated from the [expanded 19-candidate study](docs/benchmarks/v1.3-provider-study.md), with 827 machine-reviewed units and four unresolved app identities counted as failures for scoring. The report discloses Precise's ambiguity sensitivity. Profiles are mirrored to the website in `site/data/profiles.json`; CI fails if the two drift apart. Time budgets are upper bounds, so Fast's larger budget does not imply a slower measured batch.
 
 ## 🚀 Installation
 
@@ -69,21 +69,21 @@ Right-click any entry and select **KeeFetch - Download Favicons**. The plugin se
 Process entire groups (including all subgroups) in one go. KeeFetch runs up to 8 entries concurrently. Batch duration depends on the selected profile, provider timeouts and network conditions.
 
 ![Group Download Demo](docs/usage-group.gif)
-*Historical group-download demonstration; final v1.3 media is pending host validation.*
+*Historical group-download demonstration; see the [v1.3 screenshot gallery](https://tzii.github.io/KeeFetch/#screenshots) for the current interface.*
 
 ### 3. Android App Support
 
 KeeFetch uniquely handles `androidapp://` URLs. It maps package names (like `com.instagram.android`) to official web domains using a built-in database of 100+ app mappings, with Google Play Store fallback.
 
 ![Android Mapping Demo](docs/usage-android.gif)
-*Historical demonstration of androidapp:// URL mapping; final v1.3 media is pending host validation.*
+*Historical demonstration of androidapp:// URL mapping; see the [v1.3 screenshot gallery](https://tzii.github.io/KeeFetch/#screenshots) for the current interface.*
 
 ### 4. Database-wide Maintenance
 
 Keep your entire database up to date via the Tools menu. Perfect for cleaning up missing icons in large, existing databases.
 
 ![Database Maintenance](docs/usage-maintenance.png)
-*Historical database-wide menu illustration; final v1.3 media is pending host validation.*
+*Historical database-wide menu illustration; see the [v1.3 screenshot gallery](https://tzii.github.io/KeeFetch/#screenshots) for the current interface.*
 
 **Menu Path:** `Tools` → `KeeFetch` → `Download All Favicons`
 

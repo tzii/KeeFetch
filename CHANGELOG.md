@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.3.0] - 2026-09-10
+## [1.3.0] - 2026-09-11
 
 ### Added
 - Study-selected managed fetch profiles (`Fast`, `Balanced`, `Privacy`, `Precise`) chosen by the v1.3 provider study; see `docs/benchmarks/v1.3-provider-study.md`

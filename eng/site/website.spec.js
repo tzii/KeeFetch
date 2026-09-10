@@ -47,6 +47,12 @@ async function layout(page) {
       const r = element.getBoundingClientRect();
       if (r.width && (r.left < -1 || r.right > innerWidth + 1)) found.push('Control outside viewport: ' + element.textContent.slice(0, 70));
     }
+    for (const icon of document.querySelectorAll('.icon-button svg')) {
+      if (!icon.getClientRects().length) continue;
+      const box = icon.getBoundingClientRect();
+      const button = icon.closest('button').getBoundingClientRect();
+      if (box.left < button.left || box.right > button.right || box.top < button.top || box.bottom > button.bottom) found.push('Toolbar symbol escapes its button: ' + icon.closest('button').id);
+    }
     for (const image of document.images) if (!image.complete || !image.naturalWidth) found.push('Broken image: ' + image.getAttribute('src'));
     return found;
   });

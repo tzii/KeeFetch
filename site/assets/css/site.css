@@ -91,7 +91,7 @@ strong { color: var(--ink); font-weight: 600; }
 .fine { font-size: .875rem; color: var(--muted); }
 .accent-text { color: var(--accent); }
 .actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; margin: 1.8rem 0 1rem; }
-.hero { display: grid; grid-template-columns: 1.05fr 1fr; align-items: center; gap: 3rem; padding: 5rem 0 4.5rem; min-height: 670px; }
+.hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 25rem), 1fr)); align-items: center; gap: 3rem; padding: 5rem 0 4.5rem; min-height: 670px; }
 .hero > * { min-width: 0; }
 .hero h1 span { display: block; }
 .hero .fine { display: flex; flex-wrap: wrap; gap: .4rem 1.1rem; }
@@ -124,7 +124,7 @@ strong { color: var(--ink); font-weight: 600; }
 .demo-switch button { min-height: 44px; padding: .5rem .8rem; border: 0; border-radius: 5px; color: var(--ink); background: transparent; font-size: .875rem; font-weight: 600; }
 .demo-switch button[aria-pressed='true'] { background: var(--accent); color: var(--accent-ink); }
 .demo-switch button:hover:not([aria-pressed='true']) { background: var(--soft); }
-.demo-disclaimer { margin: .8rem 0 0; color: var(--muted); font-size: .75rem; }
+.demo-disclaimer { margin: .8rem 0 0; color: var(--ink); font-size: .875rem; }
 .proof-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: 1.5rem; padding: 1.8rem 0; border-block: 1px solid var(--line); }
 .proof-item { display: flex; align-items: flex-start; gap: .8rem; min-width: 0; }
 .proof-item > div { min-width: 0; }
@@ -144,7 +144,7 @@ section { padding: 5rem 0; border-bottom: 1px solid var(--line); }
 .preview-label, .badge, .card-default { display: inline-block; color: var(--accent); font-size: .8125rem; font-weight: 600; }
 .preview-label { border-bottom: 1px solid var(--accent); padding-bottom: .15rem; }
 .profile-note { max-width: 78ch; font-size: .9375rem; }
-.profile-summaries { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 2.5rem 0 2rem; border-block: 1px solid var(--line); }
+.profile-summaries { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); margin: 2.5rem 0 2rem; border-block: 1px solid var(--line); }
 .profile-summary { display: flex; flex-direction: column; min-width: 0; padding: 1.5rem; border-inline-end: 1px solid var(--line); }
 .profile-summary:last-child { border-inline-end: 0; }
 .profile-summary[data-profile-key='everyday'] { background: var(--soft); }

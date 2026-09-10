@@ -5,7 +5,8 @@ from machine_review_policy import validate_prompts
 class PromptPolicyTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
-        self.kit=Path(self.temp.name);self.batch=self.kit/'batch-01';self.batch.mkdir()
+        # Match real batch generation, including Windows runner short TEMP paths.
+        self.kit=Path(self.temp.name).resolve();self.batch=self.kit/'batch-01';self.batch.mkdir()
         self.template='Inspect BATCH_DIRECTORY/manifest.json.\n'
         self.write('kit.json',{'tooling_sha256':{'machine-census-prompt.txt':hashlib.sha256(self.template.encode()).hexdigest()}})
         (self.batch/'prompt.txt').write_text(self.template.replace('BATCH_DIRECTORY',str(self.batch)),encoding='utf-8')

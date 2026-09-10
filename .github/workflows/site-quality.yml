@@ -19,13 +19,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: site-quality-${{ github.workflow }}-${{ github.ref }}
+  group: site-quality-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
   static:
     name: Static checks and review build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
@@ -36,11 +36,13 @@ jobs:
           python3 eng/sync-site-profiles.py --check
           python3 eng/verify-site.py
           python3 eng/test-verify-site.py
+          python3 -m py_compile eng/test-site-browser.py
           node --check site/assets/js/site.js
           node --check site/assets/js/theme.js
           python3 site/build.py
           python3 eng/verify-site.py --site site/dist
-      - name: Upload review build (never deploy)
+          git diff --check
+      - name: Upload review sources (never deploy)
         uses: actions/upload-artifact@v6
         with:
           name: keefetch-site-review
@@ -52,5 +54,39 @@ jobs:
             !site/dist/
             !site/__pycache__/
             eng/*site*.py
-            eng/*site*.js
-            eng/*site*.json
+
+  browsers:
+    name: Browser QA (${{ matrix.browser }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install pinned test-only tools
+        run: |
+          python -m pip install playwright==1.62.0
+          python -m playwright install --with-deps ${{ matrix.browser }}
+          npm install --prefix "$RUNNER_TEMP/site-qa-deps" --no-package-lock --ignore-scripts axe-core@4.10.3
+      - name: Build and test under the GitHub Pages subpath
+        run: |
+          python site/build.py
+          python eng/test-site-browser.py \
+            --browser ${{ matrix.browser }} \
+            --axe "$RUNNER_TEMP/site-qa-deps/node_modules/axe-core/axe.min.js" \
+            --output site-qa/${{ matrix.browser }}
+      - name: Upload screenshots and machine-readable results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: site-qa-${{ matrix.browser }}
+          path: site-qa/${{ matrix.browser }}/
+          if-no-files-found: warn
+          retention-days: 14

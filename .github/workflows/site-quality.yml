@@ -1,0 +1,49 @@
+name: Website quality
+
+on:
+  push:
+    branches: [codex/site-icon-studio-2026-09-10]
+  pull_request:
+    paths:
+      - 'site/**'
+      - 'eng/site/**'
+      - '.github/workflows/site-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  website:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build the seven-page static website
+        run: python3 site/build.py
+      - name: Save reviewable website preview
+        uses: actions/upload-artifact@v6
+        with:
+          name: keefetch-website-preview
+          path: site/dist/
+          retention-days: 14
+      - name: Save reproducible source snapshot
+        uses: actions/upload-artifact@v6
+        with:
+          name: keefetch-website-source
+          path: |
+            site/
+            eng/
+            docs/
+            .agent/
+            AGENTS.md
+            README.md
+            CHANGELOG.md
+            PRODUCT.md
+            DESIGN.md
+          include-hidden-files: true
+          retention-days: 7

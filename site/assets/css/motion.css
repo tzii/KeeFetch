@@ -1,0 +1,85 @@
+/* Motion study: a finite workshop sequence, not a continuously moving page. */
+.motion-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .1rem .6rem; padding: .2rem .85rem; border-bottom: 1px solid var(--hairline); background: var(--panel); }
+.motion-toolbar button { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; padding: .45rem .25rem; border: 0; border-radius: 0; background: transparent; color: var(--muted); font-size: .75rem; line-height: 1.5; text-align: left; }
+.motion-toolbar button:hover { color: var(--accent); }
+.motion-toolbar .icon { width: 17px; height: 17px; }
+.motion-toolbar button:disabled { color: var(--muted); opacity: .8; }
+.motion-toolbar .play-symbol { display: none; }
+.motion-toolbar button[aria-pressed=false] .pause-symbol { display: none; }
+.motion-toolbar button[aria-pressed=false] .play-symbol { display: block; }
+/* Stable text/layout; glyphs can move without shifting neighbouring paragraphs. */
+.workflow li { position: relative; }
+.workflow-trace { position: absolute; left: 0; top: 0; right: 0; height: 3px; background: var(--accent); transform: scaleX(0); transform-origin: left; pointer-events: none; }
+.wordmark > path { transform-box: fill-box; transform-origin: center; }
+html[data-motion=on] .button > .icon, html[data-motion=on] .community-links a > .icon:last-child, html[data-motion=on] .feature-top > .icon { transition: transform 180ms ease-out; }
+html[data-motion=on] .text-button:hover > .icon, html[data-motion=on] .text-button:focus-visible > .icon { transform: rotate(45deg) translateX(3px); }
+html[data-motion=on] .primary:hover > .icon { transform: translateY(2px); }
+html[data-motion=on] .community-links a:hover > .icon:last-child { transform: translate(3px, -3px); }
+@media (hover: hover) and (pointer: fine) {
+  html[data-motion=on] .feature:nth-child(1):hover .feature-top > .icon { transform: rotate(18deg); }
+  html[data-motion=on] .feature:nth-child(2):hover .feature-top > .icon { transform: translateY(-3px); }
+  html[data-motion=on] .feature:nth-child(3):hover .feature-top > .icon { transform: rotate(-8deg); }
+  html[data-motion=on] .feature:nth-child(4):hover .feature-top > .icon { transform: translateY(-3px); }
+  html[data-motion=on] .feature:nth-child(5):hover .feature-top > .icon { transform: rotate(12deg); }
+  html[data-motion=on] .feature:nth-child(6):hover .feature-top > .icon { transform: scale(1.12); }
+}
+@media (max-width:520px) { .motion-toolbar { padding-inline:.85rem; } .motion-toolbar button { font-size:.73rem; } }
+html[data-motion=off] *, html[data-motion=off] *::before, html[data-motion=off] *::after { transition:none!important; animation:none!important; scroll-behavior:auto!important; }
+html[data-motion=off] html[data-motion=off] .workflow-trace { display:none; }
+@media (prefers-reduced-motion:reduce) { .workflow-trace { display:none; } }
+@media (forced-colors:active) { .motion-toolbar button { border:1px solid ButtonText; padding-inline:.4rem; } .motion-toolbar { border-color:CanvasText; } }
+@media print { .motion-toolbar, .workflow-trace { display:none!important; } }
+
+/* Little-machine variant. All illustrations are authored vector components.
+   Color is deliberately fixed inside the lavender workshop, in both themes. */
+.machine { padding: .15rem 0 0; overflow: hidden; }
+.machine-art { aspect-ratio: 640 / 300; }
+.machine-caption-row { display: flex; align-items: center; gap: 1rem; min-height: 58px; padding: .55rem 1rem .8rem; color: #49315d; }
+.machine-caption-row p { flex: 1; min-width: 0; margin: 0; font: 500 .8125rem/1.5 var(--font); color: #49315d; }
+.machine-meter { flex: none; align-self: center; padding: .3rem .5rem; border: 1px solid #8f72a7; background: #f4ebff; font: 600 .75rem/1.4 var(--mono); font-variant-numeric: tabular-nums; box-shadow: 2px 2px 0 #bda6cf; }
+.meter-divider { color: #715c81; font-weight: 400; }
+.machine .output-tile { will-change: auto; }
+.machine .scan-beam, .machine .scanner-light, .machine .machine-sparkles { pointer-events: none; }
+.workshop:not(.resolved) .output-tile { opacity: 0; }
+/* No CSS interpolation competes with the deterministic scene clock. */
+.workshop[data-sequence=playing] .found-icon, .workshop[data-sequence=playing] .empty-icon,
+.workshop[data-sequence=paused] .found-icon, .workshop[data-sequence=paused] .empty-icon,
+.workshop[data-sequence=playing] .entry-picture, .workshop[data-sequence=paused] .entry-picture,
+.workshop[data-sequence=playing] .entry-tick, .workshop[data-sequence=paused] .entry-tick { transition: none; }
+.motion-toolbar { gap: .3rem .5rem; padding: .6rem .85rem; justify-content: flex-start; }
+.motion-toolbar button { font: 500 .78rem/1.45 var(--font); padding: .55rem .4rem; min-width: 44px; }
+.motion-toolbar #replay-motion { background: var(--accent); color: var(--accent-text); border: 1px solid var(--line); padding-inline: .7rem; box-shadow: 2px 2px 0 var(--shadow); }
+.motion-toolbar #replay-motion:hover:not(:disabled) { filter: brightness(1.06); }
+.motion-toolbar #replay-motion:active:not(:disabled) { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--shadow); }
+.motion-toolbar #replay-motion:disabled { background: var(--paper); color: var(--muted); opacity: 1; box-shadow: none; }
+.motion-toolbar #motion-toggle { margin-inline-start: auto; }
+#pause-machine .resume-mark { display: none; }
+#pause-machine[data-paused=true] .pause-mark { display: none; }
+#pause-machine[data-paused=true] .resume-mark { display: block; }
+#pause-machine:disabled { opacity: .65; cursor: default; }
+/* The scene is decorative; the live comparison supplies the result with JS off. */
+@media (max-width: 520px) {
+  .machine { padding: .2rem 0 0; }
+  .machine-caption-row { padding: .55rem .85rem .85rem; gap: .65rem; min-height: 69px; }
+  .machine-caption-row p { font-size: .78rem; }
+  .machine-meter { font-size: .72rem; }
+  .motion-toolbar { gap: .25rem .3rem; padding-inline: .75rem; }
+  .motion-toolbar button { font-size: .75rem; gap: .35rem; }
+  .motion-toolbar #replay-motion { padding-inline: .55rem; }
+}
+@media (max-width: 360px) {
+  .motion-toolbar { display: grid; grid-template-columns: 1fr 1fr; gap: .2rem .6rem; }
+  .motion-toolbar #replay-motion { justify-content: center; }
+  .motion-toolbar #pause-machine { justify-self: end; }
+  .motion-toolbar #motion-toggle { grid-column: 1 / -1; margin: 0; justify-self: start; }
+}
+@media (forced-colors: active) {
+  .motion-toolbar #replay-motion { background: ButtonFace; color: ButtonText; box-shadow: none; }
+  .motion-toolbar button:disabled { color: GrayText; opacity: 1; }
+  .motion-toolbar #replay-motion:disabled { color: GrayText; }
+}
+
+/* Lifecycle suspension stops CSS transitions too, including delayed entry reveals.
+   Returning to the tab restores controls without replaying a finished batch. */
+html[data-motion-suspended=true] *, html[data-motion-suspended=true] *::before,
+html[data-motion-suspended=true] *::after { transition:none!important; animation:none!important; scroll-behavior:auto!important; }

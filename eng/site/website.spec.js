@@ -1,8 +1,13 @@
 import { test, expect } from '@playwright/test';
 import { createRequire } from 'node:module';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { resolve, sep } from 'node:path';
 const require = createRequire(import.meta.url);
 const axePath = require.resolve('axe-core/axe.min.js');
+test.beforeAll(async ({ browser, browserName }) => {
+  mkdirSync('../../site-qa', { recursive: true });
+  writeFileSync(`../../site-qa/browser-${browserName}.json`, JSON.stringify({ engine: browserName, version: browser.version() }, null, 2));
+});
 const pages = ['index.html', 'getting-started.html', 'profiles.html', 'privacy.html', 'troubleshooting.html', 'benchmarks.html', 'contributing.html'];
 const modes = [
   { name: 'desktop-light', width: 1440, height: 1000, color: 'light', audit: true },
@@ -29,7 +34,14 @@ async function audit(page) {
 async function layout(page) {
   const failures = await page.evaluate(() => {
     const found = [];
-    if (document.documentElement.scrollWidth > innerWidth + 1) found.push('Document overflows: ' + document.documentElement.scrollWidth + ' / ' + innerWidth);
+    if (document.documentElement.scrollWidth > innerWidth + 1) {
+      found.push('Document overflows: ' + document.documentElement.scrollWidth + ' / ' + innerWidth);
+      for (const element of document.querySelectorAll('main *, footer *')) {
+        if (element.closest('.table-wrap')) continue;
+        const box = element.getBoundingClientRect();
+        if (box.width && box.right > innerWidth + 1) found.push(element.tagName + '.' + element.className + ': right ' + Math.round(box.right));
+      }
+    }
     for (const element of document.querySelectorAll('a,button,summary')) {
       if (!element.getClientRects().length || element.closest('.table-wrap') || element.classList.contains('skip-link')) continue;
       const r = element.getBoundingClientRect();
@@ -53,7 +65,8 @@ for (const mode of modes) {
       page.on('requestfailed', request => problems.push('Request failed: ' + request.url()));
       page.on('request', request => { if (!request.url().startsWith('http://127.0.0.1:8765/')) problems.push('External runtime request: ' + request.url()); });
       await page.goto('http://127.0.0.1:8765/' + file);
-      await page.evaluate(() => document.fonts.ready);
+      // Firefox cannot settle page-owned promises with page JavaScript disabled.
+      if (!mode.noJS) await page.evaluate(() => document.fonts.ready);
       if (mode.largeText) await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
       await layout(page);
       if (!mode.noJS) await expect(page.locator('html')).toHaveAttribute('data-theme', mode.color);
@@ -181,6 +194,10 @@ test('open comparison and mobile touch targets', async ({ page }) => {
     expect(bounds.width, selector).toBeGreaterThanOrEqual(44);
     expect(bounds.height, selector).toBeGreaterThanOrEqual(44);
   }
+  const comparison = page.getByRole('region', { name: 'Profile comparison', exact: true });
+  await comparison.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(() => comparison.evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
   await audit(page);
 });
 
@@ -201,4 +218,78 @@ test('print guide keeps content and removes navigation', async ({ page }) => {
   await expect(page.locator('#install')).toBeVisible();
   await expect(page.locator('#roll-back')).toBeVisible();
   await layout(page);
+});
+
+
+test('font failure preserves reading and controls', async ({ page }) => {
+  await page.route('**/assets/fonts/*', route => route.fulfill({ status: 503, body: 'Unavailable' }));
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/index.html');
+  await page.evaluate(() => document.fonts.ready);
+  await layout(page);
+  await page.getByRole('button', { name: 'Before', exact: true }).click();
+  await expect(page.locator('.vault-entry.is-resolved')).toHaveCount(0);
+  await audit(page);
+});
+
+test('failed scripts leave usable navigation and readable content', async ({ page }) => {
+  await page.route('**/assets/js/*.js', route => route.fulfill({ status: 503, body: 'Unavailable' }));
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/index.html');
+  await expect(page.locator('#primary-nav')).toBeVisible();
+  await expect(page.locator('#theme-toggle')).toBeHidden();
+  await expect(page.locator('#demo-controls')).toBeHidden();
+  await expect(page.locator('#get-started')).toBeVisible();
+  await page.locator('#primary-nav a[href="profiles.html"]').click();
+  await expect(page.locator('tr[data-profile-id]')).toHaveCount(4);
+  await layout(page);
+  await audit(page);
+});
+
+test('increased text spacing does not clip any guide', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  for (const file of pages) {
+    await page.goto('/' + file);
+    await page.addStyleTag({ content: '* { line-height: 1.5 !important; letter-spacing: .12em !important; word-spacing: .16em !important; } p { margin-bottom: 2em !important; }' });
+    await layout(page);
+  }
+});
+
+test('preferences synchronize between tabs and preserve motion choice', async ({ page, context }) => {
+  await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'no-preference' });
+  await page.goto('/index.html');
+  const other = await context.newPage();
+  await other.goto('/privacy.html');
+  await page.locator('#theme-toggle').click();
+  await expect(other.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await page.locator('#motion-toggle').click();
+  await expect(other.locator('html')).toHaveAttribute('data-motion', 'off');
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-motion', 'off');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('#motion-toggle')).toBeDisabled();
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await expect(page.locator('#motion-toggle')).toBeEnabled();
+  await expect(page.locator('html')).toHaveAttribute('data-motion', 'off');
+  await other.close();
+});
+
+test('GitHub Pages subdirectory keeps all assets and links relative', async ({ page }) => {
+  const dist = resolve('../../site/dist');
+  const requests = [];
+  await page.route('http://127.0.0.1:8765/KeeFetch/**', async route => {
+    const name = decodeURIComponent(new URL(route.request().url()).pathname.slice('/KeeFetch/'.length)) || 'index.html';
+    const asset = resolve(dist, name);
+    if (!asset.startsWith(dist + sep)) return route.abort();
+    await route.fulfill({ path: asset });
+  });
+  page.on('request', request => requests.push(new URL(request.url()).pathname));
+  await page.goto('/KeeFetch/index.html');
+  await page.evaluate(() => document.fonts.ready);
+  await layout(page);
+  await page.getByRole('button', { name: 'Before', exact: true }).click();
+  await expect(page.locator('.vault-entry.is-resolved')).toHaveCount(0);
+  await page.goto('/KeeFetch/profiles.html');
+  await expect(page.locator('.profile-card')).toHaveCount(4);
+  expect(requests.every(path => path.startsWith('/KeeFetch/'))).toBe(true);
 });

@@ -10,9 +10,12 @@ try {
     $keepassExe = Join-Path $KeePassPath 'KeePass.exe'
     if (!(Test-Path -LiteralPath $keepassExe)) { throw "KeePass.exe not found: $keepassExe" }
 
-    & ./eng/check-version.ps1
-    & ./eng/check-plgx-manifest.ps1
-    & ./eng/test-release-workflow.ps1
+    # Existing CI executes these in separate PowerShell processes. Preserve that
+    # contract rather than leaking this driver's stricter scope into old scripts.
+    foreach ($gate in @('eng/check-version.ps1', 'eng/check-plgx-manifest.ps1', 'eng/test-release-workflow.ps1')) {
+        pwsh -NoProfile -File $gate
+        if ($LASTEXITCODE -ne 0) { throw "Integration gate failed: $gate" }
+    }
 
     dotnet restore KeeFetch.csproj
     if ($LASTEXITCODE -ne 0) { throw 'Plugin restore failed.' }

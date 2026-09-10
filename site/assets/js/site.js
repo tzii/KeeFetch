@@ -1,31 +1,52 @@
 "use strict";
 (() => {
   const root = document.documentElement;
-  const themeToggle = document.getElementById("theme-toggle");
-  const motionToggle = document.getElementById("motion-toggle");
-  const menuToggle = document.getElementById("menu-toggle");
-  const nav = document.getElementById("primary-nav");
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const save = (key, value) => { try { localStorage.setItem(key, value); } catch (_) { /* Optional. */ } };
-
-  const setTheme = (dark) => {
-    root.dataset.theme = dark ? "dark" : "light";
-    themeToggle?.setAttribute("aria-pressed", String(dark));
+  const find = id => document.getElementById(id);
+  const media = query => typeof window.matchMedia === "function" ? window.matchMedia(query) : { matches: false };
+  // Safari versions before MediaQueryList.addEventListener use addListener.
+  const listen = (query, callback) => {
+    if (query.addEventListener) query.addEventListener("change", callback);
+    else if (query.addListener) query.addListener(callback);
   };
+  const read = key => { try { return localStorage.getItem(key); } catch (_) { return null; } };
+  const save = (key, value) => { try { localStorage.setItem(key, value); } catch (_) { /* Session choice still works. */ } };
+  const systemDark = media("(prefers-color-scheme: dark)");
+  const reduced = media("(prefers-reduced-motion: reduce)");
+  let chosenTheme = read("keefetch-theme");
+  let chosenMotion = read("keefetch-motion");
+  const themeToggle = find("theme-toggle");
+  const motionToggle = find("motion-toggle");
+  const setTheme = dark => {
+    root.dataset.theme = dark ? "dark" : "light";
+    if (themeToggle) {
+      themeToggle.setAttribute("aria-pressed", String(dark));
+      themeToggle.setAttribute("aria-label", "Dark theme");
+      themeToggle.title = dark ? "Switch to light theme" : "Switch to dark theme";
+    }
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = dark ? "#191520" : "#faf8f4";
+  };
+  setTheme(root.dataset.theme === "dark");
   if (themeToggle) {
     themeToggle.hidden = false;
-    setTheme(root.dataset.theme !== "light");
     themeToggle.addEventListener("click", () => {
-      setTheme(root.dataset.theme !== "dark");
-      save("keefetch-theme", root.dataset.theme);
+      chosenTheme = root.dataset.theme === "dark" ? "light" : "dark";
+      setTheme(chosenTheme === "dark");
+      save("keefetch-theme", chosenTheme);
     });
   }
+  listen(systemDark, () => {
+    if (chosenTheme !== "light" && chosenTheme !== "dark") setTheme(systemDark.matches);
+  });
 
-  const closeMenu = (restoreFocus = false) => {
-    nav?.classList.remove("is-open");
-    menuToggle?.setAttribute("aria-expanded", "false");
-    menuToggle?.setAttribute("aria-label", "Open navigation");
-    if (restoreFocus) menuToggle?.focus();
+  const menuToggle = find("menu-toggle");
+  const nav = find("primary-nav");
+  const closeMenu = (restore = false) => {
+    if (!nav || !menuToggle) return;
+    nav.classList.remove("is-open");
+    menuToggle.setAttribute("aria-expanded", "false");
+    menuToggle.setAttribute("aria-label", "Open navigation");
+    if (restore) menuToggle.focus();
   };
   if (menuToggle && nav) {
     menuToggle.hidden = false;
@@ -38,129 +59,93 @@
       if (event.key === "Escape" && nav.classList.contains("is-open")) closeMenu(true);
     });
     document.addEventListener("click", event => {
-      if (!event.target.closest(".site-header")) closeMenu();
+      if (event.target instanceof Element && !event.target.closest(".site-header")) closeMenu();
     });
     nav.addEventListener("click", event => {
-      if (event.target.closest("a")) closeMenu();
+      if (event.target instanceof Element && event.target.closest("a")) closeMenu();
     });
-    window.matchMedia("(min-width: 1001px)").addEventListener("change", () => closeMenu());
-    // Navigation remains fully visible when JavaScript is unavailable.
+    listen(media("(min-width: 1153px)"), event => closeMenu(!event.matches && nav.contains(document.activeElement)));
     root.dataset.enhanced = "true";
   }
 
-  const entries = [...document.querySelectorAll(".vault-entry")];
-  const replay = document.getElementById("replay-demo");
-  const status = document.getElementById("demo-status");
-  const count = document.getElementById("demo-count");
+  // Illustration only: sample brand assets are local. No vault or domain requests.
+  const entries = Array.from(document.querySelectorAll(".vault-entry"));
+  const before = find("demo-before");
+  const after = find("demo-after");
+  const status = find("demo-status");
+  const count = find("demo-count");
+  const state = find("demo-state");
+  const announcement = find("demo-announcement");
   let timers = [];
   let running = false;
-  const clearDemo = () => { timers.forEach(clearTimeout); timers = []; };
-  const finishDemo = () => {
-    clearDemo();
-    entries.forEach(entry => entry.classList.add("is-resolved"));
-    if (status) status.textContent = "A familiar face for every entry";
-    if (count) count.textContent = entries.length + " / " + entries.length;
-    running = false;
-    if (replay) replay.disabled = root.dataset.motion === "off";
+  let showIcons = true;
+  const clearTimers = () => { timers.forEach(clearTimeout); timers = []; running = false; };
+  const complete = announce => {
+    clearTimers();
+    entries.forEach(entry => entry.classList.toggle("is-resolved", showIcons));
+    if (count) count.textContent = (showIcons ? entries.length : 0) + " / " + entries.length;
+    if (status) status.textContent = showIcons ? "Same entries. Much easier to spot." : "Same entries. Same blank icons.";
+    if (state) state.textContent = showIcons ? "With KeeFetch" : "Before";
+    if (announce && announcement) announcement.textContent = showIcons ? "Sample website icons shown. This is an illustration, not a live fetch." : "Sample entries shown without website icons.";
   };
-  const playDemo = () => {
-    if (!entries.length || root.dataset.motion === "off" || document.hidden) return finishDemo();
-    clearDemo();
-    running = true;
-    if (replay) replay.disabled = true;
+  const selectDemo = withIcons => {
+    clearTimers();
+    showIcons = withIcons;
+    if (before) before.setAttribute("aria-pressed", String(!withIcons));
+    if (after) after.setAttribute("aria-pressed", String(withIcons));
+    if (!withIcons || root.dataset.motion === "off" || document.hidden) return complete(true);
     entries.forEach(entry => entry.classList.remove("is-resolved"));
-    status.textContent = "Finding something familiar…";
-    count.textContent = "0 / " + entries.length;
-    entries.forEach((entry, i) => {
+    if (announcement) announcement.textContent = "";
+    if (state) state.textContent = "With KeeFetch";
+    if (status) status.textContent = "Adding a little character…";
+    if (count) count.textContent = "0 / " + entries.length;
+    running = true;
+    entries.forEach((entry, index) => {
       timers.push(setTimeout(() => {
         entry.classList.add("is-resolved");
-        count.textContent = (i + 1) + " / " + entries.length;
-      }, 650 + i * 430));
+        if (count) count.textContent = (index + 1) + " / " + entries.length;
+      }, 100 + index * 110));
     });
-    timers.push(setTimeout(finishDemo, 3700));
+    timers.push(setTimeout(() => complete(true), 200 + entries.length * 110));
   };
-  if (replay) {
-    replay.hidden = false;
-    replay.addEventListener("click", playDemo);
+  if (before && after && entries.length) {
+    find("demo-controls").hidden = false;
+    before.addEventListener("click", () => selectDemo(false));
+    after.addEventListener("click", () => selectDemo(true));
+    complete(false);
   }
-
-  const setMotion = (off) => {
+  const setMotion = () => {
+    const off = reduced.matches || chosenMotion === "off";
     root.dataset.motion = off ? "off" : "on";
-    motionToggle?.setAttribute("aria-pressed", String(off));
-    motionToggle?.setAttribute("title", reduceMotion.matches ? "Animations paused by your system preference" : (off ? "Enable animations" : "Pause animations"));
-    if (motionToggle) motionToggle.disabled = reduceMotion.matches;
-    motionToggle?.setAttribute("aria-label", reduceMotion.matches ? "Animations paused by your system preference" : "Pause animations");
-    if (off) finishDemo();
-    else if (replay) replay.disabled = false;
+    if (motionToggle) {
+      motionToggle.setAttribute("aria-pressed", String(off));
+      motionToggle.setAttribute("aria-label", "Reduce motion");
+      motionToggle.title = reduced.matches ? "Reduced motion follows your system setting" : (off ? "Enable icon animation" : "Reduce motion");
+      motionToggle.disabled = reduced.matches;
+    }
+    if (off && running) complete(true);
   };
-  if (motionToggle) {
+  if (motionToggle && entries.length) {
     motionToggle.hidden = false;
-    setMotion(root.dataset.motion === "off");
     motionToggle.addEventListener("click", () => {
-      // The system reduced-motion setting takes precedence.
-      const off = reduceMotion.matches || root.dataset.motion !== "off";
-      setMotion(off);
-      save("keefetch-motion", off ? "off" : "on");
+      chosenMotion = root.dataset.motion === "off" ? "on" : "off";
+      save("keefetch-motion", chosenMotion);
+      setMotion();
     });
   }
-  reduceMotion.addEventListener("change", event => {
-    let savedOff = false;
-    try { savedOff = localStorage.getItem("keefetch-motion") === "off"; } catch (_) { /* Optional. */ }
-    setMotion(event.matches || savedOff);
-  });
-  document.addEventListener("visibilitychange", () => { if (document.hidden && running) finishDemo(); });
-
-  if ("IntersectionObserver" in window) {
-    const reveal = new IntersectionObserver(observations => {
-      observations.forEach(observation => {
-        if (!observation.isIntersecting) return;
-        observation.target.classList.add("is-visible");
-        reveal.unobserve(observation.target);
-      });
-    }, { threshold: 0.06 });
-    document.querySelectorAll("[data-reveal]").forEach(target => {
-      target.classList.add("reveal-ready");
-      reveal.observe(target);
-    });
-    const stage = document.querySelector(".vault-stage");
-    if (stage) {
-      const demoObserver = new IntersectionObserver(observations => {
-        if (observations.some(observation => observation.isIntersecting)) {
-          playDemo();
-          demoObserver.disconnect();
-        }
-      }, { threshold: 0.4 });
-      demoObserver.observe(stage);
+  setMotion();
+  listen(reduced, setMotion);
+  document.addEventListener("visibilitychange", () => { if (document.hidden && running) complete(false); });
+  window.addEventListener("pagehide", () => { if (running) complete(false); });
+  // Reflect other tabs without requiring storage. Clearing an override returns to system.
+  window.addEventListener("storage", event => {
+    if (event.key === "keefetch-theme" || event.key === null) {
+      chosenTheme = read("keefetch-theme");
+      setTheme(chosenTheme === "dark" || (chosenTheme !== "light" && systemDark.matches));
     }
-  } else finishDemo();
-
-  // The generated comparison table is complete without JavaScript or fetch.
-  const targets = document.querySelectorAll("[data-profile-list]");
-  if (!targets.length) return;
-  fetch("data/profiles.json").then(response => {
-    if (!response.ok) throw new Error("Profile data unavailable");
-    return response.json();
-  }).then(data => {
-    if (!Array.isArray(data.profiles)) throw new Error("Invalid profile data");
-    const visible = data.profiles.filter(profile => profile.isVisible);
-    if (!visible.length) throw new Error("No visible profiles");
-    targets.forEach(target => {
-      const cards = visible.map(profile => {
-        const card = document.createElement("article");
-        card.className = "profile-card";
-        const name = document.createElement("h3");
-        name.textContent = profile.displayName;
-        const use = document.createElement("p");
-        use.textContent = profile.intendedUse;
-        const budget = document.createElement("p");
-        budget.className = "budget";
-        budget.textContent = (profile.cumulativeTimeoutMs / 1000) + " s budget";
-        const description = document.createElement("p");
-        description.textContent = profile.description;
-        card.append(name, use, budget, description);
-        return card;
-      });
-      target.replaceChildren(...cards);
-    });
-  }).catch(() => { /* Checked comparison table remains available. */ });
+    if (event.key === "keefetch-motion" || event.key === null) {
+      chosenMotion = read("keefetch-motion");
+      setMotion();
+    }
+  });
 })();

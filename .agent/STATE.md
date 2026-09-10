@@ -3,10 +3,10 @@
 Status:  WORKING
 Agent:   Codex
 
-Focus:   Complete final media and release preparation for the accepted KeeFetch v1.3 candidate.
-Next:    Collect the four genuine final-host screenshots for website integration.
+Focus:   Integrate the owner-selected PR12 website into the accepted KeeFetch v1.3 release.
+Next:    Verify combined-head release and three-engine website CI on PR8.
 Pointer: docs/validation/2026-09-10-v1.3-manual-host-results.md
-As-of:   2026-09-10 Europe/Rome · Owner supplied completed/cancelled Fast summaries and explicitly confirmed both DLL/PLGX, all four display scales, High Contrast, migrations, upgrade/rollback and one-time retry; all other checklist tests reported satisfactory. Functional acceptance is owner-reported. Both 71-entry totals and retry counts reconcile; available diagnostics are partial snapshots, not exact per-run proof. Candidate DLL/PLGX and installed PLGX hashes unchanged. PR8 at 19a0c22 has green CI; subsequent changes are evidence only. Four genuine screenshots/media integration and final release review/publication remain. WORKING / GO WITH CONDITIONS; no GitHub merge, tag or publication.
+As-of:   2026-09-10 Europe/Rome · Owner-reported functional host acceptance is preserved. PR12 d7a8ac9 is integrated with a93ed76 in the isolated website-integration-worktree. Fixed a reproduced Firefox no-JavaScript font-promise hang in the test runner; 128 Firefox cases, 28 axe scans and 17 verifier tests pass. Retained candidate package hashes unchanged. Combined-head CI is next. Four genuine screenshots/media integration and final release review/publication remain. Native tool again refused KeePass; owner received the manual launch command. WORKING / GO WITH CONDITIONS; no master merge, tag or publication.
 
 Notes:
 - Preserve original study inputs and exact candidate bytes. Candidate source: 9f0b43f64335803d24ca99d6ccc7e0e7abac3bb8. DLL SHA-256: 924c6c5c1a38b99e8805b01e20569f3fdb50c2941576c567f5e1f406e4311ad5; PLGX: 4742355b5cadb089c7898b99d7a6ff95d068f8319ad97b3a1eb15b1d186a53a8. Later test-fixture/evidence commits do not replace this source identity.

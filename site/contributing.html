@@ -14,12 +14,12 @@
 v1.3.0 source preview · Stable download: <a href="https://github.com/tzii/KeeFetch/releases/tag/v1.2.0">v1.2.0</a>
 <!-- RELEASE_STATUS_END --></div>
 <main id="main" class="docs-main" tabindex="-1"><header class="page-heading"><p class="eyebrow">KeeFetch / Contributing</p><h1>Make the next fetch better.</h1><p class="lead">Build KeeFetch, run its offline tests, add providers and contribute documentation.</p></header>
-<section><h2>Build locally</h2><p>Use the .NET SDK, .NET Framework 4.8 targeting pack and KeePass 2.60. Production remains C# 5 compatible because KeePass compiles PLGX through a legacy compiler. Tests use the project's separate language setting.</p><pre><code>git clone https://github.com/tzii/KeeFetch.git
+<section><h2>Build locally</h2><p>Use the .NET SDK, .NET Framework 4.8 targeting pack and KeePass 2.60. Production remains C# 5 compatible because KeePass compiles PLGX through a legacy compiler. Tests use the project's separate language setting.</p><pre tabindex="0" role="region" aria-label="Build and test commands"><code>git clone https://github.com/tzii/KeeFetch.git
 cd KeeFetch
 dotnet restore KeeFetch.Tests/KeeFetch.Tests.csproj
 dotnet build KeeFetch.csproj -c Release -p:LangVersion=5 -warnaserror
 dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj -c Release</code></pre><p>Set <code>-p:KeePassPath=...</code> if KeePass is outside the default Program Files path. See <a href="https://github.com/tzii/KeeFetch/blob/master/CONTRIBUTING.md">CONTRIBUTING</a> for host setup and full gates.</p></section>
-<section><h2>Validate before review</h2><p>Run the warning-free Release build, full MSTest suite, Windows PowerShell benchmark self-tests, profile export check, PLGX manifest check, version check and release-workflow self-tests. Website changes also need the offline verifier and viewport smoke checks.</p><pre><code>powershell -File eng/benchmark/test-benchmark-harness.ps1
+<section><h2>Validate before review</h2><p>Run the warning-free Release build, full MSTest suite, Windows PowerShell benchmark self-tests, profile export check, PLGX manifest check, version check and release-workflow self-tests. Website changes also need the offline verifier and viewport smoke checks.</p><pre tabindex="0" role="region" aria-label="Release validation commands"><code>powershell -File eng/benchmark/test-benchmark-harness.ps1
 powershell -File eng/export-profile-data.ps1 -Check
 python eng/sync-site-profiles.py --check
 python eng/verify-site.py

@@ -39,6 +39,7 @@ jobs:
           python3 -m py_compile eng/test-site-browser.py
           node --check site/assets/js/site.js
           node --check site/assets/js/theme.js
+          node --check site/assets/js/motion.js
           python3 site/build.py
           python3 eng/verify-site.py --site site/dist
           git diff --check
@@ -82,6 +83,7 @@ jobs:
             --browser ${{ matrix.browser }} \
             --axe "$RUNNER_TEMP/site-qa-deps/node_modules/axe-core/axe.min.js" \
             --output site-qa/${{ matrix.browser }}
+          python eng/test-site-machine.py --browser ${{ matrix.browser }} --output site-qa/${{ matrix.browser }}/machine
       - name: Upload screenshots and machine-readable results
         if: always()
         uses: actions/upload-artifact@v6

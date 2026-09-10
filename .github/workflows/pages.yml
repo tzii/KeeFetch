@@ -38,6 +38,7 @@ jobs:
           python3 eng/test-verify-site.py
           node --check site/assets/js/site.js
           node --check site/assets/js/theme.js
+          node --check site/assets/js/motion.js
           python3 site/build.py
           python3 eng/verify-site.py --site site/dist
 

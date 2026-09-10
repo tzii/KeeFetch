@@ -47,7 +47,7 @@ class WebsiteGateTests(unittest.TestCase):
     def test_stale_generated_claim(self):
         self.mutate(' s total',' s invented total'); self.assert_rejected('generated content mismatch')
     def test_stale_study_evidence_link(self):
-        self.mutate('/blob/19a0c224ca4dbf7042d22c3497e7599f61937c0b/docs/benchmarks/', '/blob/master/docs/benchmarks/')
+        self.mutate('/blob/19a0c224ca4dbf7042d22c3497e7599f61937c0b/docs/benchmarks/', '/blob/master/docs/benchmarks/', filename='profiles.html')
         self.assert_rejected('generated content mismatch')
     def test_release_tag_mismatch(self):
         path=self.site/'data/release.json'; data=json.loads(path.read_text(encoding='utf-8'))
@@ -55,5 +55,19 @@ class WebsiteGateTests(unittest.TestCase):
         self.assert_rejected('release tag/version mismatch')
     def test_escaping_local_link(self):
         self.mutate('href="profiles.html"','href="../private.txt"'); self.assert_rejected('local link escapes site')
+    def test_checksum_from_wrong_release(self):
+        path=self.site/'data/release.json'; data=json.loads(path.read_text(encoding='utf-8'))
+        data['plgxChecksumUrl']=data['plgxChecksumUrl'].replace('/v1.2.0/', '/v0.0.0/')
+        path.write_text(json.dumps(data),encoding='utf-8')
+        self.assert_rejected('incorrect PLGX checksum URL')
+    def test_malformed_checksum(self):
+        path=self.site/'data/release.json'; data=json.loads(path.read_text(encoding='utf-8'))
+        data['plgxSha256']='not-a-sha256'
+        path.write_text(json.dumps(data),encoding='utf-8')
+        self.assert_rejected('invalid PLGX checksum')
+    def test_preview_profile_snapshot_drift(self):
+        path=self.site/'data/profiles-v1.3.json'
+        path.write_text(path.read_text(encoding='utf-8').replace('22000','99999'),encoding='utf-8')
+        self.assert_rejected('preview profile snapshot checksum mismatch')
 
 if __name__=='__main__': unittest.main()

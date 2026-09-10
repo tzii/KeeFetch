@@ -94,7 +94,9 @@ def verify(site):
                 if other is None or unquote(target.fragment) not in other.ids:
                     errors.append(f'{path.name}: broken fragment: {url}')
     try:
-        profiles=json.loads((site/'data/profiles.json').read_text(encoding='utf-8-sig'))
+        spec=importlib.util.spec_from_file_location('site_sync',ROOT/'eng/sync-site-profiles.py')
+        sync=importlib.util.module_from_spec(spec); spec.loader.exec_module(sync)
+        profiles=sync.preview_profiles(site)
         ids=[p['id'] for p in profiles['profiles'] if p['isVisible']]
         if len(ids)!=len(set(ids)): errors.append('duplicate catalog profile ID')
         for name in ('index.html','profiles.html'):
@@ -108,8 +110,12 @@ def verify(site):
             if release[key]!=base+suffix: errors.append(f'incorrect release URL: {key}')
         if release.get('checksumsUrl') not in (None,base+'download/'+release['tag']+'/SHA256SUMS.txt'):
             errors.append('incorrect checksums URL')
-        spec=importlib.util.spec_from_file_location('site_sync',ROOT/'eng/sync-site-profiles.py')
-        sync=importlib.util.module_from_spec(spec); spec.loader.exec_module(sync)
+        if release.get('plgxSha256') and not re.fullmatch(r'[0-9a-f]{64}', release['plgxSha256']):
+            errors.append('invalid PLGX checksum')
+        if release.get('plgxChecksumUrl') not in (None,base+'download/'+release['tag']+'/KeeFetch.plgx.sha256'):
+            errors.append('incorrect PLGX checksum URL')
+        if bool(release.get('plgxSha256')) != bool(release.get('plgxChecksumUrl')):
+            errors.append('PLGX checksum and source URL must be supplied together')
         for path,expected in sync.expected_pages(site).items():
             if path.read_text(encoding='utf-8')!=expected: errors.append(f'{path.name}: generated content mismatch')
     except (OSError,ValueError,KeyError,TypeError) as ex: errors.append(f'data contract: {ex}')

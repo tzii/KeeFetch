@@ -10,6 +10,7 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from importlib.metadata import version
 import json
+import re
 from pathlib import Path
 import shutil
 import tempfile
@@ -84,7 +85,7 @@ def main() -> int:
                     assert page.locator('#primary-nav a').count() == 8
                     assert page.locator('main').count() == 1
                     page.wait_for_function('Array.from(document.images).every(i => i.complete && i.naturalWidth > 0)')
-                    for selector in ('.icon-button', '.button', '.demo-switch button'):
+                    for selector in ('.icon-button', '.button', '.segmented button', '.motion-toolbar button', '.preset-controls button'):
                         for control in page.locator(selector).all():
                             if control.is_visible():
                                 rect = control.bounding_box()
@@ -162,18 +163,18 @@ def main() -> int:
 
                 def demo(page, _context):
                     visit(page)
-                    assert page.locator('.is-resolved').count() == 6
+                    expect(page.locator('#demo')).to_have_class(re.compile(r'\bresolved\b'))
                     page.locator('#demo-before').click()
-                    assert page.locator('.is-resolved').count() == 0
+                    expect(page.locator('#demo')).not_to_have_class(re.compile(r'\bresolved\b'))
                     expect(page.locator('#demo-before')).to_have_attribute('aria-pressed', 'true')
                     page.locator('#demo-after').click()
-                    expect(page.locator('#demo-count')).to_have_text('6 / 6')
+                    expect(page.locator('#machine-count')).to_have_text('04', timeout=8000)
                     expect(page.locator('#demo-announcement')).to_contain_text('not a live fetch')
                     # Race prevention: rapid switches must end on the last selection.
                     page.evaluate("""() => {for(let i=0;i<10;i++){document.querySelector('#demo-before').click();document.querySelector('#demo-after').click();} document.querySelector('#demo-before').click();}""")
                     page.wait_for_timeout(1000)
-                    assert page.locator('.is-resolved').count() == 0
-                    expect(page.locator('#demo-count')).to_have_text('0 / 6')
+                    expect(page.locator('#demo')).not_to_have_class(re.compile(r'\bresolved\b'))
+                    expect(page.locator('#machine-count')).to_have_text('00')
                 for reduced in ('reduce', 'no-preference'):
                     case('demo-' + reduced, demo, width=390, reduced=reduced, screenshot=True)
 
@@ -190,12 +191,12 @@ def main() -> int:
                     expect(page.locator('html')).to_have_attribute('data-motion', 'off')
                     page.reload()
                     expect(page.locator('html')).to_have_attribute('data-motion', 'off')
-                    assert page.locator('meta[name="theme-color"]').get_attribute('content') == '#faf8f4'
+                    assert page.locator('meta[name="theme-color"]').get_attribute('content') == '#f4f1e9'
                     page.emulate_media(reduced_motion='reduce')
                     expect(page.locator('#motion-toggle')).to_be_disabled()
                     page.locator('#demo-before').click()
                     page.locator('#demo-after').click()
-                    assert page.locator('.is-resolved').count() == 6
+                    expect(page.locator('#demo')).to_have_class(re.compile(r'\bresolved\b'))
                 case('saved-and-system-preferences', preferences)
                 case('legacy-media-listener', preferences, init=LEGACY_MEDIA)
 
@@ -207,7 +208,7 @@ def main() -> int:
                     expect(page.locator('html')).to_have_attribute('data-motion', 'off')
                     page.locator('#demo-before').click()
                     page.locator('#demo-after').click()
-                    assert page.locator('.is-resolved').count() == 6
+                    expect(page.locator('#demo')).to_have_class(re.compile(r'\bresolved\b'))
                 case('storage-denied', denied, init=STORAGE_DENIED, width=390)
                 case('no-match-media', denied, init='window.matchMedia = undefined;', width=390)
                 case('no-intersection-observer', demo, init='window.IntersectionObserver = undefined;', width=390)
@@ -226,14 +227,14 @@ def main() -> int:
                     expect(page.locator('#primary-nav')).to_be_hidden()
                     page.locator('#demo-before').focus()
                     page.keyboard.press('Space')
-                    assert page.locator('.is-resolved').count() == 0
+                    expect(page.locator('#demo')).not_to_have_class(re.compile(r'\bresolved\b'))
                     page.locator('#demo-after').focus()
                     page.keyboard.press('Enter')
-                    expect(page.locator('#demo-count')).to_have_text('6 / 6')
-                    page.locator('.profile-details summary').focus()
+                    expect(page.locator('#machine-count')).to_have_text('04', timeout=8000)
+                    page.locator('[data-preset=privacy]').focus()
                     page.keyboard.press('Space')
-                    expect(page.locator('.profile-details')).to_have_attribute('open', '')
-                    expect(page.locator('.profile-details table')).to_be_visible()
+                    expect(page.locator('#preset-privacy')).to_be_visible()
+                    expect(page.locator('#preset-everyday')).to_be_hidden()
                 case('keyboard-mobile', keyboard, width=390, screenshot=True)
 
                 def navigation(page, _context):
@@ -243,9 +244,9 @@ def main() -> int:
                     expect(page).to_have_url(base + 'privacy.html')
                     expect(page.locator('#primary-nav a[aria-current]')).to_have_attribute('href', 'privacy.html')
                     page.go_back()
-                    expect(page.locator('h1')).to_contain_text('Small icons.')
-                    page.locator('.profile-details summary').click()
-                    expect(page.locator('[aria-label="Profile comparison"]')).to_be_visible()
+                    expect(page.locator('h1')).to_contain_text('KeeFetch')
+                    page.locator('[data-preset=privacy]').click()
+                    expect(page.locator('#preset-privacy')).to_contain_text('No favicon resolvers')
                 case('subpath-navigation-and-history', navigation, width=390)
 
                 for theme in ('light', 'dark'):
@@ -254,7 +255,7 @@ def main() -> int:
                         page.emulate_media(forced_colors='active')
                         page.locator('#demo-before').click()
                         page.locator('#demo-after').click()
-                        expect(page.locator('#demo-count')).to_have_text('6 / 6')
+                        expect(page.locator('#machine-count')).to_have_text('04', timeout=8000)
                     case('forced-colors-' + theme, forced, width=390, theme=theme, screenshot=True)
 
                 def offline(page, context):
@@ -265,10 +266,15 @@ def main() -> int:
                     assert page.locator('[data-profile-id]').count() == 4
                 case('offline-after-load', offline, width=390)
 
-                def blocked_fonts(page, context):
-                    context.route('**/assets/fonts/**', lambda route: route.abort())
+                def media(page, _context):
                     visit(page)
-                case('font-failure-fallback', blocked_fonts, width=390, allow_failed=True, screenshot=True)
+                    assert page.locator('#screenshots img').count() == 4
+                    for image in page.locator('#screenshots img').all():
+                        assert image.get_attribute('alt')
+                        assert image.evaluate('e => e.closest("a").getAttribute("href") === e.getAttribute("src")')
+                    page.locator('.verification summary').click()
+                    expect(page.locator('#checksum')).to_have_text('1fd7e12590bfc2d23ede93c1ae5e61de0662187321caccdfeeb0bbcb995f5275')
+                case('genuine-media-and-stable-checksum', media, width=390, screenshot=True)
 
                 def print_page(page, _context):
                     visit(page, 'getting-started')
@@ -280,8 +286,8 @@ def main() -> int:
                 for width in (320, 1440):
                     def expanded(page, _context):
                         visit(page)
-                        page.locator('.entry-text strong').first.evaluate("e => e.textContent = 'LangerKontoname' .repeat(7) + ' 日本語 العربية'")
-                        page.locator('.entry-text small').first.evaluate("e => e.textContent = 'subdomain.'.repeat(15) + 'example.test'")
+                        page.locator('.entry-name strong').first.evaluate("e => e.textContent = 'LangerKontoname' .repeat(7) + ' 日本語 العربية'")
+                        page.locator('.entry-name').first.evaluate("e => e.textContent = 'subdomain.'.repeat(15) + 'example.test'")
                     case(f'long-content-{width}', expanded, width=width, screenshot=True)
                 browser.close()
         finally:

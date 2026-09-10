@@ -12,5 +12,5 @@
   root.dataset.theme = theme === "dark" || theme === "light" ? theme : (matches("(prefers-color-scheme: dark)") ? "dark" : "light");
   root.dataset.motion = matches("(prefers-reduced-motion: reduce)") || motion === "off" ? "off" : "on";
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = root.dataset.theme === "dark" ? "#191520" : "#faf8f4";
+  if (meta) meta.content = root.dataset.theme === "dark" ? "#18151d" : "#f4f1e9";
 })();

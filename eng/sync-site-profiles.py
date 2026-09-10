@@ -1,6 +1,7 @@
 """Synchronize catalog and stable-release HTML without network or dependencies."""
 import argparse
 import html
+import hashlib
 import json
 from pathlib import Path
 
@@ -51,8 +52,35 @@ def replace_block(text, name, content):
     _, after = rest.split(end)
     return before + start + '\n' + content + '\n' + end + after
 
+def profile_presets_markup(data):
+    profiles = [p for p in data['profiles'] if p['isVisible']]
+    buttons, panels = [], []
+    e = html.escape
+    for p in profiles:
+        key = e(p['id'], quote=True)
+        name = e(p['displayName'])
+        buttons.append(f'<button type="button" data-preset="{key}" aria-controls="preset-{key}" aria-pressed="{str(p["id"] == "everyday").lower()}">{name}</button>')
+        chain = ' → '.join(PROVIDERS[x] for x in p['providerIds'])
+        policy = 'No favicon resolvers or Android store lookup. Site-linked hosts and redirects remain possible.' if p['id'] == 'privacy' else 'Enabled favicon resolvers may receive the entry’s domain.'
+        panels.append(f'<article class="preset-panel" id="preset-{key}" data-profile-id="{key}"><h3>{name}{" · Recommended" if p["id"] == "everyday" else ""}</h3><p class="preset-hook">{e(p["intendedUse"])}</p><p>{e(chain)} · {p["cumulativeTimeoutMs"]/1000:g} s total per-entry budget.</p><p>{policy} Synthetic fallbacks are disabled.</p></article>')
+    return '<div class="preset-controls" role="group" aria-label="Preview v1.3 profiles" id="preset-controls" hidden>' + ''.join(buttons) + '</div><div id="preset-panels">' + ''.join(panels) + '</div>'
+
+
+def preview_profiles(site):
+    # Pages can publish before the plugin merges. Keep the advertised candidate
+    # snapshot separate from profiles.json, which still follows the built branch.
+    release = json.loads((site/'data/release.json').read_text(encoding='utf-8-sig'))
+    snapshot = release['previewProfiles']
+    if snapshot['file'] != 'profiles-v1.3.json':
+        raise ValueError('unexpected preview profile filename')
+    data = (site/'data'/snapshot['file']).read_bytes()
+    if hashlib.sha256(data).hexdigest() != snapshot['sha256']:
+        raise ValueError('preview profile snapshot checksum mismatch')
+    return json.loads(data.decode('utf-8-sig'))
+
+
 def expected_pages(site):
-    data = json.loads((site/'data/profiles.json').read_text(encoding='utf-8-sig'))
+    data = preview_profiles(site)
     release = json.loads((site/'data/release.json').read_text(encoding='utf-8-sig'))
     e = html.escape
     version = e(release['version'])
@@ -61,7 +89,11 @@ def expected_pages(site):
         'RELEASE_FOOTER': f'<a href="{e(release["releaseUrl"],quote=True)}">Stable v{version}</a>',
         'RELEASE_DOWNLOAD': f'<a class="button" href="{e(release["plgxUrl"],quote=True)}">Download PLGX · v{version}</a>',
         'PROFILE_FALLBACK': profile_markup(data),
-        'PROFILE_CARDS': profile_cards_markup(data)
+        'PROFILE_CARDS': profile_cards_markup(data),
+        'RELEASE_HERO': f'<a class="button primary" href="{e(release["plgxUrl"],quote=True)}">Get KeeFetch <span class="button-version">v{version}</span><span aria-hidden="true">↓</span></a>',
+        'RELEASE_NOTES': f'<a href="{e(release["releaseUrl"],quote=True)}">Stable v{version} · Release notes ↗</a>',
+        'RELEASE_VERIFY': (f'<details class="verification"><summary>Verify your download</summary><p>Compare the PLGX file’s SHA-256 with the published checksum for v{version}.</p><div class="checksum-row"><code id="checksum">{e(release["plgxSha256"])}</code><button class="copy-button" id="copy-checksum" type="button" hidden>Copy SHA-256</button></div><p id="copy-status" role="status" aria-live="polite"></p><a href="{e(release["plgxChecksumUrl"],quote=True)}">Published checksum file ↗</a></details>' if release.get('plgxSha256') and release.get('plgxChecksumUrl') else f'<p><a href="{e(release["releaseUrl"],quote=True)}">Release assets and verification details ↗</a></p>'),
+        'PROFILE_PRESETS': profile_presets_markup(data)
     }
     expected = {}
     for path in sorted(site.glob('*.html')):

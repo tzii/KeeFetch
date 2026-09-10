@@ -1,73 +1,58 @@
 # KeeFetch website design
 
-## Direction
+## Direction and source
 
-Familiar icons on warm paper, with violet ink. The playful part is the small
-recognition moment when blank entries acquire the icons people already know.
-Do not add mascots, confetti, drifting decorations or fake product chrome to make
-an otherwise ordinary section appear playful.
+The owner-selected `KeeFetch-little-machine-source.zip` replaces the earlier
+PR12 visual direction. Preserve its warm squared panels, fine paper grid,
+violet mechanical illustration and angular KeeFetch wordmark. The machine is
+an explicitly labeled local illustration. The four native-window PNGs are real,
+unaltered KeePass captures and open at full size from the homepage and guide.
 
-The homepage persuades through an immediate visual explanation and a real stable
-download. The six documentation pages prioritize reading and task completion.
-They share the same tokens and controls, with a quieter heading scale.
+The seven-page site shares one header, footer, theme preference and navigation.
+The six guide pages use a quieter heading scale and readable line lengths.
+Hosting remains GitHub Pages under `/KeeFetch/`.
 
-## Tokens and typography
+## Typography and composition
 
-`assets/css/site.css` is the authority. Light surfaces are `#faf8f4`, `#ffffff`
-and `#ece5fb`; ink is `#261d36`, secondary text `#665d72`, and accent `#6034bb`.
-The illustration stage is `#ded2f7` and uses full-contrast ink for its disclaimer.
-Dark surfaces are `#191520`, `#241e2e` and `#322344`; ink is `#f5efff`, secondary
-text `#c0b5ce`, accent `#c4a6ff`, and the illustration stage `#3c2a54`.
+Use system sans-serif fonts, with a monospace face for small labels and code.
+Body text starts at 16px; controls and secondary copy stay readable at 14px or
+larger. `assets/css/site.css` supplies the selected design, `project.css` supplies
+the shared documentation and screenshot layouts, and `motion.css` owns animated
+scene details. Light paper is #f4f1e9, ink #201b25 and accent #6b35c2. Dark paper
+is #18151d, ink #f5f0f9 and accent #c4a3fa. Use the defined tokens in both themes.
 
-Use the existing self-hosted Space Grotesk with system fallbacks. Base text is
-16px with 1.65 line height. Headings use weight 600, a maximum 5.65rem display size,
-and tracking no tighter than -0.04em. Code alone uses a monospace family.
-Keep reading measures near 72 characters. Do not use gradient text or a second
-serif display face. Selection, focus, text underlines and scrollbars use the tokens.
+The homepage pairs the large wordmark with the icon workshop, then covers
+features, workflow, generated profiles, privacy, actual screenshots, stable
+installation and contribution links. The four captures form a two-column
+gallery on desktop and a single column on mobile. Do not alter screenshot
+pixels, crop away outcomes or present the six-entry demo as a benchmark.
 
-## Composition
+## Interaction and fallback
 
-The hero pairs two short heading lines with an illustrative set of six entries.
-Its grid minimums are font-relative so enlarged text can reflow instead of
-squeezing the illustration. Narrow layouts stack rather than hide content.
+The 4.9-second animation runs once when visible. Run machine replays it;
+Pause/Resume keeps its exact pose; Motion off and system reduced motion settle
+immediately. One frame loop owns all mechanical parts. Hidden/offscreen/print
+states stop unnecessary work. Before/With KeeFetch is also usable without
+motion. The four profile selectors change only the website preview.
 
-Installation uses an actual ordered sequence, not three interchangeable feature
-cards. Profile summaries form a connected comparison, with the default marked
-in text and color. The full table is a native disclosure on the homepage and is
-always present on the profile page. Scrollable tables and code are keyboard
-focusable. Never truncate policy or privacy information to fit a tile.
+No JavaScript is required for content, links, screenshots or profile details.
+Theme follows the system until overridden; Use system theme clears that choice.
+Denied storage falls back to memory. Navigation collapses at 1152px, with a
+matching JavaScript media query. Escape closes it and restores trigger focus.
+Keep keyboard targets at least 44px high, and preserve forced-color outlines.
 
-Buttons use 8px corners; the illustration stage uses 16px. The inner sample-entry
-panel has one soft offset shadow. Avoid decorative glass, grid textures and
-repeated elevation on every content section.
+## Product boundaries and checks
 
-## Interaction and motion
+`data/release.json` owns stable URLs and the verified v1.2 PLGX checksum.
+`data/profiles-v1.3.json` is the checksum-bound candidate export and owns the four upcoming v1.3 profile policies. Both the
+release banner and profile/gallery descriptions disclose the preview status.
+Keep detailed study limitations on benchmarks.html and privacy caveats on
+privacy.html. Use local SVGs and retain their Simple Icons license files.
 
-Nothing enters from an invisible state. The illustration shows its finished
-result initially. Before / With KeeFetch are ordinary pressed-state buttons,
-not a drag-only comparison or an automatic carousel.
+Run the static gates, `eng/test-site-browser.py` and `eng/test-site-machine.py`
+against the actual built site over HTTP under `/KeeFetch/`. CI covers Chromium,
+Firefox and WebKit. Inspect real screenshots in light/dark, phone/desktop,
+200% text and no-JavaScript modes. Retain axe incomplete findings as well as
+violations; automated passes are not full WCAG or physical-device certification.
 
-The only authored sequence is the user-triggered icon change, under one second.
-Repeated actions cancel earlier timers. Reduced motion shows the selected result
-immediately; it must not disable the comparison. System reduction takes precedence
-and backgrounding the page completes an in-progress change without repeated work.
-One polite live region announces completion, outside the illustrative image role.
-
-Theme follows the system until explicitly overridden. Storage is optional and
-other tabs can update stored preferences. Mobile navigation opens inline, Escape
-restores the trigger, and the no-JavaScript navigation stays available. Controls
-are at least 44px tall. The collapsed-navigation breakpoint is shared with the
-JavaScript media query at 1152px; update both together.
-
-## Quality checks
-
-Use `eng/test-site-browser.py` on the built site, not a screenshot mock. It tests
-the real `/KeeFetch/` subpath in Chromium, Firefox and WebKit. Inspect light/dark,
-mobile/desktop, enlarged text, no-JavaScript, keyboard and forced-color captures.
-Keep failure artifacts, axe incomplete findings and observed browser versions.
-A green axe run is not a declaration of complete WCAG conformance.
-
-Impeccable's new-work, craft-floor, harden, adapt, audit, polish and delight
-references informed this work. Sources: `https://impeccable.style/docs/` and
-`https://github.com/pbakaus/impeccable/tree/main/skill/reference`, consulted
-2026-09-10. This was reference-guided work; the Impeccable CLI/detector was not run.
+The independent website publication keeps `data/profiles.json` tied to the compiled branch catalog. `data/profiles-v1.3.json` is the accepted 9f0b43f export; its source commit and hash are recorded in release.json. The website uses this frozen preview so publishing documentation does not change the plugin or weaken its export check. Update the snapshot deliberately with the next accepted candidate.

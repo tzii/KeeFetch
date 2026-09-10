@@ -19,7 +19,7 @@ sample domains. Its before/after interaction is an explicitly labeled illustrati
 
 - The stable download is v1.2.0. The described v1.3.0 features are a source preview.
   `data/release.json` and the synchronizer own generated release links and labels.
-- `data/profiles.json` owns managed profile facts. Do not tune time budgets,
+- `data/profiles-v1.3.json` is the checksum-bound candidate export and owns managed profile facts. Do not tune time budgets,
   providers, names or evidence as a design change.
 - Resolver services can receive entry domains. Direct Site can follow asset links
   and redirects to other hosts. Privacy is not a promise of network isolation.
@@ -37,7 +37,9 @@ Preserve all seven pages: overview, getting started, profiles, privacy,
 troubleshooting, benchmarks and contributing. Installation, update, uninstall,
 rollback and checksum caveats must remain findable.
 
-This redesign starts from `19a0c224ca4dbf7042d22c3497e7599f61937c0b` on
+The owner-selected little-machine design is integrated over the completed release website. Its source ZIP is archived with a SHA-256 intake record.
+
+The profile evidence starts from `19a0c224ca4dbf7042d22c3497e7599f61937c0b` on
 `codex/v1-3-guided-native-ux`. Its completed 19-candidate study differs from the
 older study on `master`. Evidence links use that immutable source snapshot via
 `EVIDENCE_REF` in `eng/sync-site-profiles.py`. Updating this reference requires
@@ -53,3 +55,5 @@ requests to third-party asset hosts or illustrated brands.
 Automated browser checks and screenshots do not establish physical-device,
 screen-reader or native KeePass compatibility. Record which checks ran and keep
 those remaining acceptance checks explicit.
+
+The independent website publication keeps `data/profiles.json` tied to the compiled branch catalog. `data/profiles-v1.3.json` is the accepted 9f0b43f export; its source commit and hash are recorded in release.json. The website uses this frozen preview so publishing documentation does not change the plugin or weaken its export check. Update the snapshot deliberately with the next accepted candidate.

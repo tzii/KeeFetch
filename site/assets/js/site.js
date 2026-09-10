@@ -1,151 +1,137 @@
-"use strict";
-(() => {
-  const root = document.documentElement;
-  const find = id => document.getElementById(id);
-  const media = query => typeof window.matchMedia === "function" ? window.matchMedia(query) : { matches: false };
-  // Safari versions before MediaQueryList.addEventListener use addListener.
-  const listen = (query, callback) => {
-    if (query.addEventListener) query.addEventListener("change", callback);
-    else if (query.addListener) query.addListener(callback);
-  };
-  const read = key => { try { return localStorage.getItem(key); } catch (_) { return null; } };
-  const save = (key, value) => { try { localStorage.setItem(key, value); } catch (_) { /* Session choice still works. */ } };
-  const systemDark = media("(prefers-color-scheme: dark)");
-  const reduced = media("(prefers-reduced-motion: reduce)");
-  let chosenTheme = read("keefetch-theme");
-  let chosenMotion = read("keefetch-motion");
-  const themeToggle = find("theme-toggle");
-  const motionToggle = find("motion-toggle");
-  const setTheme = dark => {
-    root.dataset.theme = dark ? "dark" : "light";
-    if (themeToggle) {
-      themeToggle.setAttribute("aria-pressed", String(dark));
-      themeToggle.setAttribute("aria-label", "Dark theme");
-      themeToggle.title = dark ? "Switch to light theme" : "Switch to dark theme";
-    }
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.content = dark ? "#191520" : "#faf8f4";
-  };
-  setTheme(root.dataset.theme === "dark");
-  if (themeToggle) {
-    themeToggle.hidden = false;
-    themeToggle.addEventListener("click", () => {
-      chosenTheme = root.dataset.theme === "dark" ? "light" : "dark";
-      setTheme(chosenTheme === "dark");
-      save("keefetch-theme", chosenTheme);
-    });
+/* Progressive enhancement only. The full guide remains readable without JS. */
+(function () {
+  'use strict';
+  var root = document.documentElement;
+  var key = 'keefetch-theme';
+  var themeButton = document.getElementById('theme-toggle');
+  var resetButton = document.getElementById('theme-reset');
+  var menuButton = document.getElementById('menu-toggle');
+  var navigation = document.getElementById('primary-nav');
+  var media = typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  var compact = typeof window.matchMedia === 'function' ? window.matchMedia('(max-width: 1152px)') : null;
+  var preference = null;
+  try { preference = localStorage.getItem(key); } catch (_) { /* Private/denied storage: keep state in memory. */ }
+  if (preference !== 'light' && preference !== 'dark') preference = null;
+
+  function listen(query, handler) {
+    if (!query) return;
+    if (query.addEventListener) query.addEventListener('change', handler);
+    else if (query.addListener) query.addListener(handler);
   }
-  listen(systemDark, () => {
-    if (chosenTheme !== "light" && chosenTheme !== "dark") setTheme(systemDark.matches);
+  function applyTheme() {
+    var theme = preference || (media && media.matches ? 'dark' : 'light');
+    root.setAttribute('data-theme', theme);
+    themeButton.setAttribute('aria-pressed', String(theme === 'dark'));
+    themeButton.setAttribute('aria-label', 'Switch to ' + (theme === 'dark' ? 'light' : 'dark') + ' theme');
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', theme === 'dark' ? '#18151d' : '#f4f1e9');
+    resetButton.hidden = !preference;
+  }
+  themeButton.addEventListener('click', function () {
+    preference = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem(key, preference); } catch (_) { /* The visible control still works. */ }
+    applyTheme();
   });
+  resetButton.addEventListener('click', function () {
+    preference = null;
+    try { localStorage.removeItem(key); } catch (_) { /* Fall back to the system in this tab. */ }
+    applyTheme();
+    themeButton.focus();
+  });
+  window.addEventListener('storage', function (event) {
+    if (event.key !== key && event.key !== null) return;
+    preference = event.newValue === 'dark' || event.newValue === 'light' ? event.newValue : null;
+    applyTheme();
+  });
+  listen(media, function () { if (!preference) applyTheme(); });
+  applyTheme();
+  themeButton.hidden = false;
 
-  const menuToggle = find("menu-toggle");
-  const nav = find("primary-nav");
-  const closeMenu = (restore = false) => {
-    if (!nav || !menuToggle) return;
-    nav.classList.remove("is-open");
-    menuToggle.setAttribute("aria-expanded", "false");
-    menuToggle.setAttribute("aria-label", "Open navigation");
-    if (restore) menuToggle.focus();
-  };
-  if (menuToggle && nav) {
-    menuToggle.hidden = false;
-    menuToggle.addEventListener("click", () => {
-      const open = nav.classList.toggle("is-open");
-      menuToggle.setAttribute("aria-expanded", String(open));
-      menuToggle.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
-    });
-    document.addEventListener("keydown", event => {
-      if (event.key === "Escape" && nav.classList.contains("is-open")) closeMenu(true);
-    });
-    document.addEventListener("click", event => {
-      if (event.target instanceof Element && !event.target.closest(".site-header")) closeMenu();
-    });
-    nav.addEventListener("click", event => {
-      if (event.target instanceof Element && event.target.closest("a")) closeMenu();
-    });
-    listen(media("(min-width: 1153px)"), event => closeMenu(!event.matches && nav.contains(document.activeElement)));
-    root.dataset.enhanced = "true";
+  function setMenu(open, restoreFocus) {
+    navigation.classList.toggle('is-open', open);
+    menuButton.setAttribute('aria-expanded', String(open));
+    menuButton.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+    if (restoreFocus) menuButton.focus();
   }
-
-  // Illustration only: sample brand assets are local. No vault or domain requests.
-  const entries = Array.from(document.querySelectorAll(".vault-entry"));
-  const before = find("demo-before");
-  const after = find("demo-after");
-  const status = find("demo-status");
-  const count = find("demo-count");
-  const state = find("demo-state");
-  const announcement = find("demo-announcement");
-  let timers = [];
-  let running = false;
-  let showIcons = true;
-  const clearTimers = () => { timers.forEach(clearTimeout); timers = []; running = false; };
-  const complete = announce => {
-    clearTimers();
-    entries.forEach(entry => entry.classList.toggle("is-resolved", showIcons));
-    if (count) count.textContent = (showIcons ? entries.length : 0) + " / " + entries.length;
-    if (status) status.textContent = showIcons ? "Same entries. Much easier to spot." : "Same entries. Same blank icons.";
-    if (state) state.textContent = showIcons ? "With KeeFetch" : "Before";
-    if (announce && announcement) announcement.textContent = showIcons ? "Sample website icons shown. This is an illustration, not a live fetch." : "Sample entries shown without website icons.";
-  };
-  const selectDemo = withIcons => {
-    clearTimers();
-    showIcons = withIcons;
-    if (before) before.setAttribute("aria-pressed", String(!withIcons));
-    if (after) after.setAttribute("aria-pressed", String(withIcons));
-    if (!withIcons || root.dataset.motion === "off" || document.hidden) return complete(true);
-    entries.forEach(entry => entry.classList.remove("is-resolved"));
-    if (announcement) announcement.textContent = "";
-    if (state) state.textContent = "With KeeFetch";
-    if (status) status.textContent = "Adding a little character…";
-    if (count) count.textContent = "0 / " + entries.length;
-    running = true;
-    entries.forEach((entry, index) => {
-      timers.push(setTimeout(() => {
-        entry.classList.add("is-resolved");
-        if (count) count.textContent = (index + 1) + " / " + entries.length;
-      }, 100 + index * 110));
-    });
-    timers.push(setTimeout(() => complete(true), 200 + entries.length * 110));
-  };
-  if (before && after && entries.length) {
-    find("demo-controls").hidden = false;
-    before.addEventListener("click", () => selectDemo(false));
-    after.addEventListener("click", () => selectDemo(true));
-    complete(false);
-  }
-  const setMotion = () => {
-    const off = reduced.matches || chosenMotion === "off";
-    root.dataset.motion = off ? "off" : "on";
-    if (motionToggle) {
-      motionToggle.setAttribute("aria-pressed", String(off));
-      motionToggle.setAttribute("aria-label", "Reduce motion");
-      motionToggle.title = reduced.matches ? "Reduced motion follows your system setting" : (off ? "Enable icon animation" : "Reduce motion");
-      motionToggle.disabled = reduced.matches;
-    }
-    if (off && running) complete(true);
-  };
-  if (motionToggle && entries.length) {
-    motionToggle.hidden = false;
-    motionToggle.addEventListener("click", () => {
-      chosenMotion = root.dataset.motion === "off" ? "on" : "off";
-      save("keefetch-motion", chosenMotion);
-      setMotion();
-    });
-  }
-  setMotion();
-  listen(reduced, setMotion);
-  document.addEventListener("visibilitychange", () => { if (document.hidden && running) complete(false); });
-  window.addEventListener("pagehide", () => { if (running) complete(false); });
-  // Reflect other tabs without requiring storage. Clearing an override returns to system.
-  window.addEventListener("storage", event => {
-    if (event.key === "keefetch-theme" || event.key === null) {
-      chosenTheme = read("keefetch-theme");
-      setTheme(chosenTheme === "dark" || (chosenTheme !== "light" && systemDark.matches));
-    }
-    if (event.key === "keefetch-motion" || event.key === null) {
-      chosenMotion = read("keefetch-motion");
-      setMotion();
+  menuButton.addEventListener('click', function () { setMenu(menuButton.getAttribute('aria-expanded') !== 'true', false); });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && menuButton.getAttribute('aria-expanded') === 'true') setMenu(false, true);
+  });
+  navigation.addEventListener('click', function (event) {
+    var link = event.target.closest('a');
+    if (!link) return;
+    setMenu(false, false);
+    var href = link.getAttribute('href');
+    if (href && href.charAt(0) === '#') {
+      var target = document.getElementById(href.slice(1));
+      if (target) {
+        target.setAttribute('tabindex', '-1');
+        target.focus({preventScroll: true});
+      }
     }
   });
-})();
+  listen(compact, function () {
+    var restore = compact.matches && navigation.contains(document.activeElement);
+    setMenu(false, restore);
+  });
+  menuButton.hidden = false;
+
+  var workshop = document.getElementById('demo');
+  if (workshop) {
+  var before = document.getElementById('demo-before');
+  var after = document.getElementById('demo-after');
+  function showIcons(found) {
+    // Atomic state change: rapid clicks cannot leave old timers running.
+    workshop.classList.toggle('resolved', found);
+    before.setAttribute('aria-pressed', String(!found));
+    after.setAttribute('aria-pressed', String(found));
+    document.getElementById('demo-state').textContent = found ? '4 familiar faces' : '4 generic icons';
+    document.getElementById('demo-announcement').textContent = found ? 'With KeeFetch: four example entries show their website icons. This is an illustration, not a live fetch.' : 'Before: all four example entries use generic key icons.';
+  }
+  before.addEventListener('click', function () { showIcons(false); workshop.dispatchEvent(new CustomEvent('keefetch:comparison', {detail: {found: false}})); });
+  after.addEventListener('click', function () { showIcons(true); workshop.dispatchEvent(new CustomEvent('keefetch:comparison', {detail: {found: true}})); });
+  document.getElementById('demo-controls').hidden = false;
+
+  var controls = document.getElementById('preset-controls');
+  var presetButtons = controls.querySelectorAll('button');
+  var panels = document.querySelectorAll('.preset-panel');
+  function selectPreset(name) {
+    for (var i = 0; i < presetButtons.length; i++) presetButtons[i].setAttribute('aria-pressed', String(presetButtons[i].getAttribute('data-preset') === name));
+    for (var j = 0; j < panels.length; j++) panels[j].hidden = panels[j].id !== 'preset-' + name;
+  }
+  controls.addEventListener('click', function (event) {
+    var button = event.target.closest('button[data-preset]');
+    if (button) selectPreset(button.getAttribute('data-preset'));
+  });
+  selectPreset('everyday');
+  controls.hidden = false;
+
+  }
+  var copy = document.getElementById('copy-checksum');
+  if (copy) {
+  copy.addEventListener('click', function () {
+    var text = document.getElementById('checksum').textContent.trim();
+    var status = document.getElementById('copy-status');
+    function manualCopy() {
+      var selection = window.getSelection();
+      if (selection) {
+        var range = document.createRange();
+        range.selectNodeContents(document.getElementById('checksum'));
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+      status.textContent = 'Automatic copying is unavailable. The checksum is selected; use your browser’s Copy action.';
+    }
+    if (!navigator.clipboard || !navigator.clipboard.writeText) { manualCopy(); return; }
+    copy.disabled = true;
+    navigator.clipboard.writeText(text).then(function () {
+      status.textContent = 'SHA-256 copied.';
+      copy.disabled = false;
+    }, function () {
+      copy.disabled = false;
+      manualCopy();
+    });
+  });
+  copy.hidden = false;
+  }
+  root.classList.add('ready');
+}());

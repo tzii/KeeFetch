@@ -2,6 +2,8 @@ using KeeFetch.IconSelection;
 using KeePass.App.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections;
+using System.Net.Http;
+using System.Threading;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -68,6 +70,42 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
+        public async Task DownloadAsync_DoesNotNegativeCacheTransientTimeouts()
+        {
+            var ace = new AceCustomConfig();
+            ace.SetLong("KeeFetch.CustomPrimaryTimeoutMs", 250);
+            ace.SetLong("KeeFetch.CustomFallbackTimeoutMs", 250);
+            ace.SetLong("KeeFetch.CustomCumulativeTimeoutMs", 1000);
+            var config = new Configuration(ace);
+            config.FetchPresetMode = FetchPresetMode.Custom;
+            foreach (string providerName in FaviconDownloader.DefaultProviderOrder)
+                config.SetProviderEnabled(providerName, providerName == "Direct Site");
+
+            SharedHttp.ReplaceClientForTests(new HttpClient(new NeverRespondingHandler()));
+            FaviconDownloader.ClearCache();
+
+            var downloader = new FaviconDownloader(config);
+            var first = await downloader.DownloadAsync("https://example.com/path");
+            var second = await downloader.DownloadAsync("https://example.com/other");
+
+            Assert.AreEqual(FaviconStatus.NotFound, first.Status);
+            Assert.AreEqual(FaviconStatus.NotFound, second.Status);
+            Assert.IsFalse(second.DiagnosticsSummary.Contains("negative-cache-hit"),
+                "a transient timeout must not poison later entries in the same batch");
+            Assert.AreNotEqual("Cache", second.ProviderMetrics[0].ProviderName);
+        }
+
+        private sealed class NeverRespondingHandler : HttpMessageHandler
+        {
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+                CancellationToken cancellationToken)
+            {
+                await Task.Delay(Timeout.Infinite, cancellationToken).ConfigureAwait(false);
+                return null;
+            }
+        }
+
+        [TestMethod]
         public void BuildProviderPipeline_UsesPresetProviderSetOnFreshConfig()
         {
             var config = new Configuration(new AceCustomConfig());
@@ -76,7 +114,7 @@ namespace KeeFetch.Tests
             var names = GetPipelineProviderNames(config);
 
             CollectionAssert.AreEqual(
-                new[] { "Direct Site", "Twenty Icons", "DuckDuckGo", "Google", "Yandex", "Icon Horse" },
+                new[] { "Direct Site", "Google", "Twenty Icons" },
                 names);
         }
 
@@ -89,7 +127,7 @@ namespace KeeFetch.Tests
             var names = GetPipelineProviderNames(config);
 
             CollectionAssert.AreEqual(
-                new[] { "Direct Site", "Yandex" },
+                new[] { "Direct Site", "Google" },
                 names);
         }
 

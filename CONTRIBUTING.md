@@ -62,7 +62,7 @@ powershell -File eng/benchmark/test-benchmark-harness.ps1                # bench
 git diff --check
 ```
 
-Releases are cut by pushing a `v*` tag; the workflow checks that the tag matches `version.txt` and that `CHANGELOG.md` has a section for it. The read-only build job produces the DLL, PLGX, and `SHA256SUMS.txt` on PRs too. A separate tag-push-only release job downloads those artifacts, verifies their hashes, and publishes them with repository write permission. It does not check out or rebuild source. A manual workflow dispatch validates/packages but does not publish a release; rerun a failed tag-push workflow to retry publication.
+A `v*` tag runs validation: the tag must match `version.txt` and a `CHANGELOG.md` section. The read-only build job produces the DLL, PLGX and `SHA256SUMS.txt` on PRs too. A separate read-only tag job verifies those CI artifacts. CI never creates or updates a GitHub release. After owner authorization, the maintainer publishes the exact DLL/PLGX and checksums recorded in the final release-validation document; a tag rebuild must not replace the host-validated files. Manual workflow dispatch also validates/packages only.
 
 ## Project Structure
 
@@ -113,10 +113,10 @@ KeeFetch/
 
 ### Architecture Overview
 
-A download run executes one **`FetchExecutionPolicy`**, resolved once from the selected fetch profile (`Fast`, `Balanced`, `Privacy`, `Thorough`) or from the Custom configuration. The policy fixes the provider order, per-provider and cumulative timeouts, whether synthetic fallbacks are allowed, and whether the run stops at the first strong resolver hit.
+A download run executes one **`FetchExecutionPolicy`**, resolved once from the selected fetch profile (`Fast`, `Balanced`, `Privacy`, `Precise`) or from the Custom configuration. The policy fixes the provider order, per-provider and cumulative timeouts, whether synthetic fallbacks are allowed, and whether the run stops at the first strong resolver hit.
 
 1. **`DirectSiteProvider`** fetches the site itself and parses `<head>`, the web manifest, `apple-touch-icon`, and `og:image` into candidates.
-2. **Resolver providers** (`TwentyIcons`, `DuckDuckGo`, `Google`, `Yandex`, `Favicone`, `IconHorse`) each return at most one candidate. They are skipped for targets recognized by the lexical private-host classifier. Their final-response guard discards private-host responses after automatic redirects; it does not prevent network contact, inspect intermediate hops, or validate DNS answers. See the README privacy limitations.
+2. **Resolver providers** (`TwentyIcons`, `DuckDuckGo`, `Google`, `Yandex`, `Favicone`, `IconHorse`) each return at most one candidate. They are skipped for targets recognized by the lexical private-host classifier. Redirects are followed manually, and every redirect destination is checked before contact; recognized private hosts are refused for resolvers. This lexical check does not validate DNS answers or prevent DNS rebinding. Direct Site explicitly permits private hosts. See the README privacy limitations.
 3. **`IconSelector`** ranks all surviving candidates by tier (`SiteCanonical` → `StrongResolved` → `SyntheticFallback`) and confidence, so a synthetic or placeholder-prone result only wins when nothing stronger survived.
 
 `FaviconDownloader` orchestrates this with a shared cumulative deadline, per-origin caching and negative caching, in-flight coalescing, and per-provider health cooldowns. `FaviconDialog` runs entries concurrently (up to 8 in parallel via `SemaphoreSlim`) and marshals database writes to the UI thread.

@@ -212,7 +212,11 @@ namespace KeeFetch
             FaviconResult result;
             try
             {
-                result = await activeDownload.Value.ConfigureAwait(false);
+                // Non-owners must be able to abort their own await without
+                // depending on the owner's cancellation token.
+                result = isOwner
+                    ? await activeDownload.Value.ConfigureAwait(false)
+                    : await AwaitWithCancellationAsync(activeDownload.Value, token).ConfigureAwait(false);
             }
             finally
             {
@@ -224,12 +228,38 @@ namespace KeeFetch
             }
 
             result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
-            if (isOwner && result.Status == FaviconStatus.NotFound)
+            // Transient failures (timeouts) must not poison later entries in the
+            // same batch; only definitive misses are negative-cached.
+            if (isOwner && result.Status == FaviconStatus.NotFound && !HasTimeoutMetric(result))
                 CacheNegativeResult(inFlightKey, result);
 
             return isOwner
                 ? result
                 : BuildCoalescedResult(result, stopwatch.ElapsedMilliseconds);
+        }
+
+        private static async Task<T> AwaitWithCancellationAsync<T>(Task<T> task, CancellationToken token)
+        {
+            var cancelled = new TaskCompletionSource<bool>();
+            using (token.Register(delegate { cancelled.TrySetResult(true); }))
+            {
+                Task completed = await Task.WhenAny(task, cancelled.Task).ConfigureAwait(false);
+                if (ReferenceEquals(completed, cancelled.Task))
+                    throw new OperationCanceledException(token);
+                return await task.ConfigureAwait(false);
+            }
+        }
+
+        private static bool HasTimeoutMetric(FaviconResult result)
+        {
+            if (result == null || result.ProviderMetrics == null)
+                return false;
+            foreach (ProviderAttemptMetric metric in result.ProviderMetrics)
+            {
+                if (metric != null && metric.Outcome == "timeout")
+                    return true;
+            }
+            return false;
         }
 
         private async Task<FaviconResult> DownloadParsedHttpAsync(string originalUrl, Uri normalizedUri,

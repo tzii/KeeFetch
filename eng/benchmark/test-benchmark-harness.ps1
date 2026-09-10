@@ -450,6 +450,36 @@ try {
     $queueB = Join-Path $mockRoot 'review-queue-b.csv'
     & $prepPath -RunDir $mockRoot -OutputPath $queueA | Out-Null
     & $prepPath -RunDir $mockRoot -OutputPath $queueB | Out-Null
+    # Cold review may overlap informational warm collection, but an incomplete
+    # cold run must still be rejected and the default full-run gate stays strict.
+    foreach ($mode in @('warm','cold')) {
+        $probe = Get-ChildItem -LiteralPath $mockRoot -Directory | ForEach-Object {
+            $path = Join-Path $_.FullName 'run.json'
+            if (Test-Path -LiteralPath $path) {
+                $meta = Get-Content -Raw -LiteralPath $path | ConvertFrom-Json
+                if ($meta.cache_mode -eq $mode) { $path }
+            }
+        } | Select-Object -First 1
+        if (!$probe) { throw "Missing $mode probe fixture" }
+        $savedProbe = [IO.File]::ReadAllBytes($probe)
+        try {
+            $meta = Get-Content -Raw -LiteralPath $probe | ConvertFrom-Json
+            $meta.status = 'incomplete'
+            $meta | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $probe -Encoding UTF8
+            $probeQueue = Join-Path $mockRoot ('cold-probe-' + $mode + '.csv')
+            $rejected = $false
+            try { & $prepPath -RunDir $mockRoot -OutputPath $probeQueue | Out-Null } catch { $rejected = $_.Exception.Message -match 'Incomplete run rejected' }
+            if (!$rejected) { throw 'Default review preparation accepted an incomplete run' }
+            if ($mode -eq 'warm') {
+                & $prepPath -RunDir $mockRoot -OutputPath $probeQueue -ColdOnly | Out-Null
+                if ((Get-Content -Raw $probeQueue) -cne (Get-Content -Raw $queueA)) { throw 'Cold-only mode changed the complete cold census' }
+            } else {
+                $rejected = $false
+                try { & $prepPath -RunDir $mockRoot -OutputPath $probeQueue -ColdOnly | Out-Null } catch { $rejected = $_.Exception.Message -match 'Incomplete run rejected' }
+                if (!$rejected) { throw 'Cold-only mode accepted an incomplete cold run' }
+            }
+        } finally { [IO.File]::WriteAllBytes($probe, $savedProbe) }
+    }
     $bytesA = [System.IO.File]::ReadAllBytes($queueA)
     $bytesB = [System.IO.File]::ReadAllBytes($queueB)
     if (-not ($bytesA.Length -eq $bytesB.Length)) { throw 'prepare-review census is not deterministic (different sizes)' }
@@ -611,6 +641,19 @@ try {
     if ($evidenceText -notmatch 'CENSUS') { throw 'evidence report must document the census methodology' }
     if ($evidenceText -notmatch 'cold-only') { throw 'evidence report must document cold-only scoring' }
 
+    # A fresh machine-reviewed study must not inherit historical authorization
+    # or a human spot-check claim from the report generator.
+    $machineRows = @(Import-Csv -LiteralPath $queueA)
+    foreach ($row in $machineRows) { $row.reviewer = 'machine:fixture/fresh-model' }
+    $machineQueue = Join-Path $mockRoot 'machine-queue.csv'
+    $machineRows | Export-Csv -LiteralPath $machineQueue -NoTypeInformation -Encoding UTF8
+    $machineOut = Join-Path $mockRoot 'machine-out'
+    & $selPath -RunDir $mockRoot -ReviewQueue $machineQueue -OutputDir $machineOut -ExperimentFile $mockExpPath | Out-Null
+    $machineReport = Get-Content -Raw -LiteralPath (Join-Path $machineOut 'v1.3-provider-study.md')
+    if ($machineReport -notmatch 'MACHINE REVIEW' -or $machineReport -notmatch 'machine:fixture/fresh-model') { throw 'Machine report lost actual queue provenance' }
+    if ($machineReport -match '2026-08-22|owner.s stratified spot-check|recorded under .?machine-review/') { throw 'Fresh report inherited historical review claims' }
+    if ($machineReport -match 'machine-reviewed exactly once' -or $machineReport -notmatch 'Pilot passes, re-asks and spot-checks') { throw 'Final queue must not imply a single review pass' }
+
     # Generated descriptions must state policy facts for the actual winner.
     $csText = Get-Content -Raw -LiteralPath (Join-Path $selOut 'FetchProfileCatalog.Generated.cs')
     foreach ($mid in @('bulk-fast','everyday','privacy','max-coverage')) {
@@ -655,6 +698,32 @@ try {
     }
     if (-not $ambThrew) { throw 'selector accepted a selection that ambiguity can reverse' }
     if ($ambMessage -notmatch 'Ambiguity sensitivity') { throw "ambiguity rejection message unexpected: $ambMessage" }
+
+    # Explicit conservative policy preserves uncertainty and the input queue,
+    # scores it as failure, and discloses a sensitive winner instead of
+    # falsely claiming that the default stability requirement passed.
+    $ambHashBefore = Get-TestSha256HexFile -Path $ambPath
+    $conservativeOut = Join-Path $mockRoot 'conservative-out'
+    & $selPath -RunDir $mockRoot -ReviewQueue $ambPath -OutputDir $conservativeOut -ExperimentFile $mockExpPath -AmbiguityPolicy ConservativeFailure | Out-Null
+    $conservative = Get-Content -Raw -LiteralPath (Join-Path $conservativeOut 'selection-summary.json') | ConvertFrom-Json
+    if ($conservative.ambiguity_policy -ne 'ConservativeFailure') { throw 'Conservative policy was not recorded' }
+    if ((Get-TestSha256HexFile -Path $ambPath) -ne $ambHashBefore -or $conservative.review_queue_sha256 -ne $ambHashBefore) { throw 'Conservative scoring changed or misidentified the original queue' }
+    $precisionReplay = @($conservative.ambiguity_replays | Where-Object { $_.role -eq 'max-coverage' })[0]
+    if ($precisionReplay.stable -or $precisionReplay.as_failure -eq $precisionReplay.as_usable) { throw 'Conservative report hid sensitivity' }
+    foreach ($replay in $conservative.ambiguity_replays) {
+        if ($conservative.winners.($replay.role) -ne $replay.as_failure) { throw 'Conservative policy selected a non-pessimistic winner' }
+    }
+    foreach ($candidate in $conservative.candidates) {
+        $expectedUsable = 0.0
+        if ($candidate.reviewed_units -gt 0) { $expectedUsable = [double]$candidate.usable_units / [double]$candidate.reviewed_units }
+        if ([Math]::Abs($candidate.estimated_usable_rate - $expectedUsable) -gt 0.000001) { throw 'Conservative usable rate excluded uncertainty from its denominator' }
+        if ([Math]::Abs($candidate.coverage - ($candidate.machine_availability * $expectedUsable)) -gt 0.000001) { throw 'Conservative coverage used the wrong usable rate' }
+    }
+    $conservativeFast = @($conservative.candidates | Where-Object { $_.profile_id -eq 'cand-direct-google-twenty-fast' })[0]
+    if ($conservativeFast.ambiguous_units -ne 4) { throw 'Conservative scoring lost ambiguous labels' }
+    $conservativeReport = Get-Content -Raw -LiteralPath (Join-Path $conservativeOut 'v1.3-provider-study.md')
+    if ($conservativeReport -notmatch 'zero usability credit' -or $conservativeReport -notmatch 'stable: False' -or $conservativeReport -notmatch '-AmbiguityPolicy ConservativeFailure') { throw 'Conservative report omitted policy, sensitivity or reproduction' }
+    if ((Get-TestSha256HexFile -Path (Join-Path $PSScriptRoot '..\..\FetchProfiles\FetchProfileCatalog.Generated.cs')) -ne $repoGeneratedBefore) { throw 'Conservative selector published without -Publish' }
 
     # Duplicate matrix cell must be rejected.
     $measuredDirs = @(Get-ChildItem -LiteralPath $mockRoot -Directory | Where-Object {
@@ -724,6 +793,23 @@ try {
     if ($null -eq $coldThoroughDir) { throw 'could not locate the thorough cold run for strict-parser tests' }
     $thoroughRowsCsv = Join-Path $coldThoroughDir.FullName 'rows.csv'
     $thoroughRowsBackup = [System.IO.File]::ReadAllBytes($thoroughRowsCsv)
+    # Real Android-store calls count as third-party activity; a budget skip
+    # emits a metric but contacts no provider. Warm Google calls do not score.
+    try {
+        $storeRows = @(Import-Csv -LiteralPath $thoroughRowsCsv)
+        for ($i = 0; $i -lt $storeRows.Count; $i++) {
+            $storeRows[$i].provider_metrics = if ($i -lt 10) { '[{"provider":"Direct Site","calls":1,"elapsed_ms":5,"candidate_count":1,"outcome":"candidate","errors":0}]' } else { '[]' }
+        }
+        $storeRows[0].provider_metrics = '[{"provider":"Google Play","calls":2,"elapsed_ms":5,"candidate_count":1,"outcome":"candidate","errors":0}]'
+        $storeRows[10].provider_metrics = '[{"provider":"Google Play","calls":1,"elapsed_ms":0,"candidate_count":0,"outcome":"skipped-budget-exhausted","errors":0}]'
+        $storeRows | Export-Csv -LiteralPath $thoroughRowsCsv -NoTypeInformation -Encoding UTF8
+        $storeOut = Join-Path $mockRoot 'store-disclosure-out'
+        & $selPath -RunDir $mockRoot -ReviewQueue $queueA -OutputDir $storeOut -ExperimentFile $mockExpPath | Out-Null
+        $storeSummary = Get-Content -Raw (Join-Path $storeOut 'selection-summary.json') | ConvertFrom-Json
+        $storeStat = @($storeSummary.candidates | Where-Object { $_.profile_id -eq 'cand-full-thorough-synth' })[0]
+        if ($storeStat.provider_call_count -ne 11 -or $storeStat.third_party_call_count -ne 2) { throw 'Google Play call counts or budget skips are incorrect' }
+        if ([Math]::Abs($storeStat.third_party_disclosure_rate - 1.0/12.0) -gt 0.00001) { throw 'Google Play disclosure must count only the contacted cold fixture' }
+    } finally { [System.IO.File]::WriteAllBytes($thoroughRowsCsv, $thoroughRowsBackup) }
     $strictCases = @(
         @{ Match = 'not parseable JSON'; Json = '{not json' },
         @{ Match = 'unknown provider';     Json = '[{"provider":"MysteryCorp","calls":1,"elapsed_ms":5,"candidate_count":1,"outcome":"candidate","errors":0}]' },
@@ -811,6 +897,13 @@ try {
     $thoroughRunJson = Join-Path $coldThoroughDir.FullName 'run.json'
     $thoroughRunJsonBackup = [System.IO.File]::ReadAllBytes($thoroughRunJson)
     try {
+        foreach ($resumedValue in @($true, 'false', $null)) {
+            $rm = Get-Content -Raw -LiteralPath $thoroughRunJson | ConvertFrom-Json
+            $rm.resumed = $resumedValue
+            [System.IO.File]::WriteAllText($thoroughRunJson, ($rm | ConvertTo-Json -Depth 20), $utf8NoBom)
+            Invoke-SelectorExpectThrow -Pattern 'non-resumed provenance' -Scenario 'resumed or invalid resumed flag'
+            [System.IO.File]::WriteAllBytes($thoroughRunJson, $thoroughRunJsonBackup)
+        }
         $rm = Get-Content -Raw -LiteralPath $thoroughRunJson | ConvertFrom-Json
         $rm.PSObject.Properties.Remove('execution_harness_fingerprint')
         [System.IO.File]::WriteAllText($thoroughRunJson, ($rm | ConvertTo-Json -Depth 20), (New-Object System.Text.UTF8Encoding $false))
@@ -840,6 +933,13 @@ try {
     # Row-level matrix mutations: exact count and exact fixture set.
     $batteryRowsBackup = [System.IO.File]::ReadAllBytes($thoroughRowsCsv)
     try {
+        foreach ($rowMode in @('warm', '', 'unexpected')) {
+            $rows = @(Import-Csv -LiteralPath $thoroughRowsCsv)
+            $rows[0].cache_mode = $rowMode
+            $rows | Export-Csv -LiteralPath $thoroughRowsCsv -NoTypeInformation -Encoding UTF8
+            Invoke-SelectorExpectThrow -Pattern 'Row cache_mode does not match' -Scenario 'row cache mode differs from cell'
+            [System.IO.File]::WriteAllBytes($thoroughRowsCsv, $batteryRowsBackup)
+        }
         $rows = @(Import-Csv -LiteralPath $thoroughRowsCsv)
         @($rows[0..($rows.Count - 2)]) | Export-Csv -LiteralPath $thoroughRowsCsv -NoTypeInformation -Encoding UTF8
         Invoke-SelectorExpectThrow -Pattern 'rows, expected 12' -Scenario 'row count mismatch'
@@ -913,6 +1013,42 @@ try {
     if (-not $evidenceDirExisted -and (Test-Path -LiteralPath $repoEvidenceDirForBattery)) {
         throw 'failed -Publish created the repository evidence directory'
     }
+
+    # A second measured repetition repeats the same fixture ids. Disclosure
+    # must remain 10/12, not fall to 10/24 through cross-cell deduplication.
+    $mockExpObj.repetitions = 2
+    [System.IO.File]::WriteAllText($mockExpPath, (ConvertTo-Json -InputObject $mockExpObj -Depth 10), $utf8NoBom)
+    $mockExpFp = Get-TestSha256HexFile -Path $mockExpPath
+    foreach ($p in $allRunJsonPaths) {
+        $rm = Get-Content -Raw -LiteralPath $p | ConvertFrom-Json
+        $rm.experiment_fingerprint = $mockExpFp
+        [System.IO.File]::WriteAllText($p, ($rm | ConvertTo-Json -Depth 20), $utf8NoBom)
+    }
+    foreach ($cid in $mockCandidateIds) {
+        [void](New-MockRunDir -CandId $cid -Mode 'cold' -Rep 2 -Kind 'measured' -ActiveMs 9000)
+        [void](New-MockRunDir -CandId $cid -Mode 'warm' -Rep 2 -Kind 'measured' -ActiveMs 1500)
+    }
+    $repeatOut = Join-Path $mockRoot 'repeat-disclosure-out'
+    & $selPath -RunDir $mockRoot -ReviewQueue $queueA -OutputDir $repeatOut -ExperimentFile $mockExpPath | Out-Null
+    $repeatSummary = Get-Content -Raw (Join-Path $repeatOut 'selection-summary.json') | ConvertFrom-Json
+    $repeatStat = @($repeatSummary.candidates | Where-Object { $_.profile_id -eq 'cand-full-thorough-synth' })[0]
+    if ($repeatStat.cold_rows -ne 24 -or [Math]::Abs($repeatStat.third_party_disclosure_rate - 10.0/12.0) -gt 0.00001) { throw 'Repeated fixtures diluted observed disclosure' }
+
+    # Store-enabled direct-only policies cannot be called Privacy even when
+    # this fixture set happened to produce zero store calls.
+    $mockCandidateDefs[0].allowAndroidStoreLookup = $true
+    [System.IO.File]::WriteAllText($mockExpPath, (ConvertTo-Json -InputObject $mockExpObj -Depth 10), $utf8NoBom)
+    $mockExpFp = Get-TestSha256HexFile -Path $mockExpPath
+    $newDirectPolicy = Get-TestCandidateFingerprint -Def $mockCandidateDefs[0]
+    foreach ($dir in @(Get-ChildItem -LiteralPath $mockRoot -Directory)) {
+        $p = Join-Path $dir.FullName 'run.json'
+        if (-not (Test-Path -LiteralPath $p)) { continue }
+        $rm = Get-Content -Raw -LiteralPath $p | ConvertFrom-Json
+        $rm.experiment_fingerprint = $mockExpFp
+        if ($rm.candidate_id -eq 'cand-direct-only-balanced') { $rm.policy_fingerprint = $newDirectPolicy }
+        [System.IO.File]::WriteAllText($p, ($rm | ConvertTo-Json -Depth 20), $utf8NoBom)
+    }
+    Invoke-SelectorExpectThrow -Pattern 'No privacy-eligible candidate' -Scenario 'store enabled without observed calls'
 
     # Shared JSON escaping: quotes, backslashes, and control characters must
     # round-trip through ConvertTo-KeeFetchJsonString.
@@ -1093,4 +1229,5 @@ try {
 } finally {
     Remove-Item -LiteralPath $temp -Recurse -Force
 }
+& (Join-Path $PSScriptRoot 'test-complete-study.ps1')
 Write-Output 'Benchmark harness self-tests passed.'

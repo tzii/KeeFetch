@@ -1,0 +1,20 @@
+<Configuration>
+  <Meta>
+    <PreferUserConfiguration>false</PreferUserConfiguration>
+  </Meta>
+  <Application>
+    <Start>
+      <CheckForUpdate>false</CheckForUpdate>
+    </Start>
+  </Application>
+  <Custom>
+    <Item>
+      <Key>KeeFetch.FetchPresetMode</Key>
+      <Value>Turbo</Value>
+    </Item>
+    <Item>
+      <Key>KeeFetch.HasSeenFirstRunDisclosure</Key>
+      <Value>True</Value>
+    </Item>
+  </Custom>
+</Configuration>

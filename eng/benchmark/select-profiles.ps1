@@ -3,6 +3,8 @@ param(
     [string]$ReviewQueue,
     [string]$OutputDir,
     [string]$ExperimentFile,
+    [ValidateSet('RequireStable', 'ConservativeFailure')]
+    [string]$AmbiguityPolicy = 'RequireStable',
     [switch]$Publish
 )
 
@@ -23,9 +25,9 @@ $ErrorActionPreference = "Stop"
 # measured cold cells. Warm rows are latency evidence only and appear as
 # informational percentiles, never in a winner rule.
 #
-# Human review is a CENSUS, not a sample: the review queue must contain
+# Review is a CENSUS, not a sample: the review queue must contain
 # exactly the unique cold (fixture_id, artifact_hash) units - no hole, no
-# extra key - and each human label propagates to every occurrence of that
+# extra key - and each reviewed label propagates to every occurrence of that
 # exact artifact. There are no design weights and no interval estimates
 # anywhere downstream; rates are exact proportions of the reviewed census
 # population. Unreviewed machine successes are never counted as correct.
@@ -36,8 +38,9 @@ $ErrorActionPreference = "Stop"
 #
 # One shared winner function decides every role; before any winner is
 # accepted the whole rule is replayed with ambiguous labels counted as
-# failure (pessimistic) and as usable (optimistic), and a winner that is
-# not stable across both replays rejects the selection.
+# failure (pessimistic) and as usable (optimistic). The default requires
+# stability. Explicit ConservativeFailure selects the pessimistic winner,
+# retains ambiguous labels, and discloses every replay without claiming stability.
 #
 # Without -Publish nothing outside OutputDir is written. With -Publish the
 # generated catalog and the canonical evidence report are written into the
@@ -101,6 +104,7 @@ function Get-CanonicalMetricProvider {
     $c = ([string]$Name).Trim().ToLowerInvariant()
     if ($c -eq "twenty icons") { return "twenty-icons" }
     if ($c -eq "icon horse") { return "icon-horse" }
+    if ($c -eq "google play") { return "google-play" }
     return $c
 }
 
@@ -315,7 +319,7 @@ $expectedFixtureIds = New-Object 'System.Collections.Generic.HashSet[string]' ([
 foreach ($fr in $expectedCorpusRows) { [void]$expectedFixtureIds.Add([string]$fr.fixture_id) }
 
 $thirdPartyIds = @{}
-foreach ($def in @('twenty-icons','duckduckgo','google','yandex','favicone','icon-horse')) { $thirdPartyIds[$def] = $true }
+foreach ($def in @('twenty-icons','duckduckgo','google','yandex','favicone','icon-horse','google-play')) { $thirdPartyIds[$def] = $true }
 
 function Get-CandidateCanonicalForm {
     param([Parameter(Mandatory=$true)][object]$Def)
@@ -373,6 +377,9 @@ foreach ($r in $runs) {
     if ($m.PSObject.Properties.Name -contains 'status') { $status = [string]$m.status }
     if ($status -ne "complete") {
         throw "Incomplete run rejected: $($r.Directory) (status '$status')."
+    }
+    if ($m.PSObject.Properties.Name -notcontains 'resumed' -or $m.resumed -isnot [bool] -or $m.resumed) {
+        throw "Resumed or missing explicit non-resumed provenance rejected: $($r.Directory)."
     }
     $kind = "measured"
     if ($m.PSObject.Properties.Name -contains 'run_kind') { $kind = [string]$m.run_kind }
@@ -477,6 +484,9 @@ foreach ($cellKey in @($measuredByCell.Keys | Sort-Object)) {
         $isCold = $true
         $rowCacheMode = ""
         if ($row.PSObject.Properties.Name -contains "cache_mode") { $rowCacheMode = [string]$row.cache_mode }
+        if ($rowCacheMode -ne [string]$r.Meta.cache_mode) {
+            throw "Row cache_mode does not match its cell for fixture '$($row.fixture_id)' in '$cellKey'."
+        }
         if ($rowCacheMode -eq "warm") { $isCold = $false }
         $row | Add-Member -NotePropertyName "_cold" -NotePropertyValue $isCold -Force
         $row | Add-Member -NotePropertyName "_metrics" -NotePropertyValue (Get-StrictProviderMetrics -Row $row) -Force
@@ -544,12 +554,12 @@ $reviewDisclosureLines = @()
 if ($isMachineReview) {
     $reviewKindPhrase = "machine-reviewed"
     $reviewDisclosureLines = @(
-        "- Review provenance: every census label was produced by MACHINE REVIEW, not a human reviewer. Reviewer of record: ``$reviewerList``. The owner approved this methodology amendment on 2026-08-22; the labeling pipeline, dual-lane pilot with pixel arbitration, prompts, batch outputs, and the owner's stratified spot-check are recorded under ``machine-review/`` in the selecting repository. These labels must never be presented as human review."
+        "- Review provenance: every census label was produced by MACHINE REVIEW, not a human reviewer. Reviewer of record: ``$reviewerList``. Reviewer identity comes from this study's queue; authorization, pilot and spot-check observations require the associated study's separate review record. No historical approval or inspection is inferred from these labels."
     )
 } elseif ($machineReviewers.Count -gt 0) {
     $reviewKindPhrase = "reviewed (mixed human and machine provenance)"
     $reviewDisclosureLines = @(
-        "- Review provenance is MIXED - human reviewers and machine reviewers both appear in the queue. Reviewers of record: ``$reviewerList``. Machine labels (machine: prefix) and their pipeline evidence are recorded under ``machine-review/``; they must never be presented as human review."
+        "- Review provenance is MIXED - human reviewers and machine reviewers both appear in the queue. Reviewers of record: ``$reviewerList``. Machine labels (machine: prefix) must never be presented as human review. Authorization, pilot and spot-check observations require the associated study's separate review record."
     )
 }
 
@@ -626,22 +636,24 @@ foreach ($cid in $candidateIds) {
         foreach ($m in @($r._metrics)) {
             if ($null -eq $m) { continue }
             $name = ([string]$m.provider)
-            if ($name -eq "Cache" -or $name -eq "Coalesced" -or $name -eq "Harness" -or $name -eq "Pipeline" -or $name -eq "Google Play") { continue }
-            $providerCallCount++
+            if ($name -eq "Cache" -or $name -eq "Coalesced" -or $name -eq "Harness" -or $name -eq "Pipeline" -or $m.outcome -eq 'skipped-budget-exhausted') { continue }
+            $providerCallCount += [long]$m.calls
             $canonical = Get-CanonicalMetricProvider -Name $name
-            if ($thirdPartyIds.ContainsKey($canonical)) { $thirdPartyCallCount++ }
+            if ($thirdPartyIds.ContainsKey($canonical)) { $thirdPartyCallCount += [long]$m.calls }
         }
     }
 
-    # Fixtures disclosed to any third party come from observed provider calls
-    # in COLD rows, not from the configured chain.
-    $disclosedAnyThird = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    # Count disclosed input occurrences, matching the cold-row denominator.
+    # Each repetition is a separate request, but multiple providers in one
+    # request contribute only one disclosure occurrence.
+    $disclosedInputCount = 0
     foreach ($r in $rowsCold) {
         foreach ($m in @($r._metrics)) {
             if ($null -eq $m) { continue }
+            if ($m.outcome -eq 'skipped-budget-exhausted') { continue }
             $canonical = Get-CanonicalMetricProvider -Name ([string]$m.provider)
             if ($thirdPartyIds.ContainsKey($canonical)) {
-                [void]$disclosedAnyThird.Add([string]$r.fixture_id)
+                $disclosedInputCount++
                 break
             }
         }
@@ -728,7 +740,9 @@ foreach ($cid in $candidateIds) {
 
     $machineAvailability = [double]$successMachine / [double]$total
     # Documented coverage formula: cold machine availability x reviewed usability.
-    $coverage = $machineAvailability * $usableMain
+    $usableSelected = $usableMain
+    if ($AmbiguityPolicy -eq 'ConservativeFailure') { $usableSelected = $usablePessimistic }
+    $coverage = $machineAvailability * $usableSelected
 
     $failures = $timeoutCount + $providerErrorCount + $harnessErrorCount
     $reliability = 1.0 - ([double]$failures / [double]$total)
@@ -777,7 +791,7 @@ foreach ($cid in $candidateIds) {
         blank_unusable_units = $blankUnusableCount
         ambiguous_units = $ambiguousCount
         success_without_artifact = $successWithoutArtifact
-        estimated_usable_rate = $usableMain
+        estimated_usable_rate = $usableSelected
         estimated_wrong_brand = $estimatedWrongBrand
         coverage = $coverage
         reliability = $reliability
@@ -793,7 +807,7 @@ foreach ($cid in $candidateIds) {
         provider_calls_per_input = [double]$providerCallCount / [double]$total
         third_party_call_count = $thirdPartyCallCount
         third_party_calls_per_input = [double]$thirdPartyCallCount / [double]$total
-        third_party_disclosure_rate = [double]$disclosedAnyThird.Count / [double]$total
+        third_party_disclosure_rate = [double]$disclosedInputCount / [double]$total
     }
     $stats | Add-Member -NotePropertyName "_usable_main" -NotePropertyValue $usableMain -Force
     $stats | Add-Member -NotePropertyName "_usable_pessimistic" -NotePropertyValue $usablePessimistic -Force
@@ -820,12 +834,13 @@ function Get-ScenarioUsable {
 
 $ambiguityNotes = @()
 $ambiguityRejections = @()
+$ambiguityReplays = @()
 
 # The single winner function used by every role. The Ranking scriptblock
 # receives the scenario name and returns the full ordered candidate list
 # (best first) under that scenario's ambiguity treatment. All three
-# replayed rankings must be non-empty and name the same winner, or the
-# whole selection is rejected.
+# replayed rankings are retained. RequireStable rejects disagreement;
+# ConservativeFailure selects only the pessimistic ranking.
 function Invoke-WinnerRule {
     param(
         [Parameter(Mandatory=$true)][string]$Role,
@@ -835,15 +850,29 @@ function Invoke-WinnerRule {
     foreach ($scenario in @('main','pessimistic','optimistic')) {
         $ordered = @(& $Ranking $scenario)
         if ($ordered.Count -eq 0) {
-            $script:ambiguityRejections += ("{0}: the eligible set is empty under the '{1}' ambiguity replay" -f $Role, $scenario)
-            return $null
+            if ($AmbiguityPolicy -eq 'RequireStable' -or $scenario -eq 'pessimistic') {
+                $script:ambiguityRejections += ("{0}: the eligible set is empty under the '{1}' ambiguity replay" -f $Role, $scenario)
+                return $null
+            }
         }
         $ranked[$scenario] = $ordered
     }
-    $winnerMain = $ranked['main'][0].profile_id
+    $winnerMain = if ($ranked['main'].Count -gt 0) { $ranked['main'][0].profile_id } else { '(none eligible)' }
     $winnerPess = $ranked['pessimistic'][0].profile_id
-    $winnerOpti = $ranked['optimistic'][0].profile_id
-    if ($winnerMain -ne $winnerPess -or $winnerMain -ne $winnerOpti) {
+    $winnerOpti = if ($ranked['optimistic'].Count -gt 0) { $ranked['optimistic'][0].profile_id } else { '(none eligible)' }
+    $stable = ($winnerMain -eq $winnerPess -and $winnerMain -eq $winnerOpti)
+    $script:ambiguityReplays += [PSCustomObject]@{
+        role = $Role
+        as_reviewed = $winnerMain
+        as_failure = $winnerPess
+        as_usable = $winnerOpti
+        stable = $stable
+    }
+    if ($AmbiguityPolicy -eq 'ConservativeFailure') {
+        $script:ambiguityNotes += ("{0}: conservative failure scoring selects '{1}'; as-reviewed '{2}', as-usable '{3}'; stable: {4}" -f $Role, $winnerPess, $winnerMain, $winnerOpti, $stable)
+        return $ranked['pessimistic'][0]
+    }
+    if (-not $stable) {
         $script:ambiguityRejections += ("{0}: winner is not stable under ambiguity replay (as-reviewed '{1}', ambiguity-as-failure '{2}', ambiguity-as-usable '{3}')" -f $Role, $winnerMain, $winnerPess, $winnerOpti)
         return $null
     }
@@ -858,9 +887,10 @@ $privacyCandidates = @($statsList | Where-Object {
     if ($_.definition.PSObject.Properties.Name -contains 'providerIds') { $chain = @($_.definition.providerIds) }
     $hasThird = $false
     foreach ($p in $chain) { if ($thirdPartyIds.ContainsKey(([string]$p).ToLowerInvariant())) { $hasThird = $true; break } }
-    return ((-not $hasThird) -and ($_.third_party_disclosure_rate -eq 0.0))
+    $allowsStore = ParseBoolValue -Value $_.definition.allowAndroidStoreLookup
+    return ((-not $hasThird) -and (-not $allowsStore) -and ($_.third_party_disclosure_rate -eq 0.0))
 })
-if ($privacyCandidates.Count -eq 0) { throw "No privacy-eligible candidate (direct-site-only with zero observed cold third-party disclosures)." }
+if ($privacyCandidates.Count -eq 0) { throw "No privacy-eligible candidate (direct-site-only, store lookup disabled, with zero observed cold third-party disclosures)." }
 $privacyWinner = Invoke-WinnerRule -Role "privacy" -Ranking {
     param([string]$scenario)
     @($privacyCandidates | Sort-Object -Property `
@@ -869,7 +899,10 @@ $privacyWinner = Invoke-WinnerRule -Role "privacy" -Ranking {
         @{ Expression = { $_.profile_id } })
 }
 
-# 2. Max-coverage winner: highest estimated usable rate.
+# 2. Precision winner. The stable role id remains "max-coverage" for
+# configuration/migration compatibility, but this rule ranks reviewed
+# usability among returned artifacts, not total coverage. User-facing text
+# must describe that precision trade-off truthfully.
 $maxCoverageWinner = Invoke-WinnerRule -Role "max-coverage" -Ranking {
     param([string]$scenario)
     @($statsList | Sort-Object -Property `
@@ -943,7 +976,7 @@ $everydayWinner = Invoke-WinnerRule -Role "everyday" -Ranking {
 }
 
 if ($ambiguityRejections.Count -gt 0) {
-    throw ("Ambiguity sensitivity rejected the selection:`n - " + ($ambiguityRejections -join "`n - ") + "`nExpand the human review to resolve ambiguous labels, or conservatively count ambiguity as failure and rerun.")
+    throw ("Ambiguity sensitivity rejected the selection:`n - " + ($ambiguityRejections -join "`n - ") + "`nResolve the ambiguous labels, or obtain approval for the disclosed -AmbiguityPolicy ConservativeFailure policy and rerun.")
 }
 foreach ($roleWinner in @($privacyWinner, $maxCoverageWinner, $bulkWinner, $everydayWinner)) {
     if ($null -eq $roleWinner) { throw "A winner rule returned no winner; the selection is incomplete and cannot proceed." }
@@ -996,7 +1029,7 @@ $roles = @(
     @{ Id = "bulk-fast";      DisplayName = "Fast";      IntendedUse = "Large batch fetching with reduced latency";                 Winner = $bulkWinner },
     @{ Id = "everyday";       DisplayName = "Balanced";  IntendedUse = "Default everyday use balancing coverage and speed";        Winner = $everydayWinner },
     @{ Id = "privacy";        DisplayName = "Privacy";   IntendedUse = "Privacy-sensitive fetching without third-party providers"; Winner = $privacyWinner },
-    @{ Id = "max-coverage";   DisplayName = "Thorough";  IntendedUse = "Maximum coverage with the study-selected resolver chain";        Winner = $maxCoverageWinner }
+    @{ Id = "max-coverage";   DisplayName = "Precise";   IntendedUse = "Favor icon precision over finding an icon for every entry";      Winner = $maxCoverageWinner }
 )
 
 foreach ($role in $roles) {
@@ -1049,6 +1082,29 @@ $generatedCs = ($generatedLines -join "`n") + "`n"
 # 7. Reports
 # ---------------------------------------------------------------------------
 
+$reviewCensusLine = "- Review is a CENSUS: every unique cold (fixture_id, artifact_hash) unit has one final $reviewKindPhrase label, which propagates to every occurrence of that exact artifact across repetitions and candidates. Pilot passes, re-asks and spot-checks must be disclosed in the associated review record; their number cannot be inferred from the final queue. There is no sampling, no stratification, and no design weighting; the selection verifies that the review queue equals the cold census exactly (no missing unit, no extra key)."
+if ($experimentId -eq "profile-candidates-v13") {
+    $reaskManifestPath = Join-Path $repoRoot "machine-review\resolve-ambiguous\manifest.json"
+    if (-not (Test-Path -LiteralPath $reaskManifestPath)) {
+        throw "The profile-candidates-v13 publication requires its focused re-ask manifest: $reaskManifestPath"
+    }
+
+    $reaskManifest = Get-Content -Raw -LiteralPath $reaskManifestPath | ConvertFrom-Json
+    $reaskKeys = @($reaskManifest.images | ForEach-Object { @($_.units) } | ForEach-Object { [string]$_.key })
+    if ($reaskKeys.Count -eq 0) {
+        throw "The focused re-ask manifest contains no review-unit keys: $reaskManifestPath"
+    }
+
+    foreach ($reaskKey in $reaskKeys) {
+        if (-not $reviewMap.ContainsKey($reaskKey)) {
+            throw "Focused re-ask key '$reaskKey' is absent from the final review queue."
+        }
+    }
+
+    $reaskFixtureIds = @($reaskKeys | ForEach-Object { ($_ -split '\|', 2)[0] } | Sort-Object -Unique)
+    $reviewCensusLine = "- Review is a CENSUS: every unique cold (fixture_id, artifact_hash) unit is $reviewKindPhrase and the label propagates to every occurrence of that exact artifact across repetitions and candidates. Every unit received exactly one labeling pass except $($reaskKeys.Count) initially ambiguous $($reaskFixtureIds -join ', ') units, which received one disclosed focused re-ask recorded under ``machine-review/resolve-ambiguous/``. There is no sampling, no stratification, and no design weighting; the selection verifies that the review queue equals the cold census exactly (no missing unit, no extra key)."
+}
+
 $evidenceLines = New-Object System.Collections.Generic.List[string]
 $evidenceLines.Add("# v1.3 Provider Study Evidence Report")
 $evidenceLines.Add("")
@@ -1068,13 +1124,23 @@ $evidenceLines.Add("")
 $evidenceLines.Add("- Execution policies: every candidate executed its recorded provider chain, per-provider and cumulative budgets, synthetic flag, and early-stop flag; run.json policy fingerprints were verified against the experiment definition, and the execution-harness fingerprint was verified uniform and current.")
 $evidenceLines.Add("- Cold/warm: cold runs clear all caches before every measured run. Warm blocks clear once, perform an unmeasured warm-up over the full corpus, then run measured warm repetitions without clearing. Warm-up runs are marked and excluded from all metrics.")
 $evidenceLines.Add("- Scoring is cold-only: machine availability, label rates, provider calls, third-party disclosure, and latency statistics are computed over measured cold cells; warm rows appear only as informational latency percentiles and never enter a winner rule.")
-$evidenceLines.Add("- Review is a CENSUS: every unique cold (fixture_id, artifact_hash) unit is $reviewKindPhrase exactly once and the label propagates to every occurrence of that exact artifact across repetitions and candidates. There is no sampling, no stratification, and no design weighting; the selection verifies that the review queue equals the cold census exactly (no missing unit, no extra key).")
+$evidenceLines.Add($reviewCensusLine)
 $evidenceLines.Add("- Statistics: machine availability and census labels are separate evidence; an unreviewed success is never counted as correct. Reported label rates are exact proportions over the reviewed census population - with a complete census there is no sampling error to estimate, so no interval estimates are reported anywhere.")
 foreach ($disclosureLine in $reviewDisclosureLines) { $evidenceLines.Add($disclosureLine) }
-$evidenceLines.Add("- Correctness excludes ambiguous labels from numerator and denominator. Rows without an artifact hash cannot carry exact identity and remain machine evidence only.")
+if ($experimentId -eq "profile-candidates-v13-complete") {
+    $evidenceLines.Add("- Review execution: [complete-study review record](v1.3-complete-study-review-record.md) documents actual CLI/model provenance, fresh pilots, rejected attempts, additional re-asks and direct machine spot-checks. Final labels do not imply one review pass or human verification.")
+    $evidenceLines.Add("- Collection recovery and shared-host activity are disclosed in the [study scope decision](v1.3-study-scope-decision.md). Independently verified complete cells were retained; interrupted partial cells were quarantined and rerun from zero. Review overlapped informational warm collection only.")
+}
+if ($AmbiguityPolicy -eq 'ConservativeFailure') {
+    $evidenceLines.Add("- Ambiguity policy: **ConservativeFailure**. Unresolved labels remain ambiguous and receive zero usability credit; the usable rate is usable units / all reviewed units. Coverage and every selected winner use this pessimistic rate. This is an explicit policy decision, not evidence that the icons are wrong. Wrong-brand rates retain the non-ambiguous denominator and do not reclassify uncertain icons.")
+} else {
+    $evidenceLines.Add("- Ambiguity policy: **RequireStable**. Correctness excludes ambiguous labels from numerator and denominator.")
+}
+$evidenceLines.Add("- Rows without an artifact hash cannot carry exact identity and remain machine evidence only.")
 $evidenceLines.Add("- provider_metrics is parsed strictly: every entry must name a known provider and outcome with integral counts, and every successful fetch must record at least one provider activity; violations reject the selection.")
-$evidenceLines.Add("- Batch speed uses active wall-clock duration per cell from run.json (resumed runs accumulate active time only; wall-clock across interruptions is never used).")
-$evidenceLines.Add("- Ambiguity replay: every winner rule was recomputed with ambiguous labels counted as failure and as usable; the selection is reported only when every role's winner is stable across both replays.")
+$evidenceLines.Add("- Batch speed uses active wall-clock duration per cell from run.json. Every retained cell must explicitly be non-resumed; interrupted partial attempts are excluded.")
+$evidenceLines.Add("- Ambiguity replay: every winner rule was recomputed as reviewed, with ambiguity as failure, and with ambiguity as usable. The replay results below disclose whether each winner is stable; ConservativeFailure does not require stability.")
+foreach ($note in $ambiguityNotes) { $evidenceLines.Add("- $note") }
 $evidenceLines.Add("")
 $evidenceLines.Add("## Candidate comparison (cold cells)")
 $evidenceLines.Add("")
@@ -1099,7 +1165,8 @@ $evidenceLines.Add("## Limitations")
 $evidenceLines.Add("")
 $evidenceLines.Add("- Live-network measurements reflect the environment and time of the run; absolute latencies vary, rankings are the decision evidence.")
 $evidenceLines.Add("- The census removes sampling error from label rates, not reviewer judgment error: each label is one $($reviewKindPhrase.Replace('-reviewed','').Replace('reviewed (','').Replace(')','')) decision per unique artifact" + $(if ($isMachineReview) { " (machine judgment error characteristics differ from human judgment error)" } else { "" }) + ".")
-$evidenceLines.Add("- Privacy is measured by observed third-party call evidence, not by the configured chain alone.")
+$evidenceLines.Add("- Third-party accounting includes favicon resolvers and Google Play store attempts, excluding budget skips. Disclosure is the fraction of measured cold input occurrences contacting at least one third-party provider; repetitions share the same numerator and denominator unit. Privacy eligibility additionally requires a direct-site-only chain and disabled store lookup. Site-linked external assets are outside this provider-level metric.")
+$evidenceLines.Add(("- The stable ``max-coverage`` id is retained for migration compatibility, but its rule ranks reviewed usability among returned artifacts rather than total coverage. Its user-facing label is therefore Precise; the selected chain measured {0:P1} total coverage versus {1:P1} for Balanced." -f $maxCoverageWinner.coverage, $everydayWinner.coverage))
 $evidenceLines.Add("")
 $evidenceLines.Add("## Reproduction")
 $evidenceLines.Add("")
@@ -1108,7 +1175,7 @@ $evidenceLines.Add("dotnet build KeeFetch.csproj --configuration Release -p:KeeP
 $evidenceLines.Add("powershell -NoProfile -ExecutionPolicy Bypass -File eng/benchmark-presets.ps1 -Experiment eng/benchmark/experiments/$experimentId.json")
 $evidenceLines.Add("powershell -NoProfile -ExecutionPolicy Bypass -File eng/benchmark/prepare-review.ps1 -RunDir <output root>")
 $evidenceLines.Add("# review of the complete cold census (this report's provenance: $reviewKindPhrase), then:")
-$evidenceLines.Add("powershell -NoProfile -ExecutionPolicy Bypass -File eng/benchmark/select-profiles.ps1 -RunDir <output root>")
+$evidenceLines.Add("powershell -NoProfile -ExecutionPolicy Bypass -File eng/benchmark/select-profiles.ps1 -RunDir <output root> -ReviewQueue <accepted queue> -AmbiguityPolicy $AmbiguityPolicy")
 $evidenceLines.Add("``````")
 $evidenceLines.Add("")
 $evidence = $evidenceLines -join "`n"
@@ -1122,6 +1189,9 @@ $summary = [PSCustomObject]@{
     schedule_seed = $scheduleSeed
     matrix = "{0}x{1}x{2}" -f $candidateIds.Count, ($expectedCacheModes -join "+"), $expectedRepetitions
     review_queue = $reviewQueueResolved
+    review_queue_sha256 = Get-Sha256HexFile -Path $reviewQueueResolved
+    ambiguity_policy = $AmbiguityPolicy
+    ambiguity_replays = $ambiguityReplays
     census_units = $coldCensusKeys.Count
     winners = @{
         "bulk-fast" = $bulkWinner.profile_id
@@ -1137,6 +1207,9 @@ $summary = [PSCustomObject]@{
             warm_rows = $_.warm_rows
             machine_availability = $_.machine_availability
             estimated_usable_rate = $_.estimated_usable_rate
+            usable_rate_as_reviewed = $_._usable_main
+            usable_rate_as_failure = $_._usable_pessimistic
+            usable_rate_as_usable = $_._usable_optimistic
             estimated_wrong_brand = $_.estimated_wrong_brand
             reviewed_units = $_.reviewed_units
             usable_units = $_.usable_units
@@ -1151,6 +1224,9 @@ $summary = [PSCustomObject]@{
             cold_p95_ms = $_.cold_p95_ms
             warm_median_ms = $_.warm_median_ms
             provider_call_count = $_.provider_call_count
+            third_party_call_count = $_.third_party_call_count
+            provider_calls_per_input = $_.provider_calls_per_input
+            third_party_calls_per_input = $_.third_party_calls_per_input
             active_batch_cold_ms = $_.active_batch_cold_ms
             third_party_disclosure_rate = $_.third_party_disclosure_rate
             resumed_any = $_.resumed_any
@@ -1177,6 +1253,8 @@ $summaryNormalized = $summaryJson.Replace("`r`n", "`n")
 [System.IO.File]::WriteAllText($summaryPath, $summaryNormalized, $utf8NoBom)
 $reportLines = New-Object System.Collections.Generic.List[string]
 $reportLines.Add("# Selection report")
+$reportLines.Add("")
+$reportLines.Add("Ambiguity policy: **$AmbiguityPolicy**.")
 $reportLines.Add("")
 foreach ($role in $roles) {
     $reportLines.Add(("- **{0}** -> ``{1}``" -f $role.Id, $role.Winner.profile_id))

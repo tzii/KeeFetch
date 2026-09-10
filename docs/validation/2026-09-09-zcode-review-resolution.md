@@ -1,0 +1,19 @@
+# ZCode workflow review: verified resolutions
+
+The owner supplied a read-only ZCode audit reporting **GLM-5.3-Flash**, model ID `builtin:zai-coding-plan/GLM-5.3-Flash`. This is the reviewer provenance reported in the supplied transcript, not a Codex invocation or image review. Codex checked each finding against the working tree at `cac2cb0` before applying changes. No benchmark cell, corpus, experiment definition, execution harness, production DLL or original label was changed.
+
+| Finding | Verification and resolution |
+|---|---|
+| F1: Google Play omitted from third-party accounting | Verified against `FaviconDownloader.cs` store metrics and selector loops. Store attempts now count; `skipped-budget-exhausted` metrics do not. Privacy also requires the explicit store flag off, even when a fixture set happens to show no store calls. |
+| F2: resumed cells / row cache-mode mismatch accepted | Verified. Selection now requires an explicit Boolean `resumed=false` for every retained cell and rejects measured rows whose cache mode differs from their parent cell. |
+| F3: prompt uniformity unverified | Verified. Original and amended templates are retained separately. A recorded, accepted policy maps every census batch to its exact template; the driver checks before invoking and collection checks the exact batch set. The amended scope restriction followed two fresh inspected pilots. No claim that one prompt covered the whole census remains. |
+| F4: derived census files overwritten | Verified. Collection refuses if any derived output already exists and exclusively creates its output queue. Original raw outputs remain immutable. |
+| F5: rounded opacity forced a blank label | Verified. The collector checks actual image alpha extrema; a percentage rounded to zero cannot force `blank`. New kits additionally record an exact nonzero-alpha pixel count. Existing manifests remain unchanged. |
+
+Codex also found and fixed a related disclosure denominator error: the old numerator deduplicated fixture IDs across repetitions while dividing by all repeated input rows. The rate now counts disclosed cold input occurrences divided by cold input occurrences, with at most one disclosure per occurrence. Provider call counts sum the recorded call count. The report explicitly limits this metric to provider activity; site-linked external assets remain outside it.
+
+Validation: 18 collector tests, 6 adjudication tests, 9 prompt-policy tests, 7 ZCode evidence-validator tests and 10 combined-source tests passed (50 total). CI now runs all five suites. The complete Windows PowerShell harness passed, including Google Play calls versus budget skips, repeated-fixture disclosure, store-enabled Privacy exclusion, resumed provenance and row/cell cache-mode regressions. Logs: `artifacts/v1.3-preparation/zcode-harness-fixes-20260909-final.log`. No final selection or release readiness is inferred from these tooling checks.
+
+The two owner-run ZCode image pilots in `artifacts/v1.3-preparation/zcode-census-recovery-20260909` are now accepted after structural validation and Codex's direct inspection of all eight originals. They agree 20/20; two color-description errors are recorded without changing their correct brand labels. Harness-reported model identity and reconstructed transcripts are qualified in the acceptance record. `validate-zcode-review.py` checks structure only; separate direct acceptance remains necessary. The static audit is not image-review evidence. The combined-source adapter enforces the exact remaining assignments and preserves distinct provenance when census results arrive.
+
+The stable website remains on released 1.2 links until a verified 1.3 release exists. ZCode's release-link ordering concern is retained in the release packet. Differing run-discovery depth fails visibly; no evidence was dropped. Initial kit tool hashes remain historical, with current collector/policy/adjudicator identities recorded in derived evidence.

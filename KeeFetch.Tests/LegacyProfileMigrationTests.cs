@@ -90,6 +90,17 @@ namespace KeeFetch.Tests
             Assert.AreEqual(1, config.ProfileSchemaVersion);
         }
 
+        [TestMethod]
+        public void Configuration_ProfilePreviewMapsWithoutPersistingMigration()
+        {
+            AceCustomConfig ace = new AceCustomConfig();
+            Configuration config = new Configuration(ace);
+
+            Assert.AreEqual("everyday", config.PreviewFetchProfileId());
+            Assert.IsNull(ace.GetString("KeeFetch.FetchProfileId", null));
+            Assert.AreEqual(0L, ace.GetLong("KeeFetch.ProfileSchemaVersion", 0));
+        }
+
         private static string CaptureProviderState(Configuration config)
         {
             return string.Join(",",

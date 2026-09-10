@@ -24,9 +24,13 @@
     <!-- Root .cs files (explicitly listed for PLGX compatibility) -->
     <Compile Include="AndroidAppMapper.cs" />
     <Compile Include="Configuration.cs" />
+    <Compile Include="CompletionForm.cs" />
+    <Compile Include="CompletionForm.Designer.cs" />
     <Compile Include="FaviconDialog.cs" />
     <Compile Include="FaviconDownloader.cs" />
     <Compile Include="FaviconDiagnostics.cs" />
+    <Compile Include="FirstRunForm.cs" />
+    <Compile Include="FirstRunForm.Designer.cs" />
     <Compile Include="KeeFetchExt.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="SharedHttp.cs" />
@@ -41,6 +45,21 @@
     <Compile Include="FetchProfiles\FetchProfileDefinition.cs" />
     <Compile Include="FetchProfiles\FetchProfileCatalog.Generated.cs" />
     <Compile Include="FetchProfiles\LegacyProfileMigration.cs" />
+    <!-- Batch folder -->
+    <Compile Include="Batch\BatchEntryOutcome.cs" />
+    <Compile Include="Batch\BatchProgressSnapshot.cs" />
+    <Compile Include="Batch\BatchRunResult.cs" />
+    <!-- Settings folder -->
+    <Compile Include="Settings\SettingsDraft.cs" />
+    <Compile Include="Settings\ProfileListItem.cs" />
+    <Compile Include="Settings\OverviewSettingsPage.cs" />
+    <Compile Include="Settings\OverviewSettingsPage.Designer.cs" />
+    <Compile Include="Settings\DownloadSettingsPage.cs" />
+    <Compile Include="Settings\DownloadSettingsPage.Designer.cs" />
+    <Compile Include="Settings\ProviderSettingsPage.cs" />
+    <Compile Include="Settings\ProviderSettingsPage.Designer.cs" />
+    <Compile Include="Settings\AdvancedSettingsPage.cs" />
+    <Compile Include="Settings\AdvancedSettingsPage.Designer.cs" />
     <!-- IconProviders folder -->
     <Compile Include="IconProviders\DirectSiteProvider.cs" />
     <Compile Include="IconProviders\DuckDuckGoProvider.cs" />
@@ -59,6 +78,12 @@
     <Compile Include="IconSelection\ProviderCapabilities.cs" />
     <EmbeddedResource Include="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FirstRunForm.resx">
+      <DependentUpon>FirstRunForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CompletionForm.resx">
+      <DependentUpon>CompletionForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Assets\Icons\keefetch-app.png" />
     <EmbeddedResource Include="Assets\Icons\keefetch-download.png" />

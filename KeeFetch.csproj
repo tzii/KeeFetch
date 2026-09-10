@@ -9,7 +9,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWindowsForms>true</UseWindowsForms>
     <LangVersion>5</LangVersion>
-    <DefaultItemExcludes>$(DefaultItemExcludes);KeeFetch.Tests\**;plgx_staging\**;eng\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);KeeFetch.Tests\**;plgx_staging\**;eng\**;artifacts\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -38,12 +38,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Update="CompletionForm.Designer.cs">
+      <DependentUpon>CompletionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Update="FirstRunForm.Designer.cs">
+      <DependentUpon>FirstRunForm.cs</DependentUpon>
+    </Compile>
     <Compile Update="SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="CompletionForm.resx">
+      <DependentUpon>CompletionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="FirstRunForm.resx">
+      <DependentUpon>FirstRunForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Update="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>

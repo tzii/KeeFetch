@@ -53,6 +53,36 @@ jobs:
         shell: pwsh
         run: ./eng/test-release-workflow.ps1
 
+      - name: Test machine review evidence safeguards
+        # Same Pillow release as the recorded study; no product dependency.
+        shell: pwsh
+        run: |
+          python -m pip install Pillow==12.3.0
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python eng/benchmark/test-machine-census.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python eng/benchmark/test-machine-adjudication.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python eng/benchmark/test-machine-review-policy.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python eng/benchmark/test-zcode-review.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python eng/benchmark/test-zcode-source.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Verify static website
+        shell: pwsh
+        run: |
+          python eng/sync-site-profiles.py --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python eng/test-verify-site.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python eng/verify-site.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $edge = @("${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe", "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe") | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+          if (!$edge) { throw 'The installed Microsoft Edge browser is required for website smoke checks.' }
+          ./eng/smoke-site.ps1 -BrowserPath $edge
+
       - name: Install KeePass
         shell: pwsh
         run: |
@@ -94,6 +124,7 @@ jobs:
         shell: pwsh
         run: |
           dotnet build KeeFetch.Tests/KeeFetch.Tests.csproj --configuration Release --no-restore -p:KeePassPath="$env:KEEPASS_DIR"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Copy-Item -Path "$env:KEEPASS_DIR\KeePass.exe" -Destination "KeeFetch.Tests\bin\Release\net48\"
           dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj --configuration Release --no-build
 
@@ -101,6 +132,7 @@ jobs:
         shell: pwsh
         run: |
           powershell -NoProfile -ExecutionPolicy Bypass -File eng/benchmark/test-benchmark-harness.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Import-Module .\eng\benchmark\BenchmarkHarness.psm1 -Force
           Test-KeeFetchCorpus `
             -CsvPath .\KeeFetch.Tests\Fixtures\ProviderCorpus\v1\public-sites.csv `
@@ -114,11 +146,13 @@ jobs:
 
           # Copy only the source files needed for plgx-create (exclude TestCompile.cs)
           Copy-Item -Path "*.cs" -Destination $plgxSrc -Exclude "TestCompile.cs"
-          Copy-Item -Path "SettingsForm.resx" -Destination $plgxSrc
+          Copy-Item -Path "*Form.resx" -Destination $plgxSrc
           Copy-Item -Path "Properties" -Destination $plgxSrc -Recurse
           Copy-Item -Path "IconProviders" -Destination $plgxSrc -Recurse
           Copy-Item -Path "FetchProfiles" -Destination $plgxSrc -Recurse
           Copy-Item -Path "IconSelection" -Destination $plgxSrc -Recurse
+          Copy-Item -Path "Batch" -Destination $plgxSrc -Recurse
+          Copy-Item -Path "Settings" -Destination $plgxSrc -Recurse
           Copy-Item -Path "Assets" -Destination $plgxSrc -Recurse
 
           # KeePass plgx-create needs a legacy-style .csproj — SDK-style won't work.
@@ -128,6 +162,8 @@ jobs:
           $expectedFiles = @(
             "KeeFetchExt.cs", "FaviconDownloader.cs", "FaviconDialog.cs",
             "Configuration.cs", "SettingsForm.cs", "SettingsForm.Designer.cs",
+            "FirstRunForm.cs", "FirstRunForm.Designer.cs", "FirstRunForm.resx",
+            "CompletionForm.cs", "CompletionForm.Designer.cs", "CompletionForm.resx",
             "Logger.cs", "Util.cs", "SharedHttp.cs", "AndroidAppMapper.cs",
             "Properties\AssemblyInfo.cs", "KeeFetch.csproj",
             "IconSelection\IconSelector.cs", "IconSelection\IconCandidate.cs",
@@ -138,7 +174,20 @@ jobs:
             "FetchProfiles\FetchProfileCatalog.cs",
             "FetchProfiles\FetchProfileDefinition.cs",
             "FetchProfiles\FetchProfileCatalog.Generated.cs",
-            "FetchProfiles\LegacyProfileMigration.cs"
+            "FetchProfiles\LegacyProfileMigration.cs",
+            "Batch\BatchEntryOutcome.cs",
+            "Batch\BatchProgressSnapshot.cs",
+            "Batch\BatchRunResult.cs",
+            "Settings\SettingsDraft.cs",
+            "Settings\ProfileListItem.cs",
+            "Settings\OverviewSettingsPage.cs",
+            "Settings\OverviewSettingsPage.Designer.cs",
+            "Settings\DownloadSettingsPage.cs",
+            "Settings\DownloadSettingsPage.Designer.cs",
+            "Settings\ProviderSettingsPage.cs",
+            "Settings\ProviderSettingsPage.Designer.cs",
+            "Settings\AdvancedSettingsPage.cs",
+            "Settings\AdvancedSettingsPage.Designer.cs"
           )
           $missing = $expectedFiles | Where-Object { !(Test-Path (Join-Path $plgxSrc $_)) }
           if ($missing) {
@@ -246,7 +295,7 @@ jobs:
     needs: build
     runs-on: windows-latest
     permissions:
-      contents: write
+      contents: read
 
     steps:
       - name: Download tested DLL
@@ -289,12 +338,5 @@ jobs:
             if ($seen -notcontains $name) { throw "Missing checksum: $name" }
           }
 
-      - name: Create GitHub Release
-        # softprops/action-gh-release v3.0.3, pinned by commit for supply-chain safety
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64
-        with:
-          fail_on_unmatched_files: true
-          files: |
-            release/KeeFetch.dll
-            release/KeeFetch.plgx
-            release/SHA256SUMS.txt
+      # Publication is a separate owner-authorized action using the exact
+      # locally validated artifacts. Tag CI must not substitute a rebuilt PLGX.

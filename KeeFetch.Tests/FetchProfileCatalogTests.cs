@@ -64,5 +64,17 @@ namespace KeeFetch.Tests
                     id + " intentionally permits the Google Play lookup.");
             }
         }
+
+        [TestMethod]
+        public void MaxCoverageCompatibilityProfile_UsesTruthfulPrecisionWording()
+        {
+            FetchProfileDefinition profile = FetchProfileCatalog.GetRequiredProfile("max-coverage");
+
+            Assert.AreEqual("Precise", profile.DisplayName);
+            StringAssert.Contains(profile.IntendedUse.ToLowerInvariant(), "precision");
+            Assert.IsFalse(
+                profile.IntendedUse.IndexOf("maximum coverage", StringComparison.OrdinalIgnoreCase) >= 0,
+                "The stable compatibility id must not become a false user-facing coverage claim.");
+        }
     }
 }

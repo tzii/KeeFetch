@@ -1,6 +1,7 @@
 # Build outputs
 bin/
 obj/
+KeeFetch.Tests/TestResults/
 
 # IDE files
 .vs/

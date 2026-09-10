@@ -160,28 +160,28 @@ namespace KeeFetch.Tests
         public void Configuration_PresetProviderOrders_MatchPublishedCatalog()
         {
             CollectionAssert.AreEqual(
-                new[] { "Direct Site", "Google", "Twenty Icons" },
+                new[] { "Direct Site", "Yandex" },
                 Configuration.GetPresetProviderOrderList(FetchPresetMode.Fast));
 
             CollectionAssert.AreEqual(
-                new[] { "Direct Site", "Twenty Icons", "DuckDuckGo", "Google", "Yandex", "Icon Horse" },
+                new[] { "Direct Site", "Google", "Twenty Icons" },
                 Configuration.GetPresetProviderOrderList(FetchPresetMode.Balanced));
 
             CollectionAssert.AreEqual(
-                new[] { "Direct Site", "Yandex" },
+                new[] { "Direct Site", "Google" },
                 Configuration.GetPresetProviderOrderList(FetchPresetMode.Thorough));
         }
 
         [TestMethod]
         public void Configuration_PresetTimeoutBudgets_MatchPublishedCatalog()
         {
-            Assert.AreEqual(4000, Configuration.GetPresetPrimaryProviderTimeoutMs(FetchPresetMode.Fast));
-            Assert.AreEqual(2500, Configuration.GetPresetFallbackProviderTimeoutMs(FetchPresetMode.Fast));
-            Assert.AreEqual(15000, Configuration.GetPresetMaxCumulativeTimeoutMs(FetchPresetMode.Fast));
+            Assert.AreEqual(6000, Configuration.GetPresetPrimaryProviderTimeoutMs(FetchPresetMode.Fast));
+            Assert.AreEqual(3500, Configuration.GetPresetFallbackProviderTimeoutMs(FetchPresetMode.Fast));
+            Assert.AreEqual(22000, Configuration.GetPresetMaxCumulativeTimeoutMs(FetchPresetMode.Fast));
 
-            Assert.AreEqual(10000, Configuration.GetPresetPrimaryProviderTimeoutMs(FetchPresetMode.Balanced));
-            Assert.AreEqual(5000, Configuration.GetPresetFallbackProviderTimeoutMs(FetchPresetMode.Balanced));
-            Assert.AreEqual(45000, Configuration.GetPresetMaxCumulativeTimeoutMs(FetchPresetMode.Balanced));
+            Assert.AreEqual(4000, Configuration.GetPresetPrimaryProviderTimeoutMs(FetchPresetMode.Balanced));
+            Assert.AreEqual(2500, Configuration.GetPresetFallbackProviderTimeoutMs(FetchPresetMode.Balanced));
+            Assert.AreEqual(15000, Configuration.GetPresetMaxCumulativeTimeoutMs(FetchPresetMode.Balanced));
 
             Assert.AreEqual(6000, Configuration.GetPresetPrimaryProviderTimeoutMs(FetchPresetMode.Thorough));
             Assert.AreEqual(3500, Configuration.GetPresetFallbackProviderTimeoutMs(FetchPresetMode.Thorough));
@@ -189,13 +189,14 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
-        public void Configuration_BalancedPreset_UsesSyntheticFallbackWithoutFavicone()
+        public void Configuration_BalancedPreset_UsesSelectedResolversWithoutSyntheticFallback()
         {
-            Assert.IsTrue(Configuration.GetPresetAllowSyntheticFallbacks(FetchPresetMode.Balanced));
+            Assert.IsFalse(Configuration.GetPresetAllowSyntheticFallbacks(FetchPresetMode.Balanced));
             Assert.IsFalse(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "Favicone"));
             Assert.IsTrue(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "Twenty Icons"));
-            Assert.IsTrue(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "DuckDuckGo"));
-            Assert.IsTrue(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "Icon Horse"));
+            Assert.IsTrue(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "Google"));
+            Assert.IsFalse(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "DuckDuckGo"));
+            Assert.IsFalse(Configuration.IsProviderEnabledByPreset(FetchPresetMode.Balanced, "Icon Horse"));
         }
 
         [TestMethod]

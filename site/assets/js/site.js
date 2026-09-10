@@ -1,166 +1,173 @@
-"use strict";
+'use strict';
 (() => {
   const root = document.documentElement;
-  const themeToggle = document.getElementById("theme-toggle");
-  const motionToggle = document.getElementById("motion-toggle");
-  const menuToggle = document.getElementById("menu-toggle");
-  const nav = document.getElementById("primary-nav");
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const save = (key, value) => { try { localStorage.setItem(key, value); } catch (_) { /* Optional. */ } };
-
-  const setTheme = (dark) => {
-    root.dataset.theme = dark ? "dark" : "light";
-    themeToggle?.setAttribute("aria-pressed", String(dark));
+  const find = id => document.getElementById(id);
+  const read = key => { try { return localStorage.getItem(key); } catch (_) { return null; } };
+  const save = (key, value) => { try { localStorage.setItem(key, value); } catch (_) { /* Optional preference. */ } };
+  const media = query => typeof window.matchMedia === 'function' ? window.matchMedia(query) : { matches: false };
+  const watch = (query, callback) => {
+    if (query.addEventListener) query.addEventListener('change', callback);
+    else if (query.addListener) query.addListener(callback);
   };
-  if (themeToggle) {
-    themeToggle.hidden = false;
-    setTheme(root.dataset.theme !== "light");
-    themeToggle.addEventListener("click", () => {
-      setTheme(root.dataset.theme !== "dark");
-      save("keefetch-theme", root.dataset.theme);
-    });
-  }
-
-  const closeMenu = (restoreFocus = false) => {
-    nav?.classList.remove("is-open");
-    menuToggle?.setAttribute("aria-expanded", "false");
-    menuToggle?.setAttribute("aria-label", "Open navigation");
-    if (restoreFocus) menuToggle?.focus();
-  };
-  if (menuToggle && nav) {
-    menuToggle.hidden = false;
-    menuToggle.addEventListener("click", () => {
-      const open = nav.classList.toggle("is-open");
-      menuToggle.setAttribute("aria-expanded", String(open));
-      menuToggle.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
-    });
-    document.addEventListener("keydown", event => {
-      if (event.key === "Escape" && nav.classList.contains("is-open")) closeMenu(true);
-    });
-    document.addEventListener("click", event => {
-      if (!event.target.closest(".site-header")) closeMenu();
-    });
-    nav.addEventListener("click", event => {
-      if (event.target.closest("a")) closeMenu();
-    });
-    window.matchMedia("(min-width: 1001px)").addEventListener("change", () => closeMenu());
-    // Navigation remains fully visible when JavaScript is unavailable.
-    root.dataset.enhanced = "true";
-  }
-
-  const entries = [...document.querySelectorAll(".vault-entry")];
-  const replay = document.getElementById("replay-demo");
-  const status = document.getElementById("demo-status");
-  const count = document.getElementById("demo-count");
-  let timers = [];
-  let running = false;
-  const clearDemo = () => { timers.forEach(clearTimeout); timers = []; };
-  const finishDemo = () => {
-    clearDemo();
-    entries.forEach(entry => entry.classList.add("is-resolved"));
-    if (status) status.textContent = "A familiar face for every entry";
-    if (count) count.textContent = entries.length + " / " + entries.length;
-    running = false;
-    if (replay) replay.disabled = root.dataset.motion === "off";
-  };
-  const playDemo = () => {
-    if (!entries.length || root.dataset.motion === "off" || document.hidden) return finishDemo();
-    clearDemo();
-    running = true;
-    if (replay) replay.disabled = true;
-    entries.forEach(entry => entry.classList.remove("is-resolved"));
-    status.textContent = "Finding something familiar…";
-    count.textContent = "0 / " + entries.length;
-    entries.forEach((entry, i) => {
-      timers.push(setTimeout(() => {
-        entry.classList.add("is-resolved");
-        count.textContent = (i + 1) + " / " + entries.length;
-      }, 650 + i * 430));
-    });
-    timers.push(setTimeout(finishDemo, 3700));
-  };
-  if (replay) {
-    replay.hidden = false;
-    replay.addEventListener("click", playDemo);
-  }
-
-  const setMotion = (off) => {
-    root.dataset.motion = off ? "off" : "on";
-    motionToggle?.setAttribute("aria-pressed", String(off));
-    motionToggle?.setAttribute("title", reduceMotion.matches ? "Animations paused by your system preference" : (off ? "Enable animations" : "Pause animations"));
-    if (motionToggle) motionToggle.disabled = reduceMotion.matches;
-    motionToggle?.setAttribute("aria-label", reduceMotion.matches ? "Animations paused by your system preference" : "Pause animations");
-    if (off) finishDemo();
-    else if (replay) replay.disabled = false;
-  };
-  if (motionToggle) {
-    motionToggle.hidden = false;
-    setMotion(root.dataset.motion === "off");
-    motionToggle.addEventListener("click", () => {
-      // The system reduced-motion setting takes precedence.
-      const off = reduceMotion.matches || root.dataset.motion !== "off";
-      setMotion(off);
-      save("keefetch-motion", off ? "off" : "on");
-    });
-  }
-  reduceMotion.addEventListener("change", event => {
-    let savedOff = false;
-    try { savedOff = localStorage.getItem("keefetch-motion") === "off"; } catch (_) { /* Optional. */ }
-    setMotion(event.matches || savedOff);
-  });
-  document.addEventListener("visibilitychange", () => { if (document.hidden && running) finishDemo(); });
-
-  if ("IntersectionObserver" in window) {
-    const reveal = new IntersectionObserver(observations => {
-      observations.forEach(observation => {
-        if (!observation.isIntersecting) return;
-        observation.target.classList.add("is-visible");
-        reveal.unobserve(observation.target);
-      });
-    }, { threshold: 0.06 });
-    document.querySelectorAll("[data-reveal]").forEach(target => {
-      target.classList.add("reveal-ready");
-      reveal.observe(target);
-    });
-    const stage = document.querySelector(".vault-stage");
-    if (stage) {
-      const demoObserver = new IntersectionObserver(observations => {
-        if (observations.some(observation => observation.isIntersecting)) {
-          playDemo();
-          demoObserver.disconnect();
-        }
-      }, { threshold: 0.4 });
-      demoObserver.observe(stage);
+  const darkSystem = media('(prefers-color-scheme: dark)');
+  const reduced = media('(prefers-reduced-motion: reduce)');
+  const themeButton = find('theme-toggle');
+  const motionButton = find('motion-toggle');
+  let chosenTheme = read('keefetch-theme');
+  const applyTheme = theme => {
+    root.dataset.theme = theme;
+    if (themeButton) {
+      themeButton.setAttribute('aria-pressed', String(theme === 'dark'));
+      themeButton.title = theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
     }
-  } else finishDemo();
+    const chrome = document.querySelector('meta[name="theme-color"]');
+    if (chrome) chrome.content = theme === 'dark' ? '#191721' : '#faf7f0';
+  };
+  if (themeButton) {
+    themeButton.hidden = false;
+    themeButton.setAttribute('aria-label', 'Dark theme');
+    themeButton.addEventListener('click', () => {
+      chosenTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      applyTheme(chosenTheme);
+      save('keefetch-theme', chosenTheme);
+    });
+  }
+  applyTheme(root.dataset.theme === 'light' ? 'light' : 'dark');
+  watch(darkSystem, event => {
+    if (chosenTheme !== 'dark' && chosenTheme !== 'light') applyTheme(event.matches ? 'dark' : 'light');
+  });
+  const applyMotion = () => {
+    const off = reduced.matches || read('keefetch-motion') === 'off';
+    root.dataset.motion = off ? 'off' : 'on';
+    if (motionButton) {
+      motionButton.setAttribute('aria-pressed', String(off));
+      motionButton.setAttribute('aria-label', 'Pause animations');
+      motionButton.title = reduced.matches ? 'Your system has reduced motion enabled' : (off ? 'Enable animations' : 'Pause animations');
+      motionButton.disabled = reduced.matches;
+    }
+  };
+  if (motionButton) {
+    motionButton.hidden = false;
+    motionButton.addEventListener('click', () => {
+      const off = root.dataset.motion !== 'off';
+      save('keefetch-motion', off ? 'off' : 'on');
+      // Apply the choice even when storage is denied.
+      applyMotion();
+      if (!reduced.matches) {
+        root.dataset.motion = off ? 'off' : 'on';
+        motionButton.setAttribute('aria-pressed', String(off));
+        motionButton.title = off ? 'Enable animations' : 'Pause animations';
+      }
+    });
+  }
+  applyMotion();
+  watch(reduced, applyMotion);
+  window.addEventListener('storage', event => {
+    if (event.key === 'keefetch-theme' || event.key === null) {
+      chosenTheme = read('keefetch-theme');
+      applyTheme(chosenTheme === 'dark' || chosenTheme === 'light' ? chosenTheme : (darkSystem.matches ? 'dark' : 'light'));
+    }
+    if (event.key === 'keefetch-motion' || event.key === null) applyMotion();
+  });
 
-  // The generated comparison table is complete without JavaScript or fetch.
-  const targets = document.querySelectorAll("[data-profile-list]");
-  if (!targets.length) return;
-  fetch("data/profiles.json").then(response => {
-    if (!response.ok) throw new Error("Profile data unavailable");
+  const menuButton = find('menu-toggle');
+  const nav = find('primary-nav');
+  const closeMenu = restoreFocus => {
+    if (!nav || !menuButton) return;
+    nav.classList.remove('is-open');
+    menuButton.setAttribute('aria-expanded', 'false');
+    menuButton.setAttribute('aria-label', 'Open navigation');
+    if (restoreFocus) menuButton.focus();
+  };
+  if (menuButton && nav) {
+    menuButton.hidden = false;
+    menuButton.addEventListener('click', () => {
+      const open = nav.classList.toggle('is-open');
+      menuButton.setAttribute('aria-expanded', String(open));
+      menuButton.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && nav.classList.contains('is-open')) closeMenu(true);
+    });
+    document.addEventListener('click', event => {
+      if (!event.target.closest('.site-header')) closeMenu(false);
+    });
+    nav.addEventListener('click', event => { if (event.target.closest('a')) closeMenu(false); });
+    watch(media('(min-width: 1001px)'), () => closeMenu(false));
+    root.dataset.enhanced = 'true';
+  }
+
+  // This is a local illustration, not a network request or a plugin benchmark.
+  const stage = document.querySelector('.vault-stage');
+  const entries = Array.from(document.querySelectorAll('.vault-entry'));
+  const controls = find('demo-controls');
+  const status = find('demo-status');
+  const count = find('demo-count');
+  const buttons = Array.from(document.querySelectorAll('[data-demo-state]'));
+  let demoFrame = null;
+  if (stage && controls && entries.length && status && count) {
+    controls.hidden = false;
+    const show = after => {
+      if (demoFrame !== null) cancelAnimationFrame(demoFrame);
+      stage.classList.remove('demo-animate');
+      stage.dataset.demo = after ? 'after' : 'before';
+      entries.forEach(entry => entry.classList.toggle('is-resolved', after));
+      buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.demoState === stage.dataset.demo)));
+      status.textContent = after ? 'Same entries. Easier to recognize.' : 'Same entries. All wearing the same icon.';
+      count.textContent = after ? entries.length + ' / ' + entries.length : '0 / ' + entries.length;
+      if (after && root.dataset.motion !== 'off') {
+        demoFrame = requestAnimationFrame(() => { stage.classList.add('demo-animate'); demoFrame = null; });
+      }
+    };
+    buttons.forEach(button => button.addEventListener('click', () => show(button.dataset.demoState === 'after')));
+  }
+
+  // Optional reading index. The complete guide remains visible without scripts.
+  const docs = document.querySelector('.docs-main');
+  if (docs) {
+    const sections = Array.from(docs.children).filter(child => child.tagName === 'SECTION');
+    let index = docs.querySelector('.doc-index');
+    if (!index && sections.length > 1) {
+      index = document.createElement('nav');
+      index.className = 'doc-index';
+      index.setAttribute('aria-label', 'On this page');
+      sections.forEach((section, number) => {
+        const heading = section.querySelector('h2');
+        if (!heading) return;
+        if (!section.id) section.id = 'section-' + (number + 1);
+        const link = document.createElement('a');
+        link.href = '#' + section.id;
+        link.textContent = heading.textContent;
+        index.appendChild(link);
+      });
+      docs.insertBefore(index, sections[0]);
+    }
+    if (index) docs.dataset.index = 'true';
+  }
+
+  // Static generated comparison is authoritative. These summaries are optional.
+  const targets = document.querySelectorAll('[data-profile-list]');
+  if (!targets.length || typeof fetch !== 'function') return;
+  fetch('data/profiles.json').then(response => {
+    if (!response.ok) throw new Error('Profile data unavailable');
     return response.json();
   }).then(data => {
-    if (!Array.isArray(data.profiles)) throw new Error("Invalid profile data");
+    if (!Array.isArray(data.profiles)) throw new Error('Invalid profile data');
     const visible = data.profiles.filter(profile => profile.isVisible);
-    if (!visible.length) throw new Error("No visible profiles");
+    if (!visible.length || visible.some(profile => typeof profile.displayName !== 'string' || typeof profile.description !== 'string' || !Number.isFinite(profile.cumulativeTimeoutMs))) throw new Error('Incomplete profile data');
     targets.forEach(target => {
       const cards = visible.map(profile => {
-        const card = document.createElement("article");
-        card.className = "profile-card";
-        const name = document.createElement("h3");
-        name.textContent = profile.displayName;
-        const use = document.createElement("p");
-        use.textContent = profile.intendedUse;
-        const budget = document.createElement("p");
-        budget.className = "budget";
-        budget.textContent = (profile.cumulativeTimeoutMs / 1000) + " s budget";
-        const description = document.createElement("p");
-        description.textContent = profile.description;
-        card.append(name, use, budget, description);
+        const card = document.createElement('article');
+        card.className = 'profile-card';
+        [['h3', profile.displayName], ['p', profile.intendedUse], ['p', (profile.cumulativeTimeoutMs / 1000) + ' s budget'], ['p', profile.description]].forEach(([tag, text], index) => {
+          const node = document.createElement(tag);
+          node.textContent = text;
+          if (index === 2) node.className = 'budget';
+          card.appendChild(node);
+        });
         return card;
       });
       target.replaceChildren(...cards);
     });
-  }).catch(() => { /* Checked comparison table remains available. */ });
+  }).catch(() => { /* The checked comparison table is already in the HTML. */ });
 })();

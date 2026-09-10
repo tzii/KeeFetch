@@ -69,7 +69,8 @@ button:disabled { cursor: default; opacity: .65; }
 .site-header nav a:hover { color: var(--accent); }
 .site-header nav a[aria-current='page'] { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: .45em; }
 .header-controls { display: flex; gap: .375rem; }
-.icon-button { display: inline-grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; background: transparent; border: 1px solid var(--line); border-radius: 50%; padding: .5rem; }
+.icon-button { display: inline-grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; background: transparent; border: 1px solid var(--line); border-radius: 50%; padding: 8px; }
+.icon-button svg { width: 20px; height: 20px; }
 .icon-button:hover { background: var(--soft); }
 #menu-toggle { display: none; }
 .release-strip { padding: .65rem 1.25rem; text-align: center; font-size: .8125rem; border-block: 1px solid var(--line); color: var(--muted); }
@@ -227,7 +228,7 @@ body > footer { max-width: 1440px; padding: 3rem 3rem 0; margin: auto; border-to
 .footer-links a { display: inline-flex; align-items: center; min-height: 44px; font-size: .8125rem; }
 .footer-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: .75rem; color: var(--muted); }
 .footer-bottom a { min-height: 44px; }
-.footer-wordmark { font-weight: 700; font-size: clamp(2rem, 17vw, 15rem); line-height: 1.1; letter-spacing: -.08em; color: var(--muted); user-select: none; margin-top: 1rem; }
+.footer-wordmark { overflow-wrap: anywhere; font-weight: 700; font-size: clamp(2rem, 17vw, 15rem); line-height: 1.1; letter-spacing: -.08em; color: var(--muted); user-select: none; margin-top: 1rem; }
 @media (min-width: 1001px) {
   .docs-main[data-index] { max-width: 1240px; display: grid; grid-template-columns: 13rem minmax(0, 1fr); column-gap: 3.5rem; }
   .docs-main[data-index] .page-heading { grid-column: 1 / -1; }
@@ -344,7 +345,7 @@ html[data-motion='off'] *, html[data-motion='off'] *::before, html[data-motion='
   section, .page-heading, .docs-main section { padding: 1rem 0; }
   h2 { font-size: 1.8rem; }
   .table-wrap { overflow: visible; }
-  table { min-width: 0; font-size: .7rem; }
+  table { min-width: 0; font-size: .8rem; }
   th, td { padding: .5rem; }
   .profile-summaries, .steps { display: block; }
   .profile-summary, .steps li { break-inside: avoid; margin-bottom: 1rem; }

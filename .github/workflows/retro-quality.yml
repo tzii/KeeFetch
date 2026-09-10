@@ -1,0 +1,63 @@
+name: Retro concept quality
+
+on:
+  push:
+    branches: [codex/site-retro-refined-2026-09-10]
+    paths: ['site/retro/**', '.github/workflows/retro-quality.yml']
+  pull_request:
+    paths: ['site/retro/**', '.github/workflows/retro-quality.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: retro-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    name: Website / ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Install pinned browser test dependencies
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps ${{ matrix.browser }}
+          npm install --prefix "$RUNNER_TEMP/retro-a11y" --no-save --ignore-scripts axe-core@4.10.3
+      - name: Check JavaScript and whitespace
+        run: |
+          node --check site/retro/app.js
+          git diff --check HEAD^ HEAD
+      - name: Package complete interactive preview
+        run: |
+          mkdir -p retro-artifacts
+          python site/retro/package_preview.py retro-artifacts/KeeFetch-retro-preview.html
+      - name: Browser, subpath and accessibility checks
+        run: >-
+          python site/retro/test_browser.py
+          --browser ${{ matrix.browser }}
+          --axe "$RUNNER_TEMP/retro-a11y/node_modules/axe-core/axe.min.js"
+          --output retro-artifacts/qa
+      - name: Save evidence, including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: retro-${{ matrix.browser }}-${{ github.sha }}
+          path: retro-artifacts/
+          if-no-files-found: warn
+          retention-days: 14

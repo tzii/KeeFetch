@@ -43,9 +43,9 @@ Keep keyboard targets at least 44px high, and preserve forced-color outlines.
 
 ## Product boundaries and checks
 
-`data/release.json` owns stable URLs and the verified v1.2 PLGX checksum.
-`data/profiles-v1.3.json` is the checksum-bound candidate export and owns the four upcoming v1.3 profile policies. Both the
-release banner and profile/gallery descriptions disclose the preview status.
+`data/release.json` owns stable URLs and the verified v1.3 PLGX checksum.
+`data/profiles-v1.3.json` is the checksum-bound candidate export and owns the four stable v1.3 profile policies. Both the
+release banner and profile/gallery descriptions identify the published release.
 Keep detailed study limitations on benchmarks.html and privacy caveats on
 privacy.html. Use local SVGs and retain their Simple Icons license files.
 
@@ -55,4 +55,4 @@ Firefox and WebKit. Inspect real screenshots in light/dark, phone/desktop,
 200% text and no-JavaScript modes. Retain axe incomplete findings as well as
 violations; automated passes are not full WCAG or physical-device certification.
 
-The independent website publication keeps `data/profiles.json` tied to the compiled branch catalog. `data/profiles-v1.3.json` is the accepted 9f0b43f export; its source commit and hash are recorded in release.json. The website uses this frozen preview so publishing documentation does not change the plugin or weaken its export check. Update the snapshot deliberately with the next accepted candidate.
+The independent website publication keeps `data/profiles.json` tied to the compiled branch catalog. `data/profiles-v1.3.json` is the accepted 9f0b43f export; its source commit and hash are recorded in release.json. The website retains this frozen release snapshot, which matches the compiled 1.3 catalog, so publishing documentation does not change the plugin or weaken its export check. Update the snapshot deliberately with the next accepted candidate.

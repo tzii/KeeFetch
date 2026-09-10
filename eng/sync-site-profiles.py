@@ -24,7 +24,7 @@ def profile_markup(data):
         default = '<span class="badge">Default</span>' if p['id'] == 'everyday' else ''
         evidence = f'https://github.com/tzii/KeeFetch/blob/{EVIDENCE_REF}/' + p['evidenceReport']
         rows.append(f'<tr data-profile-id="{e(p["id"],quote=True)}"><th scope="row">{e(p["displayName"])}{default}</th><td>{e(p["intendedUse"])}</td><td>{e(chain)}<small>{p["primaryTimeoutMs"]/1000:g} s primary / {p["fallbackTimeoutMs"]/1000:g} s fallback / {p["cumulativeTimeoutMs"]/1000:g} s total. {stop}.</small></td><td>{e(disclosure)}<small>Synthetic: {synth}. Android store lookup: {"Enabled" if p["allowAndroidStoreLookup"] else "Disabled"}.</small><a href="{e(evidence,quote=True)}">Study evidence</a></td></tr>')
-    return '<div class="table-wrap" tabindex="0" role="region" aria-label="Profile comparison"><table><caption>Managed profiles in the source preview</caption><thead><tr><th scope="col">Profile</th><th scope="col">Intended use</th><th scope="col">Provider order and budgets</th><th scope="col">Disclosure and fallbacks</th></tr></thead><tbody>' + ''.join(rows) + '</tbody></table></div>'
+    return '<div class="table-wrap" tabindex="0" role="region" aria-label="Profile comparison"><table><caption>Managed fetch profiles</caption><thead><tr><th scope="col">Profile</th><th scope="col">Intended use</th><th scope="col">Provider order and budgets</th><th scope="col">Disclosure and fallbacks</th></tr></thead><tbody>' + ''.join(rows) + '</tbody></table></div>'
 
 def profile_cards_markup(data):
     """Readable summary cards share the comparison table's catalog source."""
@@ -63,7 +63,7 @@ def profile_presets_markup(data):
         chain = ' → '.join(PROVIDERS[x] for x in p['providerIds'])
         policy = 'No favicon resolvers or Android store lookup. Site-linked hosts and redirects remain possible.' if p['id'] == 'privacy' else 'Enabled favicon resolvers may receive the entry’s domain.'
         panels.append(f'<article class="preset-panel" id="preset-{key}" data-profile-id="{key}"><h3>{name}{" · Recommended" if p["id"] == "everyday" else ""}</h3><p class="preset-hook">{e(p["intendedUse"])}</p><p>{e(chain)} · {p["cumulativeTimeoutMs"]/1000:g} s total per-entry budget.</p><p>{policy} Synthetic fallbacks are disabled.</p></article>')
-    return '<div class="preset-controls" role="group" aria-label="Preview v1.3 profiles" id="preset-controls" hidden>' + ''.join(buttons) + '</div><div id="preset-panels">' + ''.join(panels) + '</div>'
+    return '<div class="preset-controls" role="group" aria-label="Explore fetch profiles" id="preset-controls" hidden>' + ''.join(buttons) + '</div><div id="preset-panels">' + ''.join(panels) + '</div>'
 
 
 def preview_profiles(site):
@@ -85,7 +85,7 @@ def expected_pages(site):
     e = html.escape
     version = e(release['version'])
     blocks = {
-        'RELEASE_STATUS': f'v{e(release["previewVersion"])} source preview · Stable download: <a href="{e(release["releaseUrl"],quote=True)}">v{version}</a>',
+        'RELEASE_STATUS': (f'v{e(release["previewVersion"])} source preview · ' if release.get('previewVersion') else '') + f'Stable download: <a href="{e(release["releaseUrl"],quote=True)}">v{version}</a>',
         'RELEASE_FOOTER': f'<a href="{e(release["releaseUrl"],quote=True)}">Stable v{version}</a>',
         'RELEASE_DOWNLOAD': f'<a class="button" href="{e(release["plgxUrl"],quote=True)}">Download PLGX · v{version}</a>',
         'PROFILE_FALLBACK': profile_markup(data),

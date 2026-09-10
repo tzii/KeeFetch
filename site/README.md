@@ -25,7 +25,7 @@ and builds the website, then deploys that directory when website changes reach
 Release links, profile summary cards and comparison tables are synchronized from
 `data/release.json` and `data/profiles.json` by `eng/sync-site-profiles.py`.
 Preserve the generated block markers. Run the synchronizer without `--check`
-after changing those inputs. v1.2 is stable; v1.3 is a source preview.
+after changing those inputs. v1.3 is stable; its published assets and checksums are linked throughout the site.
 
 The theme and motion controls save device-local preferences when storage is
 available. System reduced motion takes precedence. Content, primary navigation,

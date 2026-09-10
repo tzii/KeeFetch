@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -257,14 +257,14 @@ jobs:
           }
 
       - name: Upload DLL artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: KeeFetch.dll
           path: bin/Release/net48/KeeFetch.dll
           if-no-files-found: error
 
       - name: Upload PLGX artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: KeeFetch.plgx
           path: ${{ env.PLGX_PATH }}
@@ -284,7 +284,7 @@ jobs:
           Write-Output "SHA256SUMS_PATH=$out" >> $env:GITHUB_ENV
 
       - name: Upload checksum artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: SHA256SUMS.txt
           path: ${{ env.SHA256SUMS_PATH }}

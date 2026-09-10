@@ -2,12 +2,13 @@
 import argparse
 import html
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PROVIDERS = {'direct-site':'Direct Site','twenty-icons':'Twenty Icons','duckduckgo':'DuckDuckGo','google':'Google','yandex':'Yandex','favicone':'Favicone','icon-horse':'Icon Horse'}
 
-def profile_markup(data):
+def profile_markup(data, source_ref):
     rows = []
     for p in data['profiles']:
         if not p['isVisible']:
@@ -18,7 +19,7 @@ def profile_markup(data):
         synth = 'Allowed' if p['allowSyntheticFallbacks'] else 'Disabled'
         stop = 'Stops on a strong resolver hit' if p['stopAfterStrongResolved'] else 'Queries the full chain'
         default = '<span class="badge">Default</span>' if p['id'] == 'everyday' else ''
-        evidence = 'https://github.com/tzii/KeeFetch/blob/master/' + p['evidenceReport']
+        evidence = f'https://github.com/tzii/KeeFetch/blob/{source_ref}/' + p['evidenceReport']
         rows.append(f'<tr data-profile-id="{e(p["id"],quote=True)}"><th scope="row">{e(p["displayName"])}{default}</th><td>{e(p["intendedUse"])}</td><td>{e(chain)}<small>{p["primaryTimeoutMs"]/1000:g} s primary / {p["fallbackTimeoutMs"]/1000:g} s fallback / {p["cumulativeTimeoutMs"]/1000:g} s total. {stop}.</small></td><td>{e(disclosure)}<small>Synthetic: {synth}. Android store lookup: {"Enabled" if p["allowAndroidStoreLookup"] else "Disabled"}.</small><a href="{e(evidence,quote=True)}">Study evidence</a></td></tr>')
     return '<div class="table-wrap" tabindex="0" role="region" aria-label="Profile comparison"><table><caption>Managed profiles in the source preview</caption><thead><tr><th scope="col">Profile</th><th scope="col">Intended use</th><th scope="col">Provider order and budgets</th><th scope="col">Disclosure and fallbacks</th></tr></thead><tbody>' + ''.join(rows) + '</tbody></table></div>'
 
@@ -51,13 +52,19 @@ def replace_block(text, name, content):
 def expected_pages(site):
     data = json.loads((site/'data/profiles.json').read_text(encoding='utf-8-sig'))
     release = json.loads((site/'data/release.json').read_text(encoding='utf-8-sig'))
+    # The preview report on master may describe an older experiment.
+    source_ref = release['previewSourceRef']
+    if not isinstance(source_ref, str) or not re.fullmatch(r'[0-9a-f]{40}', source_ref):
+        raise ValueError('previewSourceRef must be a full immutable commit SHA')
+    source_base = f'https://github.com/tzii/KeeFetch'
     e = html.escape
     version = e(release['version'])
     blocks = {
         'RELEASE_STATUS': f'v{e(release["previewVersion"])} source preview · Stable download: <a href="{e(release["releaseUrl"],quote=True)}">v{version}</a>',
         'RELEASE_FOOTER': f'<a href="{e(release["releaseUrl"],quote=True)}">Stable v{version}</a>',
         'RELEASE_DOWNLOAD': f'<a class="button" href="{e(release["plgxUrl"],quote=True)}">Download PLGX · v{version}</a>',
-        'PROFILE_FALLBACK': profile_markup(data),
+        'PROFILE_FALLBACK': profile_markup(data, source_ref),
+        'STUDY_LINKS': f'<p><a href="{source_base}/blob/{source_ref}/docs/benchmarks/v1.3-provider-study.md">Full study report</a> · <a href="{source_base}/tree/{source_ref}/KeeFetch.Tests/Fixtures/ProviderCorpus/v1">Public corpus</a> · <a href="{source_base}/tree/{source_ref}/eng/benchmark">Harness and selector</a></p>',
         'PROFILE_CARDS': profile_cards_markup(data)
     }
     expected = {}

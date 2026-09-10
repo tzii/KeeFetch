@@ -3,10 +3,10 @@
 Status:   WORKING
 Agent:   Codex
 
-Focus:   Finish verification of the complete KeeFetch v1.3 release candidate.
-Next:   Verify current-head release and website CI on PR8.
-Pointer:   docs/validation/2026-09-10-v1.3-media-intake.md
-As-of:   2026-09-10 Europe/Rome · All four required owner-captured views are accepted and integrated without pixel edits. First Run uses Balanced recommended; the additional Privacy chooser is retained. Clean Privacy completion shows 6/6 updated in 2.352s, zero other outcomes; six matching Direct Site successes corroborate it. Exact candidate DLL/PLGX unchanged. Complete guide passes 17 verifier tests, 32 focused Firefox cases and 4 axe scans, with visual inspection. Upload completed media to PR8 and verify current-head CI before review. WORKING / GO WITH CONDITIONS; final release review/publication remain.
+Focus:   Make the owner-selected little icon machine design the official KeeFetch website.
+Next:   Complete PR16 current-head CI, then merge the website-only change and verify GitHub Pages.
+Pointer:   https://github.com/tzii/KeeFetch/pull/16
+As-of:   2026-09-10 Europe/Rome · PR16 publishes only the selected little-machine site and six guides from master; PR8 is aligned at 80ddaea. Four genuine screenshots and exact plugin packages retain their original hashes. Stable downloads remain v1.2.0; the v1.3 profile preview is bound to candidate 9f0b43f. Local static checks 20/20, motion 41/41 and corrected guide regression 48/48 with eight axe scans pass. Current-head three-browser and Windows CI is running before publication.
 
 Notes:
 - Preserve original study inputs and exact candidate bytes. Candidate source: 9f0b43f64335803d24ca99d6ccc7e0e7abac3bb8. DLL SHA-256: 924c6c5c1a38b99e8805b01e20569f3fdb50c2941576c567f5e1f406e4311ad5; PLGX: 4742355b5cadb089c7898b99d7a6ff95d068f8319ad97b3a1eb15b1d186a53a8. Later test-fixture/evidence commits do not replace this source identity.

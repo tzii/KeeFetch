@@ -46,6 +46,9 @@ class WebsiteGateTests(unittest.TestCase):
         self.mutate('data-profile-id="bulk-fast"','data-profile-id="stale"'); self.assert_rejected('profile ID/order mismatch')
     def test_stale_generated_claim(self):
         self.mutate(' s total',' s invented total'); self.assert_rejected('generated content mismatch')
+    def test_stale_study_evidence_link(self):
+        self.mutate('/blob/19a0c224ca4dbf7042d22c3497e7599f61937c0b/docs/benchmarks/', '/blob/master/docs/benchmarks/')
+        self.assert_rejected('generated content mismatch')
     def test_release_tag_mismatch(self):
         path=self.site/'data/release.json'; data=json.loads(path.read_text(encoding='utf-8'))
         data['tag']='v999.0.0'; path.write_text(json.dumps(data),encoding='utf-8')

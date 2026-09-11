@@ -13,10 +13,10 @@ updates:
     schedule:
       interval: monthly
     ignore:
-      # This exact release has no compatible build import for our net48 tests.
+      # These inspected releases have no compatible build import for our net48 tests.
       # Newer releases remain eligible for review and a real coverage check.
       - dependency-name: coverlet.collector
-        versions: ["10.0.1"]
+        versions: ["8.0.0", "8.0.1", "10.0.0", "10.0.1"]
     groups:
       test-tooling:
         patterns: ["*"]

@@ -7,7 +7,7 @@ namespace KeeFetch.Tests
     [TestClass]
     public class LegacyProfileMigrationTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("Fast", "bulk-fast")]
         [DataRow("Balanced", "everyday")]
         [DataRow("Thorough", "max-coverage")]

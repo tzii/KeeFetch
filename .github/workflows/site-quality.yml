@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Validate sources and build
@@ -44,7 +44,7 @@ jobs:
           python3 eng/verify-site.py --site site/dist
           git diff --check
       - name: Upload review sources (never deploy)
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: keefetch-site-review
           include-hidden-files: true
@@ -65,10 +65,10 @@ jobs:
       matrix:
         browser: [chromium, firefox, webkit]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - name: Install pinned test-only tools
@@ -86,7 +86,7 @@ jobs:
           python eng/test-site-machine.py --browser ${{ matrix.browser }} --output site-qa/${{ matrix.browser }}/machine
       - name: Upload screenshots and machine-readable results
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: site-qa-${{ matrix.browser }}
           path: site-qa/${{ matrix.browser }}/

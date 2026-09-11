@@ -1,137 +1,127 @@
+[![KeeFetch — Familiar icons. Less searching. A little icon machine for KeePass.](docs/assets/keefetch-banner.svg)](https://tzii.github.io/KeeFetch/)
+
 # KeeFetch
 
-[![Build Status](https://github.com/tzii/KeeFetch/workflows/Build%20KeeFetch/badge.svg)](https://github.com/tzii/KeeFetch/actions)
-[![GitHub Release](https://img.shields.io/github/v/release/tzii/KeeFetch?include_prereleases)](https://github.com/tzii/KeeFetch/releases)
-[![Website](https://img.shields.io/badge/Website-GitHub%20Pages-8150d8)](https://tzii.github.io/KeeFetch/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+**Give your KeePass entries their website icons.** Fetch an icon for one entry, a whole group, or your database, with control over which services are contacted.
 
-A fast, smart, and modern favicon downloader plugin for KeePass 2.x.
+[![Build](https://github.com/tzii/KeeFetch/actions/workflows/build.yml/badge.svg)](https://github.com/tzii/KeeFetch/actions/workflows/build.yml) [![Stable release](https://img.shields.io/github/v/release/tzii/KeeFetch?color=6b35c2)](https://github.com/tzii/KeeFetch/releases/latest) [![License: MIT](https://img.shields.io/badge/license-MIT-6b35c2)](LICENSE)
 
-![KeePass Plugin](https://img.shields.io/badge/KeePass-2.x%20Plugin-blue)
-![.NET Framework](https://img.shields.io/badge/.NET%20Framework-4.8-purple)
+**[Download KeeFetch](https://github.com/tzii/KeeFetch/releases/latest)** · **[Website](https://tzii.github.io/KeeFetch/)** · **[Getting started](https://tzii.github.io/KeeFetch/getting-started.html)** · **[Release notes](CHANGELOG.md)**
 
-## ✨ Features
+For **KeePass 2.x on Windows** with **.NET Framework 4.8**. Free and open source. No account or telemetry. KeePassXC is not supported.
 
-- **Concurrent downloads** — Parallel favicon fetching using `SemaphoreSlim` to keep the UI responsive.
-- **Availability-first selector engine** — Collects provider candidates, then ranks by trust tier (`Site canonical` → `Strong resolver` → `Synthetic fallback`) so placeholder-prone results cannot outrank stronger real icons.
-- **Smart icon detection** — Parses `rel=icon`, `apple-touch-icon`, `rel=manifest` icon entries, and detects SVG-only situations for resolver fallback competition.
-- **Study-selected fetch profiles** — `Fast`, `Balanced` (default), `Privacy`, and `Precise` profiles whose provider chains and timeouts were chosen by a measured provider study; `Custom` exposes every provider and timeout. See [Fetch profiles](#-fetch-profiles).
-- **Guided setup and settings** — First-run profile selection explains third-party requests. Overview, Downloads, Providers and Advanced tabs let you edit settings before saving or cancelling them.
-- **Clear batch results** — Completion shows updated, skipped, not-found, error and cancelled counts, with Copy Summary, diagnostics paths and one bounded retry of eligible misses/errors.
-- **Deduplication** — SHA-256 hashing ensures icons aren't duplicated in your database.
-- **Android Support** — Converts `androidapp://` URLs to web domains with 100+ built-in mappings and Play Store scraping.
-- **Intelligent URL handling** — Resolves KeePass `{REF:...}` placeholders and auto-prefixes schemes.
-- **Modern Standards** — Requests TLS 1.2/1.3 on KeeFetch's own HTTP handler without changing process-wide protocol settings, uses the system default proxy, and can optionally accept certificate-chain errors for requests to hosts KeeFetch classifies as private/internal. Public hosts always keep strict validation; hostname mismatches and missing certificates remain rejected. Older runtimes that reject the protocol setting fall back to host defaults.
+## Install in a minute
 
-## 🔒 Privacy
+1. Download **`KeeFetch.plgx`** from the [latest stable release](https://github.com/tzii/KeeFetch/releases/latest). Checksums and the alternative DLL are included there.
+2. Close KeePass and copy the file into its **`Plugins`** folder. For a portable installation, this is next to `KeePass.exe`; for an installed copy, it is usually `%ProgramFiles%\KeePass Password Safe 2\Plugins`.
+3. Start KeePass. Right-click an entry and choose **KeeFetch - Download Favicons**. On the first download, choose a profile; **Balanced** is the default.
 
-By default, KeeFetch can query third-party favicon resolver services using domain names from your password entries. Which services are contacted depends on the selected fetch profile (see below). The `Privacy` profile disables these resolvers, but Direct Site can still fetch site-linked icons and manifests from other hosts and follow redirects. It is not a same-origin network policy. KeeFetch has no telemetry or analytics.
+Keep only **one** plugin format installed: PLGX or DLL. Before upgrading or fetching icons across a database, make a database backup. Replacing the plugin does not undo icon changes; restoring a backup does. See the [installation and upgrade guide](https://tzii.github.io/KeeFetch/getting-started.html).
 
-KeeFetch shows a one-time first-run disclosure about this behavior and keeps the availability-first defaults enabled. You can switch to the `Privacy` profile, or disable third-party providers, synthetic fallbacks, or specific resolvers in plugin settings (`Tools` → `KeeFetch` → `Settings...`).
+## A small plugin that does the sorting
 
-Hosts recognized by KeeFetch's lexical private-host classifier (including private IP literals and common internal suffixes) are excluded from resolver lookup. This does not detect every internal DNS name or inspect resolved addresses. Redirects are followed manually: before each hop, the destination is checked against the private-host policy, and a resolver redirect pointing at a private host is refused without contacting it. Direct Site is explicitly allowed to fetch private hosts, so site-linked redirects may still reach them.
+- **One entry or the whole vault.** Fetch from entry and group context menus, or use **Tools → KeeFetch → Download All Favicons**. Groups can include their subgroups.
+- **Your providers, your choice.** Four ready-made profiles, plus Custom settings for provider order, timeouts and fallbacks.
+- **Better candidates, fewer duplicates.** Looks for site icons and web manifests, ranks candidates by source and confidence, and deduplicates identical image bytes.
+- **Android links included.** Resolves `androidapp://` package names through 100+ built-in mappings and, when enabled, Google Play lookup.
+- **Results you can act on.** See updated, skipped, missing, error and cancelled counts; copy a summary, inspect diagnostics, or retry eligible entries once.
 
-Routine diagnostics currently include entry titles and resolved URLs in plaintext log/CSV files beside the database when possible, otherwise in a temporary directory. Treat those files as sensitive; the Privacy profile does not redact them.
+Open **Tools → KeeFetch → Settings...** to change profiles, adjust downloads, reorder providers, or skip entries that already have custom icons.
 
-## 🎛 Fetch profiles
+## See it in KeePass
 
-| Profile | Provider chain | Total budget | Notes |
-|---|---|---|---|
-| **Fast** | Direct Site → Yandex | 22 s | Lowest measured eligible cold-batch duration; stops at a strong resolver hit; no synthetic fallbacks. |
-| **Balanced** (default) | Direct Site → Google → Twenty Icons | 15 s | Balances reviewed usability, coverage and speed; stops at a strong resolver hit; no synthetic fallbacks. |
-| **Privacy** | Direct Site only | 22 s | Disables favicon resolvers; site-linked assets and redirects may use other hosts. |
-| **Precise** | Direct Site → Google | 22 s | Prioritizes reviewed usability among returned icons; the winner depends on conservative ambiguity scoring. |
-| **Custom** | Any of Direct Site, Twenty Icons, DuckDuckGo, Google, Yandex, Favicone, Icon Horse | configurable | Full manual control over providers, order, and timeouts. |
+Actual **v1.3** captures, shared with the [website screenshot gallery](https://tzii.github.io/KeeFetch/#screenshots).
 
-These are the v1.3 fetch profiles. They are generated from the [expanded 19-candidate study](docs/benchmarks/v1.3-provider-study.md), with 827 machine-reviewed units and four unresolved app identities counted as failures for scoring. The report discloses Precise's ambiguity sensitivity. Profiles are mirrored to the website in `site/data/profiles.json`; CI fails if the two drift apart. Time budgets are upper bounds, so Fast's larger budget does not imply a slower measured batch.
+### Choose a profile on the first run
 
-## 🚀 Installation
+![KeeFetch first-run dialog with Balanced selected and the third-party request disclosure visible.](site/assets/media/first-run.png)
 
-### Quick Install (Recommended)
+### Check the result
 
-1. Download `KeeFetch.plgx` from the [latest release](https://github.com/tzii/KeeFetch/releases/latest).
-2. Copy the file into your KeePass `Plugins` folder:
-   - **Portable**: `KeePass/Plugins/`
-   - **Installed**: `%ProgramFiles%/KeePass Password Safe 2/Plugins/`
-3. Restart KeePass.
+![KeeFetch completion dialog: Privacy profile, six entries updated, zero not-found results, errors or cancellations.](site/assets/media/completion-summary.png)
 
-## 🛠 Usage & Demo
+This six-entry demonstration completed successfully using Privacy. It illustrates the results screen; coverage and timing depend on the entries, profile and network.
 
-### 1. Simple One-Click Fetch
+<details>
+<summary><strong>Settings: overview and providers</strong></summary>
 
-Right-click any entry and select **KeeFetch - Download Favicons**. The plugin searches for an icon, considering site-linked sources such as `apple-touch-icon` and PNGs alongside the configured providers.
+The Overview tab selects a profile. The Providers tab shows the provider controls used when configuring Custom.
 
-![Single Entry Demo](docs/usage-single.gif)
-*Historical single-entry demonstration; v1.3 adds guided first-run and completion screens.*
+![Settings Overview with the Privacy profile selected.](site/assets/media/settings-overview.png)
 
-### 2. Bulk Group Processing
+![Settings Providers showing the available providers and ordering controls.](site/assets/media/settings-providers.png)
 
-Process entire groups (including all subgroups) in one go. KeeFetch runs up to 8 entries concurrently. Batch duration depends on the selected profile, provider timeouts and network conditions.
+</details>
 
-![Group Download Demo](docs/usage-group.gif)
-*Historical group-download demonstration; see the [v1.3 screenshot gallery](https://tzii.github.io/KeeFetch/#screenshots) for the current interface.*
+<details>
+<summary><strong>Earlier demos — GIF refresh planned</strong></summary>
 
-### 3. Android App Support
+These recordings show an older interface. The v1.3 screenshots above show the current first-run and completion dialogs. The original GIFs are kept here until they are re-recorded.
 
-KeeFetch uniquely handles `androidapp://` URLs. It maps package names (like `com.instagram.android`) to official web domains using a built-in database of 100+ app mappings, with Google Play Store fallback.
+**Fetch for one entry**
 
-![Android Mapping Demo](docs/usage-android.gif)
-*Historical demonstration of androidapp:// URL mapping; see the [v1.3 screenshot gallery](https://tzii.github.io/KeeFetch/#screenshots) for the current interface.*
+![Historical single-entry favicon download demonstration.](docs/usage-single.gif)
 
-### 4. Database-wide Maintenance
+**Fetch for a group**
 
-Keep your entire database up to date via the Tools menu. Perfect for cleaning up missing icons in large, existing databases.
+![Historical group favicon download demonstration.](docs/usage-group.gif)
 
-![Database Maintenance](docs/usage-maintenance.png)
-*Historical database-wide menu illustration; see the [v1.3 screenshot gallery](https://tzii.github.io/KeeFetch/#screenshots) for the current interface.*
+**Resolve an Android app link**
 
-**Menu Path:** `Tools` → `KeeFetch` → `Download All Favicons`
+![Historical Android package mapping demonstration.](docs/usage-android.gif)
 
-> **💡 Tip:** Configure KeeFetch to skip entries that already have custom icons in **Settings** (`Tools` → `KeeFetch` → `Settings...`).
+**Run database-wide maintenance**
 
-## 🏗 Building from Source
+![Historical Tools menu showing database-wide favicon download.](docs/usage-maintenance.png)
 
-KeeFetch uses an SDK-style project for development and a legacy-style project for PLGX compatibility.
+</details>
 
-### Prerequisites
-- Visual Studio 2022 or .NET 8 SDK
-- .NET Framework 4.8 Targeting Pack
-- KeePass 2.x (installed for PLGX creation)
+## Choose how icons are fetched
 
-### Build Commands
+| Profile | Sources, in order | Total budget | Best fit |
+| --- | --- | --- | --- |
+| **Fast** | Direct Site → Yandex | 22 s | Lowest measured eligible cold-batch duration in the study. |
+| **Balanced** (default) | Direct Site → Google → Twenty Icons | 15 s | Everyday balance of reviewed usability, coverage and speed. |
+| **Privacy** | Direct Site | 22 s | Disables favicon resolvers and Google Play lookup. |
+| **Precise** | Direct Site → Google | 22 s | Prioritizes reviewed usability among returned icons; see the scoring caveat below. |
+| **Custom** | Your choice and order | Configurable | Manual control over all seven providers and timeouts. |
+
+Budgets are upper bounds per fetch, not expected batch durations. A larger budget does not mean Fast was slower in the study. Fast, Balanced and Precise stop at a strong resolver hit; managed profiles disable synthetic fallbacks.
+
+The profiles come from the [19-candidate provider study](docs/benchmarks/v1.3-provider-study.md), using 827 machine-reviewed units. Four unresolved app identities count as failures under the disclosed conservative policy; **Precise's winning configuration changes with that scoring choice**. These are measured tradeoffs, not a guarantee of perfect icons. [Compare profiles and providers](https://tzii.github.io/KeeFetch/profiles.html).
+
+## Know where requests go
+
+**Balanced and other resolver-enabled profiles can share entry domains with third-party favicon services.** KeeFetch does not send usernames or passwords and has no telemetry. The first-run dialog explains this before downloading.
+
+**Privacy disables favicon resolvers and Google Play lookup.** Direct Site still follows redirects and site-linked icons or manifests, including those hosted elsewhere. It is not a same-origin network policy.
+
+Recognized private hosts are excluded from resolver lookups, and resolver redirects to recognized private hosts are refused before contact. This uses a lexical classifier: it does not detect every internal DNS name or validate DNS answers. Direct Site can contact private hosts.
+
+**Diagnostics contain entry titles and resolved URLs in plaintext.** Log and CSV files are written beside the database when possible, otherwise to a temporary directory. Privacy does not redact them; review and redact diagnostics before sharing.
+
+Read the [privacy and network details](https://tzii.github.io/KeeFetch/privacy.html) for provider endpoints, Android lookup, redirects and certificate handling.
+
+## Help and development
+
+- **Installation, missing icons or retries:** [Troubleshooting](https://tzii.github.io/KeeFetch/troubleshooting.html).
+- **Bugs and feature requests:** [GitHub issues](https://github.com/tzii/KeeFetch/issues). Include the KeePass/KeeFetch versions, selected profile and steps to reproduce. Remove private data from any attachments.
+- **Code and documentation changes:** [Contributing](CONTRIBUTING.md), including architecture, PLGX packaging and all repository checks.
+- **Release evidence and study records:** [Documentation index](docs/README.md).
+
+### Build from source
+
+Use Windows, the .NET 8 SDK, the .NET Framework 4.8 targeting pack and KeePass 2.x. Set `KeePassPath` to the directory containing `KeePass.exe`:
+
 ```powershell
-# Build the DLL and run tests (set KeePassPath if KeePass is not in the default install folder)
-dotnet build KeeFetch.sln -c Release -p:KeePassPath="C:\Program Files\KeePass Password Safe 2"
-dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj -c Release
-
-# Repository gates run by CI
-./eng/check-version.ps1                 # version.txt == AssemblyInfo (== tag on release)
-./eng/check-plgx-manifest.ps1           # KeeFetch.plgx.csproj lists exactly the tracked sources
-./eng/test-release-workflow.ps1         # release permissions and checksum safeguards
-./eng/export-profile-data.ps1 -Check    # site/data/profiles.json matches the compiled catalog
-
-# Create PLGX (requires KeePass.exe in Path)
-KeePass.exe --plgx-create "path\to\KeeFetch"
+dotnet build KeeFetch.sln -c Release -p:KeePassPath="C:\path\to\KeePass" -warnaserror
+dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj -c Release --no-build
 ```
 
-## 📖 Architecture
+The plugin targets .NET Framework 4.8. Production source stays compatible with C# 5 so KeePass can compile the PLGX; the test project uses C# 7.3. See [the contributor guide](CONTRIBUTING.md#development-environment) for packaging and verification commands.
 
-KeeFetch is designed with an **availability-first ranked selection strategy**. Providers return structured candidates with tier and confidence metadata. The selector then chooses the best surviving candidate, ensuring synthetic fallback providers only win when no stronger site-backed or resolver-backed icon survives.
+## License and credits
 
-For a deep dive into the code, see our [Project Structure](CONTRIBUTING.md#project-structure) in the contribution guide.
+[MIT licensed](LICENSE). Built for [KeePass Password Safe](https://keepass.info/) and inspired by [KeePass-Yet-Another-Favicon-Downloader](https://github.com/navossoc/KeePass-Yet-Another-Favicon-Downloader).
 
-## 🤝 Contributing
-
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines and the process for submitting pull requests.
-
-## ⚖️ License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
-## 🙏 Acknowledgments
-
-- [KeePass Password Safe](https://keepass.info/) — The ultimate password manager.
-- Inspired by [KeePass-Yet-Another-Favicon-Downloader](https://github.com/navossoc/KeePass-Yet-Another-Favicon-Downloader) — The original favicon downloader plugin that inspired this project.
-- [Twenty Icons](https://twenty-icons.com/), [DuckDuckGo](https://duckduckgo.com/), [Google](https://google.com), [Yandex](https://yandex.com), [Favicone](https://favicone.com/), and [Icon Horse](https://icon.horse/) for favicon APIs.
+Thanks to [Twenty Icons](https://twenty-icons.com/), [DuckDuckGo](https://duckduckgo.com/), [Google](https://google.com/), [Yandex](https://yandex.com/), [Favicone](https://favicone.com/) and [Icon Horse](https://icon.horse/) for their favicon services.

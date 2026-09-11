@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -126,7 +126,16 @@ jobs:
           dotnet build KeeFetch.Tests/KeeFetch.Tests.csproj --configuration Release --no-restore -p:KeePassPath="$env:KEEPASS_DIR"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Copy-Item -Path "$env:KEEPASS_DIR\KeePass.exe" -Destination "KeeFetch.Tests\bin\Release\net48\"
-          dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj --configuration Release --no-build
+          dotnet test KeeFetch.Tests/KeeFetch.Tests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory KeeFetch.Tests/TestResults
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # A missing collector can still leave dotnet test with exit code zero.
+          $reports = @(Get-ChildItem -Path 'KeeFetch.Tests/TestResults/*/coverage.cobertura.xml' -File)
+          if ($reports.Count -ne 1) { throw 'Expected exactly one coverage report.' }
+          [xml]$coverage = Get-Content -LiteralPath $reports[0].FullName -Raw
+          $pluginCoverage = @($coverage.coverage.packages.package | Where-Object { $_.name -eq 'KeeFetch' })
+          if ($pluginCoverage.Count -ne 1 -or [double]$pluginCoverage[0].'line-rate' -le 0) {
+            throw 'Coverage collection must include executed KeeFetch code.'
+          }
 
       - name: Validate benchmark harness and corpora
         shell: pwsh
@@ -257,14 +266,14 @@ jobs:
           }
 
       - name: Upload DLL artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: KeeFetch.dll
           path: bin/Release/net48/KeeFetch.dll
           if-no-files-found: error
 
       - name: Upload PLGX artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: KeeFetch.plgx
           path: ${{ env.PLGX_PATH }}
@@ -284,7 +293,7 @@ jobs:
           Write-Output "SHA256SUMS_PATH=$out" >> $env:GITHUB_ENV
 
       - name: Upload checksum artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: SHA256SUMS.txt
           path: ${{ env.SHA256SUMS_PATH }}

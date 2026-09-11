@@ -12,8 +12,8 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="4.4.0" />
     <PackageReference Include="MSTest.TestFramework" Version="4.4.0" />
-    <!-- 10.0.1 ships no net48-compatible build import; keep working VSTest coverage. -->
-    <PackageReference Include="coverlet.collector" Version="10.0.0" />
+    <!-- Published 8.x/10.x collectors have no net48 build import; retain working coverage. -->
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
   </ItemGroup>
 
   <ItemGroup>

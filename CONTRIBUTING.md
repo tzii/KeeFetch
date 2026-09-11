@@ -107,7 +107,7 @@ KeeFetch/
 ├── KeeFetch.csproj               # SDK-style project (development & testing)
 ├── KeeFetch.plgx.csproj          # Legacy-style project (PLGX creation only)
 └── .github/workflows/
-    ├── build.yml                 # CI: gates, build, test, PLGX creation, release publishing
+    ├── build.yml                 # CI: gates, build, test, PLGX creation, checksum verification
     └── pages.yml                 # GitHub Pages deployment
 ```
 

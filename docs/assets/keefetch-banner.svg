@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="440" viewBox="0 0 1280 440" role="img" aria-labelledby="title desc">
+  <title id="title">KeeFetch — Familiar icons. Less searching.</title>
+  <desc id="desc">A purple mechanical icon workshop turns plain entry tiles into distinct icons. A free, open-source plugin for KeePass 2.</desc>
+  <!-- Original code-authored artwork; path wordmark matches the official site. -->
+  <defs>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#d8d0e0" stroke-width=".7"/></pattern>
+  </defs>
+  <rect width="1280" height="440" rx="16" fill="#f4f1e9"/>
+  <rect x="700" y="24" width="556" height="348" rx="8" fill="url(#grid)"/>
+  <rect x="1" y="1" width="1278" height="438" rx="15" fill="none" stroke="#d2cad7" stroke-width="2"/>
+  <g font-family="Consolas, 'Liberation Mono', monospace" font-size="15" fill="#554563" letter-spacing="2">
+    <text x="48" y="54">A LITTLE ICON MACHINE FOR KEEPASS</text>
+    <text x="1218" y="54" text-anchor="end">MADE TO FIND</text>
+  </g>
+  <g transform="translate(48 104) scale(.96)" fill="#241b2c">
+    <path d="M0 0h19v40L48 0h24L36 48l39 52H50L19 57v43H0Z"/>
+    <path d="M83 0h62v19h-42v21h35v18h-35v23h42v19H83Z"/>
+    <path d="M158 0h62v19h-42v21h35v18h-35v23h42v19h-62Z"/>
+    <path d="M233 0h62v19h-42v25h35v19h-35v37h-20Z"/>
+    <path d="M308 0h62v19h-42v21h35v18h-35v23h42v19h-62Z"/>
+    <path d="M381 0h70v20h-25v80h-20V20h-25Z"/>
+    <path d="M479 0h44v20h-35l-7 7v46l7 7h35v20h-44l-18-18V18Z"/>
+    <path d="M536 0h20v40h34V0h20v100h-20V60h-34v40h-20Z"/>
+  </g>
+  <g font-family="'Segoe UI', Arial, sans-serif" font-size="40" font-weight="600">
+    <text x="48" y="268" fill="#241b2c">Familiar icons.</text>
+    <text x="48" y="316" fill="#6b35c2">Less searching.</text>
+  </g>
+  <path d="M408 290h154m-12-12 12 12-12 12" fill="none" stroke="#6b35c2" stroke-width="3"/>
+  <g stroke="#34243f" stroke-width="2.5" stroke-linejoin="round">
+    <ellipse cx="994" cy="341" rx="212" ry="14" fill="#ded4e7" stroke="none"/>
+    <!-- Feed belt. -->
+    <path d="M729 269H924L937 282H716Z" fill="#c7b2dc"/>
+    <rect x="717" y="282" width="212" height="30" rx="15" fill="#3d2c49"/>
+    <path d="M730 277h179" stroke="#f4f1e9" stroke-width="4" stroke-dasharray="5 10"/>
+    <g fill="#f4f1e9"><circle cx="736" cy="297" r="10"/><circle cx="775" cy="297" r="10"/><circle cx="814" cy="297" r="10"/><circle cx="853" cy="297" r="10"/></g>
+    <path d="M730 297h12m27 0h12m27 0h12m27 0h12" stroke="#806592" stroke-width="2"/>
+    <path d="M745 313v22m109-22v22" stroke-width="6"/>
+    <g transform="translate(756 218) rotate(-12)">
+      <rect width="43" height="49" rx="4" fill="#eee8f3"/>
+      <path d="M13 15h17M13 25h17M13 35h11" stroke="#a598af" stroke-width="3"/>
+    </g>
+    <g transform="translate(815 215) rotate(5)">
+      <rect width="43" height="49" rx="4" fill="#fffaf0"/>
+      <path d="M13 15h17M13 25h17M13 35h11" stroke="#a598af" stroke-width="3"/>
+    </g>
+    <!-- Workshop body and inspection chamber. -->
+    <path d="M893 123l33-21h154l-33 21Z" fill="#c4a3ec"/>
+    <path d="M1047 123l33-21v210l-33 21Z" fill="#7145a0"/>
+    <rect x="883" y="123" width="164" height="210" rx="8" fill="#a97cd7"/>
+    <path d="M884 161h162" stroke="#79539a"/>
+    <path d="M900 334v10h24v-10m87 0v10h24v-10" fill="#3d2c49"/>
+    <rect x="900" y="137" width="106" height="11" rx="2" fill="#3d2c49" stroke="none"/>
+    <circle cx="1024" cy="143" r="5" fill="#d0edac"/>
+    <circle cx="965" cy="221" r="48" fill="#f4f1e9"/>
+    <circle cx="965" cy="221" r="36" fill="#382345"/>
+    <path d="M965 193l7 20 20 8-20 7-7 20-7-20-20-7 20-8Z" fill="#d3b2ff" stroke="none"/>
+    <path d="M942 203l45 37" stroke="#fff" opacity=".22" stroke-width="5"/>
+    <circle cx="906" cy="177" r="2" fill="#34243f" stroke="none"/><circle cx="1025" cy="177" r="2" fill="#34243f" stroke="none"/>
+    <path d="M902 286h70v24h-70Z" fill="#bd9ce0"/>
+    <path d="M906 290h62m-62 8h62m-62 8h62" stroke="#674582" stroke-width="2"/>
+    <circle cx="1010" cy="297" r="12" fill="#3d2c49"/><path d="M1010 297l6-6" stroke="#f4f1e9"/>
+    <!-- Output tray and three original, unbranded glyphs. -->
+    <path d="M1080 267h134l-18 19h-116Z" fill="#bd9ce0"/>
+    <path d="M1080 286h116v17h-116Z" fill="#3d2c49"/>
+    <path d="M1104 304v32m75-32v32" stroke-width="6"/>
+    <g transform="translate(1078 206) rotate(-10)"><rect width="48" height="52" rx="6" fill="#dac6f1"/><path d="M24 10l5 12 12 4-12 5-5 12-5-12-12-5 12-4Z" fill="#6b35c2" stroke="none"/></g>
+    <g transform="translate(1128 206) rotate(6)"><rect width="48" height="52" rx="6" fill="#d8e8ad"/><path d="M12 29l10 8 15-21" fill="none" stroke="#3d542a" stroke-width="5"/></g>
+    <g transform="translate(1174 202) rotate(14)"><rect width="48" height="52" rx="6" fill="#f3c18e"/><circle cx="24" cy="26" r="12" fill="none" stroke="#7e422b" stroke-width="4"/><circle cx="24" cy="26" r="4" fill="#7e422b" stroke="none"/></g>
+    <path d="M960 102V87" stroke-width="4"/><circle cx="960" cy="80" r="6" fill="#d0edac"/>
+    <path d="M944 78l-5-5m37 5 5-5" stroke="#8b6aa4" stroke-width="2"/>
+  </g>
+  <path d="M48 378h1184" stroke="#c8bdd0" stroke-width="1.5"/>
+  <g font-family="Consolas, 'Liberation Mono', monospace" font-size="16" fill="#554563">
+    <text x="48" y="410">ONE ENTRY. A GROUP. YOUR WHOLE VAULT.</text>
+    <text x="1232" y="410" text-anchor="end">KEEPASS 2.x  /  FREE + OPEN SOURCE</text>
+  </g>
+</svg>

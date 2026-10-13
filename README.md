@@ -30,7 +30,7 @@ Open **Tools → KeeFetch → Settings...** to change profiles, adjust downloads
 
 ## See it in KeePass
 
-Actual **v1.3** captures, shared with the [website screenshot gallery](https://tzii.github.io/KeeFetch/#screenshots).
+Screenshots from v1.3. More on the [website](https://tzii.github.io/KeeFetch/#screenshots).
 
 ### Choose a profile on the first run
 
@@ -40,8 +40,6 @@ Actual **v1.3** captures, shared with the [website screenshot gallery](https://t
 
 ![KeeFetch completion dialog: Privacy profile, six entries updated, zero not-found results, errors or cancellations.](site/assets/media/completion-summary.png)
 
-This six-entry demonstration completed successfully using Privacy. It illustrates the results screen; coverage and timing depend on the entries, profile and network.
-
 <details>
 <summary><strong>Settings: overview and providers</strong></summary>
 
@@ -50,29 +48,6 @@ The Overview tab selects a profile. The Providers tab shows the provider control
 ![Settings Overview with the Privacy profile selected.](site/assets/media/settings-overview.png)
 
 ![Settings Providers showing the available providers and ordering controls.](site/assets/media/settings-providers.png)
-
-</details>
-
-<details>
-<summary><strong>Earlier demos — GIF refresh planned</strong></summary>
-
-These recordings show an older interface. The v1.3 screenshots above show the current first-run and completion dialogs. The original GIFs are kept here until they are re-recorded.
-
-**Fetch for one entry**
-
-![Historical single-entry favicon download demonstration.](docs/usage-single.gif)
-
-**Fetch for a group**
-
-![Historical group favicon download demonstration.](docs/usage-group.gif)
-
-**Resolve an Android app link**
-
-![Historical Android package mapping demonstration.](docs/usage-android.gif)
-
-**Run database-wide maintenance**
-
-![Historical Tools menu showing database-wide favicon download.](docs/usage-maintenance.png)
 
 </details>
 
@@ -86,9 +61,9 @@ These recordings show an older interface. The v1.3 screenshots above show the cu
 | **Precise** | Direct Site → Google | 22 s | Prioritizes reviewed usability among returned icons; see the scoring caveat below. |
 | **Custom** | Your choice and order | Configurable | Manual control over all seven providers and timeouts. |
 
-Budgets are upper bounds per fetch, not expected batch durations. A larger budget does not mean Fast was slower in the study. Fast, Balanced and Precise stop at a strong resolver hit; managed profiles disable synthetic fallbacks.
+Budgets are upper bounds per fetch, not typical durations. Fast, Balanced and Precise stop at the first strong resolver hit, and the managed profiles never fall back to generated icons.
 
-The profiles come from the [19-candidate provider study](docs/benchmarks/v1.3-provider-study.md), using 827 machine-reviewed units. Four unresolved app identities count as failures under the disclosed conservative policy; **Precise's winning configuration changes with that scoring choice**. These are measured tradeoffs, not a guarantee of perfect icons. [Compare profiles and providers](https://tzii.github.io/KeeFetch/profiles.html).
+The profiles come from a [study of 19 provider configurations](docs/benchmarks/v1.3-provider-study.md) over 827 machine-reviewed units. The best Precise configuration depends on how four unresolved Android apps are scored; the study covers that choice. [Compare profiles and providers](https://tzii.github.io/KeeFetch/profiles.html).
 
 ## Know where requests go
 
@@ -107,7 +82,7 @@ Read the [privacy and network details](https://tzii.github.io/KeeFetch/privacy.h
 - **Installation, missing icons or retries:** [Troubleshooting](https://tzii.github.io/KeeFetch/troubleshooting.html).
 - **Bugs and feature requests:** [GitHub issues](https://github.com/tzii/KeeFetch/issues). Include the KeePass/KeeFetch versions, selected profile and steps to reproduce. Remove private data from any attachments.
 - **Code and documentation changes:** [Contributing](CONTRIBUTING.md), including architecture, PLGX packaging and all repository checks.
-- **Release evidence and study records:** [Documentation index](docs/README.md).
+- **Release notes, benchmarks and validation records:** [Documentation index](docs/README.md).
 
 ### Build from source
 

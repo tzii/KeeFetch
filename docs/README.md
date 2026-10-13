@@ -29,7 +29,7 @@ Dated plans and validation reports describe the state at the time they were writ
 
 ## Recording Guidelines
 
-The three GIFs and the maintenance image above are historical. The README keeps them in an expandable section until new recordings are available. Current screenshots live in `site/assets/media/` so the README and website use the same files.
+The three GIFs and the maintenance image above show the pre-1.3 interface and are no longer used in the README. Current screenshots live in `site/assets/media/` so the README and website use the same files.
 
 If updating or re-recording demos:
 

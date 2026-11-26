@@ -101,6 +101,40 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
+        public void CompletionForm_ButtonsStayVisibleWhenTheWindowIsNarrowAtHighDpi()
+        {
+            // A small screen caps the window width, so at 200% the buttons
+            // cannot share one row; the main actions must move to a second
+            // row instead of being pushed past the window's left edge.
+            using (var form = new CompletionForm(SampleResult(false, null, null), true))
+            {
+                form.StartPosition = FormStartPosition.Manual;
+                form.Location = new System.Drawing.Point(-4000, -4000);
+                form.Scale(new System.Drawing.SizeF(2F, 2F));
+                form.MinimumSize = System.Drawing.Size.Empty;
+                form.Show();
+                form.ClientSize = new System.Drawing.Size(1000, form.ClientSize.Height);
+                Application.DoEvents();
+
+                foreach (string name in new[] { "btnClose", "btnUndo", "btnRetry",
+                    "btnExportDiagnostics", "btnCopySummary" })
+                {
+                    Button button = GetField<Button>(form, name);
+                    Control parent = button.Parent;
+                    Assert.IsTrue(button.Left >= 0 &&
+                        button.Right <= parent.ClientSize.Width + 2,
+                        name + " escaped " + parent.Name + ": " + button.Bounds +
+                        " in " + parent.ClientSize + ".");
+                    Control row = parent.Parent;
+                    Assert.IsTrue(parent.Left >= 0 &&
+                        parent.Right <= row.ClientSize.Width + 2,
+                        parent.Name + " escaped " + row.Name + ": " + parent.Bounds +
+                        " in " + row.ClientSize + ".");
+                }
+            }
+        }
+
+        [TestMethod]
         public void BuildSummaryText_IsDeterministicPlainText()
         {
             string summary = CompletionForm.BuildSummaryText(

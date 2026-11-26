@@ -112,6 +112,12 @@ namespace KeeFetch
             Resize += delegate { UpdateHintWidth(); };
         }
 
+        protected override void OnLayout(LayoutEventArgs levent)
+        {
+            UpdateButtonRows();
+            base.OnLayout(levent);
+        }
+
         internal static string BuildHint(BatchRunResult result, bool retryAllowed)
         {
             var sentences = new List<string>();
@@ -273,6 +279,38 @@ namespace KeeFetch
             System.Drawing.Size max = new System.Drawing.Size(available, 0);
             lblSummary.MaximumSize = max;
             lblHint.MaximumSize = max;
+        }
+
+        private void UpdateButtonRows()
+        {
+            // When the window is too narrow for every button on one row
+            // (a small screen at high scaling caps its width), the main
+            // actions move to their own row instead of leaving the window.
+            if (buttonLayout == null)
+                return;
+
+            int available = ClientSize.Width - rootLayout.Padding.Horizontal -
+                buttonLayout.Margin.Horizontal;
+            if (available <= 0)
+                return;
+
+            int needed = secondaryActions.PreferredSize.Width +
+                secondaryActions.Margin.Horizontal +
+                primaryActions.PreferredSize.Width +
+                primaryActions.Margin.Horizontal;
+            bool stacked = needed > available;
+            TableLayoutPanelCellPosition target = stacked
+                ? new TableLayoutPanelCellPosition(0, 1)
+                : new TableLayoutPanelCellPosition(1, 0);
+            if (buttonLayout.GetCellPosition(primaryActions).Equals(target))
+                return;
+
+            buttonLayout.SuspendLayout();
+            buttonLayout.SetColumnSpan(primaryActions, 1);
+            buttonLayout.SetCellPosition(primaryActions, target);
+            buttonLayout.SetColumnSpan(primaryActions, stacked ? 2 : 1);
+            primaryActions.Margin = new Padding(0, stacked ? 4 : 0, 0, 0);
+            buttonLayout.ResumeLayout(true);
         }
 
         private void btnRetry_Click(object sender, EventArgs e)

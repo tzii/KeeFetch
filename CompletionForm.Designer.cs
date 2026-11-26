@@ -116,11 +116,13 @@ namespace KeeFetch
             buttonLayout.Name = "buttonLayout";
             buttonLayout.AutoSize = true;
             buttonLayout.ColumnCount = 2;
-            buttonLayout.RowCount = 1;
+            buttonLayout.RowCount = 2;
             buttonLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
                 System.Windows.Forms.SizeType.AutoSize));
             buttonLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
                 System.Windows.Forms.SizeType.Percent, 100F));
+            buttonLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(
+                System.Windows.Forms.SizeType.AutoSize));
             buttonLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(
                 System.Windows.Forms.SizeType.AutoSize));
             buttonLayout.Dock = System.Windows.Forms.DockStyle.Fill;

@@ -1,3 +1,4 @@
+2026-11-26 · Claude · REVIEW · PR #24 CI green (6/6 on 7d50076) with every local gate green; awaiting owner review and merge, then tag v1.4.0.
 2026-11-26 · Claude · WORKING · PR #24 CI failed one 200% DPI containment test (results buttons overflow on a width-capped window); main actions now wrap to a second row, regression test added, 272/272 MSTest and local gates green; CI rerunning.
 2026-11-26 · Claude · WORKING · Committed the v1.4 launch polish on claude/v1-4-launch-polish with owner go-ahead and opened a PR against master; CI pending.
 2026-11-26 · Claude · WORKING · Verified and fixed GLM 5.4 review findings on claude/v1-4-launch-polish (undo deletion records, pixel-flood order, Custom hint, retired-profile notice persistence, accessible names, cmd:// redaction); 271/271 MSTest and all local gates green; still uncommitted, commit + PR/CI pending owner go-ahead.

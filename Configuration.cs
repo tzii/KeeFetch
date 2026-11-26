@@ -78,6 +78,12 @@ namespace KeeFetch
                     }
 
                     string canonical = GetCanonicalProfileId(trimmed);
+                    if (LegacyProfileMigration.IsRetiredProfile(canonical))
+                    {
+                        fetchProfileId = MigrateRetiredProfile(canonical);
+                        return fetchProfileId;
+                    }
+
                     fetchProfileId = canonical;
                     return fetchProfileId;
                 }
@@ -85,6 +91,12 @@ namespace KeeFetch
                 string legacyRaw = config.GetString(Prefix + "FetchPresetMode", null);
                 bool isNewInstall = legacyRaw == null;
                 string mapped = LegacyProfileMigration.MapLegacyValue(legacyRaw, isNewInstall);
+                if (LegacyProfileMigration.IsRetiredProfile(mapped))
+                {
+                    fetchProfileId = MigrateRetiredProfile(mapped);
+                    return fetchProfileId;
+                }
+
                 fetchProfileId = GetCanonicalProfileId(mapped);
                 config.SetString(Prefix + "FetchProfileId", fetchProfileId);
                 config.SetLong(Prefix + "ProfileSchemaVersion", LegacyProfileMigration.CurrentSchemaVersion);
@@ -121,13 +133,59 @@ namespace KeeFetch
                 if (string.IsNullOrWhiteSpace(trimmed) || !IsKnownProfileId(trimmed))
                     return "custom";
 
-                return GetCanonicalProfileId(trimmed);
+                return ReplaceRetiredProfile(GetCanonicalProfileId(trimmed));
             }
 
             string legacyRaw = config.GetString(Prefix + "FetchPresetMode", null);
             bool isNewInstall = legacyRaw == null;
             string mapped = LegacyProfileMigration.MapLegacyValue(legacyRaw, isNewInstall);
-            return GetCanonicalProfileId(mapped);
+            return ReplaceRetiredProfile(GetCanonicalProfileId(mapped));
+        }
+
+        /// <summary>
+        /// Display name of the retired profile the settings were moved away
+        /// from, or null. Lets the first-run dialog explain why it is shown
+        /// again. The notice is stored, so it survives KeePass saving its
+        /// configuration before the user confirms a profile.
+        /// </summary>
+        internal string RetiredProfileName
+        {
+            get
+            {
+                string retiredId = config.GetString(Prefix + "RetiredProfileNotice", null);
+                return LegacyProfileMigration.IsRetiredProfile(retiredId)
+                    ? ProfilePresentation.DisplayName(retiredId.Trim())
+                    : null;
+            }
+        }
+
+        /// <summary>Called once the user has confirmed a profile.</summary>
+        internal void ClearRetiredProfileNotice()
+        {
+            config.SetString(Prefix + "RetiredProfileNotice", null);
+        }
+
+        private static string ReplaceRetiredProfile(string profileId)
+        {
+            return LegacyProfileMigration.IsRetiredProfile(profileId)
+                ? LegacyProfileMigration.DefaultProfileId
+                : profileId;
+        }
+
+        // A retired profile (Fast or Precise in v1.3) contacted a different set
+        // of third-party services than its replacement, so the earlier consent
+        // does not carry over: switch to the default and show the first-run
+        // choice again before the next download.
+        private string MigrateRetiredProfile(string retiredProfileId)
+        {
+            config.SetString(Prefix + "RetiredProfileNotice", retiredProfileId);
+            string replacement = LegacyProfileMigration.DefaultProfileId;
+            config.SetString(Prefix + "FetchProfileId", replacement);
+            config.SetLong(Prefix + "ProfileSchemaVersion", LegacyProfileMigration.CurrentSchemaVersion);
+            profileSchemaVersion = LegacyProfileMigration.CurrentSchemaVersion;
+            fetchPresetMode = MapProfileIdToPresetMode(replacement);
+            HasSeenFirstRunDisclosure = false;
+            return replacement;
         }
 
         public int ProfileSchemaVersion
@@ -173,7 +231,7 @@ namespace KeeFetch
             get
             {
                 if (!useTitleField.HasValue)
-                    useTitleField = config.GetBool(Prefix + "UseTitleField", true);
+                    useTitleField = config.GetBool(Prefix + "UseTitleField", false);
                 return useTitleField.Value;
             }
             set
@@ -188,7 +246,7 @@ namespace KeeFetch
             get
             {
                 if (!skipExistingIcons.HasValue)
-                    skipExistingIcons = config.GetBool(Prefix + "SkipExistingIcons", false);
+                    skipExistingIcons = config.GetBool(Prefix + "SkipExistingIcons", true);
                 return skipExistingIcons.Value;
             }
             set

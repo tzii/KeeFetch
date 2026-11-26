@@ -36,7 +36,7 @@ namespace KeeFetch.Tests
             Assert.AreEqual("privacy", config.FetchProfileId);
             Assert.AreEqual("privacy",
                 rawConfig.GetString("KeeFetch.FetchProfileId", null));
-            Assert.AreEqual(1L,
+            Assert.AreEqual((long)FetchProfiles.LegacyProfileMigration.CurrentSchemaVersion,
                 rawConfig.GetLong("KeeFetch.ProfileSchemaVersion", 0));
             Assert.IsTrue(config.AutoSave);
             Assert.IsFalse(config.UseThirdPartyFallbacks);

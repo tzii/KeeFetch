@@ -29,10 +29,8 @@ namespace KeeFetch.Settings
                 if (!profile.IsVisible)
                     continue;
 
-                string displayName = profile.DisplayName;
-                if (profile.Id.Equals("everyday", StringComparison.OrdinalIgnoreCase))
-                    displayName += " (Recommended)";
-                cmbProfile.Items.Add(new ProfileListItem(profile.Id, displayName));
+                cmbProfile.Items.Add(new ProfileListItem(profile.Id,
+                    ProfilePresentation.ChoiceName(profile)));
             }
             cmbProfile.Items.Add(new ProfileListItem("custom", "Custom"));
 
@@ -54,6 +52,12 @@ namespace KeeFetch.Settings
         {
             if (string.Equals(controlKey, "profile", StringComparison.OrdinalIgnoreCase))
                 cmbProfile.Focus();
+        }
+
+        /// <summary>Selects a profile as if the user picked it, raising ProfileChanged.</summary>
+        public void ChooseProfile(string profileId)
+        {
+            SelectProfile(profileId);
         }
 
         private void SelectProfile(string profileId)
@@ -89,21 +93,31 @@ namespace KeeFetch.Settings
         private void UpdateProfileDescription()
         {
             ProfileListItem item = cmbProfile.SelectedItem as ProfileListItem;
-            if (item == null || item.Id.Equals("custom", StringComparison.OrdinalIgnoreCase))
-            {
-                lblProfileDescription.Text =
-                    "Choose provider order, timeouts, and fallback behavior manually.";
-                return;
-            }
+            string profileId = item == null ? ProfilePresentation.CustomProfileId : item.Id;
+
+            lblRecommended.Text = ProfilePresentation.Summary(profileId);
+            lblProfileDescription.Text = ProfilePresentation.ContactsLine(profileId) +
+                Environment.NewLine + DescribeBudget(profileId);
+        }
+
+        private static string DescribeBudget(string profileId)
+        {
+            if (string.Equals(profileId, ProfilePresentation.CustomProfileId, StringComparison.OrdinalIgnoreCase))
+                return "Timeouts and fallbacks are set on the Advanced tab.";
 
             try
             {
-                FetchProfileDefinition profile = FetchProfileCatalog.GetRequiredProfile(item.Id);
-                lblProfileDescription.Text = profile.IntendedUse + Environment.NewLine + profile.Description;
+                FetchProfileDefinition profile = FetchProfileCatalog.GetRequiredProfile(profileId);
+                return string.Format(
+                    "Gives up on an entry after {0} seconds{1}.",
+                    (profile.CumulativeTimeoutMs + 999) / 1000,
+                    profile.StopAfterStrongResolved && profile.ProviderIds.Count > 1
+                        ? " and stops at the first confident icon"
+                        : string.Empty);
             }
             catch (InvalidOperationException)
             {
-                lblProfileDescription.Text = string.Empty;
+                return string.Empty;
             }
         }
     }

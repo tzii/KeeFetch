@@ -16,17 +16,18 @@ For **KeePass 2.x on Windows** with **.NET Framework 4.8**. Free and open source
 2. Close KeePass and copy the file into its **`Plugins`** folder. For a portable installation, this is next to `KeePass.exe`; for an installed copy, it is usually `%ProgramFiles%\KeePass Password Safe 2\Plugins`.
 3. Start KeePass. Right-click an entry and choose **KeeFetch - Download Favicons**. On the first download, choose a profile; **Balanced** is the default.
 
-Keep only **one** plugin format installed: PLGX or DLL. Before upgrading or fetching icons across a database, make a database backup. Replacing the plugin does not undo icon changes; restoring a backup does. See the [installation and upgrade guide](https://tzii.github.io/KeeFetch/getting-started.html).
+Keep only **one** plugin format installed: PLGX or DLL. KeeFetch keeps each changed entry's previous state in its history, like an edit in KeePass (KeePass's history limits apply), and the results window can undo a whole run. A database backup before a large first run is still a good idea. See the [installation and upgrade guide](https://tzii.github.io/KeeFetch/getting-started.html).
 
 ## A small plugin that does the sorting
 
-- **One entry or the whole vault.** Fetch from entry and group context menus, or use **Tools → KeeFetch → Download All Favicons**. Groups can include their subgroups.
-- **Your providers, your choice.** Four ready-made profiles, plus Custom settings for provider order, timeouts and fallbacks.
+- **One entry or the whole vault.** Fetch from entry and group context menus, or use **Tools → KeeFetch → Download All Favicons**. Groups include their subgroups; the Recycle Bin is left out.
+- **Your icons stay yours.** By default, group and database runs skip entries that already have a custom icon; you can change this in Settings. Selected entries are always fetched, so you can replace an icon on purpose.
+- **Your providers, your choice.** Two ready-made profiles, Balanced and Privacy, plus Custom settings for provider order, timeouts and fallbacks.
 - **Better candidates, fewer duplicates.** Looks for site icons and web manifests, ranks candidates by source and confidence, and deduplicates identical image bytes.
 - **Android links included.** Resolves `androidapp://` package names through 100+ built-in mappings and, when enabled, Google Play lookup.
-- **Results you can act on.** See updated, skipped, missing, error and cancelled counts; copy a summary, inspect diagnostics, or retry eligible entries once.
+- **Results you can act on.** See what happened to every entry, retry misses once, undo the run, or export a diagnostics report you can share.
 
-Open **Tools → KeeFetch → Settings...** to change profiles, adjust downloads, reorder providers, or skip entries that already have custom icons.
+Open **Tools → KeeFetch → Settings...** to change profiles, adjust downloads or choose your own providers.
 
 ## See it in KeePass
 
@@ -55,15 +56,15 @@ The Overview tab selects a profile. The Providers tab shows the provider control
 
 | Profile | Sources, in order | Total budget | Best fit |
 | --- | --- | --- | --- |
-| **Fast** | Direct Site → Yandex | 22 s | Lowest measured eligible cold-batch duration in the study. |
-| **Balanced** (default) | Direct Site → Google → Twenty Icons | 15 s | Everyday balance of reviewed usability, coverage and speed. |
-| **Privacy** | Direct Site | 22 s | Disables favicon resolvers and Google Play lookup. |
-| **Precise** | Direct Site → Google | 22 s | Prioritizes reviewed usability among returned icons; see the scoring caveat below. |
+| **Balanced** (default) | Direct Site → Google → Twenty Icons | 15 s | Finds an icon for most entries. Asks each website first and uses icon services only when the site has no usable icon. |
+| **Privacy** | Direct Site | 22 s | Asks only each entry's own website. No icon services and no Google Play lookup, so some entries stay without an icon. |
 | **Custom** | Your choice and order | Configurable | Manual control over all seven providers and timeouts. |
 
-Budgets are upper bounds per fetch, not typical durations. Fast, Balanced and Precise stop at the first strong resolver hit, and the managed profiles never fall back to generated icons.
+Budgets are upper bounds per entry, not typical durations. Balanced stops at the first confident icon, and neither profile falls back to generated icons.
 
-The profiles come from a [study of 19 provider configurations](docs/benchmarks/v1.3-provider-study.md) over 827 machine-reviewed units. The best Precise configuration depends on how four unresolved Android apps are scored; the study covers that choice. [Compare profiles and providers](https://tzii.github.io/KeeFetch/profiles.html).
+KeeFetch v1.4 retired the Fast and Precise profiles of v1.3. If you used one of them, KeeFetch switches to Balanced and asks you to confirm your choice before the next download.
+
+The profiles come from a [study of 19 provider configurations](docs/benchmarks/v1.3-provider-study.md) over 827 machine-reviewed units. [Compare profiles and providers](https://tzii.github.io/KeeFetch/profiles.html).
 
 ## Know where requests go
 
@@ -73,7 +74,9 @@ The profiles come from a [study of 19 provider configurations](docs/benchmarks/v
 
 Recognized private hosts are excluded from resolver lookups, and resolver redirects to recognized private hosts are refused before contact. This uses a lexical classifier: it does not detect every internal DNS name or validate DNS answers. Direct Site can contact private hosts.
 
-**Diagnostics contain entry titles and resolved URLs in plaintext.** Log and CSV files are written beside the database when possible, otherwise to a temporary directory. Privacy does not redact them; review and redact diagnostics before sharing.
+Guessing a web address from an entry's title is off by default. When you turn it on, a guessed domain such as `mybank.com` is sent to the profile's services like any other address.
+
+**Diagnostics stay in memory and are written only when you export them.** The exported report numbers entries instead of naming them and removes user names, passwords, query strings and fragments from web addresses. Nothing is written next to your database.
 
 Read the [privacy and network details](https://tzii.github.io/KeeFetch/privacy.html) for provider endpoints, Android lookup, redirects and certificate handling.
 

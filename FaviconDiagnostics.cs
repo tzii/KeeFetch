@@ -10,10 +10,10 @@ namespace KeeFetch
     {
         public static string BuildCsvHeader()
         {
-            return "title,url,status,miss_reason,provider,tier,synthetic,elapsed_ms,attempted_providers,diagnostics_summary,rejected_candidates,provider_metrics";
+            return "entry,url,status,miss_reason,provider,tier,synthetic,elapsed_ms,attempted_providers,diagnostics_summary,rejected_candidates,provider_metrics";
         }
 
-        public static string BuildCsvRow(string title, string resolvedUrl, FaviconResult result)
+        public static string BuildCsvRow(string entryLabel, string resolvedUrl, FaviconResult result)
         {
             string status = result != null ? result.Status.ToString() : FaviconStatus.NotFound.ToString();
             string provider = result != null && !string.IsNullOrEmpty(result.Provider)
@@ -30,7 +30,7 @@ namespace KeeFetch
 
             return string.Join(",", new[]
             {
-                Csv(title),
+                Csv(entryLabel),
                 Csv(resolvedUrl),
                 Csv(status),
                 Csv(missReason),
@@ -45,7 +45,7 @@ namespace KeeFetch
             });
         }
 
-        public static string BuildLogLine(string title, string resolvedUrl, FaviconResult result)
+        public static string BuildLogLine(string entryLabel, string resolvedUrl, FaviconResult result)
         {
             string provider = result != null && !string.IsNullOrEmpty(result.Provider)
                 ? result.Provider
@@ -61,7 +61,7 @@ namespace KeeFetch
 
             string line = string.Format(
                 "[{0}] url={1}; provider={2}; tier={3}; synthetic={4}; elapsed={5}; missReason={6}; attempted=[{7}]; summary={8}",
-                title ?? string.Empty,
+                entryLabel ?? string.Empty,
                 resolvedUrl ?? string.Empty,
                 provider,
                 tier,
@@ -150,9 +150,85 @@ namespace KeeFetch
                 .ToArray());
         }
 
+        /// <summary>
+        /// Reduces an entry address to scheme, host, port and path so a
+        /// diagnostics report can be shared: credentials in the user-info
+        /// part, query strings and fragments are removed.
+        /// </summary>
+        public static string RedactUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return string.Empty;
+
+            string trimmed = url.Trim();
+
+            // Only web and Android app addresses help in a report. Other
+            // schemes carry local paths (file:) or command lines (a KeePass
+            // cmd:// URL can hold a password), so only the scheme is kept.
+            string scheme = LeadingScheme(trimmed);
+            if (scheme != null && !IsReportableScheme(scheme))
+                return scheme + ":";
+
+            Uri uri;
+            bool isAbsolute = Uri.TryCreate(trimmed, UriKind.Absolute, out uri);
+            if (isAbsolute && uri.IsFile)
+                return "file:";
+            if (isAbsolute && !string.IsNullOrEmpty(uri.Host))
+                return uri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped);
+
+            int cut = trimmed.IndexOfAny(new[] { '?', '#' });
+            if (cut >= 0)
+                trimmed = trimmed.Substring(0, cut);
+
+            // Remove "user:password@" from the authority part.
+            int authorityStart = trimmed.IndexOf("//", StringComparison.Ordinal);
+            authorityStart = authorityStart >= 0 ? authorityStart + 2 : 0;
+            int authorityEnd = trimmed.IndexOf('/', authorityStart);
+            if (authorityEnd < 0)
+                authorityEnd = trimmed.Length;
+            if (authorityEnd > authorityStart)
+            {
+                int at = trimmed.LastIndexOf('@', authorityEnd - 1, authorityEnd - authorityStart);
+                if (at >= 0)
+                    trimmed = trimmed.Substring(0, authorityStart) + trimmed.Substring(at + 1);
+            }
+
+            return trimmed;
+        }
+
+        /// <summary>The lower-case scheme of a "scheme://..." value, or null.</summary>
+        private static string LeadingScheme(string value)
+        {
+            int separator = value.IndexOf("://", StringComparison.Ordinal);
+            if (separator <= 0)
+                return null;
+
+            for (int i = 0; i < separator; i++)
+            {
+                char c = value[i];
+                bool letter = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+                bool allowed = letter || (i > 0 && ((c >= '0' && c <= '9') || c == '+' || c == '-' || c == '.'));
+                if (!allowed)
+                    return null;
+            }
+
+            return value.Substring(0, separator).ToLowerInvariant();
+        }
+
+        private static bool IsReportableScheme(string scheme)
+        {
+            return scheme == "http" || scheme == "https" || scheme == "androidapp";
+        }
+
         private static string Csv(string value)
         {
             value = value ?? string.Empty;
+
+            // Spreadsheet programs evaluate cells that start with these
+            // characters as formulas; a leading apostrophe keeps them text.
+            if (value.Length > 0 && "=+-@\t\r".IndexOf(value[0]) >= 0)
+                value = "'" + value;
+
             bool needsQuotes = value.IndexOfAny(new[] { ',', '"', '\r', '\n' }) >= 0;
             if (!needsQuotes)
                 return value;

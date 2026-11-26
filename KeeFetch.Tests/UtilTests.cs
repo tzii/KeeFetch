@@ -7,6 +7,35 @@ namespace KeeFetch.Tests
     public class UtilTests
     {
         [TestMethod]
+        public void ImageHelpers_RefuseImagesTooLargeToDecodeSafely()
+        {
+            byte[] tooWide = Png(Util.MaxDecodedImageSide + 1, 1);
+            byte[] largest = Png(Util.MaxDecodedImageSide, 1);
+            byte[] icon = Png(32, 32);
+
+            Assert.IsFalse(Util.HasSafeDimensions(tooWide));
+            Assert.IsFalse(Util.IsValidImage(tooWide));
+            Assert.IsNull(Util.NormalizeToPng(tooWide));
+            Assert.IsNull(Util.ResizeImage(tooWide, 128, 128));
+
+            Assert.IsTrue(Util.HasSafeDimensions(largest));
+            Assert.IsTrue(Util.IsValidImage(largest));
+            Assert.IsTrue(Util.IsValidImage(icon));
+            Assert.IsNotNull(Util.NormalizeToPng(icon));
+            Assert.IsFalse(Util.HasSafeDimensions(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }));
+        }
+
+        private static byte[] Png(int width, int height)
+        {
+            using (var bitmap = new System.Drawing.Bitmap(width, height))
+            using (var stream = new System.IO.MemoryStream())
+            {
+                bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                return stream.ToArray();
+            }
+        }
+
+        [TestMethod]
         public void HashData_Returns16ByteHash()
         {
             byte[] input = System.Text.Encoding.UTF8.GetBytes("test data");

@@ -78,13 +78,15 @@ namespace KeeFetch.Tests
                 Outcome(NewEntry("Updated 2"), BatchEntryStatus.Updated)
             };
 
+            var diagnostics = new DiagnosticsReport(new[] { "line" }, new[] { "row" }, null);
+            var changes = new RunChangeSet();
             var result = new BatchRunResult(
                 source,
                 true,
                 TimeSpan.FromSeconds(3),
                 "everyday",
-                "diagnostics.log",
-                "diagnostics.csv");
+                diagnostics,
+                changes);
 
             source.Clear();
 
@@ -99,8 +101,20 @@ namespace KeeFetch.Tests
             Assert.IsTrue(result.WasCancelled);
             Assert.AreEqual(TimeSpan.FromSeconds(3), result.Elapsed);
             Assert.AreEqual("everyday", result.ProfileId);
-            Assert.AreEqual("diagnostics.log", result.DiagnosticsLogPath);
-            Assert.AreEqual("diagnostics.csv", result.DiagnosticsCsvPath);
+            Assert.AreSame(diagnostics, result.Diagnostics);
+            Assert.AreSame(changes, result.Changes);
+        }
+
+        [TestMethod]
+        public void Constructor_SubstitutesEmptyDiagnosticsAndChangesForNull()
+        {
+            var result = new BatchRunResult(
+                new BatchEntryOutcome[0], false, TimeSpan.Zero, "everyday", null, null);
+
+            Assert.IsNotNull(result.Diagnostics);
+            Assert.IsTrue(result.Diagnostics.IsEmpty);
+            Assert.IsNotNull(result.Changes);
+            Assert.IsFalse(result.Changes.HasChanges);
         }
 
         [TestMethod]
@@ -118,8 +132,8 @@ namespace KeeFetch.Tests
                 false,
                 TimeSpan.FromSeconds(3),
                 "everyday",
-                "log.txt",
-                "rows.csv");
+                null,
+                null);
 
             CollectionAssert.AreEqual(
                 new[] { notFound.Entry, networkError.Entry },

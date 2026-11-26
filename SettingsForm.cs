@@ -26,8 +26,16 @@ namespace KeeFetch
             this.persistOnSave = persistOnSave;
             draft = SettingsDraft.FromConfiguration(config);
             InitializeComponent();
+            UiAssets.PrepareDialog(this);
             LoadPagesFromDraft();
             overviewPage.ProfileChanged += overviewPage_ProfileChanged;
+            providerPage.CustomizeRequested += providerPage_CustomizeRequested;
+        }
+
+        private void providerPage_CustomizeRequested(object sender, EventArgs e)
+        {
+            // Custom starts from the managed profile's providers and order.
+            overviewPage.ChooseProfile("custom");
         }
 
         private void LoadPagesFromDraft()
@@ -60,6 +68,12 @@ namespace KeeFetch
             }
 
             ClearValidationErrors();
+            // Saving Settings is an informed choice: the Overview page states
+            // what the chosen profile contacts, so do not ask again on the
+            // first download. A user moved off a retired profile still gets
+            // the first-run notice that explains the switch.
+            if (string.IsNullOrEmpty(config.RetiredProfileName))
+                draft.HasSeenFirstRunDisclosure = true;
             draft.ApplyTo(config);
             if (persistOnSave != null)
                 persistOnSave();

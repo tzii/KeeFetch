@@ -59,9 +59,19 @@ namespace KeeFetch.IconProviders
             int timeoutMs = Math.Max(1000, request.TimeoutMs);
             string currentUrl = url;
             Exception lastTransportException = null;
+            int retryDelayMs = 0;
 
             while (attempt < 2)
             {
+                // The backoff runs here, at the start of the retry, so every
+                // path that decides to retry (including an early `continue`
+                // on a 429/503 response) waits before contacting the host again.
+                if (retryDelayMs > 0)
+                {
+                    await Task.Delay(retryDelayMs, token).ConfigureAwait(false);
+                    retryDelayMs = 0;
+                }
+
                 bool shouldRetry = false;
                 HttpStatusCode? statusCode = null;
                 string contentType = null;
@@ -95,6 +105,7 @@ namespace KeeFetch.IconProviders
                                 shouldRetry = attempt == 0 && IsRetryableStatus(response.StatusCode);
                                 if (!shouldRetry)
                                     return null;
+                                retryDelayMs = RetryDelayMs(true);
                                 continue;
                             }
 
@@ -178,8 +189,7 @@ namespace KeeFetch.IconProviders
 
                 if (shouldRetry && attempt < 2)
                 {
-                    int delayMs = IsRetryableStatus(statusCode) ? 250 + NextJitter(350) : 150 + NextJitter(250);
-                    await Task.Delay(delayMs, token).ConfigureAwait(false);
+                    retryDelayMs = RetryDelayMs(IsRetryableStatus(statusCode));
                     continue;
                 }
 
@@ -298,6 +308,12 @@ namespace KeeFetch.IconProviders
             if (max >= 64) return 0.08;
             if (max >= 32) return 0.04;
             return 0.01;
+        }
+
+        /// <summary>Backoff before a retry: longer when the server asked to slow down.</summary>
+        internal static int RetryDelayMs(bool serverAskedToSlowDown)
+        {
+            return serverAskedToSlowDown ? 250 + NextJitter(350) : 150 + NextJitter(250);
         }
 
         private static bool IsRetryableStatus(HttpStatusCode? statusCode)

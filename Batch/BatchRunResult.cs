@@ -11,8 +11,8 @@ namespace KeeFetch.Batch
             bool wasCancelled,
             TimeSpan elapsed,
             string profileId,
-            string diagnosticsLogPath,
-            string diagnosticsCsvPath)
+            DiagnosticsReport diagnostics,
+            RunChangeSet changes)
         {
             if (outcomes == null)
                 throw new ArgumentNullException("outcomes");
@@ -44,8 +44,8 @@ namespace KeeFetch.Batch
             WasCancelled = wasCancelled;
             Elapsed = elapsed;
             ProfileId = profileId;
-            DiagnosticsLogPath = diagnosticsLogPath;
-            DiagnosticsCsvPath = diagnosticsCsvPath;
+            Diagnostics = diagnostics ?? new DiagnosticsReport(null, null, null);
+            Changes = changes ?? RunChangeSet.Empty;
         }
 
         public IReadOnlyList<BatchEntryOutcome> Outcomes { get; private set; }
@@ -60,8 +60,11 @@ namespace KeeFetch.Batch
         public bool WasCancelled { get; private set; }
         public TimeSpan Elapsed { get; private set; }
         public string ProfileId { get; private set; }
-        public string DiagnosticsLogPath { get; private set; }
-        public string DiagnosticsCsvPath { get; private set; }
+        /// <summary>Redacted diagnostics for this run, never null.</summary>
+        public DiagnosticsReport Diagnostics { get; private set; }
+
+        /// <summary>The database changes this run made, never null.</summary>
+        public RunChangeSet Changes { get; private set; }
 
         private void IncrementStatusCount(BatchEntryStatus status)
         {

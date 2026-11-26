@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+using System.Globalization;
 using System.Windows.Forms;
 using KeeFetch.Batch;
 using KeeFetch.FetchProfiles;
+using KeePassLib.Utility;
 
 namespace KeeFetch
 {
     internal enum CompletionAction
     {
         Close,
-        RetryEligible
+        RetryEligible,
+        Undo
     }
 
     internal sealed partial class CompletionForm : Form
@@ -26,15 +27,14 @@ namespace KeeFetch
 
             this.result = result;
             InitializeComponent();
+            UiAssets.PrepareDialog(this);
 
             SelectedAction = CompletionAction.Close;
-            DiagnosticsPath = GetExistingDiagnosticsPath(result);
             summaryText = BuildSummaryText(result);
             LoadResult(retryAllowed);
         }
 
         public CompletionAction SelectedAction { get; private set; }
-        public string DiagnosticsPath { get; private set; }
 
         internal static string BuildSummaryText(BatchRunResult result)
         {
@@ -42,67 +42,275 @@ namespace KeeFetch
                 throw new ArgumentNullException("result");
 
             var lines = new List<string>();
-            lines.Add("KeeFetch batch summary");
-            lines.Add("Profile: " + GetProfileDisplay(result.ProfileId));
-            lines.Add("Elapsed: " + FormatElapsed(result.Elapsed));
-            lines.Add("Total: " + result.TotalCount);
+            lines.Add("KeeFetch download summary");
+            lines.Add("Profile: " + ProfilePresentation.DisplayName(result.ProfileId));
+            lines.Add("Time: " + FormatElapsed(result.Elapsed));
+            lines.Add("Entries: " + result.TotalCount);
             lines.Add("Updated: " + result.UpdatedCount);
             lines.Add("Skipped: " + result.SkippedCount);
-            lines.Add("Not found: " + result.NotFoundCount);
-            lines.Add("Errors: " +
-                (result.RecoverableErrorCount + result.InvalidInputCount));
-            lines.Add("Invalid input: " + result.InvalidInputCount);
-            lines.Add("Cancelled entries: " + result.CancelledCount);
-            lines.Add("Retry eligible: " + result.RetryEntries.Count);
-            lines.Add("Run cancelled: " + (result.WasCancelled ? "Yes" : "No"));
-            lines.Add("Diagnostics log: " + DisplayPath(result.DiagnosticsLogPath));
-            lines.Add("Diagnostics CSV: " + DisplayPath(result.DiagnosticsCsvPath));
+            lines.Add("No icon found: " + result.NotFoundCount);
+            lines.Add("Failed: " + FailedCount(result));
+            lines.Add("Cancelled: " + result.CancelledCount);
+            lines.Add("Can be retried: " + result.RetryEntries.Count);
+            if (result.WasCancelled)
+                lines.Add("The download was cancelled before it finished.");
             return string.Join(Environment.NewLine, lines.ToArray());
+        }
+
+        internal static string BuildTitle(BatchRunResult result)
+        {
+            if (result.WasCancelled)
+                return "Download cancelled";
+            if (result.UpdatedCount == 0 && FailedCount(result) == 0 && result.NotFoundCount == 0)
+                return "Nothing to update";
+            if (result.UpdatedCount == 0)
+                return "No icons were downloaded";
+            if (FailedCount(result) + result.NotFoundCount == 0)
+                return "Icons downloaded";
+            return "Some icons could not be downloaded";
+        }
+
+        /// <summary>One line of counts, e.g. "3 of 6 entries updated, 1 skipped, 2 without an icon. Balanced profile, 2.4 s."</summary>
+        internal static string BuildCountsLine(BatchRunResult result)
+        {
+            var parts = new List<string>();
+            parts.Add(string.Format("{0} of {1} {2} updated", result.UpdatedCount, result.TotalCount,
+                result.TotalCount == 1 ? "entry" : "entries"));
+            if (result.SkippedCount > 0)
+                parts.Add(result.SkippedCount + " skipped");
+            if (result.NotFoundCount > 0)
+                parts.Add(result.NotFoundCount + " without an icon");
+            if (FailedCount(result) > 0)
+                parts.Add(FailedCount(result) + " failed");
+            if (result.CancelledCount > 0)
+                parts.Add(result.CancelledCount + " not processed");
+
+            return string.Join(", ", parts.ToArray()) + ". " +
+                ProfilePresentation.DisplayName(result.ProfileId) + " profile, " +
+                FormatElapsed(result.Elapsed) + ".";
         }
 
         private void LoadResult(bool retryAllowed)
         {
-            lblProfileValue.Text = GetProfileDisplay(result.ProfileId);
-            lblElapsedValue.Text = FormatElapsed(result.Elapsed);
-            lblTotalValue.Text = result.TotalCount.ToString();
-            lblUpdatedValue.Text = result.UpdatedCount.ToString();
-            lblSkippedValue.Text = result.SkippedCount.ToString();
-            lblNotFoundValue.Text = result.NotFoundCount.ToString();
-            lblErrorsValue.Text =
-                (result.RecoverableErrorCount + result.InvalidInputCount).ToString();
-            lblCancelledValue.Text = result.CancelledCount.ToString();
-            lblExplanation.Text = BuildExplanation(result);
+            lblTitle.Text = BuildTitle(result);
+            lblSummary.Text = BuildCountsLine(result);
+            LoadOutcomes();
 
-            bool canRetry = retryAllowed && !result.WasCancelled &&
-                result.RetryEntries.Count > 0;
-            btnRetry.Enabled = canRetry;
+            int retryCount = result.RetryEntries.Count;
+            bool canRetry = retryAllowed && !result.WasCancelled && retryCount > 0;
             btnRetry.Visible = retryAllowed;
-            if (!retryAllowed && result.RetryEntries.Count > 0)
+            btnRetry.Enabled = canRetry;
+            btnRetry.Text = retryCount > 0
+                ? string.Format("&Retry {0} {1}", retryCount, retryCount == 1 ? "entry" : "entries")
+                : "&Retry";
+            btnRetry.AccessibleName = btnRetry.Text.Replace("&", string.Empty);
+
+            btnUndo.Enabled = result.Changes.HasChanges;
+            btnExportDiagnostics.Enabled = !result.Diagnostics.IsEmpty;
+            lblHint.Text = BuildHint(result, retryAllowed);
+            UpdateHintWidth();
+            Resize += delegate { UpdateHintWidth(); };
+        }
+
+        protected override void OnLayout(LayoutEventArgs levent)
+        {
+            UpdateButtonRows();
+            base.OnLayout(levent);
+        }
+
+        internal static string BuildHint(BatchRunResult result, bool retryAllowed)
+        {
+            var sentences = new List<string>();
+            int retryCount = result.RetryEntries.Count;
+            if (result.WasCancelled)
+                sentences.Add("Icons that were already downloaded have been kept.");
+            else if (retryCount > 0 && retryAllowed)
+                sentences.Add("Retry asks the icon sources again for entries that failed or had no icon.");
+            else if (retryCount > 0)
+                sentences.Add("Entries still without an icon may have no icon online. Export diagnostics to see why.");
+
+            if (result.Changes.HasChanges)
+                sentences.Add("Undo restores the icons these entries had before.");
+
+            return string.Join(" ", sentences.ToArray());
+        }
+
+        private void LoadOutcomes()
+        {
+            lstOutcomes.BeginUpdate();
+            try
             {
-                lblRetryHint.Text =
-                    "KeeFetch allows one retry per batch. Inspect diagnostics for remaining misses.";
+                lstOutcomes.Items.Clear();
+                foreach (BatchEntryOutcome outcome in OrderForDisplay(result.Outcomes))
+                {
+                    var item = new ListViewItem(string.IsNullOrEmpty(outcome.Title) ? "(untitled)" : outcome.Title);
+                    item.SubItems.Add(DescribeStatus(outcome.Status));
+                    item.SubItems.Add(outcome.Status == BatchEntryStatus.Updated
+                        ? DescribeSource(outcome)
+                        : string.Empty);
+                    string details = DescribeDetails(outcome);
+                    item.SubItems.Add(details);
+                    item.ToolTipText = details;
+                    item.Tag = outcome;
+                    lstOutcomes.Items.Add(item);
+                }
             }
-            else if (result.WasCancelled)
+            finally
             {
-                lblRetryHint.Text =
-                    "Retry is unavailable for a cancelled run. Start a new download when ready.";
+                // -2 stretches the last column to the list's remaining width.
+                colDetails.Width = -2;
+                lstOutcomes.EndUpdate();
             }
-            else if (result.RetryEntries.Count == 0)
+        }
+
+        /// <summary>Entries that need attention first, then the rest, each group in run order.</summary>
+        internal static IList<BatchEntryOutcome> OrderForDisplay(IEnumerable<BatchEntryOutcome> outcomes)
+        {
+            var ordered = new List<BatchEntryOutcome>();
+            foreach (BatchEntryStatus status in new[]
             {
-                lblRetryHint.Text = "No entries are eligible for retry.";
-            }
-            else
+                BatchEntryStatus.RecoverableError,
+                BatchEntryStatus.NotFound,
+                BatchEntryStatus.InvalidInput,
+                BatchEntryStatus.Cancelled,
+                BatchEntryStatus.Skipped,
+                BatchEntryStatus.Updated
+            })
             {
-                lblRetryHint.Text = string.Format(
-                    "Retry {0} not-found or recoverable-error entr{1} once.",
-                    result.RetryEntries.Count,
-                    result.RetryEntries.Count == 1 ? "y" : "ies");
+                foreach (BatchEntryOutcome outcome in outcomes)
+                {
+                    if (outcome.Status == status)
+                        ordered.Add(outcome);
+                }
             }
 
-            btnOpenDiagnostics.Enabled = DiagnosticsPath != null;
-            lblDiagnostics.Text = DiagnosticsPath == null
-                ? "Diagnostics: no file was created for this run."
-                : "Diagnostics: " + DiagnosticsPath;
+            return ordered;
+        }
+
+        internal static string DescribeStatus(BatchEntryStatus status)
+        {
+            switch (status)
+            {
+                case BatchEntryStatus.Updated: return "Icon updated";
+                case BatchEntryStatus.Skipped: return "Skipped";
+                case BatchEntryStatus.NotFound: return "No icon found";
+                case BatchEntryStatus.RecoverableError: return "Failed";
+                case BatchEntryStatus.InvalidInput: return "No web address";
+                case BatchEntryStatus.Cancelled: return "Not processed";
+                default: return status.ToString();
+            }
+        }
+
+        private static string DescribeSource(BatchEntryOutcome outcome)
+        {
+            string source;
+            ProviderDefinition provider = FetchProfileCatalog.FindProvider(outcome.ProviderId);
+            if (provider == null)
+                source = string.IsNullOrEmpty(outcome.ProviderId) ? string.Empty : outcome.ProviderId;
+            else if (provider.IsThirdParty)
+                source = provider.DisplayName;
+            else
+                source = "Website";
+
+            return outcome.Synthetic ? source + " (generated)" : source;
+        }
+
+        /// <summary>
+        /// A plain-language reason for the outcome. Technical provider summaries
+        /// stay in the exported diagnostics.
+        /// </summary>
+        internal static string DescribeDetails(BatchEntryOutcome outcome)
+        {
+            switch (outcome.Status)
+            {
+                case BatchEntryStatus.Updated:
+                    return HostOf(outcome.ResolvedUrl);
+                case BatchEntryStatus.NotFound:
+                    return "None of the icon sources returned a usable icon.";
+                case BatchEntryStatus.RecoverableError:
+                    if (outcome.Recoverable || string.IsNullOrWhiteSpace(outcome.Diagnostic))
+                        return "A request timed out or failed. Retrying may help.";
+                    return outcome.Diagnostic;
+                default:
+                    return outcome.Diagnostic ?? string.Empty;
+            }
+        }
+
+        private static string HostOf(string url)
+        {
+            Uri uri;
+            if (!string.IsNullOrWhiteSpace(url) && Uri.TryCreate(url.Trim(), UriKind.Absolute, out uri) &&
+                !string.IsNullOrEmpty(uri.Host))
+            {
+                return uri.Host;
+            }
+
+            return FaviconDiagnostics.RedactUrl(url);
+        }
+
+        private static int FailedCount(BatchRunResult result)
+        {
+            return result.RecoverableErrorCount + result.InvalidInputCount;
+        }
+
+        internal static string FormatElapsed(TimeSpan elapsed)
+        {
+            if (elapsed < TimeSpan.Zero)
+                elapsed = TimeSpan.Zero;
+
+            if (elapsed.TotalSeconds < 60)
+            {
+                return elapsed.TotalSeconds.ToString(
+                    elapsed.TotalSeconds < 10 ? "0.0" : "0", CultureInfo.CurrentCulture) + " s";
+            }
+
+            if (elapsed.TotalHours < 1)
+                return string.Format("{0} min {1} s", (int)elapsed.TotalMinutes, elapsed.Seconds);
+
+            return string.Format("{0} h {1} min", (int)elapsed.TotalHours, elapsed.Minutes);
+        }
+
+        private void UpdateHintWidth()
+        {
+            int available = ClientSize.Width - rootLayout.Padding.Horizontal;
+            if (available <= 0)
+                return;
+
+            System.Drawing.Size max = new System.Drawing.Size(available, 0);
+            lblSummary.MaximumSize = max;
+            lblHint.MaximumSize = max;
+        }
+
+        private void UpdateButtonRows()
+        {
+            // When the window is too narrow for every button on one row
+            // (a small screen at high scaling caps its width), the main
+            // actions move to their own row instead of leaving the window.
+            if (buttonLayout == null)
+                return;
+
+            int available = ClientSize.Width - rootLayout.Padding.Horizontal -
+                buttonLayout.Margin.Horizontal;
+            if (available <= 0)
+                return;
+
+            int needed = secondaryActions.PreferredSize.Width +
+                secondaryActions.Margin.Horizontal +
+                primaryActions.PreferredSize.Width +
+                primaryActions.Margin.Horizontal;
+            bool stacked = needed > available;
+            TableLayoutPanelCellPosition target = stacked
+                ? new TableLayoutPanelCellPosition(0, 1)
+                : new TableLayoutPanelCellPosition(1, 0);
+            if (buttonLayout.GetCellPosition(primaryActions).Equals(target))
+                return;
+
+            buttonLayout.SuspendLayout();
+            buttonLayout.SetColumnSpan(primaryActions, 1);
+            buttonLayout.SetCellPosition(primaryActions, target);
+            buttonLayout.SetColumnSpan(primaryActions, stacked ? 2 : 1);
+            primaryActions.Margin = new Padding(0, stacked ? 4 : 0, 0, 0);
+            buttonLayout.ResumeLayout(true);
         }
 
         private void btnRetry_Click(object sender, EventArgs e)
@@ -111,6 +319,16 @@ namespace KeeFetch
                 return;
 
             SelectedAction = CompletionAction.RetryEligible;
+            DialogResult = DialogResult.OK;
+            Close();
+        }
+
+        private void btnUndo_Click(object sender, EventArgs e)
+        {
+            if (!btnUndo.Enabled)
+                return;
+
+            SelectedAction = CompletionAction.Undo;
             DialogResult = DialogResult.OK;
             Close();
         }
@@ -130,111 +348,36 @@ namespace KeeFetch
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    "KeeFetch could not copy the summary.\n\n" + ex.Message,
-                    "KeeFetch",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
+                MessageService.ShowInfo("KeeFetch could not copy the summary.", ex.Message);
             }
         }
 
-        private void btnOpenDiagnostics_Click(object sender, EventArgs e)
+        private void btnExportDiagnostics_Click(object sender, EventArgs e)
         {
-            if (DiagnosticsPath == null)
-                return;
-
-            try
+            using (var dialog = new SaveFileDialog())
             {
-                Process.Start(new ProcessStartInfo(DiagnosticsPath)
+                dialog.Title = "Export KeeFetch diagnostics";
+                dialog.Filter = "Text log (*.log)|*.log|Spreadsheet (*.csv)|*.csv";
+                // No extension, so the chosen file type supplies it.
+                dialog.FileName = "KeeFetch-diagnostics";
+                dialog.DefaultExt = "log";
+                dialog.AddExtension = true;
+                dialog.OverwritePrompt = true;
+                dialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                    return;
+
+                try
                 {
-                    UseShellExecute = true
-                });
-            }
-            catch (Exception ex)
-            {
-                TryCopyText(DiagnosticsPath);
-                MessageBox.Show(
-                    "KeeFetch could not open the diagnostics file. The exact path is shown below " +
-                    "and was copied when possible:\n\n" + DiagnosticsPath + "\n\n" + ex.Message,
-                    "KeeFetch",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
-            }
-        }
-
-        private static string GetExistingDiagnosticsPath(BatchRunResult result)
-        {
-            if (!string.IsNullOrWhiteSpace(result.DiagnosticsLogPath) &&
-                File.Exists(result.DiagnosticsLogPath))
-            {
-                return result.DiagnosticsLogPath;
-            }
-
-            if (!string.IsNullOrWhiteSpace(result.DiagnosticsCsvPath) &&
-                File.Exists(result.DiagnosticsCsvPath))
-            {
-                return result.DiagnosticsCsvPath;
-            }
-            return null;
-        }
-
-        private static string BuildExplanation(BatchRunResult result)
-        {
-            if (result.WasCancelled)
-                return "The run was cancelled. Completed entries are listed below; no automatic retry is offered.";
-
-            int failures = result.NotFoundCount + result.RecoverableErrorCount +
-                result.InvalidInputCount;
-            if (result.UpdatedCount > 0 && failures > 0)
-                return "Some entries were updated, while others need attention or may be retried.";
-            if (result.UpdatedCount == 0 && failures > 0)
-                return "No entries were updated. Review the counts and diagnostics before trying again.";
-            return "The batch completed without not-found or error outcomes.";
-        }
-
-        private static string GetProfileDisplay(string profileId)
-        {
-            try
-            {
-                FetchProfileDefinition profile =
-                    FetchProfileCatalog.GetRequiredProfile(profileId);
-                return profile.DisplayName + " (" + profile.Id + ")";
-            }
-            catch (InvalidOperationException)
-            {
-                return string.IsNullOrWhiteSpace(profileId) ? "Unknown" : profileId;
-            }
-        }
-
-        private static string FormatElapsed(TimeSpan elapsed)
-        {
-            if (elapsed < TimeSpan.Zero)
-                elapsed = TimeSpan.Zero;
-
-            int totalHours = (int)elapsed.TotalHours;
-            if (totalHours > 0)
-            {
-                return string.Format("{0:00}:{1:00}:{2:00}.{3:000}",
-                    totalHours, elapsed.Minutes, elapsed.Seconds, elapsed.Milliseconds);
-            }
-            return string.Format("{0:00}:{1:00}.{2:000}",
-                (int)elapsed.TotalMinutes, elapsed.Seconds, elapsed.Milliseconds);
-        }
-
-        private static string DisplayPath(string path)
-        {
-            return string.IsNullOrWhiteSpace(path) ? "(not available)" : path;
-        }
-
-        private static void TryCopyText(string text)
-        {
-            try
-            {
-                Clipboard.SetText(text);
-            }
-            catch (Exception ex)
-            {
-                Logger.Debug("CompletionForm.TryCopyText", ex);
+                    result.Diagnostics.WriteTo(dialog.FileName);
+                    lblHint.Text = "Diagnostics saved to " + dialog.FileName +
+                        ". Entries are numbered and web addresses have no credentials or query strings.";
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("ExportDiagnostics", ex);
+                    MessageService.ShowWarning("KeeFetch could not save the diagnostics.", ex.Message);
+                }
             }
         }
     }

@@ -33,7 +33,7 @@ namespace KeeFetch.Tests
                     items.Select(item => item.Id).ToArray());
 
                 ProfileListItem recommended = items.Single(item => item.Id == "everyday");
-                StringAssert.Contains(recommended.DisplayName, "Recommended");
+                StringAssert.Contains(recommended.DisplayName, "(recommended)");
                 Assert.AreEqual("everyday", ((ProfileListItem)profiles.SelectedItem).Id);
 
                 profiles.SelectedItem = items.Single(item => item.Id == "privacy");

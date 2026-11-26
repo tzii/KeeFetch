@@ -142,7 +142,8 @@ namespace KeeFetch.Tests
                 firstRun.Size = firstRun.MinimumSize;
                 firstRun.Show();
                 Application.DoEvents();
-                AssertTextFits(Find<Label>(firstRun, "lblProfileDescription"));
+                AssertTextFits(Find<Label>(firstRun, "lblProfile_everyday"));
+                AssertTextFits(Find<Label>(firstRun, "lblProfile_privacy"));
                 AssertTextFits(Find<Label>(firstRun, "lblPrivacyDisclosure"));
             }
         }
@@ -250,7 +251,7 @@ namespace KeeFetch.Tests
                 return false;
 
             return control is ButtonBase || control is TextBoxBase ||
-                control is ComboBox || control is ListBox ||
+                control is ComboBox || control is ListBox || control is ListView ||
                 control is NumericUpDown || control is LinkLabel ||
                 control is TabControl;
         }

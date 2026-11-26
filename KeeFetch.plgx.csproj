@@ -34,6 +34,7 @@
     <Compile Include="KeeFetchExt.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="SharedHttp.cs" />
+    <Compile Include="UiAssets.cs" />
     <Compile Include="SettingsForm.cs" />
     <Compile Include="SettingsForm.Designer.cs" />
     <Compile Include="Util.cs" />
@@ -45,10 +46,13 @@
     <Compile Include="FetchProfiles\FetchProfileDefinition.cs" />
     <Compile Include="FetchProfiles\FetchProfileCatalog.Generated.cs" />
     <Compile Include="FetchProfiles\LegacyProfileMigration.cs" />
+    <Compile Include="FetchProfiles\ProfilePresentation.cs" />
     <!-- Batch folder -->
     <Compile Include="Batch\BatchEntryOutcome.cs" />
     <Compile Include="Batch\BatchProgressSnapshot.cs" />
     <Compile Include="Batch\BatchRunResult.cs" />
+    <Compile Include="Batch\DiagnosticsReport.cs" />
+    <Compile Include="Batch\RunChangeSet.cs" />
     <!-- Settings folder -->
     <Compile Include="Settings\SettingsDraft.cs" />
     <Compile Include="Settings\ProfileListItem.cs" />

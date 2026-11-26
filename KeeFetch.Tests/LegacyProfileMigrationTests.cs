@@ -51,7 +51,7 @@ namespace KeeFetch.Tests
 
             Assert.AreEqual("everyday", id1);
             Assert.AreEqual(id1, id2);
-            Assert.AreEqual(1, version1);
+            Assert.AreEqual(LegacyProfileMigration.CurrentSchemaVersion, version1);
             Assert.AreEqual(version1, version2);
             Assert.AreEqual(toggles1, toggles2);
             Assert.AreEqual(order1, order2);
@@ -87,7 +87,96 @@ namespace KeeFetch.Tests
             AceCustomConfig ace = new AceCustomConfig();
             Configuration config = new Configuration(ace);
             Assert.AreEqual("everyday", config.FetchProfileId);
-            Assert.AreEqual(1, config.ProfileSchemaVersion);
+            Assert.AreEqual(LegacyProfileMigration.CurrentSchemaVersion, config.ProfileSchemaVersion);
+            Assert.IsNull(config.RetiredProfileName);
+        }
+
+        [TestMethod]
+        [DataRow("bulk-fast", "Fast")]
+        [DataRow("max-coverage", "Precise")]
+        public void Configuration_RetiredProfileMovesToBalancedAndAsksAgain(string storedId, string retiredName)
+        {
+            AceCustomConfig ace = new AceCustomConfig();
+            ace.SetString("KeeFetch.FetchProfileId", storedId);
+            ace.SetLong("KeeFetch.ProfileSchemaVersion", 1);
+            ace.SetBool("KeeFetch.HasSeenFirstRunDisclosure", true);
+
+            Configuration config = new Configuration(ace);
+
+            Assert.AreEqual("everyday", config.FetchProfileId);
+            Assert.AreEqual(retiredName, config.RetiredProfileName);
+            Assert.IsFalse(config.HasSeenFirstRunDisclosure,
+                "Balanced contacts other services than the retired profile, so the choice is shown again.");
+            Assert.AreEqual("everyday", ace.GetString("KeeFetch.FetchProfileId", null));
+            Assert.AreEqual(2L, ace.GetLong("KeeFetch.ProfileSchemaVersion", 0));
+
+            // KeePass may save its configuration before the user downloads
+            // anything; the notice must still be shown in the next session.
+            Configuration reloaded = new Configuration(ace);
+            Assert.AreEqual("everyday", reloaded.FetchProfileId);
+            Assert.AreEqual(retiredName, reloaded.RetiredProfileName);
+            Assert.IsFalse(reloaded.HasSeenFirstRunDisclosure);
+
+            reloaded.ClearRetiredProfileNotice();
+            Configuration confirmed = new Configuration(ace);
+            Assert.AreEqual("everyday", confirmed.FetchProfileId);
+            Assert.IsNull(confirmed.RetiredProfileName, "Once a profile is confirmed the notice is gone.");
+        }
+
+        [TestMethod]
+        [DataRow("Fast")]
+        [DataRow("Thorough")]
+        public void Configuration_LegacyPresetOfARetiredProfileMovesToBalanced(string legacyPreset)
+        {
+            AceCustomConfig ace = new AceCustomConfig();
+            ace.SetString("KeeFetch.FetchPresetMode", legacyPreset);
+
+            Configuration config = new Configuration(ace);
+
+            Assert.AreEqual("everyday", config.FetchProfileId);
+            Assert.IsNotNull(config.RetiredProfileName);
+            Assert.IsFalse(config.HasSeenFirstRunDisclosure);
+        }
+
+        [TestMethod]
+        [DataRow("everyday")]
+        [DataRow("privacy")]
+        [DataRow("custom")]
+        public void Configuration_OfferedProfilesAreKeptAsIs(string storedId)
+        {
+            AceCustomConfig ace = new AceCustomConfig();
+            ace.SetString("KeeFetch.FetchProfileId", storedId);
+            ace.SetBool("KeeFetch.HasSeenFirstRunDisclosure", true);
+
+            Configuration config = new Configuration(ace);
+
+            Assert.AreEqual(storedId, config.FetchProfileId);
+            Assert.IsNull(config.RetiredProfileName);
+            Assert.IsTrue(config.HasSeenFirstRunDisclosure);
+        }
+
+        [TestMethod]
+        public void Configuration_PreviewReplacesRetiredProfileWithoutWriting()
+        {
+            AceCustomConfig ace = new AceCustomConfig();
+            ace.SetString("KeeFetch.FetchProfileId", "bulk-fast");
+
+            Configuration config = new Configuration(ace);
+
+            Assert.AreEqual("everyday", config.PreviewFetchProfileId());
+            Assert.AreEqual("bulk-fast", ace.GetString("KeeFetch.FetchProfileId", null));
+        }
+
+        [TestMethod]
+        public void IsRetiredProfile_CoversOnlyHiddenManagedProfiles()
+        {
+            Assert.IsTrue(LegacyProfileMigration.IsRetiredProfile("bulk-fast"));
+            Assert.IsTrue(LegacyProfileMigration.IsRetiredProfile(" MAX-COVERAGE "));
+            Assert.IsFalse(LegacyProfileMigration.IsRetiredProfile("everyday"));
+            Assert.IsFalse(LegacyProfileMigration.IsRetiredProfile("privacy"));
+            Assert.IsFalse(LegacyProfileMigration.IsRetiredProfile("custom"));
+            Assert.IsFalse(LegacyProfileMigration.IsRetiredProfile("unknown"));
+            Assert.IsFalse(LegacyProfileMigration.IsRetiredProfile(null));
         }
 
         [TestMethod]

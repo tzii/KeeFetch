@@ -113,7 +113,7 @@ KeeFetch/
 
 ### Architecture Overview
 
-A download run executes one **`FetchExecutionPolicy`**, resolved once from the selected fetch profile (`Fast`, `Balanced`, `Privacy`, `Precise`) or from the Custom configuration. The policy fixes the provider order, per-provider and cumulative timeouts, whether synthetic fallbacks are allowed, and whether the run stops at the first strong resolver hit.
+A download run executes one **`FetchExecutionPolicy`**, resolved once from the selected fetch profile (`Balanced`, `Privacy`) or from the Custom configuration. The policy fixes the provider order, per-provider and cumulative timeouts, whether synthetic fallbacks are allowed, and whether the run stops at the first strong resolver hit.
 
 1. **`DirectSiteProvider`** fetches the site itself and parses `<head>`, the web manifest, `apple-touch-icon`, and `og:image` into candidates.
 2. **Resolver providers** (`TwentyIcons`, `DuckDuckGo`, `Google`, `Yandex`, `Favicone`, `IconHorse`) each return at most one candidate. They are skipped for targets recognized by the lexical private-host classifier. Redirects are followed manually, and every redirect destination is checked before contact; recognized private hosts are refused for resolvers. This lexical check does not validate DNS answers or prevent DNS rebinding. Direct Site explicitly permits private hosts. See the README privacy limitations.

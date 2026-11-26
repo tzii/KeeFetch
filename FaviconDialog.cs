@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,6 +26,7 @@ namespace KeeFetch
         private readonly PwEntry[] entries;
         private readonly FaviconDownloader downloader;
         private readonly string profileId;
+        private readonly bool skipExistingCustomIcons;
         private readonly ConcurrentQueue<PendingIconUpdate> pendingIconUpdates =
             new ConcurrentQueue<PendingIconUpdate>();
         private IStatusLogger logger;
@@ -42,12 +42,14 @@ namespace KeeFetch
         private bool dbModified;
         private BatchEntryOutcome[] outcomes;
         private string lastProgressText;
+        private RunChangeSet changeSet;
 
+        // Indexed by entry position so the report keeps the run's order even
+        // though entries finish concurrently; each slot has a single writer.
+        private string[] diagnosticsLogByEntry;
+        private string[] diagnosticsCsvByEntry;
         private readonly List<string> errorLog = new List<string>();
-        private readonly List<string> diagnosticsLog = new List<string>();
-        private readonly List<string> diagnosticsCsvRows = new List<string>();
         private readonly object errorLogLock = new object();
-        private readonly object diagnosticsLogLock = new object();
 
         // Concurrency limit to avoid ThreadPool starvation and excessive network load.
         private const int MaxConcurrency = 8;
@@ -55,10 +57,25 @@ namespace KeeFetch
         private const int UiApplyBatchSize = 12;
 
         public FaviconDialog(IPluginHost host, Configuration config, PwEntry[] entries)
+            : this(host, config, entries, config != null && config.SkipExistingIcons)
         {
+        }
+
+        /// <param name="skipExistingCustomIcons">
+        /// True to leave entries that already have a custom icon unchanged. Entries the
+        /// user selected explicitly are always fetched; group and database runs follow
+        /// the "skip existing icons" setting.
+        /// </param>
+        public FaviconDialog(IPluginHost host, Configuration config, PwEntry[] entries,
+            bool skipExistingCustomIcons)
+        {
+            if (config == null)
+                throw new ArgumentNullException("config");
+
             this.host = host;
             this.config = config;
             this.entries = entries;
+            this.skipExistingCustomIcons = skipExistingCustomIcons;
             profileId = config.FetchProfileId;
             downloader = new FaviconDownloader(config);
         }
@@ -132,10 +149,6 @@ namespace KeeFetch
                 CompleteMissingOutcomes(wasCancelled);
                 ApplyDatabaseChanges();
 
-                string diagnosticsLogPath;
-                string diagnosticsCsvPath;
-                ExportDiagnostics(out diagnosticsLogPath, out diagnosticsCsvPath);
-
                 runStopwatch.Stop();
                 Result = BuildBatchRunResult(
                     entries,
@@ -143,8 +156,8 @@ namespace KeeFetch
                     wasCancelled,
                     runStopwatch.Elapsed,
                     profileId,
-                    diagnosticsLogPath,
-                    diagnosticsCsvPath);
+                    BuildDiagnosticsReport(),
+                    changeSet);
 
                 UpdateProgressDisplay(true);
                 FaviconDownloader.ClearCache();
@@ -174,12 +187,10 @@ namespace KeeFetch
             {
             }
 
+            changeSet = new RunChangeSet();
+            diagnosticsLogByEntry = new string[totalCount];
+            diagnosticsCsvByEntry = new string[totalCount];
             lock (errorLogLock) { errorLog.Clear(); }
-            lock (diagnosticsLogLock)
-            {
-                diagnosticsLog.Clear();
-                diagnosticsCsvRows.Clear();
-            }
         }
 
         private async Task DoWork(CancellationToken token)
@@ -230,7 +241,7 @@ namespace KeeFetch
                                 catch (Exception ex)
                                 {
                                     string url = ReadEntryValue(entry, PwDefs.UrlField, "?");
-                                    AddError(entry, url, ex);
+                                    AddError(entryIndex, url, ex);
                                     TrySetOutcome(entryIndex, CreateOutcome(
                                         entry,
                                         url,
@@ -289,7 +300,7 @@ namespace KeeFetch
                 return;
             }
 
-            if (config.SkipExistingIcons && !entry.CustomIconUuid.Equals(PwUuid.Zero))
+            if (skipExistingCustomIcons && !entry.CustomIconUuid.Equals(PwUuid.Zero))
             {
                 TrySetOutcome(entryIndex, CreateOutcome(
                     entry,
@@ -317,7 +328,7 @@ namespace KeeFetch
                     BatchEntryStatus.InvalidInput,
                     null,
                     false,
-                    "Entry has no usable URL or title-derived domain."));
+                    "The entry has no web address."));
                 return;
             }
 
@@ -338,7 +349,7 @@ namespace KeeFetch
                     string.IsNullOrWhiteSpace(result.DiagnosticsSummary)
                         ? "No usable icon was found."
                         : result.DiagnosticsSummary));
-                AddDiagnosticsEntry(entry, url, result);
+                AddDiagnosticsEntry(entryIndex, url, result);
                 return;
             }
 
@@ -349,7 +360,7 @@ namespace KeeFetch
                 result.WasSyntheticFallback, url, GetProviderId(result.Provider),
                 result.ElapsedMilliseconds, result.DiagnosticsSummary));
 
-            AddDiagnosticsEntry(entry, url, result);
+            AddDiagnosticsEntry(entryIndex, url, result);
         }
 
         private void FlushPendingUpdates(int maxBatchSize)
@@ -408,7 +419,7 @@ namespace KeeFetch
                     }
                     catch (Exception ex)
                     {
-                        AddError(pending.Entry, pending.ResolvedUrl, ex);
+                        AddError(pending.EntryIndex, pending.ResolvedUrl, ex);
                         TrySetOutcome(pending.EntryIndex, new BatchEntryOutcome(
                             pending.Entry,
                             pending.EntryTitle,
@@ -455,16 +466,51 @@ namespace KeeFetch
                     }
                 }
 
-                db.CustomIcons.Add(newIcon);
-            }
+                // KeePass 2.48+ synchronizes icons by modification time. Without
+                // one, an older deletion record for the same image (icon ids are
+                // content hashes) would remove the new icon at the next sync.
+                try
+                {
+                    var modifiedProperty = newIcon.GetType().GetProperty("LastModificationTime");
+                    if (modifiedProperty != null && modifiedProperty.CanWrite)
+                        modifiedProperty.SetValue(newIcon, (DateTime?)DateTime.UtcNow);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug("ApplyIconUpdate", ex);
+                }
 
-            if (!pending.Entry.CustomIconUuid.Equals(iconUuid))
-            {
-                pending.Entry.CustomIconUuid = iconUuid;
-                pending.Entry.Touch(true, false);
+                db.CustomIcons.Add(newIcon);
+                changeSet.Database = db;
+                changeSet.RecordAddedIcon(iconUuid);
                 dbModified = true;
             }
 
+            PwEntry entry = pending.Entry;
+            PwUuid previousIconUuid = entry.CustomIconUuid;
+            if (!previousIconUuid.Equals(iconUuid))
+            {
+                // Keep the previous state in the entry history, like an edit
+                // made in KeePass itself, so the change can be reverted.
+                PwEntry lastBeforeBackup = LastHistoryItem(entry);
+                entry.CreateBackup(db);
+                PwEntry backup = LastHistoryItem(entry);
+                if (object.ReferenceEquals(backup, lastBeforeBackup))
+                    backup = null;
+
+                entry.CustomIconUuid = iconUuid;
+                entry.Touch(true, false);
+                changeSet.Database = db;
+                changeSet.RecordChange(new AppliedIconChange(entry, previousIconUuid, iconUuid, backup));
+                dbModified = true;
+            }
+
+        }
+
+        private static PwEntry LastHistoryItem(PwEntry entry)
+        {
+            uint count = entry.History.UCount;
+            return count == 0 ? null : entry.History.GetAt(count - 1);
         }
 
         private void UpdateProgressDisplay(bool isComplete)
@@ -525,73 +571,12 @@ namespace KeeFetch
             }
         }
 
-        private void ExportDiagnostics(out string diagnosticsLogPath,
-            out string diagnosticsCsvPath)
+        private DiagnosticsReport BuildDiagnosticsReport()
         {
-            diagnosticsLogPath = null;
-            diagnosticsCsvPath = null;
-            string logDir = null;
-            try
-            {
-                string dbPath = host.Database.IOConnectionInfo.Path;
-                if (!string.IsNullOrEmpty(dbPath) && File.Exists(dbPath))
-                    logDir = Path.GetDirectoryName(dbPath);
-            }
-            catch
-            {
-            }
-
-            if (string.IsNullOrEmpty(logDir) || !Directory.Exists(logDir))
-                logDir = Path.GetTempPath();
-
-            List<string> logLines;
-            List<string> csvRows;
             List<string> errors;
-            lock (diagnosticsLogLock)
-            {
-                logLines = new List<string>(diagnosticsLog);
-                csvRows = new List<string>(diagnosticsCsvRows);
-            }
             lock (errorLogLock) { errors = new List<string>(errorLog); }
 
-            if (errors.Count > 0)
-            {
-                if (logLines.Count > 0)
-                    logLines.Add(string.Empty);
-                logLines.Add("Processing errors:");
-                logLines.AddRange(errors);
-            }
-
-            if (logLines.Count > 0)
-            {
-                try
-                {
-                    string path = Path.Combine(logDir, "KeeFetch_diagnostics.log");
-                    File.WriteAllText(path, string.Join(Environment.NewLine, logLines));
-                    diagnosticsLogPath = path;
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error("ExportDiagnostics", ex);
-                }
-            }
-
-            if (csvRows.Count > 0)
-            {
-                try
-                {
-                    string path = Path.Combine(logDir, "KeeFetch_diagnostics.csv");
-                    var csvLines = new List<string>();
-                    csvLines.Add(FaviconDiagnostics.BuildCsvHeader());
-                    csvLines.AddRange(csvRows);
-                    File.WriteAllText(path, string.Join(Environment.NewLine, csvLines));
-                    diagnosticsCsvPath = path;
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error("ExportDiagnostics", ex);
-                }
-            }
+            return new DiagnosticsReport(diagnosticsLogByEntry, diagnosticsCsvByEntry, errors);
         }
 
         private void CompleteMissingOutcomes(bool wasCancelled)
@@ -682,8 +667,8 @@ namespace KeeFetch
             bool wasCancelled,
             TimeSpan elapsed,
             string profileId,
-            string diagnosticsLogPath,
-            string diagnosticsCsvPath)
+            DiagnosticsReport diagnostics,
+            RunChangeSet changes)
         {
             PwEntry[] entrySnapshot = inputEntries ?? new PwEntry[0];
             BatchEntryOutcome[] outcomeSnapshot = inputOutcomes ??
@@ -722,8 +707,8 @@ namespace KeeFetch
                 wasCancelled,
                 elapsed,
                 profileId,
-                diagnosticsLogPath,
-                diagnosticsCsvPath);
+                diagnostics,
+                changes);
         }
 
         private static BatchEntryOutcome CreateOutcome(
@@ -764,14 +749,21 @@ namespace KeeFetch
                 ContainsIgnoreCase(result.DiagnosticsSummary, "provider-error");
         }
 
-        private void AddError(PwEntry entry, string resolvedUrl, Exception ex)
+        private void AddError(int entryIndex, string resolvedUrl, Exception ex)
         {
-            string title = ReadEntryValue(entry, PwDefs.TitleField, "?");
             lock (errorLogLock)
             {
                 errorLog.Add(string.Format("[{0}] {1}: {2}",
-                    title, resolvedUrl ?? string.Empty, ex.ToString()));
+                    DiagnosticsEntryLabel(entryIndex),
+                    FaviconDiagnostics.RedactUrl(resolvedUrl),
+                    ex));
             }
+        }
+
+        /// <summary>Entries are identified by position so reports never contain titles.</summary>
+        internal static string DiagnosticsEntryLabel(int entryIndex)
+        {
+            return "#" + (entryIndex + 1);
         }
 
         private static string ReadEntryValue(PwEntry entry, string fieldName,
@@ -803,17 +795,17 @@ namespace KeeFetch
             return provider != null ? provider.Id : (idOrDisplayName ?? string.Empty);
         }
 
-        private void AddDiagnosticsEntry(PwEntry entry, string resolvedUrl, FaviconResult result)
+        private void AddDiagnosticsEntry(int entryIndex, string resolvedUrl, FaviconResult result)
         {
+            if (entryIndex < 0 || entryIndex >= diagnosticsLogByEntry.Length)
+                return;
+
             try
             {
-                string title = entry != null ? entry.Strings.ReadSafe(PwDefs.TitleField) : string.Empty;
-
-                lock (diagnosticsLogLock)
-                {
-                    diagnosticsLog.Add(FaviconDiagnostics.BuildLogLine(title, resolvedUrl, result));
-                    diagnosticsCsvRows.Add(FaviconDiagnostics.BuildCsvRow(title, resolvedUrl, result));
-                }
+                string label = DiagnosticsEntryLabel(entryIndex);
+                string url = FaviconDiagnostics.RedactUrl(resolvedUrl);
+                diagnosticsLogByEntry[entryIndex] = FaviconDiagnostics.BuildLogLine(label, url, result);
+                diagnosticsCsvByEntry[entryIndex] = FaviconDiagnostics.BuildCsvRow(label, url, result);
             }
             catch (Exception ex)
             {

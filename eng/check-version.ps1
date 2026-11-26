@@ -1,5 +1,5 @@
 param(
-    # Tag being released, e.g. v1.3.0 or refs/tags/v1.3.0. Omit to check only internal consistency.
+    # Tag being released, e.g. v1.4.0 or refs/tags/v1.4.0. Omit to check only internal consistency.
     [string]$Tag
 )
 
@@ -10,11 +10,23 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 
-$versionTxt = (Get-Content -LiteralPath (Join-Path $repoRoot "version.txt")) |
-    Where-Object { $_ -match '^\d+\.\d+\.\d+(\.\d+)?$' } | Select-Object -First 1
-if (-not $versionTxt) { throw "version.txt does not contain a version line." }
+# KeePass's version information format: a header line holding only the
+# separator, "<AssemblyTitle><separator><AssemblyFileVersion>" lines, and a
+# footer line holding only the separator. KeePass ignores any other layout.
+$feedLines = @(Get-Content -LiteralPath (Join-Path $repoRoot "version.txt") |
+    ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' })
+if ($feedLines.Count -lt 3 -or $feedLines[0] -ne ':' -or $feedLines[-1] -ne ':') {
+    throw "version.txt must start and end with a line containing only ':'."
+}
 
 $assemblyInfo = Get-Content -LiteralPath (Join-Path $repoRoot "Properties\AssemblyInfo.cs") -Raw
+$title = [regex]::Match($assemblyInfo, 'AssemblyTitle\("([^"]+)"\)').Groups[1].Value
+if (-not $title) { throw "AssemblyInfo.cs is missing AssemblyTitle." }
+$componentLines = @($feedLines[1..($feedLines.Count - 2)] | Where-Object { $_ -like "$($title):*" })
+if ($componentLines.Count -ne 1) { throw "version.txt must contain exactly one '$($title):<version>' line." }
+$versionTxt = $componentLines[0].Substring($title.Length + 1)
+if ($versionTxt -notmatch '^\d+(\.\d+){1,3}$') { throw "version.txt has an invalid version '$versionTxt'." }
+
 $asmVersion = [regex]::Match($assemblyInfo, 'AssemblyVersion\("([^"]+)"\)').Groups[1].Value
 $fileVersion = [regex]::Match($assemblyInfo, 'AssemblyFileVersion\("([^"]+)"\)').Groups[1].Value
 if (-not $asmVersion -or -not $fileVersion) { throw "AssemblyInfo.cs is missing AssemblyVersion or AssemblyFileVersion." }

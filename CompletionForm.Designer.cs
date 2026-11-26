@@ -5,33 +5,21 @@ namespace KeeFetch
         private System.ComponentModel.IContainer components = null;
         private System.Windows.Forms.TableLayoutPanel rootLayout;
         private System.Windows.Forms.Label lblTitle;
-        private System.Windows.Forms.Label lblExplanation;
-        private System.Windows.Forms.TableLayoutPanel metadataLayout;
-        private System.Windows.Forms.Label lblProfileCaption;
-        private System.Windows.Forms.Label lblProfileValue;
-        private System.Windows.Forms.Label lblElapsedCaption;
-        private System.Windows.Forms.Label lblElapsedValue;
-        private System.Windows.Forms.GroupBox grpCounts;
-        private System.Windows.Forms.TableLayoutPanel countsLayout;
-        private System.Windows.Forms.Label lblTotalCaption;
-        private System.Windows.Forms.Label lblTotalValue;
-        private System.Windows.Forms.Label lblUpdatedCaption;
-        private System.Windows.Forms.Label lblUpdatedValue;
-        private System.Windows.Forms.Label lblSkippedCaption;
-        private System.Windows.Forms.Label lblSkippedValue;
-        private System.Windows.Forms.Label lblNotFoundCaption;
-        private System.Windows.Forms.Label lblNotFoundValue;
-        private System.Windows.Forms.Label lblErrorsCaption;
-        private System.Windows.Forms.Label lblErrorsValue;
-        private System.Windows.Forms.Label lblCancelledCaption;
-        private System.Windows.Forms.Label lblCancelledValue;
-        private System.Windows.Forms.Label lblRetryHint;
-        private System.Windows.Forms.Label lblDiagnostics;
-        private System.Windows.Forms.FlowLayoutPanel actionPanel;
+        private System.Windows.Forms.Label lblSummary;
+        private System.Windows.Forms.ListView lstOutcomes;
+        private System.Windows.Forms.ColumnHeader colEntry;
+        private System.Windows.Forms.ColumnHeader colResult;
+        private System.Windows.Forms.ColumnHeader colSource;
+        private System.Windows.Forms.ColumnHeader colDetails;
+        private System.Windows.Forms.Label lblHint;
+        private System.Windows.Forms.TableLayoutPanel buttonLayout;
+        private System.Windows.Forms.FlowLayoutPanel secondaryActions;
+        private System.Windows.Forms.FlowLayoutPanel primaryActions;
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.Button btnRetry;
+        private System.Windows.Forms.Button btnUndo;
+        private System.Windows.Forms.Button btnExportDiagnostics;
         private System.Windows.Forms.Button btnCopySummary;
-        private System.Windows.Forms.Button btnOpenDiagnostics;
 
         protected override void Dispose(bool disposing)
         {
@@ -45,43 +33,30 @@ namespace KeeFetch
             components = new System.ComponentModel.Container();
             rootLayout = new System.Windows.Forms.TableLayoutPanel();
             lblTitle = new System.Windows.Forms.Label();
-            lblExplanation = new System.Windows.Forms.Label();
-            metadataLayout = new System.Windows.Forms.TableLayoutPanel();
-            lblProfileCaption = new System.Windows.Forms.Label();
-            lblProfileValue = new System.Windows.Forms.Label();
-            lblElapsedCaption = new System.Windows.Forms.Label();
-            lblElapsedValue = new System.Windows.Forms.Label();
-            grpCounts = new System.Windows.Forms.GroupBox();
-            countsLayout = new System.Windows.Forms.TableLayoutPanel();
-            lblTotalCaption = new System.Windows.Forms.Label();
-            lblTotalValue = new System.Windows.Forms.Label();
-            lblUpdatedCaption = new System.Windows.Forms.Label();
-            lblUpdatedValue = new System.Windows.Forms.Label();
-            lblSkippedCaption = new System.Windows.Forms.Label();
-            lblSkippedValue = new System.Windows.Forms.Label();
-            lblNotFoundCaption = new System.Windows.Forms.Label();
-            lblNotFoundValue = new System.Windows.Forms.Label();
-            lblErrorsCaption = new System.Windows.Forms.Label();
-            lblErrorsValue = new System.Windows.Forms.Label();
-            lblCancelledCaption = new System.Windows.Forms.Label();
-            lblCancelledValue = new System.Windows.Forms.Label();
-            lblRetryHint = new System.Windows.Forms.Label();
-            lblDiagnostics = new System.Windows.Forms.Label();
-            actionPanel = new System.Windows.Forms.FlowLayoutPanel();
+            lblSummary = new System.Windows.Forms.Label();
+            lstOutcomes = new System.Windows.Forms.ListView();
+            colEntry = new System.Windows.Forms.ColumnHeader();
+            colResult = new System.Windows.Forms.ColumnHeader();
+            colSource = new System.Windows.Forms.ColumnHeader();
+            colDetails = new System.Windows.Forms.ColumnHeader();
+            lblHint = new System.Windows.Forms.Label();
+            buttonLayout = new System.Windows.Forms.TableLayoutPanel();
+            secondaryActions = new System.Windows.Forms.FlowLayoutPanel();
+            primaryActions = new System.Windows.Forms.FlowLayoutPanel();
             btnClose = new System.Windows.Forms.Button();
             btnRetry = new System.Windows.Forms.Button();
+            btnUndo = new System.Windows.Forms.Button();
+            btnExportDiagnostics = new System.Windows.Forms.Button();
             btnCopySummary = new System.Windows.Forms.Button();
-            btnOpenDiagnostics = new System.Windows.Forms.Button();
             rootLayout.SuspendLayout();
-            metadataLayout.SuspendLayout();
-            grpCounts.SuspendLayout();
-            countsLayout.SuspendLayout();
-            actionPanel.SuspendLayout();
+            buttonLayout.SuspendLayout();
+            secondaryActions.SuspendLayout();
+            primaryActions.SuspendLayout();
             SuspendLayout();
 
             rootLayout.Name = "rootLayout";
             rootLayout.ColumnCount = 1;
-            rootLayout.RowCount = 7;
+            rootLayout.RowCount = 5;
             rootLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
                 System.Windows.Forms.SizeType.Percent, 100F));
             rootLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(
@@ -89,11 +64,7 @@ namespace KeeFetch
             rootLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(
                 System.Windows.Forms.SizeType.AutoSize));
             rootLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(
-                System.Windows.Forms.SizeType.AutoSize));
-            rootLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(
                 System.Windows.Forms.SizeType.Percent, 100F));
-            rootLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(
-                System.Windows.Forms.SizeType.AutoSize));
             rootLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(
                 System.Windows.Forms.SizeType.AutoSize));
             rootLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(
@@ -107,200 +78,139 @@ namespace KeeFetch
                 System.Drawing.SystemFonts.MessageBoxFont.FontFamily,
                 12F,
                 System.Drawing.FontStyle.Bold);
-            lblTitle.Margin = new System.Windows.Forms.Padding(0, 0, 0, 8);
-            lblTitle.Text = "KeeFetch batch complete";
+            lblTitle.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
 
-            lblExplanation.Name = "lblExplanation";
-            lblExplanation.AccessibleName = "Batch completion explanation";
-            lblExplanation.AutoSize = true;
-            lblExplanation.Dock = System.Windows.Forms.DockStyle.Fill;
-            lblExplanation.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
+            lblSummary.Name = "lblSummary";
+            lblSummary.AccessibleDescription = "Download summary";
+            lblSummary.AutoSize = true;
+            lblSummary.Margin = new System.Windows.Forms.Padding(0, 0, 0, 10);
 
-            metadataLayout.Name = "metadataLayout";
-            metadataLayout.AutoSize = true;
-            metadataLayout.ColumnCount = 2;
-            metadataLayout.RowCount = 2;
-            metadataLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
+            colEntry.Text = "Entry";
+            colEntry.Width = 170;
+            colResult.Text = "Result";
+            colResult.Width = 110;
+            colSource.Text = "Icon from";
+            colSource.Width = 100;
+            colDetails.Text = "Details";
+            colDetails.Width = 260;
+
+            lstOutcomes.Name = "lstOutcomes";
+            lstOutcomes.AccessibleName = "Result for each entry";
+            lstOutcomes.Columns.AddRange(new[] { colEntry, colResult, colSource, colDetails });
+            lstOutcomes.Dock = System.Windows.Forms.DockStyle.Fill;
+            lstOutcomes.FullRowSelect = true;
+            lstOutcomes.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            lstOutcomes.HideSelection = false;
+            lstOutcomes.Margin = new System.Windows.Forms.Padding(0, 0, 0, 8);
+            lstOutcomes.MultiSelect = false;
+            lstOutcomes.ShowItemToolTips = true;
+            lstOutcomes.TabIndex = 0;
+            lstOutcomes.UseCompatibleStateImageBehavior = false;
+            lstOutcomes.View = System.Windows.Forms.View.Details;
+
+            lblHint.Name = "lblHint";
+            lblHint.AccessibleDescription = "What you can do next";
+            lblHint.AutoSize = true;
+            lblHint.Margin = new System.Windows.Forms.Padding(0, 0, 0, 8);
+
+            buttonLayout.Name = "buttonLayout";
+            buttonLayout.AutoSize = true;
+            buttonLayout.ColumnCount = 2;
+            buttonLayout.RowCount = 1;
+            buttonLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
                 System.Windows.Forms.SizeType.AutoSize));
-            metadataLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
+            buttonLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
                 System.Windows.Forms.SizeType.Percent, 100F));
-            metadataLayout.Dock = System.Windows.Forms.DockStyle.Fill;
-            metadataLayout.Margin = new System.Windows.Forms.Padding(0, 0, 0, 10);
+            buttonLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(
+                System.Windows.Forms.SizeType.AutoSize));
+            buttonLayout.Dock = System.Windows.Forms.DockStyle.Fill;
+            buttonLayout.Margin = new System.Windows.Forms.Padding(0, 4, 0, 0);
+            buttonLayout.TabIndex = 1;
 
-            ConfigureCaption(lblProfileCaption, "lblProfileCaption", "Profile:", 0);
-            ConfigureValue(lblProfileValue, "lblProfileValue", "Batch profile", 0);
-            ConfigureCaption(lblElapsedCaption, "lblElapsedCaption", "Elapsed:", 1);
-            ConfigureValue(lblElapsedValue, "lblElapsedValue", "Batch elapsed time", 1);
-            metadataLayout.Controls.Add(lblProfileCaption, 0, 0);
-            metadataLayout.Controls.Add(lblProfileValue, 1, 0);
-            metadataLayout.Controls.Add(lblElapsedCaption, 0, 1);
-            metadataLayout.Controls.Add(lblElapsedValue, 1, 1);
+            secondaryActions.Name = "secondaryActions";
+            secondaryActions.AutoSize = true;
+            secondaryActions.Dock = System.Windows.Forms.DockStyle.Fill;
+            secondaryActions.FlowDirection = System.Windows.Forms.FlowDirection.LeftToRight;
+            secondaryActions.Margin = new System.Windows.Forms.Padding(0);
+            secondaryActions.TabIndex = 0;
+            secondaryActions.WrapContents = false;
 
-            grpCounts.Name = "grpCounts";
-            grpCounts.AccessibleName = "Batch outcome counts";
-            grpCounts.Dock = System.Windows.Forms.DockStyle.Fill;
-            grpCounts.Margin = new System.Windows.Forms.Padding(0, 0, 0, 10);
-            grpCounts.Padding = new System.Windows.Forms.Padding(10);
-            grpCounts.Text = "Outcomes";
+            primaryActions.Name = "primaryActions";
+            primaryActions.AutoSize = true;
+            primaryActions.Dock = System.Windows.Forms.DockStyle.Fill;
+            primaryActions.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
+            primaryActions.Margin = new System.Windows.Forms.Padding(0);
+            primaryActions.TabIndex = 1;
+            primaryActions.WrapContents = false;
 
-            countsLayout.Name = "countsLayout";
-            countsLayout.ColumnCount = 4;
-            countsLayout.RowCount = 3;
-            countsLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
-                System.Windows.Forms.SizeType.Percent, 35F));
-            countsLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
-                System.Windows.Forms.SizeType.Percent, 15F));
-            countsLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
-                System.Windows.Forms.SizeType.Percent, 35F));
-            countsLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
-                System.Windows.Forms.SizeType.Percent, 15F));
-            countsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(
-                System.Windows.Forms.SizeType.Percent, 33.33F));
-            countsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(
-                System.Windows.Forms.SizeType.Percent, 33.33F));
-            countsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(
-                System.Windows.Forms.SizeType.Percent, 33.34F));
-            countsLayout.Dock = System.Windows.Forms.DockStyle.Fill;
-
-            ConfigureCountPair(lblTotalCaption, lblTotalValue,
-                "lblTotalCaption", "Total", "lblTotalValue", "Total entries");
-            ConfigureCountPair(lblUpdatedCaption, lblUpdatedValue,
-                "lblUpdatedCaption", "Updated", "lblUpdatedValue", "Updated entries");
-            ConfigureCountPair(lblSkippedCaption, lblSkippedValue,
-                "lblSkippedCaption", "Skipped", "lblSkippedValue", "Skipped entries");
-            ConfigureCountPair(lblNotFoundCaption, lblNotFoundValue,
-                "lblNotFoundCaption", "Not found", "lblNotFoundValue", "Not found entries");
-            ConfigureCountPair(lblErrorsCaption, lblErrorsValue,
-                "lblErrorsCaption", "Errors", "lblErrorsValue", "Error entries");
-            ConfigureCountPair(lblCancelledCaption, lblCancelledValue,
-                "lblCancelledCaption", "Cancelled", "lblCancelledValue", "Cancelled entries");
-            countsLayout.Controls.Add(lblTotalCaption, 0, 0);
-            countsLayout.Controls.Add(lblTotalValue, 1, 0);
-            countsLayout.Controls.Add(lblUpdatedCaption, 2, 0);
-            countsLayout.Controls.Add(lblUpdatedValue, 3, 0);
-            countsLayout.Controls.Add(lblSkippedCaption, 0, 1);
-            countsLayout.Controls.Add(lblSkippedValue, 1, 1);
-            countsLayout.Controls.Add(lblNotFoundCaption, 2, 1);
-            countsLayout.Controls.Add(lblNotFoundValue, 3, 1);
-            countsLayout.Controls.Add(lblErrorsCaption, 0, 2);
-            countsLayout.Controls.Add(lblErrorsValue, 1, 2);
-            countsLayout.Controls.Add(lblCancelledCaption, 2, 2);
-            countsLayout.Controls.Add(lblCancelledValue, 3, 2);
-            grpCounts.Controls.Add(countsLayout);
-
-            lblRetryHint.Name = "lblRetryHint";
-            lblRetryHint.AccessibleName = "Retry availability";
-            lblRetryHint.AutoSize = true;
-            lblRetryHint.Dock = System.Windows.Forms.DockStyle.Fill;
-            lblRetryHint.Margin = new System.Windows.Forms.Padding(0, 0, 0, 8);
-
-            lblDiagnostics.Name = "lblDiagnostics";
-            lblDiagnostics.AccessibleName = "Diagnostics path";
-            lblDiagnostics.AutoEllipsis = true;
-            lblDiagnostics.AutoSize = false;
-            lblDiagnostics.Dock = System.Windows.Forms.DockStyle.Fill;
-            lblDiagnostics.Height = 28;
-            lblDiagnostics.Margin = new System.Windows.Forms.Padding(0, 0, 0, 8);
-
-            actionPanel.Name = "actionPanel";
-            actionPanel.AutoSize = true;
-            actionPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            actionPanel.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
-            actionPanel.Margin = new System.Windows.Forms.Padding(0, 8, 0, 0);
-            actionPanel.WrapContents = true;
-
-            ConfigureButton(btnClose, "btnClose", "&Close", "Close batch summary", 0);
+            ConfigureButton(btnClose, "btnClose", "&Close", "Close the download summary", 2);
             btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             btnClose.Click += btnClose_Click;
-            ConfigureButton(btnRetry, "btnRetry", "&Retry Eligible Entries",
-                "Retry eligible entries once", 1);
+            ConfigureButton(btnUndo, "btnUndo", "&Undo this run",
+                "Restore the icons the entries had before this run", 1);
+            btnUndo.Click += btnUndo_Click;
+            ConfigureButton(btnRetry, "btnRetry", "&Retry",
+                "Retry entries that failed or had no icon", 0);
             btnRetry.Click += btnRetry_Click;
-            ConfigureButton(btnCopySummary, "btnCopySummary", "Copy &Summary",
-                "Copy batch summary", 2);
+            ConfigureButton(btnExportDiagnostics, "btnExportDiagnostics", "&Export diagnostics...",
+                "Export diagnostics without entry titles or credentials", 0);
+            btnExportDiagnostics.Click += btnExportDiagnostics_Click;
+            ConfigureButton(btnCopySummary, "btnCopySummary", "Copy &summary",
+                "Copy the download summary", 1);
             btnCopySummary.Click += btnCopySummary_Click;
-            ConfigureButton(btnOpenDiagnostics, "btnOpenDiagnostics", "&Open Diagnostics",
-                "Open diagnostics file", 3);
-            btnOpenDiagnostics.Click += btnOpenDiagnostics_Click;
-            actionPanel.Controls.Add(btnClose);
-            actionPanel.Controls.Add(btnRetry);
-            actionPanel.Controls.Add(btnCopySummary);
-            actionPanel.Controls.Add(btnOpenDiagnostics);
+
+            primaryActions.Controls.Add(btnClose);
+            primaryActions.Controls.Add(btnUndo);
+            primaryActions.Controls.Add(btnRetry);
+            secondaryActions.Controls.Add(btnExportDiagnostics);
+            secondaryActions.Controls.Add(btnCopySummary);
+            buttonLayout.Controls.Add(secondaryActions, 0, 0);
+            buttonLayout.Controls.Add(primaryActions, 1, 0);
 
             rootLayout.Controls.Add(lblTitle, 0, 0);
-            rootLayout.Controls.Add(lblExplanation, 0, 1);
-            rootLayout.Controls.Add(metadataLayout, 0, 2);
-            rootLayout.Controls.Add(grpCounts, 0, 3);
-            rootLayout.Controls.Add(lblRetryHint, 0, 4);
-            rootLayout.Controls.Add(lblDiagnostics, 0, 5);
-            rootLayout.Controls.Add(actionPanel, 0, 6);
+            rootLayout.Controls.Add(lblSummary, 0, 1);
+            rootLayout.Controls.Add(lstOutcomes, 0, 2);
+            rootLayout.Controls.Add(lblHint, 0, 3);
+            rootLayout.Controls.Add(buttonLayout, 0, 4);
 
             AcceptButton = btnClose;
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             BackColor = System.Drawing.SystemColors.Control;
             CancelButton = btnClose;
-            ClientSize = new System.Drawing.Size(650, 500);
+            ClientSize = new System.Drawing.Size(720, 460);
             Controls.Add(rootLayout);
             ForeColor = System.Drawing.SystemColors.ControlText;
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
-            MaximizeBox = true;
+            MaximizeBox = false;
             MinimizeBox = false;
-            MinimumSize = new System.Drawing.Size(600, 480);
+            MinimumSize = new System.Drawing.Size(660, 400);
             Name = "CompletionForm";
+            ShowIcon = true;
             ShowInTaskbar = false;
             StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            Text = "KeeFetch Results";
+            Text = "KeeFetch";
 
             rootLayout.ResumeLayout(false);
             rootLayout.PerformLayout();
-            metadataLayout.ResumeLayout(false);
-            metadataLayout.PerformLayout();
-            grpCounts.ResumeLayout(false);
-            countsLayout.ResumeLayout(false);
-            countsLayout.PerformLayout();
-            actionPanel.ResumeLayout(false);
-            actionPanel.PerformLayout();
+            buttonLayout.ResumeLayout(false);
+            buttonLayout.PerformLayout();
+            secondaryActions.ResumeLayout(false);
+            secondaryActions.PerformLayout();
+            primaryActions.ResumeLayout(false);
+            primaryActions.PerformLayout();
             ResumeLayout(false);
         }
 
-        private static void ConfigureCaption(System.Windows.Forms.Label label,
-            string name, string text, int row)
-        {
-            label.Name = name;
-            label.AutoSize = true;
-            label.Margin = new System.Windows.Forms.Padding(0, row == 0 ? 0 : 4, 12, 0);
-            label.Text = text;
-        }
-
-        private static void ConfigureValue(System.Windows.Forms.Label label,
-            string name, string accessibleName, int row)
-        {
-            label.Name = name;
-            label.AccessibleName = accessibleName;
-            label.AutoSize = true;
-            label.Margin = new System.Windows.Forms.Padding(0, row == 0 ? 0 : 4, 0, 0);
-        }
-
-        private static void ConfigureCountPair(System.Windows.Forms.Label caption,
-            System.Windows.Forms.Label value, string captionName, string captionText,
-            string valueName, string accessibleName)
-        {
-            caption.Name = captionName;
-            caption.AutoSize = true;
-            caption.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            caption.Text = captionText + ":";
-            value.Name = valueName;
-            value.AccessibleName = accessibleName;
-            value.AutoSize = true;
-            value.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            value.Text = "0";
-        }
-
         private static void ConfigureButton(System.Windows.Forms.Button button,
-            string name, string text, string accessibleName, int tabIndex)
+            string name, string text, string description, int tabIndex)
         {
+            // The accessible name repeats the visible text so voice control
+            // finds the button by what it shows; the description explains it.
             button.Name = name;
-            button.AccessibleName = accessibleName;
+            button.AccessibleName = text.Replace("&", string.Empty);
+            button.AccessibleDescription = description;
             button.AutoSize = true;
+            button.MinimumSize = new System.Drawing.Size(88, 0);
             button.TabIndex = tabIndex;
             button.Text = text;
             button.UseVisualStyleBackColor = true;

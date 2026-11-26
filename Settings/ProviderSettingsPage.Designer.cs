@@ -13,6 +13,7 @@ namespace KeeFetch.Settings
         private Button btnProviderUp;
         private Button btnProviderDown;
         private Button btnProviderReset;
+        private Button btnCustomize;
 
         private void InitializeComponent()
         {
@@ -24,6 +25,7 @@ namespace KeeFetch.Settings
             btnProviderUp = new Button();
             btnProviderDown = new Button();
             btnProviderReset = new Button();
+            btnCustomize = new Button();
             SuspendLayout();
 
             layout.Name = "providerLayout";
@@ -50,7 +52,9 @@ namespace KeeFetch.Settings
 
             clbProviders.Name = "clbProviders";
             clbProviders.AccessibleName = "Enabled providers in execution order";
-            clbProviders.CheckOnClick = true;
+            // Clicking a name selects it for reordering; the checkbox or the
+            // space bar changes whether it is used.
+            clbProviders.CheckOnClick = false;
             clbProviders.Dock = DockStyle.Fill;
             clbProviders.IntegralHeight = false;
             clbProviders.TabIndex = 0;
@@ -63,13 +67,15 @@ namespace KeeFetch.Settings
             buttonPanel.WrapContents = false;
             buttonPanel.Margin = new Padding(0, 10, 0, 0);
 
-            ConfigureButton(btnProviderUp, "btnProviderUp", "Move up", "Move selected provider up", 0, btnProviderUp_Click);
-            ConfigureButton(btnProviderDown, "btnProviderDown", "Move down", "Move selected provider down", 1, btnProviderDown_Click);
-            ConfigureButton(btnProviderReset, "btnProviderReset", "Reset", "Reset provider order and enabled providers", 2, btnProviderReset_Click);
+            ConfigureButton(btnProviderUp, "btnProviderUp", "Move &up", "Move selected provider up", 0, btnProviderUp_Click);
+            ConfigureButton(btnProviderDown, "btnProviderDown", "Move &down", "Move selected provider down", 1, btnProviderDown_Click);
+            ConfigureButton(btnProviderReset, "btnProviderReset", "&Reset", "Reset provider order and enabled providers", 2, btnProviderReset_Click);
+            ConfigureButton(btnCustomize, "btnCustomize", "C&ustomize...", "Switch to the Custom profile to edit providers", 3, btnCustomize_Click);
 
             buttonPanel.Controls.Add(btnProviderUp);
             buttonPanel.Controls.Add(btnProviderDown);
             buttonPanel.Controls.Add(btnProviderReset);
+            buttonPanel.Controls.Add(btnCustomize);
             layout.Controls.Add(lblHeading, 0, 0);
             layout.Controls.Add(lblProviderHint, 0, 1);
             layout.Controls.Add(clbProviders, 0, 2);

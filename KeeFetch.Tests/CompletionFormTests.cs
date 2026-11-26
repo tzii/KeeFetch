@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 using KeeFetch.Batch;
@@ -14,23 +13,39 @@ namespace KeeFetch.Tests
     public class CompletionFormTests
     {
         [TestMethod]
-        public void CompletionForm_DisplaysCountsProfileAndElapsedTime()
+        public void CompletionForm_ShowsHeadlineCountsAndOneRowPerEntryProblemsFirst()
         {
-            BatchRunResult result = SampleResult(false, null, null);
-
-            using (var form = new CompletionForm(result, true))
+            using (var form = new CompletionForm(SampleResult(false, null, null), true))
             {
-                Assert.AreEqual("Balanced (everyday)",
-                    GetField<Label>(form, "lblProfileValue").Text);
-                Assert.AreEqual("00:07.250",
-                    GetField<Label>(form, "lblElapsedValue").Text);
-                Assert.AreEqual("3", GetField<Label>(form, "lblTotalValue").Text);
-                Assert.AreEqual("1", GetField<Label>(form, "lblUpdatedValue").Text);
-                Assert.AreEqual("1", GetField<Label>(form, "lblNotFoundValue").Text);
-                Assert.AreEqual("1", GetField<Label>(form, "lblErrorsValue").Text);
-                StringAssert.Contains(GetField<Label>(form, "lblExplanation").Text,
-                    "Some entries");
+                Assert.AreEqual("Some icons could not be downloaded",
+                    GetField<Label>(form, "lblTitle").Text);
+                Assert.AreEqual(
+                    "1 of 3 entries updated, 1 without an icon, 1 failed. Balanced profile, " +
+                    (7.4).ToString("0.0") + " s.",
+                    GetField<Label>(form, "lblSummary").Text);
+
+                ListView list = GetField<ListView>(form, "lstOutcomes");
+                Assert.AreEqual(3, list.Items.Count);
+                Assert.AreEqual("Network", list.Items[0].Text);
+                Assert.AreEqual("Failed", list.Items[0].SubItems[1].Text);
+                Assert.AreEqual("Missing", list.Items[1].Text);
+                Assert.AreEqual("No icon found", list.Items[1].SubItems[1].Text);
+                Assert.AreEqual("Updated", list.Items[2].Text);
+                Assert.AreEqual("Icon updated", list.Items[2].SubItems[1].Text);
+                Assert.AreEqual("Website", list.Items[2].SubItems[2].Text);
+                Assert.AreEqual("example.com", list.Items[2].SubItems[3].Text);
             }
+        }
+
+        [TestMethod]
+        public void CompletionForm_TitleDescribesTheRunWithoutJargon()
+        {
+            Assert.AreEqual("Download cancelled", CompletionForm.BuildTitle(SampleResult(true, null, null)));
+            Assert.AreEqual("Icons downloaded", CompletionForm.BuildTitle(CompleteResult()));
+            Assert.AreEqual("Nothing to update", CompletionForm.BuildTitle(Result(
+                Outcome("Skipped", BatchEntryStatus.Skipped))));
+            Assert.AreEqual("No icons were downloaded", CompletionForm.BuildTitle(Result(
+                Outcome("Missing", BatchEntryStatus.NotFound))));
         }
 
         [TestMethod]
@@ -42,35 +57,46 @@ namespace KeeFetch.Tests
             using (var complete = new CompletionForm(CompleteResult(), true))
             {
                 Assert.IsTrue(GetField<Button>(eligible, "btnRetry").Enabled);
+                Assert.AreEqual("&Retry 2 entries", GetField<Button>(eligible, "btnRetry").Text);
                 Assert.IsFalse(GetField<Button>(cancelled, "btnRetry").Enabled);
                 Assert.IsFalse(GetField<Button>(exhausted, "btnRetry").Enabled);
                 Assert.IsFalse(GetField<Button>(complete, "btnRetry").Enabled);
-                StringAssert.Contains(GetField<Label>(exhausted, "lblRetryHint").Text,
-                    "one retry");
+                StringAssert.Contains(GetField<Label>(eligible, "lblHint").Text, "Retry asks");
+                StringAssert.Contains(GetField<Label>(exhausted, "lblHint").Text, "Export diagnostics");
             }
         }
 
         [TestMethod]
-        public void CompletionForm_OpenDiagnosticsRequiresAnExistingResultPath()
+        public void CompletionForm_UndoIsOfferedOnlyWhenTheRunChangedSomething()
         {
-            string existing = Path.GetTempFileName();
-            string missing = existing + ".missing";
-            try
+            var changes = new RunChangeSet();
+            changes.RecordChange(new AppliedIconChange(
+                new PwEntry(true, true), PwUuid.Zero, new PwUuid(true), null));
+
+            using (var unchanged = new CompletionForm(SampleResult(false, null, null), true))
+            using (var changed = new CompletionForm(SampleResult(false, null, changes), true))
             {
-                using (var available = new CompletionForm(
-                    SampleResult(false, existing, missing), true))
-                using (var unavailable = new CompletionForm(
-                    SampleResult(false, missing, null), true))
-                {
-                    Assert.IsTrue(GetField<Button>(available, "btnOpenDiagnostics").Enabled);
-                    Assert.AreEqual(existing, available.DiagnosticsPath);
-                    Assert.IsFalse(GetField<Button>(unavailable, "btnOpenDiagnostics").Enabled);
-                    Assert.IsNull(unavailable.DiagnosticsPath);
-                }
+                Assert.IsFalse(GetField<Button>(unchanged, "btnUndo").Enabled);
+                Assert.IsTrue(GetField<Button>(changed, "btnUndo").Enabled);
+                StringAssert.Contains(GetField<Label>(changed, "lblHint").Text, "Undo restores");
+
+                InvokeHandler(changed, "btnUndo_Click");
+
+                Assert.AreEqual(CompletionAction.Undo, changed.SelectedAction);
+                Assert.AreEqual(DialogResult.OK, changed.DialogResult);
             }
-            finally
+        }
+
+        [TestMethod]
+        public void CompletionForm_ExportDiagnosticsRequiresRecordedDiagnostics()
+        {
+            var diagnostics = new DiagnosticsReport(new[] { "[#1] url=https://example.com/" }, null, null);
+
+            using (var available = new CompletionForm(SampleResult(false, diagnostics, null), true))
+            using (var unavailable = new CompletionForm(SampleResult(false, null, null), true))
             {
-                File.Delete(existing);
+                Assert.IsTrue(GetField<Button>(available, "btnExportDiagnostics").Enabled);
+                Assert.IsFalse(GetField<Button>(unavailable, "btnExportDiagnostics").Enabled);
             }
         }
 
@@ -81,21 +107,47 @@ namespace KeeFetch.Tests
                 SampleResult(false, null, null));
 
             Assert.AreEqual(
-                "KeeFetch batch summary" + Environment.NewLine +
-                "Profile: Balanced (everyday)" + Environment.NewLine +
-                "Elapsed: 00:07.250" + Environment.NewLine +
-                "Total: 3" + Environment.NewLine +
+                "KeeFetch download summary" + Environment.NewLine +
+                "Profile: Balanced" + Environment.NewLine +
+                "Time: " + (7.4).ToString("0.0") + " s" + Environment.NewLine +
+                "Entries: 3" + Environment.NewLine +
                 "Updated: 1" + Environment.NewLine +
                 "Skipped: 0" + Environment.NewLine +
-                "Not found: 1" + Environment.NewLine +
-                "Errors: 1" + Environment.NewLine +
-                "Invalid input: 0" + Environment.NewLine +
-                "Cancelled entries: 0" + Environment.NewLine +
-                "Retry eligible: 2" + Environment.NewLine +
-                "Run cancelled: No" + Environment.NewLine +
-                "Diagnostics log: (not available)" + Environment.NewLine +
-                "Diagnostics CSV: (not available)",
+                "No icon found: 1" + Environment.NewLine +
+                "Failed: 1" + Environment.NewLine +
+                "Cancelled: 0" + Environment.NewLine +
+                "Can be retried: 2",
                 summary);
+        }
+
+        [TestMethod]
+        public void FormatElapsed_UsesShortHumanUnits()
+        {
+            Assert.AreEqual((0.4).ToString("0.0") + " s",
+                CompletionForm.FormatElapsed(TimeSpan.FromMilliseconds(400)));
+            Assert.AreEqual("42 s", CompletionForm.FormatElapsed(TimeSpan.FromSeconds(42)));
+            Assert.AreEqual("1 min 5 s", CompletionForm.FormatElapsed(TimeSpan.FromSeconds(65)));
+            Assert.AreEqual("1 h 2 min", CompletionForm.FormatElapsed(TimeSpan.FromMinutes(62)));
+            Assert.AreEqual((0.0).ToString("0.0") + " s",
+                CompletionForm.FormatElapsed(TimeSpan.FromSeconds(-1)));
+        }
+
+        [TestMethod]
+        public void DescribeDetails_KeepsTechnicalProviderSummariesOutOfTheList()
+        {
+            BatchEntryOutcome notFound = Outcome("Missing", BatchEntryStatus.NotFound,
+                "total=1; rejected=1; selected=none", false);
+            BatchEntryOutcome timedOut = Outcome("Slow", BatchEntryStatus.RecoverableError,
+                "total=2; timeout", true);
+            BatchEntryOutcome exception = Outcome("Broken", BatchEntryStatus.RecoverableError,
+                "The remote name could not be resolved.", false);
+
+            Assert.AreEqual("None of the icon sources returned a usable icon.",
+                CompletionForm.DescribeDetails(notFound));
+            Assert.AreEqual("A request timed out or failed. Retrying may help.",
+                CompletionForm.DescribeDetails(timedOut));
+            Assert.AreEqual("The remote name could not be resolved.",
+                CompletionForm.DescribeDetails(exception));
         }
 
         [TestMethod]
@@ -112,6 +164,11 @@ namespace KeeFetch.Tests
                 Assert.AreEqual(DialogResult.Cancel, close.DialogResult);
                 Assert.IsFalse(string.IsNullOrWhiteSpace(close.AccessibleName));
                 Assert.IsFalse(string.IsNullOrWhiteSpace(retry.AccessibleName));
+                // Voice control finds buttons by their visible text, and
+                // screen readers read the summary itself.
+                Assert.AreEqual(retry.Text.Replace("&", string.Empty), retry.AccessibleName);
+                Label summary = GetField<Label>(form, "lblSummary");
+                Assert.AreEqual(summary.Text, summary.AccessibilityObject.Name);
 
                 InvokeHandler(form, "btnRetry_Click");
 
@@ -127,27 +184,31 @@ namespace KeeFetch.Tests
             {
                 Assert.AreEqual(AutoScaleMode.Font, form.AutoScaleMode);
                 Assert.AreEqual(FormBorderStyle.Sizable, form.FormBorderStyle);
+                Assert.IsFalse(form.MaximizeBox);
                 Assert.IsTrue(form.MinimumSize.Width >= 600);
-                Assert.IsTrue(form.MinimumSize.Height >= 480);
+                Assert.IsTrue(form.MinimumSize.Height >= 400);
 
                 form.Size = form.MinimumSize;
                 form.Show();
 
                 foreach (string fieldName in new[]
                 {
-                    "btnOpenDiagnostics", "btnCopySummary", "btnRetry", "btnClose"
+                    "btnExportDiagnostics", "btnCopySummary", "btnRetry", "btnUndo", "btnClose"
                 })
                 {
                     Button button = GetField<Button>(form, fieldName);
                     Assert.IsFalse(string.IsNullOrWhiteSpace(button.AccessibleName));
-                    Assert.IsTrue(button.Right <= form.ClientSize.Width);
-                    Assert.IsTrue(button.Bottom <= form.ClientSize.Height);
+                    System.Drawing.Rectangle bounds = form.RectangleToClient(
+                        button.RectangleToScreen(button.ClientRectangle));
+                    Assert.IsTrue(bounds.Left >= 0, fieldName + " starts outside the form.");
+                    Assert.IsTrue(bounds.Right <= form.ClientSize.Width, fieldName + " is cut off.");
+                    Assert.IsTrue(bounds.Bottom <= form.ClientSize.Height, fieldName + " is cut off.");
                 }
             }
         }
 
         private static BatchRunResult SampleResult(bool wasCancelled,
-            string diagnosticsLogPath, string diagnosticsCsvPath)
+            DiagnosticsReport diagnostics, RunChangeSet changes)
         {
             return new BatchRunResult(
                 new[]
@@ -157,24 +218,29 @@ namespace KeeFetch.Tests
                     Outcome("Network", BatchEntryStatus.RecoverableError)
                 },
                 wasCancelled,
-                TimeSpan.FromMilliseconds(7250),
+                TimeSpan.FromMilliseconds(7400),
                 "everyday",
-                diagnosticsLogPath,
-                diagnosticsCsvPath);
+                diagnostics,
+                changes);
         }
 
         private static BatchRunResult CompleteResult()
         {
-            return new BatchRunResult(
-                new[] { Outcome("Updated", BatchEntryStatus.Updated) },
-                false,
-                TimeSpan.FromSeconds(1),
-                "privacy",
-                null,
-                null);
+            return Result(Outcome("Updated", BatchEntryStatus.Updated));
+        }
+
+        private static BatchRunResult Result(params BatchEntryOutcome[] outcomes)
+        {
+            return new BatchRunResult(outcomes, false, TimeSpan.FromSeconds(1), "privacy", null, null);
         }
 
         private static BatchEntryOutcome Outcome(string title, BatchEntryStatus status)
+        {
+            return Outcome(title, status, status.ToString(), status == BatchEntryStatus.RecoverableError);
+        }
+
+        private static BatchEntryOutcome Outcome(string title, BatchEntryStatus status,
+            string diagnostic, bool recoverable)
         {
             var entry = new PwEntry(true, true);
             entry.Strings.Set(PwDefs.TitleField, new ProtectedString(false, title));
@@ -186,9 +252,9 @@ namespace KeeFetch.Tests
                 "direct-site",
                 IconTier.SiteCanonical,
                 false,
-                status == BatchEntryStatus.RecoverableError,
+                recoverable,
                 25,
-                status.ToString());
+                diagnostic);
         }
 
         private static T GetField<T>(CompletionForm form, string name) where T : class

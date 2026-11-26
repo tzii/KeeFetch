@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - Unreleased
+
+### Added
+- Undo this run: the results window restores the icons changed entries had before, removes icons the run added that nothing else uses, and saves again when automatic saving is on
+- The results window lists every entry with its result, the icon's source and a plain-language reason, with entries that need attention first
+- Export diagnostics... writes a shareable report on request; entries are numbered instead of named, and web addresses lose user names, passwords, query strings and fragments; `cmd://` and local file addresses keep only their scheme
+- Group and database confirmations name the profile, the services it contacts, and how many entries are skipped or have their custom icon replaced
+- KeeFetch dialogs show the KeeFetch icon and register with KeePass, so locking the workspace closes them first
+
+### Changed
+- Two managed profiles, Balanced (default) and Privacy. Fast and Precise are retired: a stored Fast or Precise choice moves to Balanced and the first-run choice is shown again with a short notice, because Balanced contacts different services. The notice stays until a profile is confirmed, even across restarts
+- The first-run dialog uses one choice per profile, each with a summary and the services it contacts, and a plain "What KeeFetch sends" section
+- Skipping entries that already have a custom icon is on by default and applies to group and database runs; entries you select are always fetched
+- Guessing a web address from the entry title is off by default
+- Before an entry's icon changes, its previous state is kept in the entry history, like an edit made in KeePass
+- Group runs leave out the Recycle Bin unless the Recycle Bin itself was chosen
+- A single entry that gets its icon needs no results window; the KeePass status bar confirms it
+- Settings use plain wording; the Providers tab shows a managed profile's providers read-only with a Customize button, and the Downloads tab explains what a guessed address sends
+- KeePass messages replace plain message boxes
+
+### Fixed
+- KeePass update checks: `version.txt` now uses KeePass's version information format (`:` / `KeeFetch:1.4.0.0` / `:`), so KeePass can report new KeeFetch versions; `eng/check-version.ps1` enforces the format
+- Diagnostics are no longer written automatically next to the database or to the temp folder
+- CSV diagnostics neutralize values a spreadsheet would run as formulas
+- Window icons render sharply at small sizes
+- Images that declare more than 4096 pixels on a side are refused before they are decoded, so a small malicious file cannot exhaust KeePass's memory
+- After a server asks KeeFetch to slow down (HTTP 429 or 503), the retry now waits before contacting it again
+- New icons carry a modification time, so synchronizing with a copy where the same image was deleted earlier keeps them; undoing a run leaves no deletion record that would remove the same icon when it is downloaded again
+- The Custom profile's provider hint now says that every checked provider is asked for each entry
+- Screen readers read the results summary, hints and notices themselves instead of fixed captions
+
 ## [1.3.0] - 2026-09-11
 
 ### Added

@@ -69,7 +69,7 @@ namespace KeeFetch
             rootLayout.Padding = new System.Windows.Forms.Padding(12);
 
             lblValidationSummary.Name = "lblValidationSummary";
-            lblValidationSummary.AccessibleName = "Settings validation summary";
+            lblValidationSummary.AccessibleDescription = "Settings validation summary";
             lblValidationSummary.AutoSize = true;
             lblValidationSummary.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             lblValidationSummary.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -130,11 +130,11 @@ namespace KeeFetch
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             BackColor = System.Drawing.SystemColors.Control;
             CancelButton = btnCancel;
-            ClientSize = new System.Drawing.Size(760, 560);
+            ClientSize = new System.Drawing.Size(680, 500);
             Controls.Add(rootLayout);
             ForeColor = System.Drawing.SystemColors.ControlText;
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
-            MaximizeBox = true;
+            MaximizeBox = false;
             MinimizeBox = false;
             MinimumSize = new System.Drawing.Size(640, 480);
             Name = "SettingsForm";

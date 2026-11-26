@@ -1025,11 +1025,15 @@ function Convert-ToCsStringLiteral {
     return '"' + $Value.Replace("\", "\\").Replace('"', '\"') + '"'
 }
 
+# v1.4 ships three user-visible choices: Balanced, Privacy and Custom. Fast
+# and Precise stay in the generated catalog as hidden, evidence-linked
+# definitions so study replays and stored v1.3 settings still resolve; the
+# plugin migrates users of a hidden profile to Balanced and asks again.
 $roles = @(
-    @{ Id = "bulk-fast";      DisplayName = "Fast";      IntendedUse = "Large batch fetching with reduced latency";                 Winner = $bulkWinner },
-    @{ Id = "everyday";       DisplayName = "Balanced";  IntendedUse = "Default everyday use balancing coverage and speed";        Winner = $everydayWinner },
-    @{ Id = "privacy";        DisplayName = "Privacy";   IntendedUse = "Privacy-sensitive fetching without third-party providers"; Winner = $privacyWinner },
-    @{ Id = "max-coverage";   DisplayName = "Precise";   IntendedUse = "Favor icon precision over finding an icon for every entry";      Winner = $maxCoverageWinner }
+    @{ Id = "bulk-fast";      DisplayName = "Fast";      IntendedUse = "Large batch fetching with reduced latency";                 Winner = $bulkWinner;        Visible = $false },
+    @{ Id = "everyday";       DisplayName = "Balanced";  IntendedUse = "Default everyday use balancing coverage and speed";        Winner = $everydayWinner;    Visible = $true },
+    @{ Id = "privacy";        DisplayName = "Privacy";   IntendedUse = "Privacy-sensitive fetching without third-party providers"; Winner = $privacyWinner;     Visible = $true },
+    @{ Id = "max-coverage";   DisplayName = "Precise";   IntendedUse = "Favor icon precision over finding an icon for every entry";      Winner = $maxCoverageWinner; Visible = $false }
 )
 
 foreach ($role in $roles) {
@@ -1068,7 +1072,8 @@ foreach ($role in $roles) {
     $generatedLines.Add("                " + $synthetic + ",")
     $generatedLines.Add("                " + $stop + ",")
     $generatedLines.Add("                " + $androidStore + ",")
-    $generatedLines.Add("                true,")
+    $visibleLiteral = if ([bool]$role.Visible) { "true" } else { "false" }
+    $generatedLines.Add("                " + $visibleLiteral + ",")
     $generatedLines.Add("                " + (Convert-ToCsStringLiteral -Value "docs/benchmarks/v1.3-provider-study.md") + "));")
     $generatedLines.Add("")
 }

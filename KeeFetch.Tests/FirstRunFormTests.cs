@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using KeeFetch.FetchProfiles;
-using KeeFetch.Settings;
 using KeePass.App.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -17,17 +16,41 @@ namespace KeeFetch.Tests
         {
             using (var form = new FirstRunForm("everyday"))
             {
-                ListBox profiles = GetField<ListBox>(form, "lstProfiles");
-                ProfileListItem[] items = profiles.Items.Cast<ProfileListItem>().ToArray();
-
                 CollectionAssert.AreEqual(
                     FetchProfileCatalog.ManagedProfiles.Where(profile => profile.IsVisible)
                         .Select(profile => profile.Id).ToArray(),
-                    items.Select(item => item.Id).ToArray());
-                Assert.IsTrue(items.Any(item => item.Id == "privacy"));
+                    form.ProfileIds.ToArray());
+                CollectionAssert.AreEqual(new[] { "everyday", "privacy" }, form.ProfileIds.ToArray(),
+                    "v1.4 offers Balanced and Privacy; Fast and Precise are retired.");
                 Assert.AreEqual("everyday", form.SelectedProfileId);
-                StringAssert.Contains(((ProfileListItem)profiles.SelectedItem).DisplayName,
-                    "Recommended");
+
+                RadioButton balanced = GetControl<RadioButton>(form, "rdoProfile_everyday");
+                Assert.IsTrue(balanced.Checked);
+                StringAssert.Contains(balanced.Text, "(recommended)");
+                Assert.IsFalse(GetControl<RadioButton>(form, "rdoProfile_privacy").Text.Contains("recommended"));
+                StringAssert.Contains(GetControl<Label>(form, "lblProfile_privacy").Text,
+                    "Contacts: only the entry's own website.");
+            }
+        }
+
+        [TestMethod]
+        public void FirstRunForm_RetiredOrUnknownProfileFallsBackToBalancedAndShowsNotice()
+        {
+            using (var retired = new FirstRunForm("bulk-fast", "KeeFetch 1.4 no longer offers the Fast profile."))
+            using (var plain = new FirstRunForm("everyday"))
+            {
+                foreach (Form form in new Form[] { retired, plain })
+                {
+                    form.StartPosition = FormStartPosition.Manual;
+                    form.Location = new System.Drawing.Point(-4000, -4000);
+                    form.Show();
+                }
+
+                Assert.AreEqual("everyday", retired.SelectedProfileId);
+                Label notice = GetField<Label>(retired, "lblNotice");
+                Assert.IsTrue(notice.Visible);
+                StringAssert.Contains(notice.Text, "Fast");
+                Assert.IsFalse(GetField<Label>(plain, "lblNotice").Visible);
             }
         }
 
@@ -112,6 +135,31 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
+        public void FirstRunForm_ConfirmedChoiceClearsTheRetiredProfileNotice()
+        {
+            var ace = new AceCustomConfig();
+            ace.SetString("KeeFetch.FetchProfileId", "bulk-fast");
+            var config = new Configuration(ace);
+            Assert.AreEqual("everyday", config.FetchProfileId);
+            Assert.AreEqual("Fast", config.RetiredProfileName);
+
+            using (var form = new FirstRunForm(config.FetchProfileId, "notice"))
+            {
+                InvokeHandler(form, "btnCancel_Click");
+                Assert.IsFalse(KeeFetchExt.ApplyFirstRunChoice(config, form, null));
+            }
+            Assert.AreEqual("Fast", config.RetiredProfileName, "Cancelling keeps the notice for next time.");
+
+            using (var form = new FirstRunForm(config.FetchProfileId, "notice"))
+            {
+                InvokeHandler(form, "btnConfirm_Click");
+                Assert.IsTrue(KeeFetchExt.ApplyFirstRunChoice(config, form, null));
+            }
+            Assert.IsNull(config.RetiredProfileName);
+            Assert.IsNull(new Configuration(ace).RetiredProfileName);
+        }
+
+        [TestMethod]
         public void FirstRunForm_CancelledChoiceNeverPersists()
         {
             var config = new Configuration(new AceCustomConfig());
@@ -156,8 +204,9 @@ namespace KeeFetch.Tests
             {
                 Assert.AreEqual(AutoScaleMode.Font, form.AutoScaleMode);
                 Assert.AreEqual(FormBorderStyle.Sizable, form.FormBorderStyle);
-                Assert.IsTrue(form.MinimumSize.Width >= 600);
-                Assert.IsTrue(form.MinimumSize.Height >= 520);
+                Assert.IsFalse(form.MaximizeBox);
+                Assert.IsTrue(form.MinimumSize.Width >= 560);
+                Assert.IsTrue(form.MinimumSize.Height >= 480);
 
                 form.Size = form.MinimumSize;
                 form.Show();
@@ -169,6 +218,12 @@ namespace KeeFetch.Tests
                     TextFormatFlags.WordBreak);
                 Assert.IsTrue(measuredDisclosure.Height <= disclosure.ClientSize.Height,
                     "Privacy disclosure must not clip at the minimum form size.");
+                Assert.IsTrue(GetField<Button>(form, "btnConfirm").Bottom <=
+                    GetField<FlowLayoutPanel>(form, "actionPanel").ClientSize.Height,
+                    "Buttons must stay visible at the minimum form size.");
+                Control root = GetField<TableLayoutPanel>(form, "rootLayout");
+                Assert.IsTrue(GetField<FlowLayoutPanel>(form, "actionPanel").Bottom <= root.ClientSize.Height,
+                    "The button row must not be pushed out of the window.");
 
                 Button confirm = GetField<Button>(form, "btnConfirm");
                 Button cancel = GetField<Button>(form, "btnCancel");
@@ -177,16 +232,28 @@ namespace KeeFetch.Tests
                 Assert.AreEqual(DialogResult.Cancel, cancel.DialogResult);
                 Assert.IsFalse(string.IsNullOrWhiteSpace(confirm.AccessibleName));
                 Assert.IsFalse(string.IsNullOrWhiteSpace(cancel.AccessibleName));
-                Assert.IsFalse(string.IsNullOrWhiteSpace(
-                    GetField<ListBox>(form, "lstProfiles").AccessibleName));
+                foreach (string id in form.ProfileIds)
+                {
+                    RadioButton choice = GetControl<RadioButton>(form, "rdoProfile_" + id);
+                    Assert.IsFalse(string.IsNullOrWhiteSpace(choice.AccessibleName));
+                    Assert.IsTrue(choice.Bottom <= choice.Parent.ClientSize.Height);
+                }
             }
         }
 
         private static void SelectProfile(FirstRunForm form, string profileId)
         {
-            ListBox profiles = GetField<ListBox>(form, "lstProfiles");
-            profiles.SelectedItem = profiles.Items.Cast<ProfileListItem>()
-                .Single(item => item.Id == profileId);
+            Assert.IsTrue(form.SelectProfile(profileId), "Profile " + profileId + " is not offered.");
+            Assert.IsTrue(GetControl<RadioButton>(form, "rdoProfile_" + profileId).Checked);
+        }
+
+        private static T GetControl<T>(Form form, string name) where T : Control
+        {
+            Control[] matches = form.Controls.Find(name, true);
+            Assert.AreEqual(1, matches.Length, "Expected one control named " + name + ".");
+            T control = matches[0] as T;
+            Assert.IsNotNull(control, name + " was not a " + typeof(T).Name + ".");
+            return control;
         }
 
         private static T GetField<T>(FirstRunForm form, string name) where T : class

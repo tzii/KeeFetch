@@ -43,7 +43,7 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
-        public void BuildBatchRunResult_PreservesInputOrderCountsAndDiagnosticPaths()
+        public void BuildBatchRunResult_PreservesInputOrderCountsDiagnosticsAndChanges()
         {
             PwEntry first = NewEntry("First");
             PwEntry second = NewEntry("Second");
@@ -55,14 +55,16 @@ namespace KeeFetch.Tests
                 Outcome(third, BatchEntryStatus.RecoverableError)
             };
 
+            var diagnostics = new DiagnosticsReport(new[] { "line" }, null, null);
+            var changes = new RunChangeSet();
             BatchRunResult result = FaviconDialog.BuildBatchRunResult(
                 new[] { first, second, third },
                 outcomes,
                 false,
                 TimeSpan.FromSeconds(7),
                 "everyday",
-                "C:\\logs\\diagnostics.log",
-                "C:\\logs\\diagnostics.csv");
+                diagnostics,
+                changes);
 
             CollectionAssert.AreEqual(
                 new[] { first, second, third },
@@ -72,8 +74,8 @@ namespace KeeFetch.Tests
             Assert.AreEqual(1, result.RecoverableErrorCount);
             Assert.AreEqual(TimeSpan.FromSeconds(7), result.Elapsed);
             Assert.AreEqual("everyday", result.ProfileId);
-            Assert.AreEqual("C:\\logs\\diagnostics.log", result.DiagnosticsLogPath);
-            Assert.AreEqual("C:\\logs\\diagnostics.csv", result.DiagnosticsCsvPath);
+            Assert.AreSame(diagnostics, result.Diagnostics);
+            Assert.AreSame(changes, result.Changes);
         }
 
         [TestMethod]

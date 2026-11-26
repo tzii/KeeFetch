@@ -32,9 +32,6 @@ namespace KeeFetch.IconProviders
                 isThirdParty: false, isSyntheticCapable: false, isPlaceholderProne: false,
                 concurrencyCap: 4, baseConfidence: 0.86, allowPrivateHosts: true);
 
-        private static readonly Random RetryJitter = new Random();
-        private static readonly object RetryJitterLock = new object();
-
         public string Name { get { return "Direct Site"; } }
         public ProviderCapabilities Capabilities { get { return capabilities; } }
 
@@ -581,9 +578,18 @@ namespace KeeFetch.IconProviders
             int attempt = 0;
             string currentUrl = url;
             Uri responseUri = null;
+            int retryDelayMs = 0;
 
             while (attempt < 2)
             {
+                // The backoff runs at the start of the retry so the early
+                // `continue` on a 429/503 response cannot skip it.
+                if (retryDelayMs > 0)
+                {
+                    await Task.Delay(retryDelayMs, token).ConfigureAwait(false);
+                    retryDelayMs = 0;
+                }
+
                 bool shouldRetry = false;
 
                 try
@@ -627,6 +633,7 @@ namespace KeeFetch.IconProviders
                                         StatusCode = response.StatusCode
                                     };
                                 }
+                                retryDelayMs = IconProviderBase.RetryDelayMs(true);
                                 continue;
                             }
 
@@ -744,7 +751,7 @@ namespace KeeFetch.IconProviders
 
                 if (shouldRetry && attempt < 2)
                 {
-                    await Task.Delay(150 + NextJitter(250), token).ConfigureAwait(false);
+                    retryDelayMs = IconProviderBase.RetryDelayMs(false);
                     continue;
                 }
 
@@ -775,14 +782,6 @@ namespace KeeFetch.IconProviders
             if (Uri.TryCreate(url, UriKind.Absolute, out parsed))
                 return parsed;
             return null;
-        }
-
-        private static int NextJitter(int maxExclusive)
-        {
-            lock (RetryJitterLock)
-            {
-                return RetryJitter.Next(0, Math.Max(1, maxExclusive));
-            }
         }
 
         private static string DecodeText(byte[] data)

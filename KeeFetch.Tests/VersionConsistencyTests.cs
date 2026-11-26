@@ -22,21 +22,41 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
-        public void ReleaseCandidate_AssemblyAndUpdateFeedAgreeOnVersion13()
+        public void ReleaseCandidate_AssemblyAndUpdateFeedAgreeOnVersion14()
         {
-            var expected = new Version(1, 3, 0, 0);
+            var expected = new Version(1, 4, 0, 0);
             Assembly assembly = typeof(FetchProfileCatalog).Assembly;
             Assert.AreEqual(expected, assembly.GetName().Version,
-                "The final candidate must use the v1.3 assembly version.");
+                "The candidate must use the v1.4 assembly version.");
             var fileVersion = (AssemblyFileVersionAttribute)Attribute.GetCustomAttribute(
                 assembly, typeof(AssemblyFileVersionAttribute));
             Assert.IsNotNull(fileVersion);
             Assert.AreEqual(expected, new Version(fileVersion.Version));
-            string[] feedVersions = SourceFile("version.txt").Split('\n')
-                .Select(line => line.Trim()).Where(line => Regex.IsMatch(line, @"^\d+\.\d+\.\d+\.\d+$")).ToArray();
-            Assert.AreEqual(1, feedVersions.Length, "The update feed must contain one version.");
-            Assert.AreEqual(expected, new Version(feedVersions[0]));
-            StringAssert.Contains(SourceFile("CHANGELOG.md"), "## [1.3.0]");
+            StringAssert.Contains(SourceFile("CHANGELOG.md"), "## [1.4.0]");
+        }
+
+        [TestMethod]
+        public void UpdateFeed_UsesKeePassVersionInformationFormat()
+        {
+            // KeePass reads "<separator>" / "<AssemblyTitle><separator><file version>" /
+            // "<separator>"; any other layout makes the update check fail silently.
+            Assembly assembly = typeof(FetchProfileCatalog).Assembly;
+            var title = (AssemblyTitleAttribute)Attribute.GetCustomAttribute(
+                assembly, typeof(AssemblyTitleAttribute));
+            var fileVersion = (AssemblyFileVersionAttribute)Attribute.GetCustomAttribute(
+                assembly, typeof(AssemblyFileVersionAttribute));
+            Assert.IsNotNull(title);
+            Assert.IsNotNull(fileVersion);
+
+            string raw = SourceFile("version.txt");
+            Assert.IsFalse(raw.Length > 0 && raw[0] == (char)0xFEFF,
+                "KeePass before 2.21 cannot read a byte order mark.");
+            string[] lines = raw.Split('\n').Select(line => line.Trim())
+                .Where(line => line.Length > 0).ToArray();
+
+            CollectionAssert.AreEqual(
+                new[] { ":", title.Title + ":" + fileVersion.Version, ":" },
+                lines);
         }
 
         [TestMethod]
@@ -47,9 +67,9 @@ namespace KeeFetch.Tests
                 SourceFile("site/data/release.json"));
             string stable = (string)release["version"];
             string preview = release.ContainsKey("previewVersion") ? release["previewVersion"] as string : null;
-            Assert.AreEqual("1.3.0", string.IsNullOrEmpty(preview) ? stable : preview,
+            Assert.AreEqual("1.4.0", string.IsNullOrEmpty(preview) ? stable : preview,
                 "The source candidate must be identified independently of the published stable download.");
-            Assert.IsTrue(new Version(stable) <= new Version(1, 3, 0));
+            Assert.IsTrue(new Version(stable) <= new Version(1, 4, 0));
             Assert.AreEqual("v" + stable, release["tag"]);
             Assert.AreEqual("https://github.com/tzii/KeeFetch/releases/tag/v" + stable, release["releaseUrl"]);
             foreach (string format in new[] { "dll", "plgx" })
@@ -61,7 +81,7 @@ namespace KeeFetch.Tests
         public void CurrentProfileClaims_UseManagedNamesAndBudgets()
         {
             string readme = SourceFile("README.md");
-            StringAssert.Contains(readme, "v1.3");
+            StringAssert.Contains(readme, "v1.4");
             var serializer = new JavaScriptSerializer();
             var export = serializer.Deserialize<Dictionary<string, object>>(SourceFile("site/data/profiles.json"));
             var profiles = ((ArrayList)export["profiles"]).Cast<Dictionary<string, object>>().ToArray();
@@ -75,6 +95,9 @@ namespace KeeFetch.Tests
             }
             Assert.IsFalse(profiles.Any(p => (string)p["displayName"] == "Thorough"),
                 "Thorough is a legacy migration value, not a current managed profile name.");
+            CollectionAssert.AreEqual(new[] { "everyday", "privacy" },
+                profiles.Select(p => (string)p["id"]).ToArray(),
+                "v1.4 offers Balanced and Privacy; Fast and Precise are retired.");
         }
     }
 }

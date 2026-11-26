@@ -55,9 +55,9 @@ namespace KeeFetch.Settings
             cmbProfile.SelectedIndexChanged += cmbProfile_SelectedIndexChanged;
 
             lblRecommended.Name = "lblRecommended";
-            lblRecommended.Text = "Balanced is recommended for most vaults.";
             lblRecommended.AutoSize = true;
-            lblRecommended.Margin = new Padding(0, 8, 0, 8);
+            lblRecommended.MaximumSize = new Size(620, 0);
+            lblRecommended.Margin = new Padding(0, 12, 0, 6);
             layout.SetColumnSpan(lblRecommended, 2);
 
             lblProfileDescription.Name = "lblProfileDescription";

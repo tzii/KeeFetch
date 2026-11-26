@@ -11,6 +11,7 @@ using KeeFetch.Batch;
 using KeeFetch.FetchProfiles;
 using KeePass.Plugins;
 using KeePassLib;
+using KeePassLib.Utility;
 
 namespace KeeFetch
 {
@@ -25,15 +26,13 @@ namespace KeeFetch
 
         private static Image LoadEmbeddedIcon(string fileName)
         {
-            string resourceName = "KeeFetch.Assets.Icons." + fileName;
-            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
-            {
-                if (stream == null)
-                    return null;
+            return UiAssets.LoadImage(fileName, 16);
+        }
 
-                using (var image = Image.FromStream(stream))
-                    return new Bitmap(image, 16, 16);
-            }
+        /// <summary>Icon shown for KeeFetch in KeePass's Tools > Plugins list.</summary>
+        public override Image SmallIcon
+        {
+            get { return GetMenuIcon(); }
         }
 
         private static Image GetMenuIcon()
@@ -216,12 +215,13 @@ namespace KeeFetch
             PwEntry[] entries = host.MainWindow.GetSelectedEntries();
             if (entries == null || entries.Length == 0)
             {
-                MessageBox.Show("No entries selected.", "KeeFetch",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageService.ShowInfo("Select one or more entries first.");
                 return;
             }
 
-            await RunDownloadAsync(entries);
+            // Entries the user picked are always fetched, even when they
+            // already have a custom icon: replacing it is the point.
+            await RunDownloadAsync(entries, false);
         }
 
         private async void OnDownloadGroup(object sender, EventArgs e)
@@ -231,77 +231,171 @@ namespace KeeFetch
             PwGroup group = host.MainWindow.GetSelectedGroup();
             if (group == null)
             {
-                MessageBox.Show("No group selected.", "KeeFetch",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageService.ShowInfo("Select a group first.");
                 return;
             }
 
-            var entryList = group.GetEntries(true);
-
-            if (entryList == null || entryList.UCount == 0)
+            PwEntry[] entries = CollectEntries(host.Database, group);
+            if (entries.Length == 0)
             {
-                MessageBox.Show("No entries in this group.", "KeeFetch",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageService.ShowInfo(string.Format(
+                    "The group '{0}' has no entries outside the Recycle Bin.", group.Name));
                 return;
             }
 
-            var entries = new List<PwEntry>(entryList);
+            // The profile is chosen before the confirmation that describes it.
+            if (!EnsureFirstRunDisclosure()) return;
 
-            var result = MessageBox.Show(
-                string.Format("Download favicons for {0} entries in '{1}' (including subgroups)?",
-                    entries.Count, group.Name),
-                "KeeFetch", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            bool skipExisting = Config.SkipExistingIcons;
+            string scope = string.Format("in '{0}' and its subgroups", group.Name);
+            if (!ConfirmBulkRun(entries, skipExisting, scope)) return;
 
-            if (result != DialogResult.Yes) return;
-
-            await RunDownloadAsync(entries.ToArray());
+            await RunDownloadAsync(entries, skipExisting);
         }
 
         private async void OnDownloadAllEntries(object sender, EventArgs e)
         {
             if (!EnsureDbOpen()) return;
 
-            PwGroup root = host.Database.RootGroup;
-            var entryList = root.GetEntries(true);
-            var entries = new List<PwEntry>(entryList);
-
-            if (entries.Count == 0)
+            PwEntry[] entries = CollectEntries(host.Database, host.Database.RootGroup);
+            if (entries.Length == 0)
             {
-                MessageBox.Show("Database has no entries.", "KeeFetch",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageService.ShowInfo("The database has no entries outside the Recycle Bin.");
                 return;
             }
 
-            var recycleBin = host.Database.RecycleBinUuid;
-            if (!recycleBin.Equals(PwUuid.Zero))
+            if (!EnsureFirstRunDisclosure()) return;
+
+            bool skipExisting = Config.SkipExistingIcons;
+            if (!ConfirmBulkRun(entries, skipExisting, "in this database")) return;
+
+            await RunDownloadAsync(entries, skipExisting);
+        }
+
+        /// <summary>
+        /// Entries in a group and its subgroups, leaving out the Recycle Bin
+        /// unless the chosen group is the Recycle Bin or inside it.
+        /// </summary>
+        internal static PwEntry[] CollectEntries(PwDatabase db, PwGroup group)
+        {
+            var entries = new List<PwEntry>();
+            if (group == null)
+                return entries.ToArray();
+
+            PwUuid recycleBin = db != null ? db.RecycleBinUuid : PwUuid.Zero;
+            bool includeRecycleBin = IsInGroup(group, recycleBin);
+            foreach (PwEntry entry in group.GetEntries(true))
             {
-                entries.RemoveAll(entry =>
+                if (includeRecycleBin || !IsInGroup(entry.ParentGroup, recycleBin))
+                    entries.Add(entry);
+            }
+
+            return entries.ToArray();
+        }
+
+        private static bool IsInGroup(PwGroup group, PwUuid ancestorUuid)
+        {
+            if (ancestorUuid == null || ancestorUuid.Equals(PwUuid.Zero))
+                return false;
+
+            for (PwGroup current = group; current != null; current = current.ParentGroup)
+            {
+                if (current.Uuid.Equals(ancestorUuid))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool ConfirmBulkRun(PwEntry[] entries, bool skipExisting, string scope)
+        {
+            string question;
+            if (!TryBuildBulkConfirmation(Config, entries, skipExisting, scope, out question))
+            {
+                MessageService.ShowInfo(question);
+                return false;
+            }
+
+            return MessageService.AskYesNo(question, "KeeFetch", true, MessageBoxIcon.Question);
+        }
+
+        /// <summary>
+        /// Builds the confirmation for a group or database run: how many
+        /// entries are fetched, what the profile contacts, and what happens to
+        /// existing custom icons. Returns false, with an explanation instead,
+        /// when nothing would be fetched.
+        /// </summary>
+        internal static bool TryBuildBulkConfirmation(Configuration config, PwEntry[] entries,
+            bool skipExisting, string scope, out string text)
+        {
+            if (config == null)
+                throw new ArgumentNullException("config");
+
+            int total = entries == null ? 0 : entries.Length;
+            int withCustomIcon = 0;
+            if (entries != null)
+            {
+                foreach (PwEntry entry in entries)
                 {
-                    PwGroup parent = entry.ParentGroup;
-                    while (parent != null)
-                    {
-                        if (parent.Uuid.Equals(recycleBin))
-                            return true;
-                        parent = parent.ParentGroup;
-                    }
-                    return false;
-                });
+                    if (entry != null && !entry.CustomIconUuid.Equals(PwUuid.Zero))
+                        withCustomIcon++;
+                }
             }
 
-            if (entries.Count == 0)
+            int toFetch = skipExisting ? total - withCustomIcon : total;
+            if (toFetch <= 0)
             {
-                MessageBox.Show("Database has no eligible entries.", "KeeFetch",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
+                text = string.Format(
+                    "All {0} entries {1} already have a custom icon, so there is nothing to download." +
+                    Environment.NewLine + Environment.NewLine +
+                    "To replace existing icons, select the entries and choose KeeFetch - Download Favicons, " +
+                    "or turn off skipping in Tools > KeeFetch > Settings > Downloads.",
+                    total, scope);
+                return false;
             }
 
-            var result = MessageBox.Show(
-                string.Format("Download favicons for all {0} entries?", entries.Count),
-                "KeeFetch", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var lines = new List<string>();
+            lines.Add(toFetch == total
+                ? string.Format("Download favicons for {0} {1} {2}?", total, Plural(total, "entry", "entries"), scope)
+                : string.Format("Download favicons for {0} of the {1} entries {2}?", toFetch, total, scope));
+            lines.Add(string.Empty);
+            lines.Add("Profile: " + ProfilePresentation.DisplayName(config.FetchProfileId));
+            lines.Add(DescribeContacts(config));
+            if (withCustomIcon > 0)
+            {
+                lines.Add(skipExisting
+                    ? string.Format("{0} {1} that already {2} a custom icon {3} skipped.",
+                        withCustomIcon, Plural(withCustomIcon, "entry", "entries"),
+                        Plural(withCustomIcon, "has", "have"), Plural(withCustomIcon, "is", "are"))
+                    : string.Format("{0} {1} already {2} a custom icon; KeeFetch replaces one only when it finds a new icon.",
+                        withCustomIcon, Plural(withCustomIcon, "entry", "entries"),
+                        Plural(withCustomIcon, "has", "have")));
+            }
+            if (config.AutoSave)
+                lines.Add("The database is saved after the icons are applied.");
 
-            if (result != DialogResult.Yes) return;
+            text = string.Join(Environment.NewLine, lines.ToArray());
+            return true;
+        }
 
-            await RunDownloadAsync(entries.ToArray());
+        private static string DescribeContacts(Configuration config)
+        {
+            try
+            {
+                FetchExecutionPolicy policy = FetchExecutionPolicy.Resolve(config);
+                return ProfilePresentation.ContactsLine(policy.ProviderIds, policy.AllowAndroidStoreLookup);
+            }
+            catch (Exception ex)
+            {
+                // An invalid configuration is reported when the run starts.
+                Logger.Debug("DescribeContacts", ex);
+                return ProfilePresentation.ContactsLine(config.FetchProfileId);
+            }
+        }
+
+        private static string Plural(int count, string singular, string plural)
+        {
+            return count == 1 ? singular : plural;
         }
 
         private void OnOpenSettings(object sender, EventArgs e)
@@ -316,51 +410,53 @@ namespace KeeFetch
         {
             if (host.Database == null || !host.Database.IsOpen)
             {
-                MessageBox.Show("Please open a database first.", "KeeFetch",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageService.ShowWarning("Open a database first.");
                 return false;
             }
             return true;
         }
 
-        private async Task RunDownloadAsync(PwEntry[] entries)
+        private async Task RunDownloadAsync(PwEntry[] entries, bool skipExistingCustomIcons)
         {
             if (!EnsureFirstRunDisclosure())
                 return;
 
             if (System.Threading.Interlocked.CompareExchange(ref activeDownloadJob, 1, 0) != 0)
             {
-                MessageBox.Show(
-                    "A KeeFetch download job is already running.",
-                    "KeeFetch",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
+                MessageService.ShowInfo("A KeeFetch download is already running.");
                 return;
             }
 
             try
             {
                 FaviconDialog dialog;
-                if (!TryCreateFaviconDialog(entries, out dialog))
+                if (!TryCreateFaviconDialog(entries, skipExistingCustomIcons, out dialog))
                     return;
 
                 BatchRunResult result = await dialog.RunAsync();
-                bool retryRequested = ShowCompletionResult(result, true);
-                if (retryRequested && !result.WasCancelled && result.RetryEntries.Count > 0)
+                CompletionAction action = ShowCompletionResult(result, true);
+                if (action == CompletionAction.RetryEligible && !result.WasCancelled &&
+                    result.RetryEntries.Count > 0)
                 {
                     FaviconDialog retryDialog;
-                    if (!TryCreateFaviconDialog(result.RetryEntries.ToArray(), out retryDialog))
+                    if (!TryCreateFaviconDialog(result.RetryEntries.ToArray(), false, out retryDialog))
                         return;
 
+                    // The retry belongs to the same batch, so undoing it
+                    // reverts the first pass as well.
                     BatchRunResult retryResult = await retryDialog.RunAsync();
-                    ShowCompletionResult(retryResult, false);
+                    if (ShowCompletionResult(retryResult, false) == CompletionAction.Undo)
+                        UndoRun(retryResult, result);
+                }
+                else if (action == CompletionAction.Undo)
+                {
+                    UndoRun(result);
                 }
             }
             catch (Exception ex)
             {
                 Logger.Error("RunDownloadAsync", ex);
-                MessageBox.Show("An error occurred during favicon download:\n" + ex.Message,
-                    "KeeFetch", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageService.ShowWarning("An error occurred during the favicon download:", ex.Message);
             }
             finally
             {
@@ -368,12 +464,13 @@ namespace KeeFetch
             }
         }
 
-        private bool TryCreateFaviconDialog(PwEntry[] entries, out FaviconDialog dialog)
+        private bool TryCreateFaviconDialog(PwEntry[] entries, bool skipExistingCustomIcons,
+            out FaviconDialog dialog)
         {
             dialog = null;
             try
             {
-                dialog = new FaviconDialog(host, Config, entries);
+                dialog = new FaviconDialog(host, Config, entries, skipExistingCustomIcons);
                 return true;
             }
             catch (ArgumentException ex)
@@ -381,36 +478,112 @@ namespace KeeFetch
                 // Policy resolution is fail-closed: surface invalid provider
                 // configuration visibly instead of a generic plugin crash.
                 Logger.Error("RunDownloadAsync", ex);
-                MessageBox.Show(
-                    "The current KeeFetch provider configuration is invalid:\n" + ex.Message,
-                    "KeeFetch", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageService.ShowWarning("The current KeeFetch provider configuration is invalid:", ex.Message);
                 return false;
             }
             catch (InvalidOperationException ex)
             {
                 Logger.Error("RunDownloadAsync", ex);
-                MessageBox.Show(
-                    "The current KeeFetch fetch profile is invalid:\n" + ex.Message,
-                    "KeeFetch", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageService.ShowWarning("The current KeeFetch fetch profile is invalid:", ex.Message);
                 return false;
             }
         }
 
-        private bool ShowCompletionResult(BatchRunResult result, bool retryAllowed)
+        private CompletionAction ShowCompletionResult(BatchRunResult result, bool retryAllowed)
         {
+            // A single entry that simply got its icon needs no report.
+            if (IsCleanSingleUpdate(result))
+            {
+                SetStatus(string.Format("KeeFetch updated the icon of '{0}'.", result.Outcomes[0].Title));
+                return CompletionAction.Close;
+            }
+
             using (var form = new CompletionForm(result, retryAllowed))
             {
                 form.ShowDialog(host.MainWindow);
-                return form.SelectedAction == CompletionAction.RetryEligible;
+                return form.SelectedAction;
+            }
+        }
+
+        internal static bool IsCleanSingleUpdate(BatchRunResult result)
+        {
+            return result != null && !result.WasCancelled && result.TotalCount == 1 &&
+                result.UpdatedCount == 1;
+        }
+
+        private void UndoRun(params BatchRunResult[] results)
+        {
+            int restored = 0;
+            var touched = new List<PwDatabase>();
+            foreach (BatchRunResult result in results)
+            {
+                PwDatabase db = result.Changes.Database;
+                if (db == null)
+                    continue;
+                if (!db.IsOpen)
+                {
+                    MessageService.ShowWarning("The database is no longer open, so the run cannot be undone.");
+                    return;
+                }
+
+                restored += result.Changes.Undo(db);
+                if (!touched.Contains(db))
+                    touched.Add(db);
+            }
+
+            foreach (PwDatabase db in touched)
+                RefreshAfterUndo(db);
+
+            SetStatus(string.Format("KeeFetch restored the previous icon of {0} {1}.",
+                restored, Plural(restored, "entry", "entries")));
+        }
+
+        private void RefreshAfterUndo(PwDatabase db)
+        {
+            try
+            {
+                db.UINeedsIconUpdate = true;
+                db.Modified = true;
+                host.MainWindow.UpdateUI(false, null, false, null, true, null, true);
+                if (Config.AutoSave && db.IOConnectionInfo != null)
+                    host.MainWindow.SaveDatabase(db, null);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("UndoRun", ex);
+            }
+        }
+
+        private void SetStatus(string text)
+        {
+            try
+            {
+                host.MainWindow.SetStatusEx(text);
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug("SetStatus", ex);
             }
         }
 
         private bool EnsureFirstRunDisclosure()
         {
+            // Reading the profile first applies any pending migration (a
+            // retired v1.3 profile clears the disclosure flag) before the
+            // flag is checked.
+            string currentProfileId = Config.FetchProfileId;
             if (Config.HasSeenFirstRunDisclosure)
                 return true;
 
-            using (var form = new FirstRunForm(Config.PreviewFetchProfileId()))
+            string notice = null;
+            if (!string.IsNullOrEmpty(Config.RetiredProfileName))
+            {
+                notice = string.Format(
+                    "KeeFetch 1.4 no longer offers the {0} profile. Choose a profile to continue.",
+                    Config.RetiredProfileName);
+            }
+
+            using (var form = new FirstRunForm(currentProfileId, notice))
             {
                 if (form.ShowDialog(host.MainWindow) != DialogResult.OK)
                     return false;
@@ -443,6 +616,7 @@ namespace KeeFetch
 
             config.FetchProfileId = profile.Id;
             config.HasSeenFirstRunDisclosure = true;
+            config.ClearRetiredProfileNotice();
             if (persist != null)
                 persist();
             return true;

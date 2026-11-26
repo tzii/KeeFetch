@@ -10,6 +10,9 @@ namespace KeeFetch.Settings
         private bool isLoading;
         private bool isCustom;
 
+        /// <summary>Raised when the user asks to edit providers of a managed profile.</summary>
+        public event EventHandler CustomizeRequested;
+
         public ProviderSettingsPage()
         {
             InitializeComponent();
@@ -35,9 +38,12 @@ namespace KeeFetch.Settings
             isCustom = string.Equals(draft.ProfileId, "custom", StringComparison.OrdinalIgnoreCase);
             clbProviders.Enabled = isCustom;
             btnProviderReset.Enabled = isCustom;
+            btnProviderReset.Visible = isCustom;
+            btnCustomize.Visible = !isCustom;
             lblProviderHint.Text = isCustom
-                ? "Check enabled providers and move them into the order KeeFetch should try them."
-                : "This profile manages provider selection and order. Choose Custom to edit them.";
+                ? "Check the providers KeeFetch may use. KeeFetch asks every checked provider for each entry, in this order, and keeps the best icon. Third-party services receive the entry's domain."
+                : ProfilePresentation.DisplayName(draft.ProfileId) +
+                  " uses the checked providers, in this order. Choose Customize to pick your own.";
             isLoading = false;
             UpdateMoveButtons();
         }
@@ -77,8 +83,26 @@ namespace KeeFetch.Settings
                 return;
 
             int index = clbProviders.Items.Add(
-                new ProfileListItem(provider.Id, provider.DisplayName));
+                new ProfileListItem(provider.Id, DescribeProvider(provider)));
             clbProviders.SetItemChecked(index, draft.IsProviderEnabled(provider.Id));
+        }
+
+        internal static string DescribeProvider(ProviderDefinition provider)
+        {
+            if (provider == null)
+                throw new ArgumentNullException("provider");
+            if (provider.Id.Equals("direct-site", StringComparison.OrdinalIgnoreCase))
+                return provider.DisplayName + " (the entry's own website)";
+            return provider.IsThirdParty
+                ? provider.DisplayName + " (third-party service)"
+                : provider.DisplayName;
+        }
+
+        private void btnCustomize_Click(object sender, EventArgs e)
+        {
+            EventHandler handler = CustomizeRequested;
+            if (handler != null)
+                handler(this, EventArgs.Empty);
         }
 
         private void btnProviderUp_Click(object sender, EventArgs e)
@@ -98,7 +122,7 @@ namespace KeeFetch.Settings
             foreach (ProviderDefinition provider in FetchProfileCatalog.Providers)
             {
                 int index = clbProviders.Items.Add(
-                    new ProfileListItem(provider.Id, provider.DisplayName));
+                    new ProfileListItem(provider.Id, DescribeProvider(provider)));
                 clbProviders.SetItemChecked(index, true);
             }
             if (clbProviders.Items.Count > 0)

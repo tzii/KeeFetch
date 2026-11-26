@@ -61,6 +61,31 @@ namespace KeeFetch.Tests
         }
 
         [TestMethod]
+        public void SettingsForm_SaveKeepsTheRetiredProfileNoticePending()
+        {
+            var ace = new AceCustomConfig();
+            ace.SetString("KeeFetch.FetchProfileId", "max-coverage");
+            ace.SetBool("KeeFetch.HasSeenFirstRunDisclosure", true);
+            var migrated = new Configuration(ace);
+            Assert.AreEqual("everyday", migrated.FetchProfileId);
+
+            using (var form = new SettingsForm(migrated))
+            {
+                InvokeHandler(form, "btnSave_Click");
+                Assert.AreEqual(DialogResult.OK, form.DialogResult);
+            }
+
+            Assert.IsFalse(migrated.HasSeenFirstRunDisclosure,
+                "The first download must still explain why Precise is gone.");
+            Assert.AreEqual("Precise", migrated.RetiredProfileName);
+
+            var regular = new Configuration(new AceCustomConfig());
+            using (var form = new SettingsForm(regular))
+                InvokeHandler(form, "btnSave_Click");
+            Assert.IsTrue(regular.HasSeenFirstRunDisclosure);
+        }
+
+        [TestMethod]
         public void SettingsForm_SaveCommitsDraftAndCancelLeavesConfigurationUntouched()
         {
             var saveConfig = new Configuration(new AceCustomConfig());
@@ -121,7 +146,9 @@ namespace KeeFetch.Tests
                 Assert.AreEqual("Advanced", tabs.SelectedTab.Text);
                 Assert.IsTrue(summary.Visible);
                 StringAssert.Contains(summary.Text, "Connection timeout is invalid.");
-                Assert.IsFalse(string.IsNullOrWhiteSpace(summary.AccessibleName));
+                // Screen readers must hear the errors, not a fixed caption.
+                StringAssert.Contains(summary.AccessibilityObject.Name, "Connection timeout is invalid.");
+                Assert.IsFalse(string.IsNullOrWhiteSpace(summary.AccessibleDescription));
                 Assert.IsTrue(Find<NumericUpDown>(advanced, "numTimeout").ContainsFocus);
             }
         }

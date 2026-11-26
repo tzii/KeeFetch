@@ -315,7 +315,7 @@ namespace KeeFetch
         /// <returns>Resized image data as PNG, or null if resizing fails.</returns>
         public static byte[] ResizeImage(byte[] data, int maxWidth, int maxHeight)
         {
-            if (data == null || data.Length == 0)
+            if (data == null || data.Length == 0 || !HasSafeDimensions(data))
                 return null;
 
             Image image = null;
@@ -382,7 +382,7 @@ namespace KeeFetch
         /// </summary>
         public static byte[] NormalizeToPng(byte[] data)
         {
-            if (data == null || data.Length == 0)
+            if (data == null || data.Length == 0 || !HasSafeDimensions(data))
                 return null;
 
             Image image = null;
@@ -521,13 +521,54 @@ namespace KeeFetch
         }
 
         /// <summary>
-        /// Validates whether the provided data is a valid image.
+        /// Largest width or height KeeFetch decodes. Icons are at most a few
+        /// hundred pixels; a few kilobytes of PNG can declare billions of
+        /// pixels, and decoding such a "pixel flood" would exhaust memory in
+        /// the KeePass process.
+        /// </summary>
+        internal const int MaxDecodedImageSide = 4096;
+
+        internal static bool IsSafeImageSize(int width, int height)
+        {
+            return width > 0 && height > 0 &&
+                width <= MaxDecodedImageSide && height <= MaxDecodedImageSide;
+        }
+
+        /// <summary>
+        /// Reads only the image header and reports whether its declared size
+        /// is safe to decode.
+        /// </summary>
+        internal static bool HasSafeDimensions(byte[] data)
+        {
+            if (data == null || data.Length == 0)
+                return false;
+
+            try
+            {
+                using (var ms = new MemoryStream(data))
+                using (var image = Image.FromStream(ms, false, false))
+                {
+                    return IsSafeImageSize(image.Width, image.Height);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug("HasSafeDimensions", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Validates whether the provided data is a valid image of a size that
+        /// is safe to decode.
         /// </summary>
         /// <param name="data">The data to validate.</param>
         /// <returns>True if the data is a valid image; otherwise, false.</returns>
         public static bool IsValidImage(byte[] data)
         {
-            if (data == null || data.Length < 8)
+            // The header check comes first: the validating load below decodes
+            // every pixel, which is what the size limit exists to prevent.
+            if (data == null || data.Length < 8 || !HasSafeDimensions(data))
                 return false;
 
             try
@@ -535,7 +576,7 @@ namespace KeeFetch
                 using (var ms = new MemoryStream(data))
                 using (var img = Image.FromStream(ms))
                 {
-                    return img.Width > 0 && img.Height > 0;
+                    return IsSafeImageSize(img.Width, img.Height);
                 }
             }
             catch (Exception ex)
